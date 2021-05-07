@@ -1,0 +1,161 @@
+
+
+\?empty                            0
+\?floor                            1
+\?surface_floor                    2
+\?surface_hidden_floor             3
+\?minewood_floor                   =
+\?minewood_floor_hanging_hide      h
+\?floor_hard                       X
+\?ladder                           L
+\?ladder_plat                      P
+\?platform                         p
+\?starting_exit                    s
+\?door2                            D
+\?door_drop_held                   W
+\?push_block                       4
+\?chain_ceiling                    H
+\?spring_trap                      ^
+\?conveyorbelt_left                <
+\?conveyorbelt_right               >
+\?lamp_hang                        l
+\?litwalltorch                     O
+\?dresser                          d
+\?bunkbed                          u
+\?singlebed                        b
+\?diningtable                      i
+\?sidetable                        S
+\?chair_looking_left               5
+\?chair_looking_right              6
+\?dog_sign                         7
+\?telescope                        9
+\?pot                              o
+\?treasure_chest                   t
+\?crate_bombs                      B
+\?crate_ropes                      R
+\?rock                             r
+\?jungle_floor                     J
+\?stone_floor                      -
+\?tree_base                        T
+\?growable_vine                    V
+\?water                            w
+\?cookfire                         F
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+\.setroom5-4
+////////////////////////////////////////////////////////////////////////////////
+
+// room
+\!purge
+\!ignore
+XXXXXXXXXX
+00000000JJ
+0000000000
+0000000000
+0000000000
+00000000J=
+00000000==
+===111001=
+
+// room
+\!purge
+\!ignore
+1111111111
+0001111111
+0000000111
+0000000111
+000000===1
+000000=001
+0000000001
+111000===1
+
+// room COPY
+\!purge
+XXXXXXXXXX
+0001111111
+0000000111
+0000000111
+0000000==1
+0000000001
+0000000001
+111000===1
+
+////////////////////////////////////////////////////////////////////////////////
+\.setroom5-5
+////////////////////////////////////////////////////////////////////////////////
+
+// room
+\!purge
+\!ignore
+XXXXXXXXXX
+-J0000000V
+0000000000
+0000000000
+F000000000
+JJJT--000w
+=JJJJ-Twww
+====JJJJJJ
+
+// room
+\!purge
+\!ignore
+XXXXXXXXXX
+X111111111
+X111111111
+X111111111
+X111111111
+X111111111
+X111111111
+X111111111
+
+// room COPY
+\!purge
+XXXXXXXXXX
+-J0000000V
+0000000000
+0000000000
+F000000000
+JJJT--000w
+=JJJJ-Twww
+====JJJJJJ
+
+////////////////////////////////////////////////////////////////////////////////
+\.setroom5-6
+////////////////////////////////////////////////////////////////////////////////
+
+// room
+\!purge
+\!ignore
+XXXXXXXXXX
+J0000--JVJ
+000000000J
+000000-00J
+0000JJ-J0J
+w-0--JJJ0=
+wJTJJJJJ0=
+JJJJ====0=
+
+// room
+\!purge
+\!ignore
+XXXXXXXXXX
+1111111111
+1111111111
+1111111111
+1111111111
+1111111111
+1111111111
+1111111111
+
+// room COPY
+\!purge
+XXXXXXXXXX
+J0000--JVJ
+000000000J
+000000-00J
+0000JJ-J0J
+w-0--JJJ0=
+wJTJJJJJ0=
+JJJJ====0=

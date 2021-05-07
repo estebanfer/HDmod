@@ -1,0 +1,54 @@
+
+
+\?empty                            0
+\?floor                            1
+\?surface_floor                    2
+\?surface_hidden_floor             3
+\?minewood_floor                   =
+\?minewood_floor_hanging_hide      h
+\?floor_hard                       X
+\?ladder                           L
+\?ladder_plat                      P
+\?platform                         p
+\?starting_exit                    s
+\?door2                            D
+\?door_drop_held                   W
+\?push_block                       4
+\?chain_ceiling                    H
+\?spring_trap                      ^
+\?conveyorbelt_left                <
+\?conveyorbelt_right               >
+\?lamp_hang                        l
+\?litwalltorch                     O
+\?dresser                          d
+\?bunkbed                          u
+\?singlebed                        b
+\?diningtable                      i
+\?sidetable                        S
+\?chair_looking_left               5
+\?chair_looking_right              6
+\?dog_sign                         7
+\?telescope                        9
+\?pot                              o
+\?treasure_chest                   t
+\?crate_bombs                      B
+\?crate_ropes                      R
+\?rock                             r
+\?water                            w
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+\.setroom5-2
+////////////////////////////////////////////////////////////////////////////////
+
+// room
+\!dual
+XXXXXXXXXX 11111110L0
+1111111100 00l00000L0
+0111110000 00000000L0
+0000000000 00000000P=
+0000000000 00000000L1
+0000000000 00000000L1
+0000000000 00000000L1
+1111111111 111111111X

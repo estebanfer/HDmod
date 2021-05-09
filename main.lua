@@ -11,10 +11,11 @@ register_option_bool("hd_ghosttime", "Spawns the ghost at 2:30 instead of 3:00 a
 register_option_bool("hd_antitrapcuck", "Prevent spawning traps that can cuck you", true)
 register_option_bool("hd_freebookofdead", "Start with the Book of the dead", true)
 register_option_bool("hd_unlockbossexit", "Unlock boss exit", false)
-register_option_bool("hd_boss_info", "Enable bossfight info", false)
-register_option_bool("hd_wormtongue_info", "Enable wormtongue info", true)
+register_option_bool("hd_boss_info", "Enable bossfight debug info", false)
+register_option_bool("hd_wormtongue_info", "Enable wormtongue debug info", true)
+register_option_bool("hd_boulder_info", "Enable boulder debug info", false)
 register_option_bool("hd_show_ducttapeenemies", "Draw enemies used for custom enemy behavior", false)
-register_option_bool("hd_boulder_phys", "Adjust boulders to have the same physics as HD", true)
+-- register_option_bool("hd_boulder_phys", "Adjust boulders to have the same physics as HD", true)
 register_option_bool("hd_boulder_agro", "Make boulders enrage shopkeepers", true)
 register_option_float("bod_w", "bod width", 0.08, 0.0, 99.0)
 register_option_float("bod_h", "bod height", 0.12, 0.0, 99.0)
@@ -40,11 +41,22 @@ TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 wheel_items = {}
 global_dangers = {}
-global_dangers_postspawn = {}
+-- global_dangers_postspawn = {}
 danger_tracker = {} -- Parameters: uid, special features
 IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
+BOULDER_UID = nil
+BOULDER_SX = nil
+BOULDER_SY = nil
+BOULDER_SX2 = nil
+BOULDER_SY2 = nil
+BOULDER_CRUSHPREVENTION_EDGE = 0.1
+BOULDER_CRUSHPREVENTION_HEIGHT = 0.2
+BOULDER_CRUSHPREVENTION_VELOCITY = 0.16
+BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
+BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
+BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 TONGUE_UID = nil
 TONGUE_BG_UID = nil
 wheel_speed = 0
@@ -61,6 +73,7 @@ BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
 BOSS_STATE = nil
 OLMEC_SEQUENCE = { ["STILL"] = 1, ["JUMP"] = 2, ["MIDAIR"] = 3, ["FALL"] = 4 }
 OLMEC_STATE = 0
+BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_X = 0
 BOOKOFDEAD_TIC_LIMIT = 5
 BOOKOFDEAD_RANGE = 14
@@ -126,6 +139,7 @@ HD_SUBCHUNKID = {
 	-- ["48" = , -- DaR Crystal Idol
 }
 
+-- retains HD tilenames
 HD_TILENAME = {
 	["0"] = 0,
 	["1"] = ENT_TYPE.FLOOR_GENERIC,
@@ -133,7 +147,9 @@ HD_TILENAME = {
 	["+"] = ENT_TYPE.FLOORSTYLED_STONE,
 	["4"] = ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
 	["G"] = ENT_TYPE.FLOOR_TOMB,
-	["i"] = ENT_TYPE.ITEM_IDOL
+	["I"] = ENT_TYPE.ITEM_IDOL,
+	["i"] = ENT_TYPE.FLOOR_ICE,
+	["j"] = ENT_TYPE.FLOOR_ICE
 }
 
 HD_DANGERTYPE = {
@@ -178,6 +194,8 @@ HD_BEHAVIOR = {
 			-- TODO: replace with Imp
 				-- Avoid using for agro distance since imps without lavapots immediately agro on the player regardless of distance
 				-- TODO: set_timeout() to remove all lavapots from imps in onlevel_remove_mounts()
+			-- TODO: if killed immediately, bat_uid still exists.
+			-- TODO: abilities can still be killed by the camera flash
 			bat_uid = nil,--agro = { bat_uid = nil },
 			-- idle = { mosquito_uid = nil }
 		-- },
@@ -242,9 +260,8 @@ HD_BEHAVIOR = {
 				-- if set, determines the ENT_TYPE to spawn.
 			-- toreplace
 				-- if set, determines the ENT_TYPE to replace inside onlevel_generation_dangers.
-			-- postspawn
+			-- entitydb
 				-- If set, determines the ENT_TYPE to apply EntityDB modifications to
-				-- TODO: Rename to entitytype
 			-- dim = { w, h }
 				-- sets height and width
 				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
@@ -292,7 +309,7 @@ HD_ENT = {
 		-- toreplace = ENT_TYPE.MONS_GIANTFLY,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
 		-- health = 8,
-		-- postspawn = ENT_TYPE.MONS_GIANTFLY,
+		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
 		-- behavior = HD_BEHAVIOR.GIANTFROG,
 		-- dim = {2.5, 2.5},
 		-- itemdrop = {
@@ -307,7 +324,7 @@ HD_ENT = {
 	GIANTFROG = {
 		tospawn = ENT_TYPE.MONS_OCTOPUS,
 		toreplace = ENT_TYPE.MONS_OCTOPUS,
-		postspawn = ENT_TYPE.MONS_OCTOPUS,
+		entitydb = ENT_TYPE.MONS_OCTOPUS,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		health_db = 8,
 		sprint_factor = 0,
@@ -328,14 +345,14 @@ HD_ENT = {
 	SNAIL = {
 		tospawn = ENT_TYPE.MONS_HERMITCRAB,
 		toreplace = ENT_TYPE.MONS_WITCHDOCTOR,
-		postspawn = ENT_TYPE.MONS_HERMITCRAB,
+		entitydb = ENT_TYPE.MONS_HERMITCRAB,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		health_db = 1,
 		removecorpse = true,
 		removemounts = HD_REMOVEMOUNT.SNAIL
 	},
 	PIRANHA = {
-		-- postspawn = ENT_TYPE.MONS_TADPOLE,
+		-- entitydb = ENT_TYPE.MONS_TADPOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
 		-- sprint_factor = -1,
@@ -344,7 +361,7 @@ HD_ENT = {
 		kill_on_standing = KILL_ON.STANDING_OUTOFWATER
 	},
 	WORMBABY = {
-		postspawn = ENT_TYPE.MONS_MOLE,
+		entitydb = ENT_TYPE.MONS_MOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		health_db = 1,
 		removecorpse = true
@@ -358,13 +375,13 @@ HD_ENT = {
 	TRAP_TIKI = {
 		tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
 		toreplace = ENT_TYPE.ITEM_SNAP_TRAP,
-		postspawn = ENT_TYPE.ITEM_TOTEM_SPEAR,
+		entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
 		dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
 		damage = 4
 	},
 	OLDBITEY = {
 		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = ENT_TYPE.MONS_GIANTFISH,
+		entitydb = ENT_TYPE.MONS_GIANTFISH,
 		itemdrop = {
 			item = {ENT_TYPE.ITEM_IDOL}, --ENT_TYPE.ITEM_MADAMETUSK_IDOL
 			chance = 1
@@ -372,7 +389,7 @@ HD_ENT = {
 	},
 	CRITTER_RAT = {
 		dangertype = HD_DANGERTYPE.CRITTER,
-		postspawn = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
+		entitydb = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
 		max_speed = 0.05,
 		acceleration = 0.05
 	},
@@ -380,7 +397,7 @@ HD_ENT = {
 		tospawn = ENT_TYPE.MONS_CRITTERCRAB,
 		toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
 		dangertype = HD_DANGERTYPE.CRITTER,
-		postspawn = ENT_TYPE.MONS_CRITTERCRAB
+		entitydb = ENT_TYPE.MONS_CRITTERCRAB
 		-- TODO: Make jumping script, adjust movement EntityDB properties
 		-- behavior = HD_BEHAVIOR.CRITTER_FROG,
 	},
@@ -401,7 +418,7 @@ HD_ENT = {
 	},
 	BOULDER = {
 		dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
-		postspawn = ENT_TYPE.ACTIVEFLOOR_BOULDER
+		entitydb = ENT_TYPE.ACTIVEFLOOR_BOULDER
 		-- TODO: Modify EntityDB to make the physics of it match that of HD's.
 	},
 	SCORPIONFLY = {
@@ -430,7 +447,7 @@ HD_ENT = {
 	-- DEVIL = {
 		-- tospawn = ENT_TYPE.MONS_OCTOPUS,
 		-- toreplace = ?,
-		-- postspawn = ENT_TYPE.MONS_OCTOPUS,
+		-- entitydb = ENT_TYPE.MONS_OCTOPUS,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
 		-- sprint_factor = 7.0
 		-- max_speed = 7.0
@@ -439,7 +456,7 @@ HD_ENT = {
 		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
 		-- toreplace = ?,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- postspawn = ENT_TYPE.MONS_GIANTFLY,
+		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
 		-- behavior = HD_BEHAVIOR.MAMMOTH,
 		-- health_db = 8,
 		-- itemdrop = {
@@ -455,14 +472,14 @@ HD_ENT = {
 		-- tospawn = ENT_TYPE.MONS_SHOPKEEPERCLONE, -- Maybe.
 		-- toreplace = ENT_TYPE.MONS_CAVEMAN,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- postspawn = ENT_TYPE.MONS_SHOPKEEPERCLONE,
+		-- entitydb = ENT_TYPE.MONS_SHOPKEEPERCLONE,
 		-- behavior = HD_BEHAVIOR.HAWKMAN
 	-- },
 	-- GREENKNIGHT = {
 		-- tospawn = ENT_TYPE.MONS_OLMITE_BODYARMORED,
 		-- toreplace = ENT_TYPE.MONS_CAVEMAN,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- postspawn = ENT_TYPE.MONS_OLMITE_BODYARMORED,
+		-- entitydb = ENT_TYPE.MONS_OLMITE_BODYARMORED,
 		-- behavior = HD_BEHAVIOR.GREENKNIGHT,
 		-- stompdamage = false, -- TODO: Add this(?)
 	-- },
@@ -472,7 +489,7 @@ HD_ENT = {
 	-- BLACKKNIGHT = {
 		-- tospawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- postspawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
+		-- entitydb = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
 		-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
 		-- health = 3,
 		-- giveitem = ENT_TYPE.ITEM_METAL_SHIELD
@@ -597,6 +614,14 @@ function init()
 	IDOL_X = nil
 	IDOL_Y = nil
 	IDOL_UID = nil
+	BOULDER_UID = nil
+	BOULDER_SX = nil
+	BOULDER_SY = nil
+	BOULDER_SX2 = nil
+	BOULDER_SY2 = nil
+	BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
+	BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
+	BOULDER_DEBUG_PLAYERTOUCH = false
 	TONGUE_UID = nil
 	TONGUE_BG_UID = nil
 	GHOST_SPAWNED = false
@@ -625,19 +650,18 @@ end
 -- initialize per-level enemy databases
 function onlevel_dangers_init()
 	if LEVEL_DANGERS[state.theme] then
-		if (
-				options.hd_boulder_phys == true and
-				state.theme == THEME.DWELLING and
-				(
-					state.level == 2 or
-					state.level == 3 or
-					state.level == 4
-				)
-		) then
-			table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_boulder_phys == true then
-		end
+		-- if (
+				-- options.hd_boulder_phys == true and
+				-- state.theme == THEME.DWELLING and
+				-- (
+					-- state.level == 2 or
+					-- state.level == 3 or
+					-- state.level == 4
+				-- )
+		-- ) then
+			-- table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_boulder_phys == true then
+		-- end
 		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
-		global_dangers_postspawn = map(global_dangers, function(entity) return entity.postspawn end)
 	end
 end
 
@@ -764,6 +788,98 @@ function create_ghost()
 	end
 end
 
+function create_idol()
+	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
+	if (
+		#idols > 0 and
+		HD_FEELING_RESTLESS == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
+	) then
+		IDOL_UID = idols[1]
+		IDOL_X, IDOL_Y, idol_l = get_position(IDOL_UID)
+		
+		-- Idol trap variants
+		if state.theme == THEME.DWELLING then
+			spawn(ENT_TYPE.BG_BOULDER_STATUE, IDOL_X, IDOL_Y+2.5, idol_l, 0, 0)
+		elseif state.theme == THEME.JUNGLE then
+			for j = 1, 6, 1 do
+				blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
+				idoltrap_blocks[j] = blocks[1]
+			end
+		elseif state.theme == THEME.ICE_CAVES then
+			boulderbackgrounds = get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)
+			if #boulderbackgrounds > 0 then
+				kill_entity(boulderbackgrounds[1])
+			end
+		-- elseif state.theme == THEME.TEMPLE then
+			-- -- ACTIVEFLOOR_CRUSHING_ELEVATOR flipped upsidedown for idol trap?? --Probably doesn't work
+		end
+	end
+end
+
+function create_idol_tusk()
+	idols = get_entities_by_type(ENT_TYPE.ITEM_MADAMETUSK_IDOL)
+	if #idols > 0 then
+		IDOL_UID = idols[1]
+		x, y, _ = get_position(idols[1])
+		IDOL_X, IDOL_Y = x, y
+	end
+end
+
+function create_wormtongue(x, y, l)
+	set_interval(tongue_animate, 15)
+	-- currently using level generation to place stickytraps
+	stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
+	sticky = get_entity(stickytrap_uid)
+	sticky.flags = set_flag(sticky.flags, 1)
+	sticky.flags = clr_flag(sticky.flags, 3)
+	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
+	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
+	if #balls > 0 then
+		TONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+		worm_background = get_entity(TONGUE_BG_UID)
+		worm_background.animation_frame = 8 -- jungle: 8 icecaves: probably 9
+	
+		-- sticky part creation
+		TONGUE_UID = balls[1] -- HAHA tongue and balls
+		ball = get_entity(TONGUE_UID):as_movable()
+		ball.width = 1.35
+		ball.height = 1.35
+		ball.hitboxx = 0.3375
+		ball.hitboxy = 0.3375
+		
+		ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
+		for _, ballstem_uid in ipairs(ballstems) do
+			ballstem = get_entity(ballstem_uid)
+			ballstem.flags = set_flag(ballstem.flags, 1)
+			ballstem.flags = clr_flag(ballstem.flags, 9)
+		end
+		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
+		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
+		
+		door_uid = spawn_door(x, y, l, state.world, state.level+1, THEME.EGGPLANT_WORLD)
+		lock_door_at(x, y)
+		
+		
+		TONGUE_STATE = TONGUE_SEQUENCE.READY
+		-- toast("door_uid:" .. tostring(door_uid))
+		
+		set_timeout(function()
+			x, y, l = get_position(TONGUE_UID)
+			door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
+			if #door_platforms > 0 then
+				door_platform = get_entity(door_platforms[1])
+				door_platform.flags = set_flag(door_platform.flags, 1)
+				door_platform.flags = clr_flag(door_platform.flags, 3)
+				door_platform.flags = clr_flag(door_platform.flags, 8)
+			else toast("No Worm Door platform found") end
+		end, 2)
+	else
+		toast("No STICKYTRAP_BALL found, no tongue generated.")
+		kill_entity(stickytrap_uid)
+		TONGUE_STATE = TONGUE_SEQUENCE.GONE
+	end
+end
+
 function idol_disturbance()
 	if IDOL_UID ~= nil then
 		x, y, l = get_position(IDOL_UID)
@@ -831,7 +947,7 @@ function generate_floor(hd_tileid, e_x, e_y, e_l)
 	else
 		e_type = HD_TILENAME[hd_tileid]
 	end
-	if hd_tileid == "i" then -- if idol, move to middle
+	if hd_tileid == "I" then -- if idol, move to middle
 		e_x_ = e_x_+0.5
 		-- if haunted replace with tusk idol
 		if HD_FEELING_RESTLESS == true then
@@ -841,15 +957,8 @@ function generate_floor(hd_tileid, e_x, e_y, e_l)
 
 	if e_type ~= 0 then
 		floor_uid = spawn(e_type, e_x_, e_y_, e_l, 0, 0)
-		if hd_tileid == "i" and HD_FEELING_RESTLESS == true then
-			set_timeout(function()
-				idols = get_entities_by_type(ENT_TYPE.ITEM_MADAMETUSK_IDOL)
-				if #idols > 0 then
-					IDOL_UID = idols[1]
-					x, y, _ = get_position(idols[1])
-					IDOL_X, IDOL_Y = x, y
-				end
-			end, 10)
+		if hd_tileid == "I" and HD_FEELING_RESTLESS == true then
+			set_timeout(create_idol_tusk, 10)
 		end
 		-- decorate
 			-- TODO: Use for placing decorations on floor tiles once placed.
@@ -1170,6 +1279,7 @@ set_callback(function()
 	onguiframe_ui_animate_botd()
 	onguiframe_ui_info_boss()			-- debug
 	onguiframe_ui_info_wormtongue() 	--
+	onguiframe_ui_info_boulder()		--
 	onguiframe_env_animate_prizewheel()
 end, ON.GUIFRAME)
 
@@ -1226,7 +1336,7 @@ function onlevel_dangers_piranha()
 		d_submerged = test_flag(d_mov.more_flags, 11)
 		if d_submerged == true then
 			x, y, l = get_position(danger)
-			s = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)--HD_ENT.PIRANHA.postspawn, x, y, l, 0, 0)
+			s = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)--HD_ENT.PIRANHA.entitydb, x, y, l, 0, 0)
 			
 			-- TODO: Replace with danger_spawn()
 			behavior = {}
@@ -1273,12 +1383,12 @@ end
 function onlevel_dangers_modifications()
 	-- loop through all dangers in global_dangers, setting enemy specific
 	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
-		dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
-		dangers_postspawn = map(global_dangers, function(entity) return entity.postspawn end)
+		-- dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
+		-- dangers_postspawn = map(global_dangers, function(entity) return entity.entitydb end)
 		for i = 1, #global_dangers, 1 do
 			toset = 0
-			if dangers_tospawn[i] ~= 0 then toset = dangers_tospawn[i] end
-			if dangers_postspawn[i] ~= 0 then toset = dangers_postspawn[i] end
+			-- if dangers_tospawn[i] ~= 0 then toset = dangers_tospawn[i] end
+			if global_dangers[i].entitydb ~= nil and global_dangers[i].entitydb ~= 0 then toset = global_dangers[i].entitydb end--if dangers_postspawn[i] ~= 0 then toset = dangers_postspawn[i] end
 			if toset ~= 0 then
 				s = spawn(toset, 0, 0, LAYER.FRONT, 0, 0)
 				s_mov = get_entity(s):as_movable()
@@ -1505,11 +1615,11 @@ function onlevel_generation_chunks()
 		-- cx, cy = remove_room(roomx, roomy, idoll)
 		tmp_object = {
 			roomcodes = {
-				"++++++++++++++++++++++00i000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
+				"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
 			},
 			-- "++++++++++
 			-- ++++++++++
-			-- ++00i000++
+			-- ++00I000++
 			-- 0++0++0++0
 			-- 0400000040
 			-- +++0++0+++
@@ -1676,38 +1786,7 @@ function onlevel_prizewheel()
 end
 
 function onlevel_idoltrap()
-	-- Idol traps
-	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	if (
-		#idols > 0 and
-		HD_FEELING_RESTLESS == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
-	) then
-		IDOL_UID = idols[1]
-		IDOL_X, IDOL_Y, idol_l = get_position(IDOL_UID)
-		
-		-- If in dwelling
-		if state.theme == THEME.DWELLING then
-			spawn(ENT_TYPE.BG_BOULDER_STATUE, IDOL_X, IDOL_Y+2.5, idol_l, 0, 0)
-			-- set boulder stats
-			-- if options.hd_boulder_phys == true then
-				-- boulder_uid = spawn(ENT_TYPE.ACTIVEFLOOR_BOULDER, 0, 0, LAYER.FRONT, 0, 0)
-				-- boulder = get_entity(boulder_uid)
-				-- -- boulder.type.
-			-- end
-		elseif state.theme == THEME.JUNGLE then
-			for j = 1, 6, 1 do
-				blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
-				idoltrap_blocks[j] = blocks[1]
-			end
-		elseif state.theme == THEME.ICE_CAVES then
-			boulderbackgrounds = get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)
-			if #boulderbackgrounds > 0 then
-				kill_entity(boulderbackgrounds[1])
-			end
-		-- elseif state.theme == THEME.TEMPLE then
-			-- -- ACTIVEFLOOR_CRUSHING_ELEVATOR flipped upsidedown for idol trap?? --Probably doesn't work
-		end
-	end
+	create_idol()
 end
 
 function onlevel_remove_mounts()
@@ -1812,61 +1891,6 @@ function onlevel_blackmarket_ankh()
 			spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
 			spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
 		end
-	end
-end
-
-function create_wormtongue(x, y, l)
-	set_interval(tongue_animate, 15)
-	-- currently using level generation to place stickytraps
-	stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
-	sticky = get_entity(stickytrap_uid)
-	sticky.flags = set_flag(sticky.flags, 1)
-	sticky.flags = clr_flag(sticky.flags, 3)
-	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
-	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
-	if #balls > 0 then
-		TONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-		worm_background = get_entity(TONGUE_BG_UID)
-		worm_background.animation_frame = 8 -- jungle: 8 icecaves: probably 9
-	
-		-- sticky part creation
-		TONGUE_UID = balls[1] -- HAHA tongue and balls
-		ball = get_entity(TONGUE_UID):as_movable()
-		ball.width = 1.35
-		ball.height = 1.35
-		ball.hitboxx = 0.3375
-		ball.hitboxy = 0.3375
-		
-		ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
-		for _, ballstem_uid in ipairs(ballstems) do
-			ballstem = get_entity(ballstem_uid)
-			ballstem.flags = set_flag(ballstem.flags, 1)
-			ballstem.flags = clr_flag(ballstem.flags, 9)
-		end
-		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
-		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
-		
-		door_uid = spawn_door(x, y, l, state.world, state.level+1, THEME.EGGPLANT_WORLD)
-		lock_door_at(x, y)
-		
-		
-		TONGUE_STATE = TONGUE_SEQUENCE.READY
-		-- toast("door_uid:" .. tostring(door_uid))
-		
-		set_timeout(function()
-			x, y, l = get_position(TONGUE_UID)
-			door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
-			if #door_platforms > 0 then
-				door_platform = get_entity(door_platforms[1])
-				door_platform.flags = set_flag(door_platform.flags, 1)
-				door_platform.flags = clr_flag(door_platform.flags, 3)
-				door_platform.flags = clr_flag(door_platform.flags, 8)
-			else toast("No Worm Door platform found") end
-		end, 2)
-	else
-		toast("No STICKYTRAP_BALL found, no tongue generated.")
-		kill_entity(stickytrap_uid)
-		TONGUE_STATE = TONGUE_SEQUENCE.GONE
 	end
 end
 
@@ -2396,6 +2420,76 @@ function onframe_idoltrap()
 				end
 			end, 3)
 		end
+	elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
+		if BOULDER_UID == nil then
+			boulders = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_BOULDER)
+			if #boulders > 0 then
+				BOULDER_UID = boulders[1]
+				-- TODO: Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
+				if options.hd_boulder_agro == true then
+					boulder = get_entity(BOULDER_UID):as_movable()
+					for i, player in ipairs(players) do
+						boulder.last_owner_uid = player.uid
+					end
+				end
+			end
+		else
+			boulder = get_entity(BOULDER_UID)
+			if boulder ~= nil then
+				boulder = get_entity(BOULDER_UID):as_movable()
+				x, y, l = get_position(BOULDER_UID)
+				BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
+				BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
+				if boulder.velocityx >= BOULDER_CRUSHPREVENTION_VELOCITY or boulder.velocityx <= -BOULDER_CRUSHPREVENTION_VELOCITY then
+					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE*BOULDER_CRUSHPREVENTION_MULTIPLIER
+					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT*BOULDER_CRUSHPREVENTION_MULTIPLIER
+				else 
+					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
+					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
+				end
+				BOULDER_SX = ((x - boulder.hitboxx)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
+				BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
+				BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
+				BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
+				boulder = get_entity(BOULDER_UID):as_movable()
+				x, y, l = get_position(BOULDER_UID)
+				blocks = get_entities_overlapping(
+					ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
+					0,
+					BOULDER_SX,
+					BOULDER_SY,
+					BOULDER_SX2,
+					BOULDER_SY2,
+					LAYER.FRONT
+				)
+				blocks = TableConcat(
+					blocks, get_entities_overlapping(
+						ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
+						0,
+						BOULDER_SX,
+						BOULDER_SY,
+						BOULDER_SX2,
+						BOULDER_SY2,
+						LAYER.FRONT
+					)
+				)
+				for _, block in ipairs(blocks) do
+					kill_entity(block)
+				end
+				if options.hd_boulder_info == true then
+					touching = get_entities_overlapping(
+						0,
+						0x1,
+						BOULDER_SX,
+						BOULDER_SY,
+						BOULDER_SX2,
+						BOULDER_SY2,
+						LAYER.FRONT
+					)
+					if #touching > 0 then BOULDER_DEBUG_PLAYERTOUCH = true else BOULDER_DEBUG_PLAYERTOUCH = false end
+				end
+			else toast("Boulder crushed :(") end
+		end
 	end
 end
 
@@ -2636,7 +2730,7 @@ function onframe_replace_grubs()
 	for _, danger in ipairs(grubs) do
 		d_mov = get_entity(danger):as_movable()
 		x, y, l = get_position(danger)
-		s = spawn(ENT_TYPE.MONS_MOLE, x, y, l, d_mov.velocityx, d_mov.velocityy)--HD_ENT.PIRANHA.postspawn, x, y, l, 0, 0)
+		s = spawn(ENT_TYPE.MONS_MOLE, x, y, l, d_mov.velocityx, d_mov.velocityy)--HD_ENT.PIRANHA.entitydb, x, y, l, 0, 0)
 		-- TODO: Replace with danger_spawn()
 		behavior = {}
 		danger_object = {
@@ -3169,6 +3263,56 @@ function onguiframe_ui_info_wormtongue()
 	end
 end
 
+function onguiframe_ui_info_boulder()
+	if options.hd_boulder_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+		if (
+			state.theme == THEME.DWELLING and
+			(state.level == 2 or state.level == 3 or state.level == 4)
+		) then
+			text_x = -0.95
+			text_y = -0.45
+			green_rim = rgba(102, 108, 82, 255)
+			green_hitbox = rgba(153, 196, 19, 170)
+			white = rgba(255, 255, 255, 255)
+			if BOULDER_UID == nil then text_boulder_uid = "No Boulder Onscreen"
+			else text_boulder_uid = tostring(BOULDER_UID) end
+			
+			sx = BOULDER_SX
+			sy = BOULDER_SY
+			sx2 = BOULDER_SX2
+			sy2 = BOULDER_SY2
+			
+			draw_text(text_x, text_y, 0, "BOULDER_UID: " .. text_boulder_uid, white)
+			
+			if BOULDER_UID ~= nil and sx ~= nil and sy ~= nil and sx2 ~= nil and sy2 ~= nil then
+				text_y = text_y-0.1
+				sp_x, sp_y = screen_position(sx, sy)
+				sp_x2, sp_y2 = screen_position(sx2, sy2)
+				
+				-- draw_rect(sp_x, sp_y, sp_x2, sp_y2, 4, 0, green_rim)
+				draw_rect_filled(sp_x, sp_y, sp_x2, sp_y2, 0, green_hitbox)
+				
+				text_boulder_sx = tostring(sx)
+				text_boulder_sy = tostring(sy)
+				text_boulder_sx2 = tostring(sx2)
+				text_boulder_sy2 = tostring(sy2)
+				if BOULDER_DEBUG_PLAYERTOUCH == true then text_boulder_touching = "Touching!" else text_boulder_touching = "Not Touching." end
+				
+				draw_text(text_x, text_y, 0, "SX: " .. text_boulder_sx, white)
+				text_y = text_y-0.1
+				draw_text(text_x, text_y, 0, "SY: " .. text_boulder_sy, white)
+				text_y = text_y-0.1
+				draw_text(text_x, text_y, 0, "SX2: " .. text_boulder_sx2, white)
+				text_y = text_y-0.1
+				draw_text(text_x, text_y, 0, "SY2: " .. text_boulder_sy2, white)
+				text_y = text_y-0.1
+				
+				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
+			end
+		end
+	end
+end
+
 -- Prize Wheel
 -- TODO: Once using diceposter texture, remove this.
 function onguiframe_env_animate_prizewheel()
@@ -3305,19 +3449,42 @@ end
 	-- IDEAS:
 		-- In a 2d list loop for each room to replace:
 			-- 1: log a 2d table of the level path and rooms to replace
-				-- Conflicts may include shops, vaults, missing exits
-				-- Based on HD_SUBCHUNKID, log subchunk ids as generated by the game. Log in separate 2d array `rooms_subchunkids`:
+				-- 1: As you loop over each room:
+					-- Log in separate 2d array `rooms_subchunkids`: Based on HD_SUBCHUNKID and whether the space contains a shopkeep, log subchunk ids as generated by the game.
 						-- 0: Non-main path subchunk
 						-- 1: Main path, goes L/R (also entrance/exit)
 						-- 2: Main path, goes L/R and down (and up if it's below another 2)
 						-- 3: Main path, goes L/R and up
-				-- Otherwise, here's where script-determined level paths would be managed
-				-- As you loop over each room, log in separate 2d array `rooms_replaceids`:
-					-- 0: Don't touch this room.
-					-- 1: Replace this toom.
-					-- 2: Maintain this room's structure and find a new place to move it to.
-					-- 3: Maintain this room's structure and find a new place to move it to. Maintain its orientation in relation to the path.
-				-- Once finished, log which rooms need to be flipped. loop over the path and log in separate 2d array `rooms_orientids`:
+						-- 1000: Shop (rename in the future?)
+						-- 1001: Vault (rename in the future?)
+						-- 1002: Kali (rename in the future?)
+						-- 1003: Idol (rename in the future?)
+				-- 2: Detect whether there's an exit. Without the exit, we can't move enemies. if there IS no exit, generate a new path with one or adjust the existing path to make one.
+					-- For instance, the ice caves can sometimes generate no exit on the 4th row.
+					-- If no 1 subchunkid exists on the fourth row:
+						-- if 2 on the third row exists:
+							-- add subchunk id 1 to the bottom row just below it.
+						-- elseif 3 on the third row exists:
+							-- add subchunk id 1 to the bottom row just below it.
+							-- replace 3 with 2, mark in `rooms_replaceids`
+						-- elseif 1000 on the third row exists:
+							-- add subchunk id 1 to the bottom row just below it.
+							-- replace 3 with 2
+								-- if vault, mark as 2 in `rooms_replaceids`
+								-- elseif shop, mark as 3 in `rooms_replaceids`
+				-- 3: Otherwise, here's where script-determined level paths would be managed
+					-- For instance, given the chance to have a snake pit, adjust/replace the path with one that includes it.
+				-- 4: Log in separate 2d array `rooms_replaceids`:
+					-- if no roomcodes exist to replace the room:
+						-- 0: Don't touch this room.
+					-- if the room has in the path:
+					-- 1: Replace this room.
+					-- else:
+						-- if it's vault, kali alter, or idol trap:
+							-- 2: Maintain this room's structure and find a new place to move it to.
+						-- if it's a shop:
+							-- 3: Maintain this room's structure and find a new place to move it to. Maintain its orientation in relation to the path.
+				-- 5: Log which rooms need to be flipped. loop over the path and log in separate 2d array `rooms_orientids`:
 					-- if the subchunk id is not a 3:
 						-- 0: Don't touch this room.
 					-- if the replacement id is a 3:
@@ -3335,8 +3502,22 @@ end
 				-- Parameters
 					-- optional table of ENT_TYPE
 					-- Path
-				-- Determine rooms with global list constant (same way as LEVEL_DANGERS[state.theme]) and the current room
+				-- Determine roomcodes to use with global list constant (same way as LEVEL_DANGERS[state.theme]) and the current room
+					-- HD_FEELING_* overrides some or all rooms
 				-- append each table into a 2d array based on the room they occupied
+				-- for each room, process HD_TILENAME, spawn_entity()
+					-- if (tilename == 2 or tilename == j) and math.random() >= 0.5
+						-- spawn_entity()
+						-- if tilename == 2
+							-- mark as 1
+						-- if tilename == j
+							-- mark as i
+					-- else
+						-- mark as 0
+				-- return into `rooms_roomcodes_final`
+			-- 4: Move enemies from exit to designated rooms.
+				-- Parameters
+					-- `rooms_roomcodes_final`
 	-- Roomcodes:
 		-- Level Feelings:
 			-- TIKI VILLAGE

@@ -14,6 +14,8 @@ register_option_bool("hd_unlockbossexit", "Unlock boss exit", false)
 register_option_bool("hd_boss_info", "Enable bossfight info", false)
 register_option_bool("hd_wormtongue_info", "Enable wormtongue info", true)
 register_option_bool("hd_show_ducttapeenemies", "Draw enemies used for custom enemy behavior", false)
+register_option_bool("hd_boulder_phys", "Adjust boulders to have the same physics as HD", true)
+register_option_bool("hd_boulder_agro", "Make boulders enrage shopkeepers", true)
 register_option_float("bod_w", "bod width", 0.08, 0.0, 99.0)
 register_option_float("bod_h", "bod height", 0.12, 0.0, 99.0)
 register_option_float("bod_x", "bod x", 0.2, -999.0, 999.0)
@@ -44,6 +46,7 @@ IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
 TONGUE_UID = nil
+TONGUE_BG_UID = nil
 wheel_speed = 0
 wheel_tick = WHEEL_SPINTIME
 acid_tick = ACID_POISONTIME
@@ -140,12 +143,27 @@ HD_DANGERTYPE = {
 	FLOORTRAP_TALL = 4
 }
 
+HD_LIQUIDSPAWN = {
+	PIRANHA = 1,
+	MAGMAMAN = 2
+}
+
+HD_REMOVEMOUNT = {
+	SNAIL = 1,
+	SCORPIONFLY = 2,
+	EGGSAC = 3
+}
+
 KILL_ON = {
 	STANDING = 1,
 	STANDING_OUTOFWATER = 2
 }
 
 HD_BEHAVIOR = {
+	-- IDEAS:
+		-- Disable enemy attacks.
+			-- monster = get_entity():as_chasingmonster
+			-- monster.chased_target_uid = 0
 	OLMEC_SHOT = {
 		velocityx = nil,
 		velocityy = nil,
@@ -157,6 +175,9 @@ HD_BEHAVIOR = {
 	-- },
 	SCORPIONFLY = {
 		-- abilities = {
+			-- TODO: replace with Imp
+				-- Avoid using for agro distance since imps without lavapots immediately agro on the player regardless of distance
+				-- TODO: set_timeout() to remove all lavapots from imps in onlevel_remove_mounts()
 			bat_uid = nil,--agro = { bat_uid = nil },
 			-- idle = { mosquito_uid = nil }
 		-- },
@@ -169,9 +190,13 @@ HD_BEHAVIOR = {
 	-- },
 	-- GREENKNIGHT = {
 		-- master = {uid = nil(caveman)},
-		-- idle = {uid = nil(olmitebodyarmor), },
+		-- idle = {uid = nil(olmitebodyarmor), }, -- tospawn = olmitebodyarmor
+			-- reskin olmitebodyarmor as greenknight
+			-- Initialize caveman as invisible, olmite as visible.
+			-- Once taken damage, remove abilities. If all abilities are removed, make caveman visible
+			-- TODO: Determine if there's better alternatives for whipping and stopping(without spike shoes) immunity
+				-- pangxie
 		-- uncheck 15 and uncheck 31.
-		-- once taken damage, remove abilities.
 	-- },
 	-- BLACKKNIGHT = {
 		-- shopkeeperclone_uid = nil,
@@ -179,52 +204,125 @@ HD_BEHAVIOR = {
 	-- },
 	-- MAMMOTH = {
 		-- cobra_uid = nil
-			-- dim: {2, 2}
-			-- hitbox: {0.550, 0.705} -- based off pangshi
+			-- dim: {2, 2} -- set the dimensions to the same as the giantfly or else movement and collision will look weird
+			-- hitbox: {0.550, 0.705} -- based off pangxie
+	-- },
+	-- GIANTFROG = {
+		-- frog_uid = nil
+			-- dim: {2, 2} -- set the dimensions to the same as the giantfly or else movement and collision will look weird
+			-- hitbox: { ?, ? }
 	-- },
 	-- ALIEN_LORD = {
 		-- cobra_uid = nil
 	-- }
 }
--- dangers_health = map(global_dangers, function(entity) return entity.health end)
--- dangers_sprint_factor = map(global_dangers, function(entity) return entity.sprint_factor end)
--- dangers_max_speed = map(global_dangers, function(entity) return entity.max_speed end)
--- dangers_jump = map(global_dangers, function(entity) return entity.jump end)
--- dangers_dim = map(global_dangers, function(entity) return entity.dim end)
--- dangers_damage = map(global_dangers, function(entity) return entity.damage end)
--- dangers_acceleration = map(global_dangers, function(entity) return entity.acceleration end)
+-- Currently supported db modifications:
+	-- onlevel_dangers_modifications()
+		-- Supported Variables:
+			-- dim = { w, h }
+				-- sets height and width
+				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
+					-- IDEA: dim_db and dim
+			-- acceleration
+			-- max_speed
+			-- sprint_factor
+			-- jump
+			-- damage
+			-- health
+				-- sets EntityDB's life
+		-- TODO:
+			-- friction
+			-- weight
+			-- elasticity
+			-- blood_content
+			-- draw_depth
+	-- onlevel_generation_dangers
+		-- Supported Variables:
+			-- tospawn
+				-- if set, determines the ENT_TYPE to spawn.
+			-- toreplace
+				-- if set, determines the ENT_TYPE to replace inside onlevel_generation_dangers.
+			-- postspawn
+				-- If set, determines the ENT_TYPE to apply EntityDB modifications to
+				-- TODO: Rename to entitytype
+			-- dim = { w, h }
+				-- sets height and width
+				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
+					-- IDEA: dim_db and dim
+			-- color = { r, g, b }
+				-- TODO: Add alpha channel support
+			-- hitbox = { w, h }
+				-- `w` for hitboxx, `y` for hitboxy.
+			-- stunnable
+				-- sets flag if true, clears if false
+			-- dangertype
+				-- Determines multiple factors required for certain dangers, such as spawn_entity_over().
+					-- Currently determines collision detection.
+				-- TODO: Move conflict detection into its own variable that takes an enum to set collision detection.
+	-- onframe_managedangers
+		-- Supported Variables:
+			-- kill_on_standing = 
+				-- KILL_ON.STANDING
+					-- Once standing on a surface, kill it.
+				-- KILL_ON.STANDING_OUTOFWATER
+					-- Once standing on a surface and not submerged, kill it.
+			-- itemdrop = { item = {ENT_TYPE, etc...}, chance = 0.0 }
+				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
+			-- treasuredrop = { item = {ENT_TYPE, etc...}, chance = 0.0 }
+				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
 HD_ENT = {
 	FROG = {
 		tospawn = ENT_TYPE.MONS_FROG,
 		toreplace = ENT_TYPE.MONS_MOSQUITO,
-		postspawn = ENT_TYPE.MONS_FROG,
 		dangertype = HD_DANGERTYPE.ENEMY
 	},
 	FIREFROG = {
 		tospawn = ENT_TYPE.MONS_FIREFROG,
 		toreplace = ENT_TYPE.MONS_MOSQUITO,
-		postspawn = ENT_TYPE.MONS_FROG,
 		dangertype = HD_DANGERTYPE.ENEMY
 	},
+	--TODO: Replace with regular frog
+		-- Use a giant fly for tospawn
+		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
+			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
+				-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
+	
+	-- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
+		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
+		-- toreplace = ENT_TYPE.MONS_GIANTFLY,
+		-- dangertype = HD_DANGERTYPE.ENEMY,
+		-- health = 8,
+		-- postspawn = ENT_TYPE.MONS_GIANTFLY,
+		-- behavior = HD_BEHAVIOR.GIANTFROG,
+		-- dim = {2.5, 2.5},
+		-- itemdrop = {
+			-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+			-- chance = 0.15 -- 15% (1/6.7)
+		-- }
+		-- treasuredrop = {
+			-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- TODO: Determine which gems.
+			-- chance = 1.0
+		-- }
+	-- },
 	GIANTFROG = {
 		tospawn = ENT_TYPE.MONS_OCTOPUS,
 		toreplace = ENT_TYPE.MONS_OCTOPUS,
-		postspawn = ENT_TYPE.MONS_OCTOPUS,--TODO: Replace with regular frog. The current system doesn't track enemies by uid, so trying this would lead to problems.
+		postspawn = ENT_TYPE.MONS_OCTOPUS,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		health = 8,
-		sprint_factor = 0,-- 7.0 for devil
-		max_speed = 0.01,-- 7.0 for devil
+		health_db = 8,
+		sprint_factor = 0,
+		max_speed = 0.01,
 		jump = 0.2,
-		dim = {2.5, 2.5}, -- set in onlevel_dangers_modifications() and onlevel_generation_dangers() because it's both a
+		dim = {2.5, 2.5},
 		removecorpse = true,
 		hitbox = {
-			0.64, -- s_mov.hitboxx = 0.64
-			0.8 -- s_mov.hitboxy = 0.8
+			0.64,
+			0.8
 		},
-		stunnable = false,-- s_mov.flags = clr_flag(s_mov.flags, 12)
+		stunnable = false,
 		itemdrop = {
 			item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			chance = 1.0--0.15 -- 15% (1/6.7)
+			chance = 0.15 -- 15% (1/6.7)
 		}
 	},
 	SNAIL = {
@@ -232,42 +330,30 @@ HD_ENT = {
 		toreplace = ENT_TYPE.MONS_WITCHDOCTOR,
 		postspawn = ENT_TYPE.MONS_HERMITCRAB,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		health = 1,
-		removecorpse = true
+		health_db = 1,
+		removecorpse = true,
+		removemounts = HD_REMOVEMOUNT.SNAIL
 	},
 	PIRANHA = {
-		tospawn = 0,
-		toreplace = ENT_TYPE.MONS_TADPOLE,
-		postspawn = ENT_TYPE.MONS_TADPOLE,
+		-- postspawn = ENT_TYPE.MONS_TADPOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		-- health = 0,
+		liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
 		-- sprint_factor = -1,
 		-- max_speed = -1,
-		-- jump = -1,
-		-- dim = {},
-		-- damage = -1,
 		-- acceleration = -1,
-		-- removecorpse = false,
 		kill_on_standing = KILL_ON.STANDING_OUTOFWATER
-		-- itemdrop = {
-			-- item = {},
-			-- chance = 0.0
-		-- }
 	},
 	WORMBABY = {
-		tospawn = 0,
-		toreplace = ENT_TYPE.MONS_GRUB,
 		postspawn = ENT_TYPE.MONS_MOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		health = 1,
+		health_db = 1,
 		removecorpse = true
 	},
 	EGGSAC = {
 		tospawn = ENT_TYPE.ITEM_EGGSAC,
 		toreplace = ENT_TYPE.MONS_JUMPDOG,
-		postspawn = ENT_TYPE.MONS_GRUB, -- TODO: remove this field and move it into some place FAR less confusing.
-											-- For instance, running it in a set_interval() (like alongside remove_crabmounts())
-		dangertype = HD_DANGERTYPE.FLOORTRAP
+		dangertype = HD_DANGERTYPE.FLOORTRAP,
+		removemounts = HD_REMOVEMOUNT.EGGSAC
 	},
 	TRAP_TIKI = {
 		tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
@@ -277,18 +363,14 @@ HD_ENT = {
 		damage = 4
 	},
 	OLDBITEY = {
-		tospawn = 0,
-		toreplace = ENT_TYPE.MONS_GIANTFISH,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0,
+		postspawn = ENT_TYPE.MONS_GIANTFISH,
 		itemdrop = {
 			item = {ENT_TYPE.ITEM_IDOL}, --ENT_TYPE.ITEM_MADAMETUSK_IDOL
 			chance = 1
 		}
 	},
 	CRITTER_RAT = {
-		tospawn = 0,
-		toreplace = 0,
 		dangertype = HD_DANGERTYPE.CRITTER,
 		postspawn = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
 		max_speed = 0.05,
@@ -298,41 +380,41 @@ HD_ENT = {
 		tospawn = ENT_TYPE.MONS_CRITTERCRAB,
 		toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
 		dangertype = HD_DANGERTYPE.CRITTER,
-		postspawn = ENT_TYPE.MONS_CRITTERCRAB -- try removing this
-		-- behavior = HD_BEHAVIOR.CRITTER_FROG, -- TODO: Make jumping script
+		postspawn = ENT_TYPE.MONS_CRITTERCRAB
+		-- TODO: Make jumping script, adjust movement EntityDB properties
+		-- behavior = HD_BEHAVIOR.CRITTER_FROG,
 	},
 	SPIDER = {
 		tospawn = ENT_TYPE.MONS_SPIDER,
 		toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0
+		dangertype = HD_DANGERTYPE.ENEMY
 	},
 	HANGSPIDER = {
 		tospawn = ENT_TYPE.MONS_HANGSPIDER,
 		toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0
+		dangertype = HD_DANGERTYPE.ENEMY
 	},
 	GIANTSPIDER = {
 		tospawn = ENT_TYPE.MONS_GIANTSPIDER,
 		toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0
+		dangertype = HD_DANGERTYPE.ENEMY
+	},
+	BOULDER = {
+		dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
+		postspawn = ENT_TYPE.ACTIVEFLOOR_BOULDER
+		-- TODO: Modify EntityDB to make the physics of it match that of HD's.
 	},
 	SCORPIONFLY = {
 		tospawn = ENT_TYPE.MONS_SCORPION,
 		toreplace = ENT_TYPE.MONS_SPIDER,--CATMUMMY,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0,
 		behavior = HD_BEHAVIOR.SCORPIONFLY,
-		color = { 0.902, 0.176, 0.176 }
+		color = { 0.902, 0.176, 0.176 },
+		removemounts = HD_REMOVEMOUNT.SCORPIONFLY
 	},
 	OLMEC_SHOT = { -- TODO: Add behavior and move into danger handling
-		tospawn = 0,
-		toreplace = 0,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		postspawn = 0,
-		kill_on_standing = KILL_ON.STANDING_OUTOFWATER,
+		kill_on_standing = KILL_ON.STANDING,
 		itemdrop = {
 			item = {
 				ENT_TYPE.MONS_FROG,
@@ -345,12 +427,21 @@ HD_ENT = {
 			chance = 1.0
 		}
 	},
+	-- DEVIL = {
+		-- tospawn = ENT_TYPE.MONS_OCTOPUS,
+		-- toreplace = ?,
+		-- postspawn = ENT_TYPE.MONS_OCTOPUS,
+		-- dangertype = HD_DANGERTYPE.ENEMY,
+		-- sprint_factor = 7.0
+		-- max_speed = 7.0
+	-- },
 	-- MAMMOTH = { -- TODO: Frozen Immunity
 		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
 		-- toreplace = ?,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
 		-- postspawn = ENT_TYPE.MONS_GIANTFLY,
 		-- behavior = HD_BEHAVIOR.MAMMOTH,
+		-- health_db = 8,
 		-- itemdrop = {
 			-- item = {ENT_TYPE.ITEM_FREEZERAY},
 			-- chance = 1.0
@@ -380,7 +471,6 @@ HD_ENT = {
 			-- Might as well use a caveman for the master, considering that in HD when the blackknight drops his shield, he behaves like a green knight (so, a caveman)
 	-- BLACKKNIGHT = {
 		-- tospawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
-		-- toreplace = ENT_TYPE.MONS_CAVEMAN,
 		-- dangertype = HD_DANGERTYPE.ENEMY,
 		-- postspawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
 		-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
@@ -508,6 +598,7 @@ function init()
 	IDOL_Y = nil
 	IDOL_UID = nil
 	TONGUE_UID = nil
+	TONGUE_BG_UID = nil
 	GHOST_SPAWNED = false
 	IDOLTRAP_TRIGGER = false
 	HD_FEELING_SPIDERLAIR = false
@@ -534,6 +625,17 @@ end
 -- initialize per-level enemy databases
 function onlevel_dangers_init()
 	if LEVEL_DANGERS[state.theme] then
+		if (
+				options.hd_boulder_phys == true and
+				state.theme == THEME.DWELLING and
+				(
+					state.level == 2 or
+					state.level == 3 or
+					state.level == 4
+				)
+		) then
+			table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_boulder_phys == true then
+		end
 		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
 		global_dangers_postspawn = map(global_dangers, function(entity) return entity.postspawn end)
 	end
@@ -992,6 +1094,24 @@ set_callback(function()
 	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
 	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
+	
+	-- Bacterium Creation
+		-- FLOOR_THORN_VINE:
+			-- flags = clr_flag(flags, 2) -- indestructable (maybe need to clear this? Not sure yet)
+			-- flags = clr_flag(flags, 3) -- solid wall
+			-- visible
+			-- allow hurting player
+			-- disable collisions
+			-- allow bombs to destroy them.
+		-- ACTIVEFLOOR_BUSHBLOCK:
+			-- invisible
+			-- disable collisions
+			-- allow taking damage (unless it's already enabled by default)
+		-- ITEM_ROCK:
+			-- disable physics
+				-- re-enable once detached from surface
+	-- Challenge: Let rock attatch to surface, move it on frame.
+	
 end, ON.CAMP)
 
 -- ON.LOADING
@@ -1014,14 +1134,14 @@ set_callback(function()
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 	onlevel_dangers_init()
 	onlevel_dangers_modifications()
-	onlevel_dangers_piranha()
+	onlevel_dangers_setonce()
 	set_timeout(onlevel_generation_dangers, 3)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
 	onlevel_ghostpotandkeygen()
 	onlevel_prizewheel()
 	onlevel_idoltrap()
 	onlevel_remove_mounts()
-	onlevel_decorate_cookfire()
+	-- onlevel_decorate_cookfire()
 	onlevel_decorate_trees()
 	onlevel_blackmarket_ankh()
 	onlevel_add_wormtongue()
@@ -1092,67 +1212,79 @@ end
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
 -- Used to be part of onlevel_generation_dangers().
 function onlevel_dangers_piranha()
-	if state.theme == THEME.JUNGLE then
-		jungledangers = get_entities_by_type({
-			ENT_TYPE.MONS_MOSQUITO,
-			ENT_TYPE.MONS_WITCHDOCTOR,
-			ENT_TYPE.MONS_CAVEMAN,
-			ENT_TYPE.MONS_TIKIMAN,
-			ENT_TYPE.MONS_MANTRAP,
-			ENT_TYPE.MONS_MONKEY,
-			ENT_TYPE.ITEM_SNAP_TRAP
-		})
-		for _, danger in ipairs(jungledangers) do
-			d_mov = get_entity(danger):as_movable()
-			d_submerged = test_flag(d_mov.more_flags, 11)
-			if d_submerged == true then
-				x, y, l = get_position(danger)
-				s = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)--HD_ENT.PIRANHA.postspawn, x, y, l, 0, 0)
-				
-				-- TODO: Replace with danger_spawn()
-				behavior = {}
-				-- s_e = get_entity(s)
-				danger_object = {
-					["uid"] = s,
-					["x"] = x, ["y"] = y, ["l"] = l,
-					["hd_type"] = HD_ENT.PIRANHA,
-					["behavior"] = behavior,
-				}
-				danger_tracker[#danger_tracker+1] = danger_object
-				
-				move_entity(danger, 0, 0, 0, 0)
-			end
+	jungledangers = get_entities_by_type({
+		ENT_TYPE.MONS_MOSQUITO,
+		ENT_TYPE.MONS_WITCHDOCTOR,
+		ENT_TYPE.MONS_CAVEMAN,
+		ENT_TYPE.MONS_TIKIMAN,
+		ENT_TYPE.MONS_MANTRAP,
+		ENT_TYPE.MONS_MONKEY,
+		ENT_TYPE.ITEM_SNAP_TRAP
+	})
+	for _, danger in ipairs(jungledangers) do
+		d_mov = get_entity(danger):as_movable()
+		d_submerged = test_flag(d_mov.more_flags, 11)
+		if d_submerged == true then
+			x, y, l = get_position(danger)
+			s = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)--HD_ENT.PIRANHA.postspawn, x, y, l, 0, 0)
+			
+			-- TODO: Replace with danger_spawn()
+			behavior = {}
+			-- s_e = get_entity(s)
+			danger_object = {
+				["uid"] = s,
+				["x"] = x, ["y"] = y, ["l"] = l,
+				["hd_type"] = HD_ENT.PIRANHA,
+				["behavior"] = behavior,
+			}
+			danger_tracker[#danger_tracker+1] = danger_object
+			
+			move_entity(danger, 0, 0, 0, 0)
 		end
 	end
 end
 
+-- Entities that spawn with methods that are only set once
+function onlevel_dangers_setonce()
+	-- loop through all dangers in global_dangers, setting enemy specifics
+	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
+		for i = 1, #global_dangers, 1 do
+			if global_dangers[i].removemounts ~= nil then
+				if global_dangers[i].removemounts == HD_REMOVEMOUNT.SNAIL then
+					set_timeout(remove_crabmounts, 5)
+				end
+				if global_dangers[i].removemounts == HD_REMOVEMOUNT.EGGSAC then
+					set_interval(onframe_replace_grubs, 1)
+				end
+			end
+			
+			if global_dangers[i].liquidspawn ~= nil then
+				if global_dangers[i].liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
+					onlevel_dangers_piranha()
+				end
+			end
+		end
+	end
+end
 -- DANGER DB MODIFICATIONS
 -- Modifications that use methods that are only needed to be applied once.
--- So far this includes:
+-- This includes:
 	-- EntityDB properties
-	-- Entities that spawn with mounts that need to be removed
 function onlevel_dangers_modifications()
 	-- loop through all dangers in global_dangers, setting enemy specific
 	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
-		-- local snail_set = false
 		dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
-		-- dangers_health = map(global_dangers, function(entity) return entity.health end)
-		-- dangers_sprint_factor = map(global_dangers, function(entity) return entity.sprint_factor end)
-		-- dangers_max_speed = map(global_dangers, function(entity) return entity.max_speed end)
-		-- dangers_jump = map(global_dangers, function(entity) return entity.jump end)
-		-- dangers_dim = map(global_dangers, function(entity) return entity.dim end)
-		-- dangers_damage = map(global_dangers, function(entity) return entity.damage end)
-		-- dangers_acceleration = map(global_dangers, function(entity) return entity.acceleration end)
+		dangers_postspawn = map(global_dangers, function(entity) return entity.postspawn end)
 		for i = 1, #global_dangers, 1 do
 			toset = 0
 			if dangers_tospawn[i] ~= 0 then toset = dangers_tospawn[i] end
-			if global_dangers_postspawn[i] ~= 0 then toset = global_dangers_postspawn[i] end
+			if dangers_postspawn[i] ~= 0 then toset = dangers_postspawn[i] end
 			if toset ~= 0 then
 				s = spawn(toset, 0, 0, LAYER.FRONT, 0, 0)
 				s_mov = get_entity(s):as_movable()
 				
-				if global_dangers[i].health ~= nil and global_dangers[i].health > 0 then
-					s_mov.type.life = global_dangers[i].health
+				if global_dangers[i].health_db ~= nil and global_dangers[i].health_db > 0 then
+					s_mov.type.life = global_dangers[i].health_db
 				end
 				if global_dangers[i].sprint_factor ~= nil and global_dangers[i].sprint_factor >= 0 then
 					s_mov.type.sprint_factor = global_dangers[i].sprint_factor
@@ -1163,7 +1295,7 @@ function onlevel_dangers_modifications()
 				if global_dangers[i].jump ~= nil and global_dangers[i].jump >= 0 then
 					s_mov.type.jump = global_dangers[i].jump
 				end
-				if global_dangers[i].dim ~= nil and #global_dangers[i].dim == 2 then
+				if global_dangers[i].dim_db ~= nil and #global_dangers[i].dim_db == 2 then
 					s_mov.type.width = global_dangers[i].dim[1]
 					s_mov.type.height = global_dangers[i].dim[2]
 				end
@@ -1175,10 +1307,6 @@ function onlevel_dangers_modifications()
 				end
 				
 				apply_entity_db(s)
-			end
-			
-			if global_dangers[i] == HD_ENT.SNAIL then
-				set_timeout(remove_crabmounts, 5)
 			end
 		end
 	end
@@ -1230,13 +1358,22 @@ function onlevel_generation_dangers()
 				end
 				-- if variation == nil then toast("NO DANGER INDEX SET") end
 				
-				if global_dangers[dangers_index].tospawn ~= nil and global_dangers[dangers_index].tospawn ~= 0 then --dangers_tospawn[dangers_index] ~= 0 then
+				if global_dangers[dangers_index].tospawn ~= nil and global_dangers[dangers_index].tospawn ~= 0 then
 					s = -1
 					hd_ent_tolog = global_dangers[dangers_index]
+					-- TODO: Modify to accommodate the following enemies:
+						-- The Mines:
+							-- Miniboss enemy: Giant spider
+							-- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
+						-- The Jungle:
+							-- Miniboss enemy: Giant frog
+							-- If there's a wall to the right, don't spawn. (For the future when we don't replace mosquitos (or any enemy at all), try to spawn on 2-block surfaces.
+					-- TODO: Move conflict detection into its own category.
+					-- TODO: Add an HD_ENT property that takes an enum to set collision detection.
 					if (
 						global_dangers[dangers_index].dangertype ~= nil and
-						global_dangers[dangers_index].dangertype > HD_DANGERTYPE.ENEMY
-					) then --dangers_type[dangers_index] > HD_DANGERTYPE.ENEMY then
+						global_dangers[dangers_index].dangertype >= HD_DANGERTYPE.FLOORTRAP
+					) then
 						local conflict = conflictdetection_trap(global_dangers[dangers_index].dangertype, ex, ey, el)
 						if conflict == false then --or (conflict == true and options.hd_antitrapcuck == false) then
 							-- if there is no conflict or there is conflict and the anti-cuck option is disabled, create trap
@@ -1250,21 +1387,8 @@ function onlevel_generation_dangers()
 					elseif (
 						global_dangers[dangers_index].toreplace ~= nil and
 						global_dangers[dangers_index].toreplace == e_type
-					) then --dangers_toreplace[dangers_index]
+					) then
 						if variation ~= nil then
-						-- TODO: Make this flexible enough so The Mines can use this system for replacing spiders with hangspiders and giant spiders.
-						-- The Mines:
-						-- - Replacing: Spiders.
-						-- - Normal enemies: Spiders (low chance = don't replace them. Store as 0)
-						-- - Rare enemies: Hang spiders. (medium chance = replace with hangspiders)
-						-- - Miniboss enemy: Giant spider. (rare chance = replace with giant spider
-						--	- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
-						-- The Jungle:
-						-- - Replacing: Mosquitos.
-						-- - Normal enemies: Frog (low chance = replace with frog)
-						-- - Rare enemies: Fire frogs. (medium chance = replace with firefrogs)
-						-- - Miniboss enemy: Giant frog. (rare chance = replace with giant frog
-						--	- If there's a wall to the right, don't spawn. (For the future when we don't replace mosquitos (or any enemy at all), try to spawn on 2-block surfaces.
 						
 							local chance = math.random()
 							if (
@@ -1326,7 +1450,9 @@ function onlevel_generation_dangers()
 							s_mov.color.g = hd_ent_tolog.color[2]
 							s_mov.color.b = hd_ent_tolog.color[3]
 						end
-						-- set in onlevel_dangers_modifications() and onlevel_generation_dangers() because it's both types
+						if hd_ent_tolog.health ~= nil and hd_ent_tolog.health > 0 then
+							s_mov.health = hd_ent_tolog.health
+						end
 						if hd_ent_tolog.dim ~= nil and #hd_ent_tolog.dim == 2 then
 							s_mov.width = hd_ent_tolog.dim[1]
 							s_mov.height = hd_ent_tolog.dim[2]
@@ -1552,13 +1678,22 @@ end
 function onlevel_idoltrap()
 	-- Idol traps
 	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	if #idols > 0 and HD_FEELING_RESTLESS == false then
+	if (
+		#idols > 0 and
+		HD_FEELING_RESTLESS == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
+	) then
 		IDOL_UID = idols[1]
 		IDOL_X, IDOL_Y, idol_l = get_position(IDOL_UID)
 		
 		-- If in dwelling
 		if state.theme == THEME.DWELLING then
 			spawn(ENT_TYPE.BG_BOULDER_STATUE, IDOL_X, IDOL_Y+2.5, idol_l, 0, 0)
+			-- set boulder stats
+			-- if options.hd_boulder_phys == true then
+				-- boulder_uid = spawn(ENT_TYPE.ACTIVEFLOOR_BOULDER, 0, 0, LAYER.FRONT, 0, 0)
+				-- boulder = get_entity(boulder_uid)
+				-- -- boulder.type.
+			-- end
 		elseif state.theme == THEME.JUNGLE then
 			for j = 1, 6, 1 do
 				blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
@@ -1623,16 +1758,17 @@ function onlevel_remove_mounts()
 	end
 end
 
-function onlevel_decorate_cookfire()
-	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
-		-- spawn lavapot at campfire
-		campfires = get_entities_by_type(ENT_TYPE.ITEM_COOKFIRE)
-		for _, campfire in ipairs(campfires) do
-			px, py, pl = get_position(campfire)
-			spawn(ENT_TYPE.ITEM_LAVAPOT, px, py, pl, 0, 0)
-		end
-	end
-end
+-- TODO: Outdated. Merge into with Scripted Roomcode Generation
+-- function onlevel_decorate_cookfire()
+	-- if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
+		-- -- spawn lavapot at campfire
+		-- campfires = get_entities_by_type(ENT_TYPE.ITEM_COOKFIRE)
+		-- for _, campfire in ipairs(campfires) do
+			-- px, py, pl = get_position(campfire)
+			-- spawn(ENT_TYPE.ITEM_LAVAPOT, px, py, pl, 0, 0)
+		-- end
+	-- end
+-- end
 
 function onlevel_decorate_trees()
 	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
@@ -1689,6 +1825,10 @@ function create_wormtongue(x, y, l)
 	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
 	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
 	if #balls > 0 then
+		TONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+		worm_background = get_entity(TONGUE_BG_UID)
+		worm_background.animation_frame = 8 -- jungle: 8 icecaves: probably 9
+	
 		-- sticky part creation
 		TONGUE_UID = balls[1] -- HAHA tongue and balls
 		ball = get_entity(TONGUE_UID):as_movable()
@@ -1773,10 +1913,16 @@ function onlevel_crysknife()
 		if (math.random() >= 0.5) then
 			x = x - 10
 		end
-		-- TODO: OVERHAUL. Replace with actual crysknife and upgrade player damage.
-		-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
-		-- - Can't make player whip invisible, apparently, so that might be hard to do.
-		spawn(ENT_TYPE.ITEM_EXCALIBUR, x, y, LAYER.FRONT, 0, 0)
+		-- TODO: OVERHAUL.
+			-- IDEAS:
+				-- Replace with actual crysknife and upgrade player damage.
+					-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
+					-- Can't make player whip invisible, apparently, so that might be hard to do.
+				-- Use powerpack
+					-- It's the spiritual successor to the crysknife, so its a fitting replacement
+					-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, but now I can even make them break with the powerpack if I also use bush blocks
+					-- In my experience in HD, a good way of dispatching bacterium was with bombs, but it was hard to time correctly. So the powerpack would make bombs even more effective
+		spawn(ENT_TYPE.ITEM_POWERPACK, x, y, LAYER.FRONT, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, LAYER.FRONT, 0, 0)
 	end
 end
 
@@ -2328,9 +2474,11 @@ function onframe_tonguetimeout()
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
 				-- kill the boulder once you find one (or kill LOGICAL_BOULDERSPAWNER before it spawns one)
 				set_timeout(function()
-					worm_background_uid = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-					worm_background = get_entity(worm_background_uid)
-					worm_background.animation_frame = 8 -- 8 is the frame for Jungle, not sure about ice caves.
+				
+					if TONGUE_BG_UID ~= nil then
+						worm_background = get_entity(TONGUE_BG_UID)
+						worm_background.animation_frame = 4 -- 4 is the hole frame for Jungle, ice caves: probably 8
+					else toast("TONGUE_BG_UID is nil :(") end
 					
 					-- TODO: Method to animate rubble better.
 					for _ = 1, 3, 1 do
@@ -2479,6 +2627,29 @@ function tongue_exit()
 	end
 end
 
+-- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
+-- Used to be part of onlevel_generation_dangers().
+function onframe_replace_grubs()
+	grubs = get_entities_by_type({
+		ENT_TYPE.MONS_GRUB,
+	})
+	for _, danger in ipairs(grubs) do
+		d_mov = get_entity(danger):as_movable()
+		x, y, l = get_position(danger)
+		s = spawn(ENT_TYPE.MONS_MOLE, x, y, l, d_mov.velocityx, d_mov.velocityy)--HD_ENT.PIRANHA.postspawn, x, y, l, 0, 0)
+		-- TODO: Replace with danger_spawn()
+		behavior = {}
+		danger_object = {
+			["uid"] = s,
+			["x"] = x, ["y"] = y, ["l"] = l,
+			["hd_type"] = HD_ENT.WORMBABY,
+			["behavior"] = behavior,
+		}
+		danger_tracker[#danger_tracker+1] = danger_object
+		
+		move_entity(danger, 0, 0, 0, 0)
+	end
+end
 
 -- DANGER MODIFICATIONS - ON.FRAME
 -- Massive enemy behavior handling method
@@ -2537,6 +2708,8 @@ function onframe_managedangers()
 							-- if danger.behavior.abilities.agro ~= nil then
 								if danger.behavior.bat_uid ~= nil then--behavior.abilities.bat_uid ~= nil then
 									if danger_mov.health == 1 then
+										-- TODO: If SCORPIONFLY is killed, kill all abilities
+										-- TODO: Move this into its own method
 										-- kill all abilities
 										-- for _, behavior_tokill in ipairs(danger.behavior.abilities) do
 											-- if #behavior_tokill > 0 and behavior_tokill[1] ~= nil then
@@ -2548,6 +2721,8 @@ function onframe_managedangers()
 										-- permanent agro
 										-- TODO: SCORPIONFLY -> Adopt S2's Monkey agro distance.
 											-- change the if statement below so it's detecting if the BAT is agro'd, not the scorpion.
+										-- TODO: Use chased_target instead.
+											-- get_entity():as_chasingmonster chased_target_uid
 										if danger_mov.move_state == 5 and danger.behavior.agro == false then danger.behavior.agro = true end
 										-- if no idle ability, toggle between agro and default
 										-- if danger.behavior.abilities.idle == nil then
@@ -2737,13 +2912,22 @@ end
 
 function onframe_bacterium()
 	if state.theme == THEME.EGGPLANT_WORLD then
-		-- Eggsac Maggot Replacement
-		-- TODO: Moles: Set health to 1 and lower max speed.
-		replace(ENT_TYPE.MONS_GRUB, ENT_TYPE.MONS_MOLE, 0, 0)
+		
 		-- Bacterium Creation
-		-- FLOOR_THORN_VINE
-			-- flags = clr_flag(flags, 2) -- indestructable (maybe need to clear this? Not sure yet)
-			-- flags = clr_flag(flags, 3) -- solid wall
+			-- FLOOR_THORN_VINE:
+				-- flags = clr_flag(flags, 2) -- indestructable (maybe need to clear this? Not sure yet)
+				-- flags = clr_flag(flags, 3) -- solid wall
+				-- visible
+				-- allow hurting player
+				-- allow bombs to destroy them.
+			-- ACTIVEFLOOR_BUSHBLOCK:
+				-- invisible
+				-- flags = clr_flag(flags, 3) -- solid wall
+				-- allow taking damage (unless it's already enabled by default)
+			-- ITEM_ROCK:
+				-- disable ai and physics
+					-- re-enable once detached from surface
+		
 		-- Bacterium Movement Script
 		-- TODO: Move to onframe_managedangers
 		-- Class requirements:
@@ -3117,6 +3301,62 @@ end
 -- The Book of the Dead on the player's HUD will writhe faster the closer the player is to the X-coordinate of the entrance (HELL_X)
 -- 
 
+-- SCRIPTED ROOMCODE GENERATION
+	-- IDEAS:
+		-- In a 2d list loop for each room to replace:
+			-- 1: log a 2d table of the level path and rooms to replace
+				-- Conflicts may include shops, vaults, missing exits
+				-- Based on HD_SUBCHUNKID, log subchunk ids as generated by the game. Log in separate 2d array `rooms_subchunkids`:
+						-- 0: Non-main path subchunk
+						-- 1: Main path, goes L/R (also entrance/exit)
+						-- 2: Main path, goes L/R and down (and up if it's below another 2)
+						-- 3: Main path, goes L/R and up
+				-- Otherwise, here's where script-determined level paths would be managed
+				-- As you loop over each room, log in separate 2d array `rooms_replaceids`:
+					-- 0: Don't touch this room.
+					-- 1: Replace this toom.
+					-- 2: Maintain this room's structure and find a new place to move it to.
+					-- 3: Maintain this room's structure and find a new place to move it to. Maintain its orientation in relation to the path.
+				-- Once finished, log which rooms need to be flipped. loop over the path and log in separate 2d array `rooms_orientids`:
+					-- if the subchunk id is not a 3:
+						-- 0: Don't touch this room.
+					-- if the replacement id is a 3:
+						-- if the path id to the right of it is a 1, 2 or 3:
+							-- 2: Facing right.
+						-- if the path id to the left of it is a 1, 2 or 3:
+							-- 3: Facing left.
+			-- 2: Log uids of all overlapping enemies, move to exit
+				-- Parameters
+					-- optional table of ENT_TYPE
+					-- Mask (default to any mask of 0x4)
+				-- Method moves all found entities to the exit door and returns a table of their uids
+				-- append each table into a 2d array based on the room they occupied
+			-- 3: Generate rooms, log generated rooms
+				-- Parameters
+					-- optional table of ENT_TYPE
+					-- Path
+				-- Determine rooms with global list constant (same way as LEVEL_DANGERS[state.theme]) and the current room
+				-- append each table into a 2d array based on the room they occupied
+	-- Roomcodes:
+		-- Level Feelings:
+			-- TIKI VILLAGE
+				-- Notes:
+					-- Tiki Village roomcodes never replace top (or bottom?) path
+					-- Has no sideroom codes
+					-- Unlockable coffin is always a path drop(?)
+					-- Might(?) always generate with a zig-zag like path
+				-- Roomcodes:
+					-- 
+			-- SNAKE PIT
+				-- Notes:
+					-- Doesn't have to link with main path
+					-- I've seen it generate starting at the top level, idk about bottom
+					-- Appears to occupy three side rooms vertically
+				-- Ideas:
+					-- Spawning conditions:
+					-- If in dwelling and three side rooms vertically exist, have a random chance to replace them with snake pit.
+				-- Roomcodes:
+					--
 
 -- bitwise notes:
 -- print(3 & 5)  -- bitwise and

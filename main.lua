@@ -14,7 +14,9 @@ register_option_bool("hd_unlockbossexit", "Unlock boss exit", false)
 register_option_bool("hd_boss_info", "Enable bossfight debug info", false)
 register_option_bool("hd_wormtongue_info", "Enable wormtongue debug info", true)
 register_option_bool("hd_boulder_info", "Enable boulder debug info", false)
+register_option_bool("hd_feelings_info", "Enable level feelings debug info", false)
 register_option_bool("hd_show_ducttapeenemies", "Draw enemies used for custom enemy behavior", false)
+register_option_bool("hd_ankh", "Set the Ankh price to $50,000 like it was in HD", false)
 -- register_option_bool("hd_boulder_phys", "Adjust boulders to have the same physics as HD", true)
 register_option_bool("hd_boulder_agro", "Make boulders enrage shopkeepers", true)
 register_option_float("bod_w", "bod width", 0.08, 0.0, 99.0)
@@ -25,15 +27,9 @@ register_option_float("bod_y", "bod y", 0.93, -999.0, 999.0)
 
 bool_to_number={ [true]=1, [false]=0 }
 
-HD_ENT_TIKITRAP_SET = false
-HD_ENT_GIANTFROG_SET = false
-
 GHOST_SPAWNED = false
 GHOST_TIME = 10800
 IDOLTRAP_TRIGGER = false
-HD_FEELING_SPIDERLAIR = false
-HD_FEELING_RESTLESS = false
-MESSAGE_FEELING = nil
 WHEEL_SPINNING = false
 WHEEL_SPINTIME = 700 -- TODO: HD's was 10-11 seconds, convert to this.
 ACID_POISONTIME = 270 -- TODO: Make sure it matches with HD, which was 3-4 seconds
@@ -87,9 +83,37 @@ OBTAINED_BOOKOFDEAD = false
 
 UI_BOOKOFDEAD_ID, UI_BOOKOFDEAD_w, UI_BOOKOFDEAD_h = create_image('bookofdead.png')
 
--- Bool check for levels that don't spawn the ghost
--- Any level except Boss levels and Worm levels
--- blacklist levels 
+
+HD_FEELING_SPIDERLAIR_CHANCE = -1
+HD_FEELING_SNAKEPIT_CHANCE = -1
+HD_FEELING_RESTLESS_CHANCE = -1
+HD_FEELING_TIKIVILLAGE_CHANCE = -1
+HD_FEELING_FLOODED_CHANCE = -1
+HD_FEELING_YETIKINGDOM_CHANCE = -1
+HD_FEELING_UFO_CHANCE = -1
+HD_FEELING_SACRIFICIALPIT_CHANCE = -1
+
+
+HD_FEELING_SPIDERLAIR = false
+HD_FEELING_SNAKEPIT = false
+HD_FEELING_RESTLESS = false
+HD_FEELING_TIKIVILLAGE = false
+HD_FEELING_FLOODED = false
+HD_FEELING_HAUNTEDCASTLE = false -- IDEA: Global variable that tracks previous levels.
+HD_FEELING_YETIKINGDOM = false
+HD_FEELING_UFO = false
+HD_FEELING_MOI = false
+HD_FEELING_MOTHERSHIPENTRANCE = false -- This level feeling only, and always, occurs on level 3-4.
+										-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
+										-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
+HD_FEELING_SACRIFICIALPIT = false
+HD_FEELING_HELL = false
+
+LOAD_MOI = false
+LOAD_HAUNTEDCASTLE = false
+CANCEL_MOTHERSHIPENTRANCE = false
+
+MESSAGE_FEELING = nil
 
 -- TODO: Choose a unique ENT_TYPE for (at least the first 4) SUBCHUNKIDs
 HD_SUBCHUNKID = {
@@ -626,9 +650,22 @@ function init()
 	TONGUE_BG_UID = nil
 	GHOST_SPAWNED = false
 	IDOLTRAP_TRIGGER = false
+	
 	HD_FEELING_SPIDERLAIR = false
+	HD_FEELING_SNAKEPIT = false
 	HD_FEELING_RESTLESS = false
+	HD_FEELING_TIKIVILLAGE = false
+	HD_FEELING_FLOODED = false
+	HD_FEELING_HAUNTEDCASTLE = false
+	HD_FEELING_YETIKINGDOM = false
+	HD_FEELING_UFO = false
+	HD_FEELING_MOI = false
+	HD_FEELING_MOTHERSHIPENTRANCE = false
+	HD_FEELING_SACRIFICIALPIT = false
+	HD_FEELING_HELL = false
+	
 	MESSAGE_FEELING = nil
+	
 	OLMEC_ID = nil
 	BOSS_STATE = nil
 	TONGUE_STATE = nil
@@ -1261,6 +1298,7 @@ set_callback(function()
 	onlevel_boss_init()
 	onlevel_coffinunlocks()
 	onlevel_toastfeeling()
+	onlevel_revertloadfeeling()
 	
 end, ON.LEVEL)
 
@@ -1280,6 +1318,7 @@ set_callback(function()
 	onguiframe_ui_info_boss()			-- debug
 	onguiframe_ui_info_wormtongue() 	--
 	onguiframe_ui_info_boulder()		--
+	onguiframe_ui_info_feelings()		--
 	onguiframe_env_animate_prizewheel()
 end, ON.GUIFRAME)
 
@@ -1302,18 +1341,23 @@ function onloading_levelrules()
     change_target(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
     change_target(3,2,THEME.ICE_CAVES,3,3,THEME.ICE_CAVES)
     change_target(3,3,THEME.ICE_CAVES,3,4,THEME.ICE_CAVES)
+	-- Mothership -> Ice Caves
+    change_target(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
     -- Ice Caves -> Temple
     change_target(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
 	-- Ice Caves 3-1 -> Worm
 		-- TODO(? may not need to handle this)
 	-- Worm(Ice Caves) 3-2 -> Ice Caves 3-4
-	change_target(3,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
+	change_target(3,2,THEME.EGGPLANT_WORLD,3,4,THEME.ICE_CAVES)
     -- Temple -> Olmec
     change_target(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
     -- COG(4-3) -> Olmec
     change_target(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
 	-- Olmec -> Hell
 	-- change_target(4,4,THEME.OLMEC,5,1,THEME.VOLCANA)
+	-- Hell -> Hell
+	change_target(5,1,THEME.OLMEC,5,5,THEME.VOLCANA)
+	change_target(5,2,THEME.OLMEC,5,6,THEME.VOLCANA)
 	-- Hell -> Yama
 		-- TODO: Figure out a place to host Yama. Maybe a theme with different FLOOR_BORDERTILE textures?
 	-- change_target(5,3,THEME.VOLCANA,5,4,???)
@@ -1674,6 +1718,10 @@ end
 function onlevel_levelrules()
 	-- Dwelling 1-3 -> Dwelling 1-4
 	change_level(1,5,THEME.DWELLING,1,4,THEME.DWELLING)
+	-- Volcana 5-1 -> Volcana 5-2
+	change_level(5,5,THEME.VOLCANA,5,2,THEME.VOLCANA)
+	-- Volcana 5-2 -> Volcana 5-3
+	change_level(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
 end
 
 -- Reverse Level Handling
@@ -1876,12 +1924,18 @@ function onlevel_blackmarket_ankh()
 		hedjets = get_entities_by_type(ENT_TYPE.ITEM_PICKUP_HEDJET)
 		if #hedjets ~= 0 then
 			-- spawn an ankh at the location of the hedjet
-			hedjet = hedjets[1]
-			x, y, l = get_position(hedjet)
-			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x-2, y, l, 0, 0)
+			hedjet_uid = hedjets[1]
+			hedjet_mov = get_entity(hedjet_uid):as_movable()
+			x, y, l = get_position(hedjet_uid)
+			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x-1, y, l, 0, 0)
 			ankh_mov = get_entity(ankh_uid):as_movable()
 			ankh_mov.flags = set_flag(ankh_mov.flags, 23)
 			ankh_mov.flags = set_flag(ankh_mov.flags, 20)
+			if options.hd_ankh == true then
+				ankh.price = 50000.0
+			else
+				ankh.price = hedjet_mov.price
+			end
 			-- set flag 23 and 20
 			-- detach/spawn_entity_over the purchase icons from the headjet, apply them to the ankh
 			-- kill hedjet
@@ -2072,23 +2126,76 @@ function onlevel_add_helldoor()
 	end
 end
 
-
 function onlevel_detection_feeling()
 	if state.theme == THEME.DWELLING then
-		-- Spider's Lair
-		giant_spiders = get_entities_by_type(ENT_TYPE.MONS_GIANTSPIDER)
-		if #giant_spiders >= 4 then
+		encounter = math.random(1,2)
+		-- SPIDERLAIR
+		-- giant_spiders = get_entities_by_type(ENT_TYPE.MONS_GIANTSPIDER)
+		-- if #giant_spiders >= 4 then
+		if encounter == 1 and math.random() <= HD_FEELING_SPIDERLAIR_CHANCE then
 			HD_FEELING_SPIDERLAIR = true
 			-- TODO: pots will not spawn on this level.
 			-- Spiders, spinner spiders, and webs appear much more frequently.
-			-- Spawn web nests (probably RED_LANTERN and reskin it)
-			-- Replace pots with spiders(?)
-		else
-			for spid_i = #giant_spiders-1, 1, -1 do
-				move_entity(giant_spiders[spid_i], 0, 0, 0, 0)
+			-- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
+			-- Move pots into the void
+		elseif encounter == 2 and math.random() <= HD_FEELING_SNAKEPIT_CHANCE then
+			HD_FEELING_SNAKEPIT = true
+		end
+	end
+	if state.theme == THEME.JUNGLE then
+		if HD_FEELING_HAUNTEDCASTLE == false then
+			encounter = math.random(1,2)
+			
+			if encounter == 1 and math.random() <= HD_FEELING_TIKIVILLAGE_CHANCE then
+				HD_FEELING_TIKIVILLAGE = true
+			elseif encounter == 2 and math.random() <= HD_FEELING_FLOODED_CHANCE then
+				HD_FEELING_FLOODED = true
+			end
+			
+			if HD_FEELING_TIKIVILLAGE == false and math.random() <= HD_FEELING_RESTLESS_CHANCE then
+				HD_FEELING_RESTLESS = true
 			end
 		end
-	elseif (
+	end
+	if state.theme == THEME.ICE_CAVES then
+		encounter = math.random(1,2)
+		
+		if encounter == 1 and math.random() <= HD_FEELING_YETIKINGDOM_CHANCE then
+			HD_FEELING_YETIKINGDOM = true
+		elseif encounter == 2 and math.random() <= HD_FEELING_UFO_CHANCE then
+			HD_FEELING_UFO = true
+		end
+		
+		if state.level == 2 then
+			if math.random() <= 0.5 then
+				HD_FEELING_MOI = true
+			else
+				LOAD_MOI = true -- load moi on the next level
+			end
+		end
+		if state.level == 4 then
+			if CANCEL_MOTHERSHIPENTRANCE == true then
+				CANCEL_MOTHERSHIPENTRANCE = false
+			else
+				HD_FEELING_MOTHERSHIPENTRANCE = true
+			end
+		end
+	end
+	if state.theme == THEME.NEO_BABYLON then
+		CANCEL_MOTHERSHIPENTRANCE = true
+	end
+	if state.theme == THEME.TEMPLE then
+		if math.random() <= HD_FEELING_SACRIFICIALPIT_CHANCE then
+			HD_FEELING_SACRIFICIALPIT = true
+		end
+	end
+	-- HELL
+	if state.theme == THEME.VOLCANA and state.level == 1 then
+		HD_FEELING_HELL = true
+	end
+	
+	-- GAME ENDUCED RESTLESS
+	if (
 		state.theme == THEME.JUNGLE or
 		state.theme == THEME.VOLCANA or
 		state.theme == THEME.TEMPLE or
@@ -2103,24 +2210,57 @@ end
 
 function onlevel_setfeelingmessage()
 	-- theme message priorities are here (ie; rushingwater over restless)
+	-- NOTES:
+		-- Black Market, COG and Beehive are currently handled by the game
 	if HD_FEELING_SPIDERLAIR == true then
 		MESSAGE_FEELING = "My skin is crawling..."
+	end
+	if HD_FEELING_SNAKEPIT == true then
+		MESSAGE_FEELING = "I hear snakes... I hate snakes!"
 	end
 	if HD_FEELING_RESTLESS == true then
 		MESSAGE_FEELING = "The dead are restless!"
 	end
+	if HD_FEELING_FLOODED == true then
+		MESSAGE_FEELING = "I hear rushing water!"
+	end
+	if HD_FEELING_HAUNTEDCASTLE == true then
+		MESSAGE_FEELING = "A wolf howls in the distance..."
+	end
+	if HD_FEELING_YETIKINGDOM == true then
+		MESSAGE_FEELING = "It smells like wet fur in here."
+	end
+	if HD_FEELING_UFO == true then
+		MESSAGE_FEELING = "I sense a psychic presence here!"
+	end
+	if HD_FEELING_MOTHERSHIPENTRANCE == true then
+		MESSAGE_FEELING = "It feels like the fourth of July..."
+	end
+	if HD_FEELING_SACRIFICIALPIT == true then
+		MESSAGE_FEELING = "You hear prayers to Kali!"
+	end
+	if HD_FEELING_HELL == true then
+		MESSAGE_FEELING = "A horrible feeling of nausea comes over you!"
+	end
 end
 
 function onlevel_toastfeeling()
-	if MESSAGE_FEELING ~= nil and options.hd_toastfeeling == true then
-		if (
-			HD_FEELING_SPIDERLAIR == true or
-			HD_FEELING_RESTLESS == true or -- TOTEST: See whether or not this conflicts with the feeling message the game already toasts.
-			options.hd_nocursedpot == true -- a feeble attempt to prevent ghost pot breaking message from playing. TOTEST.
-		) then
-			toast(MESSAGE_FEELING)
-		end
+	if (
+		MESSAGE_FEELING ~= nil and
+		options.hd_toastfeeling == true
+	) then
+		toast(MESSAGE_FEELING)
 	end
+end
+
+function onlevel_loadfeeling()
+	if LOAD_HAUNTEDCASTLE == true then HD_FEELING_HAUNTEDCASTLE = true end
+	if LOAD_MOI == true then HD_FEELING_MOI = true end
+end
+
+function onlevel_revertloadfeeling()
+	if LOAD_HAUNTEDCASTLE == true then LOAD_HAUNTEDCASTLE = false end
+	if LOAD_MOI == true and HD_FEELING_MOI == false then LOAD_MOI = false end
 end
 
 function onlevel_coffinunlocks()
@@ -3310,6 +3450,112 @@ function onguiframe_ui_info_boulder()
 				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
 			end
 		end
+	end
+end
+
+function onguiframe_ui_info_feelings()
+	if options.hd_feelings_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+		text_x = -0.95
+		text_y = -0.45
+		white = rgba(255, 255, 255, 255)
+		green_enabled = rgba(102, 108, 82, 255)
+		
+		text_levelfeelings = "No Level Feelings"
+		feelings = 0
+		
+		
+		text_spiderlair_bool = "FALSE"
+		text_snakepit_bool = "FALSE"
+		text_restless_bool = "FALSE"
+		text_tikivillage_bool = "FALSE"
+		text_flooded_bool = "FALSE"
+		text_hauntedcastle_bool = "FALSE"
+		text_yetikingdom_bool = "FALSE"
+		text_ufo_bool = "FALSE"
+		text_moi_bool = "FALSE"
+		text_mothershipentrance_bool = "FALSE"
+		text_sacrificialpit_bool = "FALSE"
+		text_hell_bool = "FALSE"
+		
+		text_load_moi_bool = "FALSE"
+		text_load_hauntedcastle_bool = "FALSE"
+		text_cancel_mothershipentrance_bool = "FALSE"
+		
+		
+		if HD_FEELING_SPIDERLAIR == true then text_spiderlair_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_SNAKEPIT == true then text_snakepit_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_RESTLESS == true then text_restless_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_TIKIVILLAGE == true then text_tikivillage_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_FLOODED == true then text_flooded_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_HAUNTEDCASTLE == true then text_hauntedcastle_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_YETIKINGDOM == true then text_yetikingdom_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_UFO == true then text_ufo_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_MOI == true then text_moi_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_MOTHERSHIPENTRANCE == true then text_mothershipentrance_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_SACRIFICIALPIT == true then text_sacrificialpit_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_HELL == true then text_hell_bool = "TRUE" feelings = feelings + 1 end
+		
+		if LOAD_MOI == true then text_load_moi_bool = "TRUE" end
+		if LOAD_HAUNTEDCASTLE == true then text_load_hauntedcastle_bool = "TRUE" end
+		if CANCEL_MOTHERSHIPENTRANCE == true then text_cancel_mothershipentrance_bool = "TRUE" end
+		
+		
+		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings")
+		
+		
+		text_spiderlair_bool = "text_spiderlair_bool = " .. text_spiderlair_bool
+		text_snakepit_bool = "text_snakepit_bool = " .. text_snakepit_bool 
+		text_restless_bool = "text_restless_bool = " .. text_restless_bool
+		text_tikivillage_bool = "text_tikivillage_bool = " .. text_tikivillage_bool
+		text_flooded_bool = "text_flooded_bool = " .. text_flooded_bool
+		text_hauntedcastle_bool = "text_hauntedcastle_bool = " .. text_hauntedcastle_bool
+		text_yetikingdom_bool = "text_yetikingdom_bool = " .. text_yetikingdom_bool
+		text_ufo_bool = "text_ufo_bool = " .. text_ufo_bool
+		text_moi_bool = "text_moi_bool = " .. text_moi_bool
+		text_mothershipentrance_bool = "text_mothershipentrance_bool = " .. text_mothershipentrance_bool
+		text_sacrificialpit_bool = "text_sacrificialpit_bool = " .. text_sacrificialpit_bool
+		text_hell_bool = "text_hell_bool = " .. text_hell_bool
+		
+		text_load_moi_bool = "text_load_moi_bool = " .. text_load_moi_bool
+		text_load_hauntedcastle_bool = "text_load_hauntedcastle_bool = " .. text_load_hauntedcastle_bool
+		text_cancel_mothershipentrance_bool = "text_cancel_mothershipentrance_bool = " .. text_cancel_mothershipentrance_bool
+		
+		
+		draw_text(text_x, text_y, 0, text_levelfeelings, white)
+		text_y = text_y-0.1
+		
+		draw_text(text_x, text_y, 0, text_spiderlair_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_snakepit_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_restless_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_tikivillage_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_flooded_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_hauntedcastle_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_yetikingdom_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_ufo_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_moi_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_mothershipentrance_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_sacrificialpit_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_hell_bool, white)
+		text_y = text_y-0.1
+		
+		draw_text(text_x, text_y, 0, text_load_moi_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_load_hauntedcastle_bool, white)
+		text_y = text_y-0.05
+		draw_text(text_x, text_y, 0, text_cancel_mothershipentrance_bool, white)
+		text_y = text_y-0.05
+
 	end
 end
 

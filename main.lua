@@ -3,32 +3,36 @@ meta.version = "1"
 meta.description = "Spelunky HD's campaign inside of Spelunky 2"
 meta.author = "Super Ninja Fat"
 
+-- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
+-- register_option_float("hd_ui_botd_b_h", "UI: botd height", 0.12, 0.0, 99.0)
+-- register_option_float("hd_ui_botd_c_x", "UI: botd x", 0.2, -999.0, 999.0)
+-- register_option_float("hd_ui_botd_d_y", "UI: botd y", 0.93, -999.0, 999.0)
+-- register_option_float("hd_ui_botd_e_squash", "UI: botd uvx shifting rate", 0.25, -5.0, 5.0)
 
-register_option_bool("hd_toastfeeling", "Allow script-enduced feeling messages", true)
-register_option_bool("hd_udjat", "On an Udjat level, replace the Ghost Jar with an Udjat Chest", true)
-register_option_bool("hd_nocursedpot", "Remove all Ghost Jars", false)
-register_option_bool("hd_ghosttime", "Spawns the ghost at 2:30 instead of 3:00 and 2:00 instead of 2:30 when cursed.", true)
-register_option_bool("hd_antitrapcuck", "Prevent spawning traps that can cuck you", true)
-register_option_bool("hd_freebookofdead", "Start with the Book of the dead", true)
-register_option_bool("hd_unlockbossexit", "Unlock boss exit", false)
-register_option_bool("hd_boss_info", "Enable bossfight debug info", false)
-register_option_bool("hd_wormtongue_info", "Enable wormtongue debug info", true)
-register_option_bool("hd_boulder_info", "Enable boulder debug info", false)
-register_option_bool("hd_feelings_info", "Enable level feelings debug info", false)
-register_option_bool("hd_show_ducttapeenemies", "Draw enemies used for custom enemy behavior", false)
-register_option_bool("hd_ankh", "Set the Ankh price to $50,000 like it was in HD", false)
--- register_option_bool("hd_boulder_phys", "Adjust boulders to have the same physics as HD", true)
-register_option_bool("hd_boulder_agro", "Make boulders enrage shopkeepers", true)
-register_option_float("bod_w", "bod width", 0.08, 0.0, 99.0)
-register_option_float("bod_h", "bod height", 0.12, 0.0, 99.0)
-register_option_float("bod_x", "bod x", 0.2, -999.0, 999.0)
-register_option_float("bod_y", "bod y", 0.93, -999.0, 999.0)
--- register_option_float("bod_squash", "bod uvx shifting rate", 0.25, -5.0, 5.0)
+register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info", false)
+register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info", false)
+register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", false)
+register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info", false)
+register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", false)
+register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", false)
+register_option_bool("hd_og_boulder_agro", "OG: Boulder - Enrage shopkeepers as they did in HD", true)
+register_option_bool("hd_og_ghost_nosplit", "OG: Ghost - Prevent the ghost from splitting", false)
+register_option_bool("hd_og_ghost_slow", "OG: Ghost - Revert the ghost to its HD speed", false)
+register_option_bool("hd_og_ghost_time", "OG: Ghost - Change spawntime from 3:00->2:30 and 2:30->2:00 when cursed.", true)
+register_option_bool("hd_og_nocursepot", "OG: Remove all Curse Pots", true)
+register_option_bool("hd_test_give_botd", "Testing: Start with the Book of the Dead", true)
+register_option_bool("hd_test_unlockbossexits", "Testing: Unlock boss exits", false)
+register_option_bool("hd_z_antitrapcuck", "Prevent spawning traps that can cuck you", true)
+register_option_bool("hd_z_toastfeeling", "Allow script-enduced feeling messages", true)
+
+-- TODO:
+-- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", true)
 
 bool_to_number={ [true]=1, [false]=0 }
 
-GHOST_SPAWNED = false
+DANGER_GHOST_UIDS = {}
 GHOST_TIME = 10800
+GHOST_VELOCITY = 0.7
 IDOLTRAP_TRIGGER = false
 WHEEL_SPINNING = false
 WHEEL_SPINTIME = 700 -- TODO: HD's was 10-11 seconds, convert to this.
@@ -47,14 +51,15 @@ BOULDER_SX = nil
 BOULDER_SY = nil
 BOULDER_SX2 = nil
 BOULDER_SY2 = nil
-BOULDER_CRUSHPREVENTION_EDGE = 0.1
-BOULDER_CRUSHPREVENTION_HEIGHT = 0.2
+BOULDER_CRUSHPREVENTION_EDGE = 0.15
+BOULDER_CRUSHPREVENTION_HEIGHT = 0.3
 BOULDER_CRUSHPREVENTION_VELOCITY = 0.16
 BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
 BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 TONGUE_UID = nil
 TONGUE_BG_UID = nil
+HAUNTEDCASTLEDOOR_UID = nil
 wheel_speed = 0
 wheel_tick = WHEEL_SPINTIME
 acid_tick = ACID_POISONTIME
@@ -67,7 +72,7 @@ TONGUE_STATE = nil
 TONGUE_STATECOMPLETE = false
 BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
 BOSS_STATE = nil
-OLMEC_SEQUENCE = { ["STILL"] = 1, ["JUMP"] = 2, ["MIDAIR"] = 3, ["FALL"] = 4 }
+OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 OLMEC_STATE = 0
 BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_X = 0
@@ -77,12 +82,15 @@ bookofdead_tick = 0
 -- bookofdead_tick_min = BOOKOFDEAD_TIC_LIMIT
 bookofdead_frames = 4
 bookofdead_frames_index = 1
-bookofdead_squash = (1/bookofdead_frames) --options.bod_squash
+bookofdead_squash = (1/bookofdead_frames) --options.hd_ui_botd_e_squash
 
 OBTAINED_BOOKOFDEAD = false
 
-UI_BOOKOFDEAD_ID, UI_BOOKOFDEAD_w, UI_BOOKOFDEAD_h = create_image('bookofdead.png')
-
+UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('bookofdead.png')
+UI_BOTD_PLACEMENT_W = 0.08
+UI_BOTD_PLACEMENT_H = 0.12
+UI_BOTD_PLACEMENT_X = 0.2
+UI_BOTD_PLACEMENT_Y = 0.93
 
 HD_FEELING_SPIDERLAIR_CHANCE = -1
 HD_FEELING_SNAKEPIT_CHANCE = -1
@@ -300,7 +308,7 @@ HD_BEHAVIOR = {
 				-- Determines multiple factors required for certain dangers, such as spawn_entity_over().
 					-- Currently determines collision detection.
 				-- TODO: Move conflict detection into its own variable that takes an enum to set collision detection.
-	-- onframe_managedangers
+	-- onframe_manage_dangers
 		-- Supported Variables:
 			-- kill_on_standing = 
 				-- KILL_ON.STANDING
@@ -526,46 +534,46 @@ HD_ENT = {
 					-- HD Enemy type
 					-- true for chance to spawn as rare variants, if exists
 LEVEL_DANGERS = {
-	[THEME.DWELLING] = {
-		dangers = {
-			{
-				entity = HD_ENT.SCORPIONFLY--SPIDER,
-				-- variation = {
-					-- entities = {HD_ENT.SPIDER, HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
-					-- chances = {0.5, 0.85}
-				-- }
-			},
-			-- {
-				-- entity = HD_ENT.HANGSPIDER
-			-- },
-			-- {
-				-- entity = HD_ENT.GIANTSPIDER
-			-- },
-			{
-				entity = HD_ENT.CRITTER_RAT
-			}
-		}
-	},
 	-- [THEME.DWELLING] = {
 		-- dangers = {
 			-- {
-				-- entity = HD_ENT.SPIDER,
-				-- variation = {
-					-- entities = {HD_ENT.SPIDER, HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
-					-- chances = {0.5, 0.85}
-				-- }
+				-- entity = HD_ENT.SCORPIONFLY--SPIDER,
+				-- -- variation = {
+					-- -- entities = {HD_ENT.SPIDER, HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
+					-- -- chances = {0.5, 0.85}
+				-- -- }
 			-- },
-			-- {
-				-- entity = HD_ENT.HANGSPIDER
-			-- },
-			-- {
-				-- entity = HD_ENT.GIANTSPIDER
-			-- },
+			-- -- {
+				-- -- entity = HD_ENT.HANGSPIDER
+			-- -- },
+			-- -- {
+				-- -- entity = HD_ENT.GIANTSPIDER
+			-- -- },
 			-- {
 				-- entity = HD_ENT.CRITTER_RAT
 			-- }
 		-- }
 	-- },
+	[THEME.DWELLING] = {
+		dangers = {
+			{
+				entity = HD_ENT.SPIDER,
+				variation = {
+					entities = {HD_ENT.SPIDER, HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
+					chances = {0.5, 0.85}
+				}
+			},
+			{
+				entity = HD_ENT.HANGSPIDER
+			},
+			{
+				entity = HD_ENT.GIANTSPIDER
+			},
+			{
+				entity = HD_ENT.CRITTER_RAT
+			}
+		}
+	},
 	[THEME.JUNGLE] = {
 		dangers = {
 			{
@@ -648,7 +656,8 @@ function init()
 	BOULDER_DEBUG_PLAYERTOUCH = false
 	TONGUE_UID = nil
 	TONGUE_BG_UID = nil
-	GHOST_SPAWNED = false
+	HAUNTEDCASTLEDOOR_UID = nil
+	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
 	HD_FEELING_SPIDERLAIR = false
@@ -688,7 +697,7 @@ end
 function onlevel_dangers_init()
 	if LEVEL_DANGERS[state.theme] then
 		-- if (
-				-- options.hd_boulder_phys == true and
+				-- options.hd_og_boulder_phys == true and
 				-- state.theme == THEME.DWELLING and
 				-- (
 					-- state.level == 2 or
@@ -696,7 +705,7 @@ function onlevel_dangers_init()
 					-- state.level == 4
 				-- )
 		-- ) then
-			-- table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_boulder_phys == true then
+			-- table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_og_boulder_phys == true then
 		-- end
 		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
 	end
@@ -939,10 +948,10 @@ function conflictdetection_trap(d_hddtype, dx, dy, dl)
 	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
 	scan_width = 1 -- check 1 across
 	scan_height = 1 -- check the space above
-	if d_hddtype == HD_DANGERTYPE.FLOORTRAP and options.hd_antitrapcuck == true then
+	if d_hddtype == HD_DANGERTYPE.FLOORTRAP and options.hd_z_antitrapcuck == true then
 		scan_width = 1 -- check 3 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
-	elseif d_hddtype == HD_DANGERTYPE.FLOORTRAP_TALL and options.hd_antitrapcuck == true then
+	elseif d_hddtype == HD_DANGERTYPE.FLOORTRAP_TALL and options.hd_z_antitrapcuck == true then
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end
@@ -1127,6 +1136,18 @@ function remove_crabmounts()
 	end
 end
 
+-- removes all types of an entity from any player that has it.
+function remove_player_item(powerup, player)
+	powerup_uids = get_entities_by_type(powerup)
+	for i = 1, #powerup_uids, 1 do
+		for j = 1, #players, 1 do
+			if entity_has_item_uid(players[j].uid, powerup_uids[i]) then
+				entity_remove_item(players[j].uid, powerup_uids[i])
+			end
+		end
+	end
+end
+
 function animate_bookofdead(tick_limit)
 	if bookofdead_tick <= tick_limit then
 		bookofdead_tick = bookofdead_tick + 1
@@ -1157,6 +1178,22 @@ function change_level(w_a, l_a, t_a, w_b, l_b, t_b)--w_b=0, l_b=0, t_b=0)
 			state.world = w_b
 			state.theme = t_b
 		-- end
+	end
+end
+
+function exit_restless()
+	ex, ey, _ = get_position(HAUNTEDCASTLEDOOR_UID)
+	for i = 1, #players, 1 do
+		x, y, _ = get_position(players[i].uid)
+		closetodoor = 0.5
+		
+		if (
+			players[i].state == 19 and
+			(y+closetodoor >= ey and y-closetodoor <= ey) and
+			(x+closetodoor >= ex and x-closetodoor <= ex)
+		) then
+			LOAD_HAUNTEDCASTLE = true
+		end
 	end
 end
 
@@ -1219,12 +1256,17 @@ end
 
 -- ON.START
 set_callback(function()
-	OBTAINED_BOOKOFDEAD = options.hd_freebookofdead
-	if options.hd_ghosttime == true then
-		GHOST_TIME = 9000
-	end
-	-- TODO: Enable once methods are merged with the WHIP build.
+	OBTAINED_BOOKOFDEAD = options.hd_test_give_botd
+	if options.hd_og_ghost_time == true then GHOST_TIME = 9000 end
+
+	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
+	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
+	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
+	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
+	
+	
 	set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
+	
 	set_olmec_phase_y_level(0, 10.0)
 	set_olmec_phase_y_level(1, 9.0)
 	set_olmec_phase_y_level(2, 8.0)
@@ -1283,7 +1325,8 @@ set_callback(function()
 	onlevel_dangers_setonce()
 	set_timeout(onlevel_generation_dangers, 3)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
-	onlevel_ghostpotandkeygen()
+	onlevel_placement_lockedchest()
+	onlevel_nocursedpot() -- PLACE AFTER onlevel_placement_lockedchest()
 	onlevel_prizewheel()
 	onlevel_idoltrap()
 	onlevel_remove_mounts()
@@ -1303,13 +1346,14 @@ set_callback(function()
 end, ON.LEVEL)
 
 set_callback(function()
-	onframe_managedangers()
-	onframe_manualghostspawn()
+	onframe_manage_dangers()
+	onframe_bacterium()
+	onframe_ghosts()
+	onframe_manage_inventory()
 	onframe_prizewheel()
 	onframe_idoltrap()
 	onframe_tonguetimeout()
 	onframe_acidpoison()
-	onframe_bacterium()
 	onframe_boss()
 end, ON.FRAME)
 
@@ -1430,11 +1474,8 @@ function onlevel_dangers_modifications()
 		-- dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
 		-- dangers_postspawn = map(global_dangers, function(entity) return entity.entitydb end)
 		for i = 1, #global_dangers, 1 do
-			toset = 0
-			-- if dangers_tospawn[i] ~= 0 then toset = dangers_tospawn[i] end
-			if global_dangers[i].entitydb ~= nil and global_dangers[i].entitydb ~= 0 then toset = global_dangers[i].entitydb end--if dangers_postspawn[i] ~= 0 then toset = dangers_postspawn[i] end
-			if toset ~= 0 then
-				s = spawn(toset, 0, 0, LAYER.FRONT, 0, 0)
+			if global_dangers[i].entitydb ~= nil and global_dangers[i].entitydb ~= 0 then
+				s = spawn(global_dangers[i].entitydb, 0, 0, LAYER.FRONT, 0, 0)
 				s_mov = get_entity(s):as_movable()
 				
 				if global_dangers[i].health_db ~= nil and global_dangers[i].health_db > 0 then
@@ -1470,11 +1511,7 @@ end
 -- Find everything in the level within the given parameters, apply enemy modifications within parameters.
 function onlevel_generation_dangers()
 	if LEVEL_DANGERS[state.theme] then
-		dangers_variation = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.variation end)
-		-- dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
-		-- dangers_toreplace = map(global_dangers, function(entity) return entity.toreplace end)
-		-- dangers_type = map(global_dangers, function(entity) return entity.dangertype end)
-		
+	
 		affected = get_entities_by_type(map(global_dangers, function(entity) return entity.toreplace end))--dangers_toreplace)
 		local giant_enemy = false
 
@@ -1529,7 +1566,7 @@ function onlevel_generation_dangers()
 						global_dangers[dangers_index].dangertype >= HD_DANGERTYPE.FLOORTRAP
 					) then
 						local conflict = conflictdetection_trap(global_dangers[dangers_index].dangertype, ex, ey, el)
-						if conflict == false then --or (conflict == true and options.hd_antitrapcuck == false) then
+						if conflict == false then --or (conflict == true and options.hd_z_antitrapcuck == false) then
 							-- if there is no conflict or there is conflict and the anti-cuck option is disabled, create trap
 							floor_uid = e_mov.standing_on_uid
 							s = spawn_entity_over(global_dangers[dangers_index].tospawn, floor_uid, 0, 1)
@@ -1732,39 +1769,54 @@ function onlevel_reverse_exits()
 	end
 end
 
-function onlevel_ghostpotandkeygen()
-	local cursedpot = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-	-- Udjat chest replacement using cursed pot spawn
-	if #cursedpot > 0 then
-		local lockedchest = get_entities_by_type(ENT_TYPE.ITEM_LOCKEDCHEST)
-		local udjat_level = (#lockedchest > 0)
-
-		pot_x, pot_y, pot_l = get_position(cursedpot[1]) -- initial pot coordinates
-		if udjat_level == true and options.hd_udjat == true then
-			chest_x, chest_y, chest_l = get_position(lockedchest[1]) -- move cursed pot to old chest location
-			move_entity(cursedpot[1], chest_x, chest_y-4, 0, 0) -- TODO: update once layer parameter is supported
-			spawn(ENT_TYPE.ITEM_LOCKEDCHEST, pot_x, pot_y, pot_l, 0, 0) -- spawn chest at initial pot coordinates
-		end
-		-- Ghost Jar removal
-		if options.hd_nocursedpot == true then
-			if udjat_level == true then
-				set_timeout(function()
-					local cursedpot = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-					if #cursedpot > 0 then
-						kill_entity(cursedpot[1])
-					end
-				end, 3)
-				set_timeout(function()
-					kill_entity(get_entities_by_type(ENT_TYPE.MONS_GHOST)[1])
-				end, 4)
-				set_timeout(function()
-					kill_entity(get_entities_by_type(ENT_TYPE.ITEM_DIAMOND)[1])
-				end, 5)
+function onlevel_placement_lockedchest()
+	lockedchest_uids = get_entities_by_type(ENT_TYPE.ITEM_LOCKEDCHEST)
+	udjat_level = (#lockedchest_uids > 0)
+	if udjat_level == true then
+		random_uid = -1
+		random_index = math.random(1, #lockedchest_uids)
+		for i, lockedchest_loop_uid in ipairs(lockedchest_uids) do
+			if random_index == i then
+				random_uid = lockedchest_loop_uid
 			else
-				kill_entity(cursedpot[1])
-				kill_entity(get_entities_by_type(ENT_TYPE.MONS_GHOST)[1])
-				kill_entity(get_entities_by_type(ENT_TYPE.ITEM_DIAMOND)[1])
+				kill_entity(lockedchest_loop_uid, 0, 0, 0, 0)
 			end
+		end
+		if random_uid ~= -1 then
+			lockedchest_uid = random_uid
+			lockedchest_mov = get_entity(lockedchest_uid):as_movable()
+			_, chest_y, _ = get_position(lockedchest_uid)
+			-- use surface_x to center
+			surface_x, surface_y, _ = get_position(lockedchest_mov.standing_on_uid)
+			move_entity(lockedchest_uid, surface_x, chest_y, 0, 0)
+			
+			-- swap cursed pot and chest locations
+			cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
+			if #cursedpot_uids > 0 then 
+				cursedpot_uid = cursedpot_uids[1]
+				
+				pot_x, pot_y, pot_l = get_position(cursedpot_uid) -- initial pot coordinates
+				
+				-- use surface_x to center
+				move_entity(cursedpot_uid, surface_x, chest_y, 0, 0)
+				
+				move_entity(lockedchest_uid, pot_x, pot_y, 0, 0) -- move chest to initial pot coordinates
+			end
+		else
+			toast("onlevel_placement_lockedchest(): No Chest. (random_uid could not be set)")
+		end
+	end
+end
+
+function onlevel_nocursedpot()
+	cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
+	if #cursedpot_uids > 0 and options.hd_og_nocursepot == true then
+		xmin, ymin, _, _ = get_bounds()
+		void_x = xmin - 3.5
+		void_y = ymin
+		spawn_entity(ENT_TYPE.FLOOR_BORDERTILE, void_x, void_y, LAYER.FRONT, 0, 0)
+		for _, cursedpot_uid in ipairs(cursedpot_uids) do
+			move_entity(cursedpot_uid, void_x, void_y+1, 0, 0)
 		end
 	end
 end
@@ -1927,15 +1979,16 @@ function onlevel_blackmarket_ankh()
 			hedjet_uid = hedjets[1]
 			hedjet_mov = get_entity(hedjet_uid):as_movable()
 			x, y, l = get_position(hedjet_uid)
-			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x-1, y, l, 0, 0)
+			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l, 0, 0)
 			ankh_mov = get_entity(ankh_uid):as_movable()
 			ankh_mov.flags = set_flag(ankh_mov.flags, 23)
 			ankh_mov.flags = set_flag(ankh_mov.flags, 20)
-			if options.hd_ankh == true then
-				ankh.price = 50000.0
+			if options.hd_og_ankhprice == true then
+				ankh_mov.price = 50000.0
 			else
-				ankh.price = hedjet_mov.price
+				ankh_mov.price = hedjet_mov.price
 			end
+			kill_entity(hedjet_uid)
 			-- set flag 23 and 20
 			-- detach/spawn_entity_over the purchase icons from the headjet, apply them to the ankh
 			-- kill hedjet
@@ -2033,7 +2086,7 @@ end
 function onlevel_add_botd()
 	-- TODO: Once COG generation is done, change to THEME.CITY_OF_GOLD and figure out coordinates to move it to
 	if state.theme == THEME.OLMEC then
-		if not options.hd_freebookofdead then
+		if not options.hd_test_give_botd then
 			bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, 6, 99.05, LAYER.FRONT, 0, 0)
 			book_ = get_entity(bookofdead_pickup_id):as_movable()
 			book_.animation_frame = 205
@@ -2044,28 +2097,28 @@ end
 function onlevel_boss_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		onlevel_olmec_cutscene_moveolmec()
-		onlevel_olmec_cutscene_movecavemen()
-		onlevel_add_endingdoor(41, 99)
-		onlevel_add_helldoor()
+		cutscene_move_olmec()
+		cutscene_move_cavemen()
+		create_endingdoor(41, 99, LAYER.FRONT)
+		create_entrance_hell()
 	end
 	-- Olmec/Yama Win
 	exit_winstate()
 end
 
-function onlevel_add_endingdoor(x, y)
+function create_endingdoor(x, y, l)
 	-- TODO: Remove exit door from the editor and spawn it manually here.
 	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
 	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
 	-- TODO: Test if the compass works for this
-	exitdoor = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, LAYER.FRONT, 0, 0)
+	exitdoor = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	set_door_target(exitdoor, 4, 2, THEME.TIAMAT)
-	if options.hd_unlockbossexit == false then
+	if options.hd_test_unlockbossexits == false then
 		lock_door_at(x, y)
 	end
 end
 
-function onlevel_olmec_cutscene_moveolmec()
+function cutscene_move_olmec()
 	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
 		OLMEC_ID = olmecs[1]
@@ -2073,7 +2126,7 @@ function onlevel_olmec_cutscene_moveolmec()
 	else toast("AGH no olmec found :(") end
 end
 
-function onlevel_olmec_cutscene_movecavemen()
+function cutscene_move_cavemen()
 	-- TODO: Once custom hawkman AI is done:
 	-- create a hawkman and disable his ai
 	-- set_timeout() to reenable his ai and set his stuntimer.
@@ -2103,35 +2156,39 @@ end
 	-- end
 -- end
 
-function onlevel_add_helldoor()
-	if state.theme == THEME.OLMEC then
-		HELL_X = math.random(4,41)
-		door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, HELL_X, 87, LAYER.FRONT, 0, 0)
-		set_door_target(door_target, 5, 1, THEME.VOLCANA)
-		
-		if OBTAINED_BOOKOFDEAD == true then
-			helldoor_e = get_entity(door_target):as_movable()
-			helldoor_e.flags = set_flag(helldoor_e.flags, 20)
-			helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
-			-- set_timeout(function()
-				-- helldoors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, 0, HELL_X, 87, LAYER.FRONT, 2)
-				-- if #helldoors > 0 then
-					-- helldoor_e = get_entity(helldoors[1]):as_movable()
-					-- helldoor_e.flags = set_flag(helldoor_e.flags, 20)
-					-- helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
-					-- -- toast("Aaalllright come on in!!! It's WARM WHER YOU'RE GOIN HAHAHAH")
-				-- end
-			-- end, 5)
-		end
+function create_entrance_hell()
+	HELL_X = math.random(4,41)
+	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, HELL_X, 87, LAYER.FRONT, 0, 0)
+	set_door_target(door_target, 5, 1, THEME.VOLCANA)
+	
+	if OBTAINED_BOOKOFDEAD == true then
+		helldoor_e = get_entity(door_target):as_movable()
+		helldoor_e.flags = set_flag(helldoor_e.flags, 20)
+		helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
+		-- set_timeout(function()
+			-- helldoors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, 0, HELL_X, 87, LAYER.FRONT, 2)
+			-- if #helldoors > 0 then
+				-- helldoor_e = get_entity(helldoors[1]):as_movable()
+				-- helldoor_e.flags = set_flag(helldoor_e.flags, 20)
+				-- helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
+				-- -- toast("Aaalllright come on in!!! It's WARM WHER YOU'RE GOIN HAHAHAH")
+			-- end
+		-- end, 5)
 	end
+end
+
+function create_entrance_mothership(x, y, l)
+	spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
+end
+
+function create_entrance_hauntedcastle(x, y, l)
+	HAUNTEDCASTLEDOOR_UID = spawn_door(x, y, l, state.world, state.level+1, state.theme)
+	set_interval(exit_restless, 1)
 end
 
 function onlevel_detection_feeling()
 	if state.theme == THEME.DWELLING then
 		encounter = math.random(1,2)
-		-- SPIDERLAIR
-		-- giant_spiders = get_entities_by_type(ENT_TYPE.MONS_GIANTSPIDER)
-		-- if #giant_spiders >= 4 then
 		if encounter == 1 and math.random() <= HD_FEELING_SPIDERLAIR_CHANCE then
 			HD_FEELING_SPIDERLAIR = true
 			-- TODO: pots will not spawn on this level.
@@ -2172,6 +2229,9 @@ function onlevel_detection_feeling()
 			else
 				LOAD_MOI = true -- load moi on the next level
 			end
+		elseif state.level == 3 and LOAD_MOI == true then
+			HD_FEELING_MOI = true
+			LOAD_MOI = false
 		end
 		if state.level == 4 then
 			if CANCEL_MOTHERSHIPENTRANCE == true then
@@ -2247,7 +2307,7 @@ end
 function onlevel_toastfeeling()
 	if (
 		MESSAGE_FEELING ~= nil and
-		options.hd_toastfeeling == true
+		options.hd_z_toastfeeling == true
 	) then
 		toast(MESSAGE_FEELING)
 	end
@@ -2260,7 +2320,7 @@ end
 
 function onlevel_revertloadfeeling()
 	if LOAD_HAUNTEDCASTLE == true then LOAD_HAUNTEDCASTLE = false end
-	if LOAD_MOI == true and HD_FEELING_MOI == false then LOAD_MOI = false end
+	-- if LOAD_MOI == true and HD_FEELING_MOI == false then LOAD_MOI = false end
 end
 
 function onlevel_coffinunlocks()
@@ -2474,18 +2534,6 @@ function oncamp_shortcuts()
 	
 end
 
-function onframe_manualghostspawn()
-	if (
-		(options.hd_nocursedpot == true) and
-		(state.time_level > GHOST_TIME) and
-		(GHOST_SPAWNED == false) and
-		(blacklist_level_noghost())
-	) then
-		create_ghost()
-		GHOST_SPAWNED = true
-	end
-end
-
 function onframe_prizewheel()
 	-- Prize Wheel
 	-- Purchase Detection/Handling
@@ -2566,7 +2614,7 @@ function onframe_idoltrap()
 			if #boulders > 0 then
 				BOULDER_UID = boulders[1]
 				-- TODO: Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
-				if options.hd_boulder_agro == true then
+				if options.hd_og_boulder_agro == true then
 					boulder = get_entity(BOULDER_UID):as_movable()
 					for i, player in ipairs(players) do
 						boulder.last_owner_uid = player.uid
@@ -2591,8 +2639,6 @@ function onframe_idoltrap()
 				BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
 				BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
 				BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
-				boulder = get_entity(BOULDER_UID):as_movable()
-				x, y, l = get_position(BOULDER_UID)
 				blocks = get_entities_overlapping(
 					ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
 					0,
@@ -2616,7 +2662,7 @@ function onframe_idoltrap()
 				for _, block in ipairs(blocks) do
 					kill_entity(block)
 				end
-				if options.hd_boulder_info == true then
+				if options.hd_debug_info_boulder == true then
 					touching = get_entities_overlapping(
 						0,
 						0x1,
@@ -2778,7 +2824,7 @@ function tongue_exit()
 			damsel = get_entity(damsel_uid):as_movable()
 			if test_flag(damsel.flags, 29) == false then
 				damsel.stun_timer = 0
-				if options.hd_show_ducttapeenemies == false then
+				if options.hd_debug_invis == false then
 					damsel.flags = set_flag(damsel.flags, 1)
 				end
 				damsel.flags = clr_flag(damsel.flags, 21)-- disable interaction with webs
@@ -2794,7 +2840,7 @@ function tongue_exit()
 			local door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
 			if #door_platforms > 0 then
 				door_platform = get_entity(door_platforms[1])
-				if options.hd_show_ducttapeenemies == true then
+				if options.hd_debug_invis == true then
 					door_platform.flags = clr_flag(door_platform.flags, 1)
 				end
 				door_platform.flags = set_flag(door_platform.flags, 3)
@@ -2807,7 +2853,7 @@ function tongue_exit()
 				ensnaredplayer.stun_timer = 0
 				-- ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, 16)-- disable input
 				
-				if options.hd_show_ducttapeenemies == false then
+				if options.hd_debug_invis == false then
 					ensnaredplayer.flags = set_flag(ensnaredplayer.flags, 1)-- make each player invisible
 				end
 					-- disable interactions with anything else that may interfere with entering the door
@@ -2838,7 +2884,7 @@ function tongue_exit()
 				if #exits > 0 then
 					if #door_platforms > 0 then
 						door_platform = get_entity(door_platforms[1])
-						if options.hd_show_ducttapeenemies == true then
+						if options.hd_debug_invis == true then
 							door_platform.flags = set_flag(door_platform.flags, 1)
 						end
 						door_platform.flags = clr_flag(door_platform.flags, 3)
@@ -2851,7 +2897,7 @@ function tongue_exit()
 		
 		-- hide worm tongue
 		tongue = get_entity(TONGUE_UID)
-		if options.hd_show_ducttapeenemies == false then
+		if options.hd_debug_invis == false then
 			tongue.flags = set_flag(tongue.flags, 1)
 		end
 		tongue.flags = set_flag(tongue.flags, 4)-- disable interaction with objects
@@ -2885,9 +2931,13 @@ function onframe_replace_grubs()
 	end
 end
 
+function onframe_manage_inventory()
+	inventory_checkpickup_botd()
+end
+
 -- DANGER MODIFICATIONS - ON.FRAME
 -- Massive enemy behavior handling method
-function onframe_managedangers()
+function onframe_manage_dangers()
 	n = #danger_tracker
 	for i, danger in ipairs(danger_tracker) do
 		danger_mov = get_entity(danger.uid)
@@ -3129,6 +3179,7 @@ function behavior_set_facing(behavior_uid, master_uid)
 end
 
 function behavior_giantfrog(target_uid)
+	toast("SPEET!")
 	ink = get_entities_by_type(ENT_TYPE.ITEM_INKSPIT)
 	replaced = false
 	for _, spit in ipairs(ink) do
@@ -3141,6 +3192,32 @@ function behavior_giantfrog(target_uid)
 			end
 		end
 		kill_entity(spit)
+	end
+end
+
+function onframe_ghosts()
+	ghost_uids = get_entities_by_type({
+		ENT_TYPE.MONS_GHOST
+	})
+	ghosttoset_uid = 0
+	for _, found_ghost_uid in ipairs(ghost_uids) do
+		accounted = 0
+		for _, cur_ghost_uid in ipairs(DANGER_GHOST_UIDS) do
+			if found_ghost_uid == cur_ghost_uid then accounted = cur_ghost_uid end
+			
+			ghost = get_entity(found_ghost_uid):as_ghost()
+			toast("timer: " .. tostring(ghost.split_timer) .. ", v_mult: " .. tostring(ghost.velocity_multiplier))
+			if (options.hd_og_ghost_nosplit == true) then ghost.split_timer = 0 end
+		end
+		if accounted == 0 then ghosttoset_uid = found_ghost_uid end
+	end
+	if ghosttoset_uid ~= 0 then
+		ghost = get_entity(ghosttoset_uid):as_ghost()
+		
+		if (options.hd_og_ghost_slow == true) then ghost.velocity_multiplier = GHOST_VELOCITY end
+		if (options.hd_og_ghost_nosplit == true) then ghost.split_timer = 0 end
+		
+		DANGER_GHOST_UIDS[#DANGER_GHOST_UIDS+1] = ghosttoset_uid
 	end
 end
 
@@ -3163,7 +3240,7 @@ function onframe_bacterium()
 					-- re-enable once detached from surface
 		
 		-- Bacterium Movement Script
-		-- TODO: Move to onframe_managedangers
+		-- TODO: Move to onframe_manage_dangers
 		-- Class requirements:
 		-- - Destination {float, float}
 		-- - Angle int
@@ -3231,7 +3308,7 @@ function onframe_olmec_behavior()
 			-- TODO: Currently the spelunker can be crushed on the ceiling.
 			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
 			-- Decide whether or not we restore this behavior or if we raise the ceiling generation.
-		-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["JUMP"] = 2, ["MIDAIR"] = 3, ["FALL"] = 4 }
+		-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 		-- Enemy Spawning: Detect when olmec is about to smash down
 		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
@@ -3271,13 +3348,6 @@ function olmec_attack(x, y, l)
 end
 
 function danger_spawn(uid, hd_type, x, y, l, vx, vy)
-	-- **This stuff is already delt with in onlevel_dangers_modifications.
-	-- If spawning manually, use stuff like this outside dangers_spawn().
-		-- if hd_type == HD_ENT.SNAIL then
-			-- set_timeout(remove_crabmounts, 5)
-		-- end
-	
-	
 	behavior = {}
 	if hd_type.behavior ~= nil then
 		behavior = TableCopy(hd_type.behavior)
@@ -3299,7 +3369,7 @@ function danger_spawn(uid, hd_type, x, y, l, vx, vy)
 					
 					-- behavior.abilities.idle.mosquito_uid = spawn(ENT_TYPE.MONS_MOSQUITO, x, y, l, 0, 0)
 					-- ability_e = get_entity(behavior.abilities.idle.mosquito_uid)
-					-- if options.hd_show_ducttapeenemies == false then
+					-- if options.hd_debug_invis == false then
 						-- ability_e.flags = set_flag(ability_e.flags, 1)
 					-- end
 					-- ability_e.flags = set_flag(ability_e.flags, 6)
@@ -3328,7 +3398,7 @@ function danger_setflags(uid_assignto, flags_set, flags_clear)
 	for _, flag in ipairs(flags_set) do
 		if (
 			flag ~= 1 or
-			(flag == 1 and options.hd_show_ducttapeenemies == false)
+			(flag == 1 and options.hd_debug_invis == false)
 		) then
 			ability_e.flags = set_flag(ability_e.flags, flag)
 		end
@@ -3353,7 +3423,7 @@ function onframe_boss_wincheck()
 end
 
 function onguiframe_ui_info_boss()
-	if options.hd_boss_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.theme == THEME.OLMEC and OLMEC_ID ~= nil then
 			olmec = get_entity(OLMEC_ID)
 			if olmec ~= nil then
@@ -3362,11 +3432,9 @@ function onguiframe_ui_info_boss()
 				text_x = -0.95
 				text_y = -0.50
 				white = rgba(255, 255, 255, 255)
-				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["JUMP"] = 2, ["MIDAIR"] = 3, ["FALL"] = 4 }
+				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 				olmec_attack_state = "UNKNOWN"
 				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
-				-- elseif OLMEC_STATE == OLMEC_SEQUENCE.JUMP then olmec_attack_state = "JUMP"
-				-- elseif OLMEC_STATE == OLMEC_SEQUENCE.MIDAIR then olmec_attack_state = "MIDAIR"
 				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
 				draw_text(text_x, text_y, 0, "Custom Olmec State Detection: " .. olmec_attack_state, white)
 			else toast("AGHHHH olmec is nil :(") end
@@ -3375,7 +3443,7 @@ function onguiframe_ui_info_boss()
 end
 
 function onguiframe_ui_info_wormtongue()
-	if options.hd_wormtongue_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_info_tongue == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.level == 1 and (state.theme == THEME.JUNGLE or state.theme == THEME.ICE_CAVES) then
 			text_x = -0.95
 			text_y = -0.45
@@ -3404,7 +3472,7 @@ function onguiframe_ui_info_wormtongue()
 end
 
 function onguiframe_ui_info_boulder()
-	if options.hd_boulder_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_info_boulder == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if (
 			state.theme == THEME.DWELLING and
 			(state.level == 2 or state.level == 3 or state.level == 4)
@@ -3454,9 +3522,9 @@ function onguiframe_ui_info_boulder()
 end
 
 function onguiframe_ui_info_feelings()
-	if options.hd_feelings_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		text_x = -0.95
-		text_y = -0.45
+		text_y = -0.35
 		white = rgba(255, 255, 255, 255)
 		green_enabled = rgba(102, 108, 82, 255)
 		
@@ -3500,25 +3568,25 @@ function onguiframe_ui_info_feelings()
 		if CANCEL_MOTHERSHIPENTRANCE == true then text_cancel_mothershipentrance_bool = "TRUE" end
 		
 		
-		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings")
+		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
 		
 		
-		text_spiderlair_bool = "text_spiderlair_bool = " .. text_spiderlair_bool
-		text_snakepit_bool = "text_snakepit_bool = " .. text_snakepit_bool 
-		text_restless_bool = "text_restless_bool = " .. text_restless_bool
-		text_tikivillage_bool = "text_tikivillage_bool = " .. text_tikivillage_bool
-		text_flooded_bool = "text_flooded_bool = " .. text_flooded_bool
-		text_hauntedcastle_bool = "text_hauntedcastle_bool = " .. text_hauntedcastle_bool
-		text_yetikingdom_bool = "text_yetikingdom_bool = " .. text_yetikingdom_bool
-		text_ufo_bool = "text_ufo_bool = " .. text_ufo_bool
-		text_moi_bool = "text_moi_bool = " .. text_moi_bool
-		text_mothershipentrance_bool = "text_mothershipentrance_bool = " .. text_mothershipentrance_bool
-		text_sacrificialpit_bool = "text_sacrificialpit_bool = " .. text_sacrificialpit_bool
-		text_hell_bool = "text_hell_bool = " .. text_hell_bool
+		text_spiderlair_bool = ("spiderlair_bool = " .. text_spiderlair_bool)
+		text_snakepit_bool = ("snakepit_bool = " .. text_snakepit_bool)
+		text_restless_bool = ("restless_bool = " .. text_restless_bool)
+		text_tikivillage_bool = ("tikivillage_bool = " .. text_tikivillage_bool)
+		text_flooded_bool = ("flooded_bool = " .. text_flooded_bool)
+		text_hauntedcastle_bool = ("hauntedcastle_bool = " .. text_hauntedcastle_bool)
+		text_yetikingdom_bool = ("yetikingdom_bool = " .. text_yetikingdom_bool)
+		text_ufo_bool = ("ufo_bool = " .. text_ufo_bool)
+		text_moi_bool = ("moi_bool = " .. text_moi_bool)
+		text_mothershipentrance_bool = ("mothershipentrance_bool = " .. text_mothershipentrance_bool)
+		text_sacrificialpit_bool = ("sacrificialpit_bool = " .. text_sacrificialpit_bool)
+		text_hell_bool = ("hell_bool = " .. text_hell_bool)
 		
-		text_load_moi_bool = "text_load_moi_bool = " .. text_load_moi_bool
-		text_load_hauntedcastle_bool = "text_load_hauntedcastle_bool = " .. text_load_hauntedcastle_bool
-		text_cancel_mothershipentrance_bool = "text_cancel_mothershipentrance_bool = " .. text_cancel_mothershipentrance_bool
+		text_load_moi_bool = ("load_moi_bool = " .. text_load_moi_bool)
+		text_load_hauntedcastle_bool = ("load_hauntedcastle_bool = " .. text_load_hauntedcastle_bool)
+		text_cancel_mothershipentrance_bool = ("cancel_mothershipentrance_bool = " .. text_cancel_mothershipentrance_bool)
 		
 		
 		draw_text(text_x, text_y, 0, text_levelfeelings, white)
@@ -3591,10 +3659,10 @@ end
 function onguiframe_ui_animate_botd()
 	if state.pause == 0 and state.screen == 12 and #players > 0 then
 		if OBTAINED_BOOKOFDEAD == true then
-			local w = options.bod_w
-			local h = options.bod_h
-			local x = options.bod_x
-			local y = options.bod_y
+			local w = UI_BOTD_PLACEMENT_W
+			local h = UI_BOTD_PLACEMENT_H
+			local x = UI_BOTD_PLACEMENT_X
+			local y = UI_BOTD_PLACEMENT_Y
 			local uvx1 = 0
 			local uvy1 = 0
 			local uvx2 = bookofdead_squash
@@ -3627,20 +3695,25 @@ function onguiframe_ui_animate_botd()
 			
 			-- draw_text(x-0.1, y, 0, tostring(bookofdead_tick), rgba(234, 234, 234, 255))
 			-- draw_text(x-0.1, y-0.1, 0, tostring(bookofdead_frames_index), rgba(234, 234, 234, 255))
-			draw_image(UI_BOOKOFDEAD_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
-		elseif entity_has_item_type(players[1].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
-			toast("Death to the defiler!")
-			OBTAINED_BOOKOFDEAD = true
-			set_timeout(function()
-				tabletpowerup_uids = get_entities_by_type(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY)
-				if #tabletpowerup_uids > 0 then
-					entity_remove_item(players[1].uid, tabletpowerup_uids[1])
-				end
-			end, 1)
+			draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
 		end
 	end
 end
 
+
+-- TODO: Turn into a custom inventory system that works for all players.
+function inventory_checkpickup_botd()
+	if OBTAINED_BOOKOFDEAD == false then
+		for i = 1, #players, 1 do
+			if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
+				-- TODO: Move into the method that spawns Anubis II in COG
+				toast("Death to the defiler!")
+				OBTAINED_BOOKOFDEAD = true
+				set_timeout(function() remove_player_item(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) end, 1)
+			end
+		end
+	end
+end
 
 
 -- SHOPS

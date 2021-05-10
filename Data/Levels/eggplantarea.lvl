@@ -72,7 +72,7 @@
 \?regenerating_block%50            <
 \?regenerating_block%50%guts_floor >
 
-\%minister_chance              10
+\%minister_chance              0
 \%eggsac_chance                25, 20, 10, 45               // COMMENT
 
 

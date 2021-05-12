@@ -84,7 +84,7 @@
 \+springtrap            15
 \+yeti                  15
 \+critterpenguin        40
-\+critterfirefly        60
+\+critterfirefly        0                            // 60
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -2109,7 +2109,6 @@ yyccy0ccy0
 0000yy0000
 0000cc0000
 0002222000
-
 
 ////////////////////////////////////////////////////////////////////////////////
 \.moai   //  Room holding both the eggplant altar and the Moai statue

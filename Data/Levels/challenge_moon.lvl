@@ -1,4 +1,55 @@
 
+
+\?stone_floor                      -
+\?ladder                           L
+\?ladder_plat                      P
+\?locked_door                      /
+\?tomb_floor                       G
+\?cursed_pot                       u
+\?litwalltorch                     O
+\?haunted_corpse                   7
+\?bone_block                       f
+\?shop_wall%50                     ;
+\?shop_woodwall                    :
+\?die                              %
+\?merchant                         #
+\?cavemanshopkeeper                &
+\?sleeping_hiredhand               \
+\?forcefield                       ?
+\?forcefield_top                   '
+\?thief                            J
+\?chunk_ground                     5
+\?chunk_air                        6
+\?chunk_door                       8
+\?floor%50                         2
+\?minewood_floor                   =
+\?floor_hard%50%floor              Y
+\?adjacent_floor                   Z
+\?vine                             v
+\?growable_vine                    V
+\?door                             9
+\?door2                            D
+\?spikes                           ^
+\?push_block                       4
+\?bush_block                       b
+\?thorn_vine                       *
+\?jungle_spear_trap                ~
+\?treasure                         t
+\?tree_base                        T
+\?cookfire                         r
+\?key                              s
+\?sister                           i
+\?altar                            x
+\?idol                             I
+\?vault_wall                       |
+\?coffin                           g
+\?shop_sign                        K
+\?shop_door                        k
+\?lamp_hang                        l
+\?shop_wall                        .
+\?shop_item                        S
+\?wanted_poster                    W
+\?shopkeeper                       $
 \?empty                            0
 \?floor                            1
 \?floor_hard                       X
@@ -10,6 +61,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
+\!ignore
 1111111111
 1111111111
 1100000001
@@ -17,6 +69,16 @@
 1000000000
 1000000000
 1100000000
+1111111111
+
+// room COPY
+1111111111
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000#00000
 1111111111
 
 ////////////////////////////////////////////////////////////////////////////////

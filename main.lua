@@ -26,7 +26,7 @@ register_option_bool("hd_z_antitrapcuck", "Prevent spawning traps that can cuck 
 register_option_bool("hd_z_toastfeeling", "Allow script-enduced feeling messages", true)
 
 -- TODO:
--- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", true)
+register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", false)
 
 bool_to_number={ [true]=1, [false]=0 }
 
@@ -41,8 +41,7 @@ TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 wheel_items = {}
 global_dangers = {}
--- global_dangers_postspawn = {}
-danger_tracker = {} -- Parameters: uid, special features
+danger_tracker = {}
 IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
@@ -110,14 +109,14 @@ HD_FEELING_FLOODED = false
 HD_FEELING_HAUNTEDCASTLE = false -- IDEA: Global variable that tracks previous levels.
 HD_FEELING_YETIKINGDOM = false
 HD_FEELING_UFO = false
-HD_FEELING_MOI = false
+HD_FEELING_MOAI = false
 HD_FEELING_MOTHERSHIPENTRANCE = false -- This level feeling only, and always, occurs on level 3-4.
 										-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
 										-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
 HD_FEELING_SACRIFICIALPIT = false
 HD_FEELING_HELL = false
 
-LOAD_MOI = false
+LOAD_MOAI = false
 LOAD_HAUNTEDCASTLE = false
 CANCEL_MOTHERSHIPENTRANCE = false
 
@@ -184,25 +183,47 @@ HD_TILENAME = {
 	["j"] = ENT_TYPE.FLOOR_ICE
 }
 
+HD_COLLISIONTYPE = {
+	AIR_TILE_1 = 1,
+	AIR_TILE_2 = 2,
+	FLOORTRAP = 3,
+	FLOORTRAP_TALL = 4,
+	GIANT_FROG = 5,
+	GIANT_SPIDER = 6,
+	-- GIANT_FISH = 7
+}
+
 HD_DANGERTYPE = {
 	CRITTER = 1,
 	ENEMY = 2,
 	FLOORTRAP = 3,
 	FLOORTRAP_TALL = 4
 }
-
 HD_LIQUIDSPAWN = {
 	PIRANHA = 1,
 	MAGMAMAN = 2
 }
-
-HD_REMOVEMOUNT = {
-	SNAIL = 1,
-	SCORPIONFLY = 2,
-	EGGSAC = 3
+HD_REMOVEINVENTORY = {
+	SNAIL = {
+		inventory_ownertype = ENT_TYPE.MONS_HERMITCRAB,
+		inventory_entities = {
+			ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
+			ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
+			ENT_TYPE.ITEM_CRATE,
+			ENT_TYPE.ITEM_CHEST
+		}
+	},
+	SCORPIONFLY = {
+		inventory_ownertype = ENT_TYPE.MONS_IMP,
+		inventory_entities = {
+			ENT_TYPE.ITEM_LAVAPOT
+		}
+	}
 }
-
-KILL_ON = {
+HD_REPLACE = {
+	EGGSAC = 1
+}
+HD_KILL_ON = {
 	STANDING = 1,
 	STANDING_OUTOFWATER = 2
 }
@@ -280,10 +301,10 @@ HD_BEHAVIOR = {
 			-- damage
 			-- health
 				-- sets EntityDB's life
-		-- TODO:
 			-- friction
 			-- weight
 			-- elasticity
+		-- TODO:
 			-- blood_content
 			-- draw_depth
 	-- onlevel_generation_dangers
@@ -294,6 +315,8 @@ HD_BEHAVIOR = {
 				-- if set, determines the ENT_TYPE to replace inside onlevel_generation_dangers.
 			-- entitydb
 				-- If set, determines the ENT_TYPE to apply EntityDB modifications to
+	-- danger_applydb
+		-- Supported Variables:
 			-- dim = { w, h }
 				-- sets height and width
 				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
@@ -302,33 +325,82 @@ HD_BEHAVIOR = {
 				-- TODO: Add alpha channel support
 			-- hitbox = { w, h }
 				-- `w` for hitboxx, `y` for hitboxy.
-			-- stunnable
+			-- flag_stunnable
+			-- flag_collideswalls
+			-- flag_nogravity
+			-- flag_passes_through_objects
 				-- sets flag if true, clears if false
+	-- create_danger
+		-- Supported Variables:
 			-- dangertype
 				-- Determines multiple factors required for certain dangers, such as spawn_entity_over().
-					-- Currently determines collision detection.
-				-- TODO: Move conflict detection into its own variable that takes an enum to set collision detection.
+			-- collisiontype
+				-- Determines collision detection on creation of an HD_ENT. collision detection.
 	-- onframe_manage_dangers
 		-- Supported Variables:
 			-- kill_on_standing = 
-				-- KILL_ON.STANDING
+				-- HD_KILL_ON.STANDING
 					-- Once standing on a surface, kill it.
-				-- KILL_ON.STANDING_OUTOFWATER
+				-- HD_KILL_ON.STANDING_OUTOFWATER
 					-- Once standing on a surface and not submerged, kill it.
-			-- itemdrop = { item = {ENT_TYPE, etc...}, chance = 0.0 }
+			-- itemdrop = { item = {HD_ENT, etc...}, chance = 0.0 }
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
-			-- treasuredrop = { item = {ENT_TYPE, etc...}, chance = 0.0 }
+			-- treasuredrop = { item = {HD_ENT, etc...}, chance = 0.0 }
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
+HD_ENT = {}
 HD_ENT = {
+	ITEM_IDOL = {
+		tospawn = ENT_TYPE.ITEM_IDOL
+	},
+	ITEM_CRYSTALSKULL = {
+		tospawn = ENT_TYPE.ITEM_MADAMETUSK_IDOL
+	},
+	ITEM_PICKUP_SPRINGSHOES = {
+		tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
+	},
+	ITEM_FREEZERAY = {
+		tospawn = ENT_TYPE.ITEM_FREEZERAY
+	},
+	ITEM_SAPPHIRE = {
+		tospawn = ENT_TYPE.ITEM_SAPPHIRE
+	},
 	FROG = {
 		tospawn = ENT_TYPE.MONS_FROG,
-		toreplace = ENT_TYPE.MONS_MOSQUITO,
+		toreplace = ENT_TYPE.MONS_WITCHDOCTOR,--MOSQUITO,
 		dangertype = HD_DANGERTYPE.ENEMY
 	},
 	FIREFROG = {
 		tospawn = ENT_TYPE.MONS_FIREFROG,
-		toreplace = ENT_TYPE.MONS_MOSQUITO,
+		-- toreplace = ENT_TYPE.MONS_MOSQUITO,
 		dangertype = HD_DANGERTYPE.ENEMY
+	},
+	GIANTFROG = {
+		tospawn = ENT_TYPE.MONS_OCTOPUS,
+		-- toreplace = ENT_TYPE.MONS_OCTOPUS,
+		entitydb = ENT_TYPE.MONS_OCTOPUS,
+		dangertype = HD_DANGERTYPE.ENEMY,
+		collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
+		GIANTSPIDER = 6,
+		health_db = 8,
+		sprint_factor = 0,
+		max_speed = 0.01,
+		jump = 0.2,
+		dim = {2.5, 2.5},
+		offset_spawn = {0.5, 0},
+		removecorpse = true,
+		hitbox = {
+			0.64,
+			0.8
+		},
+		flag_stunnable = false,
+		itemdrop = {
+			item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+			chance = 0.15 -- 15% (1/6.7)
+		},
+		treasuredrop = {
+			item = {HD_ENT.ITEM_SAPPHIRE},
+			chance = 0.50
+		}
 	},
 	--TODO: Replace with regular frog
 		-- Use a giant fly for tospawn
@@ -353,46 +425,27 @@ HD_ENT = {
 			-- chance = 1.0
 		-- }
 	-- },
-	GIANTFROG = {
-		tospawn = ENT_TYPE.MONS_OCTOPUS,
-		toreplace = ENT_TYPE.MONS_OCTOPUS,
-		entitydb = ENT_TYPE.MONS_OCTOPUS,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		health_db = 8,
-		sprint_factor = 0,
-		max_speed = 0.01,
-		jump = 0.2,
-		dim = {2.5, 2.5},
-		removecorpse = true,
-		hitbox = {
-			0.64,
-			0.8
-		},
-		stunnable = false,
-		itemdrop = {
-			item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			chance = 0.15 -- 15% (1/6.7)
-		}
-	},
 	SNAIL = {
 		tospawn = ENT_TYPE.MONS_HERMITCRAB,
-		toreplace = ENT_TYPE.MONS_WITCHDOCTOR,
+		toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
 		entitydb = ENT_TYPE.MONS_HERMITCRAB,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		health_db = 1,
 		removecorpse = true,
-		removemounts = HD_REMOVEMOUNT.SNAIL
+		removeinventory = HD_REMOVEINVENTORY.SNAIL,
 	},
 	PIRANHA = {
-		-- entitydb = ENT_TYPE.MONS_TADPOLE,
+		tospawn = ENT_TYPE.MONS_TADPOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
+		-- entitydb = ENT_TYPE.MONS_TADPOLE,
 		-- sprint_factor = -1,
 		-- max_speed = -1,
 		-- acceleration = -1,
-		kill_on_standing = KILL_ON.STANDING_OUTOFWATER
+		kill_on_standing = HD_KILL_ON.STANDING_OUTOFWATER
 	},
 	WORMBABY = {
+		tospawn = ENT_TYPE.MONS_MOLE,
 		entitydb = ENT_TYPE.MONS_MOLE,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		health_db = 1,
@@ -402,20 +455,25 @@ HD_ENT = {
 		tospawn = ENT_TYPE.ITEM_EGGSAC,
 		toreplace = ENT_TYPE.MONS_JUMPDOG,
 		dangertype = HD_DANGERTYPE.FLOORTRAP,
-		removemounts = HD_REMOVEMOUNT.EGGSAC
+		collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
+		replaceoffspring = HD_REPLACE.EGGSAC
 	},
 	TRAP_TIKI = {
 		tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
 		toreplace = ENT_TYPE.ITEM_SNAP_TRAP,
 		entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
 		dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
+		collisiontype = HD_COLLISIONTYPE.FLOORTRAP_TALL,
 		damage = 4
+		-- TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
 	},
 	OLDBITEY = {
+		tospawn = ENT_TYPE.MONS_GIANTFISH,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		entitydb = ENT_TYPE.MONS_GIANTFISH,
+		collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
 		itemdrop = {
-			item = {ENT_TYPE.ITEM_IDOL}, --ENT_TYPE.ITEM_MADAMETUSK_IDOL
+			item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
 			chance = 1
 		}
 	},
@@ -440,42 +498,52 @@ HD_ENT = {
 	},
 	HANGSPIDER = {
 		tospawn = ENT_TYPE.MONS_HANGSPIDER,
-		toreplace = ENT_TYPE.MONS_SPIDER,
+		-- toreplace = ENT_TYPE.MONS_SPIDER,
 		dangertype = HD_DANGERTYPE.ENEMY
 	},
 	GIANTSPIDER = {
 		tospawn = ENT_TYPE.MONS_GIANTSPIDER,
-		toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY
+		-- toreplace = ENT_TYPE.MONS_SPIDER,
+		dangertype = HD_DANGERTYPE.ENEMY,
+		collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
+		offset_spawn = {0.5, 0}
 	},
 	BOULDER = {
 		dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
 		entitydb = ENT_TYPE.ACTIVEFLOOR_BOULDER
-		-- TODO: Modify EntityDB to make the physics of it match that of HD's.
 	},
 	SCORPIONFLY = {
 		tospawn = ENT_TYPE.MONS_SCORPION,
-		toreplace = ENT_TYPE.MONS_SPIDER,--CATMUMMY,
+		toreplace = ENT_TYPE.MONS_CATMUMMY,--SPIDER,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		behavior = HD_BEHAVIOR.SCORPIONFLY,
 		color = { 0.902, 0.176, 0.176 },
-		removemounts = HD_REMOVEMOUNT.SCORPIONFLY
+		removeinventory = HD_REMOVEINVENTORY.SCORPIONFLY
 	},
-	OLMEC_SHOT = { -- TODO: Add behavior and move into danger handling
+	OLMEC_SHOT = {
+		tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
 		dangertype = HD_DANGERTYPE.ENEMY,
-		kill_on_standing = KILL_ON.STANDING,
+		kill_on_standing = HD_KILL_ON.STANDING,
+		behavior = HD_BEHAVIOR.OLMEC_SHOT,
 		itemdrop = {
 			item = {
-				ENT_TYPE.MONS_FROG,
-				ENT_TYPE.MONS_FIREFROG,
-				ENT_TYPE.MONS_MONKEY,
-				ENT_TYPE.MONS_SCORPION,
-				ENT_TYPE.MONS_SNAKE,
-				ENT_TYPE.MONS_BAT
+				HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
+				HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
+				-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
+				-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
+				-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
+				-- HD_ENT.,--ENT_TYPE.MONS_BAT
 			},
 			chance = 1.0
-		}
+		},
+		-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
+		flag_collideswalls = true,
+		flag_nogravity = false,
+		flag_passes_through_objects = false
 	},
+	-- Devil Behavior:
+		-- when the octopi is in it's run state, use get_entities_overlapping() to detect the block {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK} it runs into.
+			-- then kill block, set octopi stuntimer.
 	-- DEVIL = {
 		-- tospawn = ENT_TYPE.MONS_OCTOPUS,
 		-- toreplace = ?,
@@ -492,11 +560,11 @@ HD_ENT = {
 		-- behavior = HD_BEHAVIOR.MAMMOTH,
 		-- health_db = 8,
 		-- itemdrop = {
-			-- item = {ENT_TYPE.ITEM_FREEZERAY},
+			-- item = {HD_ENT.ITEM_FREEZERAY},
 			-- chance = 1.0
 		-- },
 		-- treasuredrop = {
-			-- item = {ENT_TYPE.ITEM_SAPPHIRE},
+			-- item = {HD_ENT.ITEM_SAPPHIRE},
 			-- chance = 1.0
 		-- }
 	-- },
@@ -529,6 +597,25 @@ HD_ENT = {
 }
 
 
+TRANSITION_CRITTERS = {
+	[THEME.DWELLING] = {
+		entity = HD_ENT.CRITTER_RAT
+	},
+	[THEME.JUNGLE] = {
+		entity = HD_ENT.CRITTER_FROG
+	},
+	-- Confirm if this is in HD level transitions
+	-- [THEME.EGGPLANT_WORLD] = {
+		-- entity = HD_ENT.CRITTER_MAGGOT
+	-- },
+	-- [THEME.ICE_CAVES] = {
+		-- entity = HD_ENT.CRITTER_PENGUIN
+	-- },
+	-- [THEME.TEMPLE] = {
+		-- entity = HD_ENT.CRITTER_LOCUST
+	-- },
+}
+
 			-- parameters:
 				-- {{HD_ENT, true}, {HD_ENT, false}, {HD_ENT, true}...}
 					-- HD Enemy type
@@ -559,7 +646,7 @@ LEVEL_DANGERS = {
 			{
 				entity = HD_ENT.SPIDER,
 				variation = {
-					entities = {HD_ENT.SPIDER, HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
+					entities = {HD_ENT.HANGSPIDER, HD_ENT.GIANTSPIDER},
 					chances = {0.5, 0.85}
 				}
 			},
@@ -579,7 +666,7 @@ LEVEL_DANGERS = {
 			{
 				entity = HD_ENT.FROG,
 				variation = {
-					entities = {HD_ENT.FROG, HD_ENT.FIREFROG, HD_ENT.GIANTFROG},
+					entities = {HD_ENT.FIREFROG, HD_ENT.GIANTFROG},
 					chances = {0.75, 0.85}
 				}
 			},
@@ -668,7 +755,7 @@ function init()
 	HD_FEELING_HAUNTEDCASTLE = false
 	HD_FEELING_YETIKINGDOM = false
 	HD_FEELING_UFO = false
-	HD_FEELING_MOI = false
+	HD_FEELING_MOAI = false
 	HD_FEELING_MOTHERSHIPENTRANCE = false
 	HD_FEELING_SACRIFICIALPIT = false
 	HD_FEELING_HELL = false
@@ -696,26 +783,28 @@ end
 -- initialize per-level enemy databases
 function onlevel_dangers_init()
 	if LEVEL_DANGERS[state.theme] then
-		-- if (
-				-- options.hd_og_boulder_phys == true and
-				-- state.theme == THEME.DWELLING and
-				-- (
-					-- state.level == 2 or
-					-- state.level == 3 or
-					-- state.level == 4
-				-- )
-		-- ) then
-			-- table.insert(LEVEL_DANGERS[THEME.DWELLING].dangers, { entity = HD_ENT.BOULDER }) --if options.hd_og_boulder_phys == true then
-		-- end
 		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
+		if HD_FEELING_FLOODED == true then
+			if HD_FEELING_RESTLESS == true then
+				oldbitey_modified = TableCopy(HD_ENT.OLDBITEY)
+				oldbitey_modified.itemdrop.item = {HD_ENT.ITEM_CRYSTALSKULL}--ENT_TYPE.ITEM_MADAMETUSK_IDOL}
+				table.insert(global_dangers, oldbitey_modified)
+			else table.insert(global_dangers, HD_ENT.OLDBITEY) end
+		end
+		
+		if (options.hd_og_boulder_phys == true and
+			state.theme == THEME.DWELLING and
+			(
+				state.level == 2 or
+				state.level == 3 or
+				state.level == 4
+			)
+		) then		
+			boulder_modified = TableCopy(HD_ENT.BOULDER)
+			-- boulder_modified.?
+			table.insert(global_dangers, boulder_modified)
+		else table.insert(global_dangers, HD_ENT.BOULDER) end
 	end
-end
-
-function blacklist_level_noghost()
-	return (
-		state.theme == THEME.EGGPLANT_WORLD or
-		state.theme == THEME.OLMEC
-	)
 end
 
 function bubbles()
@@ -918,6 +1007,7 @@ function create_wormtongue(x, y, l)
 				door_platform.flags = clr_flag(door_platform.flags, 3)
 				door_platform.flags = clr_flag(door_platform.flags, 8)
 			else toast("No Worm Door platform found") end
+			-- TODO: Platform seems not to spawn if vine is in the way
 		end, 2)
 	else
 		toast("No STICKYTRAP_BALL found, no tongue generated.")
@@ -934,38 +1024,78 @@ function idol_disturbance()
 end
 
 -- detect offset
-function conflictdetection_floor(x, y, l, offsetx, offsety)
-	blocks = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, l, 0.1)--0.2)
+function detection_floor(x, y, l, offsetx, offsety, _radius)
+	_radius = _radius or 0.1
+	blocks = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, l, _radius)
 	if (#blocks > 0) then
-		return true
+		return blocks[1]
 	end
-	return false
+	return -1
+end
+
+-- return status: 1 for conflict, 0 for right side, -1 for left.
+function conflictdetection_giant(hdctype, x, y, l)
+	conflict_rightside = false
+	scan_width = 1 -- check 2 across
+	scan_height = 2 -- check 3 up
+	floor_level = 1 -- default to frog
+	-- if hdctype == HD_COLLISIONTYPE.GIANT_FROG then
+		
+	-- end
+	if hdctype == HD_COLLISIONTYPE.GIANT_SPIDER then
+		floor_level = 2 -- check ceiling
+	end
+	x_leftside = x - 1
+	y_scanbase = y - 1
+	for sides_xi = x, x_leftside, -1 do
+		for block_yi = y_scanbase, y_scanbase+scan_height, 1 do
+			for block_xi = sides_xi, sides_xi+scan_width, 1 do
+				avoidair = true
+				if block_yi == y_scanbase + floor_level then
+					avoidair = false
+				end
+				if (
+					(avoidair == false and (detection_floor(block_xi, block_yi, l, 0, 0) ~= -1)) or
+					(avoidair == true and (detection_floor(block_xi, block_yi, l, 0, 0) == -1))
+				) then
+					conflict_rightside = true
+				end
+			end
+		end
+		if conflict_rightside == false then
+			if sides_xi == x_leftside then
+				return -1
+			else
+				return 0
+			end
+		end
+	end
+	return 1
 end
 
 -- detect blocks above and to the sides
-function conflictdetection_trap(d_hddtype, dx, dy, dl)
-	local conflict = false
-	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
+function conflictdetection_floortrap(hdctype, x, y, l)
+	conflict = false
 	scan_width = 1 -- check 1 across
 	scan_height = 1 -- check the space above
-	if d_hddtype == HD_DANGERTYPE.FLOORTRAP and options.hd_z_antitrapcuck == true then
-		scan_width = 1 -- check 3 across (1 on each side)
+	if hdctype == HD_COLLISIONTYPE.FLOORTRAP and options.hd_z_antitrapcuck == true then
+		scan_width = 1 -- check 1 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
-	elseif d_hddtype == HD_DANGERTYPE.FLOORTRAP_TALL and options.hd_z_antitrapcuck == true then
+	elseif hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_z_antitrapcuck == true then
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end
-	ey_above = dy
+	ey_above = y
 	for block_yi = ey_above, ey_above+scan_height, 1 do
 		-- skip sides when y == 1
 		if block_yi < ey_above+scan_height then
-			block_xi_min, block_xi_max = dx, dx
+			block_xi_min, block_xi_max = x, x
 		else
-			block_xi_min = dx - math.floor(scan_width/2)
-			block_xi_max = dx + math.floor(scan_width/2)
+			block_xi_min = x - math.floor(scan_width/2)
+			block_xi_max = x + math.floor(scan_width/2)
 		end
 		for block_xi = block_xi_min, block_xi_max, 1 do
-			conflict = conflictdetection_floor(block_xi, block_yi, dl, 0, 0)
+			conflict = (detection_floor(block_xi, block_yi, l, 0, 0) ~= -1)
 			--TODO: test `return conflict` here instead (I know it will work -_- but just to be safe, test it first)
 			if conflict == true then
 				break
@@ -974,6 +1104,33 @@ function conflictdetection_trap(d_hddtype, dx, dy, dl)
 		if conflict == true then break end
 	end
 	return conflict
+end
+
+-- returns: optimal offset for conflicts
+function conflictdetection(hdctype, x, y, l)
+	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
+	-- HD_COLLISIONTYPE = {
+		-- AIR_TILE_1 = 1,
+		-- AIR_TILE_2 = 2,
+		-- FLOORTRAP = 3,
+		-- FLOORTRAP_TALL = 4,
+		-- GIANT_FROG = 5,
+		-- GIANT_SPIDER = 6,
+		-- -- GIANT_FISH = 7
+	-- }
+	
+	if hdctype == HD_COLLISIONTYPE.FLOORTRAP or hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL then
+		conflict = conflictdetection_floortrap(hdctype, x, y, l)
+		if conflict == true then return nil else return { 0, 0 } end
+	end
+	
+	if hdctype == HD_COLLISIONTYPE.GIANT_FROG or hdctype == HD_COLLISIONTYPE.GIANT_SPIDER then
+		side = conflictdetection_giant(hdctype, x, y, l)
+		if side > 0 then return nil
+		else return { side, 0 } end
+	end
+	
+	return nil
 end
 
 function decorate_floor(e_uid, offsetx, offsety)--e_type, --e_theme, orientation(?))
@@ -1011,7 +1168,7 @@ function generate_floor(hd_tileid, e_x, e_y, e_l)
 			-- use orientation parameter to adjust what side the decorations need to go on. Take open sides into consideration.
 		-- for degrees = 0, 270.0, 90.0 do
 			-- offsetcoord = rotate(e_x_, e_y_, e_x_, e_y_+1, degrees)
-			-- conflict = conflictdetection_floor(offsetcoord[1], offsetcoord[2], e_l, 0, 0)
+			-- conflict = (detection_floor(offsetcoord[1], offsetcoord[2], e_l, 0, 0) ~= -1)
 			-- if conflict == false then
 				-- decorate_floor(floor_uid, offsetcoord[1], offsetcoord[2])
 			-- end
@@ -1124,12 +1281,11 @@ function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	return branch_uid
 end
 
-
-function remove_crabmounts()
-	hidingspots = get_entities_by_type({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, ENT_TYPE.ACTIVEFLOOR_POWDERKEG, ENT_TYPE.ITEM_CRATE, ENT_TYPE.ITEM_CHEST})
-	for r, inventoryitem in ipairs(hidingspots) do
+function remove_entitytype_inventory(entity_type, inventory_entities)
+	items = get_entities_by_type(inventory_entities)
+	for r, inventoryitem in ipairs(items) do
 		local mount = get_entity(inventoryitem):topmost()
-		if mount ~= -1 and mount:as_container().type.id == ENT_TYPE.MONS_HERMITCRAB then
+		if mount ~= -1 and mount:as_container().type.id == entity_type then
 			move_entity(inventoryitem, -r, 0, 0, 0)
 			-- toast("Should be hermitcrab: ".. mount.uid)
 		end
@@ -1407,58 +1563,52 @@ function onloading_levelrules()
 	-- change_target(5,3,THEME.VOLCANA,5,4,???)
 end
 
--- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
--- Used to be part of onlevel_generation_dangers().
-function onlevel_dangers_piranha()
-	jungledangers = get_entities_by_type({
-		ENT_TYPE.MONS_MOSQUITO,
-		ENT_TYPE.MONS_WITCHDOCTOR,
-		ENT_TYPE.MONS_CAVEMAN,
-		ENT_TYPE.MONS_TIKIMAN,
-		ENT_TYPE.MONS_MANTRAP,
-		ENT_TYPE.MONS_MONKEY,
-		ENT_TYPE.ITEM_SNAP_TRAP
-	})
-	for _, danger in ipairs(jungledangers) do
-		d_mov = get_entity(danger):as_movable()
-		d_submerged = test_flag(d_mov.more_flags, 11)
-		if d_submerged == true then
-			x, y, l = get_position(danger)
-			s = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)--HD_ENT.PIRANHA.entitydb, x, y, l, 0, 0)
-			
-			-- TODO: Replace with danger_spawn()
-			behavior = {}
-			-- s_e = get_entity(s)
-			danger_object = {
-				["uid"] = s,
-				["x"] = x, ["y"] = y, ["l"] = l,
-				["hd_type"] = HD_ENT.PIRANHA,
-				["behavior"] = behavior,
-			}
-			danger_tracker[#danger_tracker+1] = danger_object
-			
-			move_entity(danger, 0, 0, 0, 0)
-		end
-	end
-end
-
 -- Entities that spawn with methods that are only set once
 function onlevel_dangers_setonce()
 	-- loop through all dangers in global_dangers, setting enemy specifics
 	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
 		for i = 1, #global_dangers, 1 do
-			if global_dangers[i].removemounts ~= nil then
-				if global_dangers[i].removemounts == HD_REMOVEMOUNT.SNAIL then
-					set_timeout(remove_crabmounts, 5)
-				end
-				if global_dangers[i].removemounts == HD_REMOVEMOUNT.EGGSAC then
-					set_interval(onframe_replace_grubs, 1)
+			hd_type = global_dangers[i]
+			if hd_type.removeinventory ~= nil then
+				if hd_type.removeinventory == HD_REMOVEINVENTORY.SNAIL then
+					set_timeout(function()
+						hd_type = HD_ENT.SNAIL
+						remove_entitytype_inventory(
+							hd_type.removeinventory.inventory_ownertype,
+							hd_type.removeinventory.inventory_entities
+						)
+					end, 5)
+				elseif hd_type.removeinventory == HD_REMOVEINVENTORY.SCORPIONFLY then
+					set_timeout(function()
+						hd_type = HD_ENT.SCORPIONFLY
+						remove_entitytype_inventory(
+							hd_type.removeinventory.inventory_ownertype,
+							hd_type.removeinventory.inventory_entities
+						)
+					end, 5)
 				end
 			end
-			
-			if global_dangers[i].liquidspawn ~= nil then
-				if global_dangers[i].liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
-					onlevel_dangers_piranha()
+			if hd_type.replaceoffspring ~= nil then
+				if hd_type.replaceoffspring == HD_REPLACE.EGGSAC then
+					set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, false, 0, 0) end, 1)
+				end
+			end
+			if hd_type.liquidspawn ~= nil then
+				if hd_type.liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
+					enttype_replace_danger(
+						{
+							ENT_TYPE.MONS_MOSQUITO,
+							ENT_TYPE.MONS_WITCHDOCTOR,
+							ENT_TYPE.MONS_CAVEMAN,
+							ENT_TYPE.MONS_TIKIMAN,
+							ENT_TYPE.MONS_MANTRAP,
+							ENT_TYPE.MONS_MONKEY,
+							ENT_TYPE.ITEM_SNAP_TRAP
+						},
+						HD_ENT.PIRANHA,
+						true,
+						0, 0
+					)
 				end
 			end
 		end
@@ -1500,6 +1650,15 @@ function onlevel_dangers_modifications()
 				if global_dangers[i].acceleration ~= nil and global_dangers[i].acceleration >= 0 then
 					s_mov.type.acceleration = global_dangers[i].acceleration
 				end
+				if global_dangers[i].friction ~= nil and global_dangers[i].friction >= 0 then
+					s_mov.type.friction = global_dangers[i].friction
+				end
+				if global_dangers[i].weight ~= nil and global_dangers[i].weight >= 0 then
+					s_mov.type.weight = global_dangers[i].weight
+				end
+				if global_dangers[i].elasticity ~= nil and global_dangers[i].elasticity >= 0 then
+					s_mov.type.elasticity = global_dangers[i].elasticity
+				end
 				
 				apply_entity_db(s)
 			end
@@ -1511,157 +1670,64 @@ end
 -- Find everything in the level within the given parameters, apply enemy modifications within parameters.
 function onlevel_generation_dangers()
 	if LEVEL_DANGERS[state.theme] then
-	
-		affected = get_entities_by_type(map(global_dangers, function(entity) return entity.toreplace end))--dangers_toreplace)
-		local giant_enemy = false
+		hd_types_toreplace = TableCopy(global_dangers)
+		
+		n = #hd_types_toreplace
+		for i, danger in ipairs(hd_types_toreplace) do
+			if danger.toreplace == nil then hd_types_toreplace[i] = nil end
+		end
+		hd_types_toreplace = CompactList(hd_types_toreplace, n)
+		affected = get_entities_by_type(map(hd_types_toreplace, function(hd_type) return hd_type.toreplace end))
+		giant_enemy = false
+		-- toast("#hd_types_toreplace: " .. tostring(#hd_types_toreplace))
+		-- toast("#affected: " .. tostring(#affected))
 
-		for i,ent in ipairs(affected) do
-			e_ent = get_entity(ent)
+		for _,ent_uid in ipairs(affected) do
+			e_ent = get_entity(ent_uid)
 			if e_ent ~= nil then
-				e_mov = e_ent:as_movable()
-				e_cont = e_ent:as_container()
-				ex, ey, el = get_position(ent)
-				e_type = e_cont.type.id
-				-- e_submerged = test_flag(e_mov.more_flags, 11)
+				-- ex, ey, el = get_position(ent_uid)
+				e_type = e_ent.type.id--e_ent:as_container().type.id
 				
-				local dangers_index = 0
-				for j = 1, #global_dangers, 1 do
-					if global_dangers[j].toreplace ~= nil and global_dangers[j].toreplace == e_type then dangers_index = j end
-				end
-				if dangers_index == 0 then toast("NO DANGER INDEX SET") end
 				
 				variation = nil
-				for j = 1, #LEVEL_DANGERS[state.theme].dangers, 1 do
+				for i = 1, #LEVEL_DANGERS[state.theme].dangers, 1 do
 					if (
-						LEVEL_DANGERS[state.theme].dangers[j].entity ~= nil and
-						LEVEL_DANGERS[state.theme].dangers[j].entity.toreplace ~= nil and
-						LEVEL_DANGERS[state.theme].dangers[j].entity.toreplace == e_type and
+						LEVEL_DANGERS[state.theme].dangers[i].entity ~= nil and
+						LEVEL_DANGERS[state.theme].dangers[i].entity.toreplace ~= nil and
+						LEVEL_DANGERS[state.theme].dangers[i].entity.toreplace == e_type and
 						(
-							LEVEL_DANGERS[state.theme].dangers[j].variation ~= nil and
-							LEVEL_DANGERS[state.theme].dangers[j].variation.entities ~= nil and
-							LEVEL_DANGERS[state.theme].dangers[j].variation.chances ~= nil and
-							#LEVEL_DANGERS[state.theme].dangers[j].variation.entities == 3 and
-							#LEVEL_DANGERS[state.theme].dangers[j].variation.chances == 2
+							LEVEL_DANGERS[state.theme].dangers[i].variation ~= nil and
+							LEVEL_DANGERS[state.theme].dangers[i].variation.entities ~= nil and
+							LEVEL_DANGERS[state.theme].dangers[i].variation.chances ~= nil and
+							#LEVEL_DANGERS[state.theme].dangers[i].variation.entities == 2 and
+							#LEVEL_DANGERS[state.theme].dangers[i].variation.chances == 2
 						)
 					) then
-						variation = LEVEL_DANGERS[state.theme].dangers[j].variation
+						variation = LEVEL_DANGERS[state.theme].dangers[i].variation
 					end
 				end
-				-- if variation == nil then toast("NO DANGER INDEX SET") end
-				
-				if global_dangers[dangers_index].tospawn ~= nil and global_dangers[dangers_index].tospawn ~= 0 then
-					s = -1
-					hd_ent_tolog = global_dangers[dangers_index]
-					-- TODO: Modify to accommodate the following enemies:
-						-- The Mines:
-							-- Miniboss enemy: Giant spider
-							-- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
-						-- The Jungle:
-							-- Miniboss enemy: Giant frog
-							-- If there's a wall to the right, don't spawn. (For the future when we don't replace mosquitos (or any enemy at all), try to spawn on 2-block surfaces.
-					-- TODO: Move conflict detection into its own category.
-					-- TODO: Add an HD_ENT property that takes an enum to set collision detection.
-					if (
-						global_dangers[dangers_index].dangertype ~= nil and
-						global_dangers[dangers_index].dangertype >= HD_DANGERTYPE.FLOORTRAP
-					) then
-						local conflict = conflictdetection_trap(global_dangers[dangers_index].dangertype, ex, ey, el)
-						if conflict == false then --or (conflict == true and options.hd_z_antitrapcuck == false) then
-							-- if there is no conflict or there is conflict and the anti-cuck option is disabled, create trap
-							floor_uid = e_mov.standing_on_uid
-							s = spawn_entity_over(global_dangers[dangers_index].tospawn, floor_uid, 0, 1)
-							if global_dangers[dangers_index].dangertype == HD_DANGERTYPE.FLOORTRAP_TALL then
-								s_head = spawn_entity_over(global_dangers[dangers_index].tospawn, get_entity(s):as_movable().uid, 0, 1)
-								-- TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
-							end
-						end
-					elseif (
-						global_dangers[dangers_index].toreplace ~= nil and
-						global_dangers[dangers_index].toreplace == e_type
-					) then
-						if variation ~= nil then
-						
-							local chance = math.random()
-							if (
-								chance >= variation.chances[2] and
-								giant_enemy == false
-							) then
-								giant_enemy = true
-								
-								-- if variation.entities[3].tospawn == ENT_TYPE.MONS_GIANTSPIDER then
-									-- s = spawn(variation.entities[3].tospawn, ex, ey-0.5, el, 0, 0)
-								-- else
-									s = spawn(variation.entities[3].tospawn, ex, ey, el, 0, 0)
-								-- end
-								-- if variation.entities[3].tospawn == ENT_TYPE.MONS_OCTOPUS then
-									-- s_mov = get_entity(s):as_movable()
-									-- 2.5 width, 2.5 height, 0.64 Box Width, 0.8 Box Height. Uncheck "Stunable". Set health to 8 hp.
-									-- to make devil, detect block it runs into and kill it when the octopi is in it's run state, then set its stuntimer.
-									
-									-- s_mov.hitboxx = 0.64
-									-- s_mov.hitboxy = 0.8
-									-- s_mov.width = 2.5
-									-- s_mov.height = 2.5
-									-- s_mov.flags = clr_flag(s_mov.flags, 12)
-									-- apply_entity_db(s)
-								-- end
-								hd_ent_tolog = variation.entities[3]
-							elseif (
-								(chance < variation.chances[2] and chance >= variation.chances[1]) and
-								giant_enemy == false
-							) then
-								s = spawn(variation.entities[2].tospawn, ex, ey, el, 0, 0)
-								if variation.entities[2].tospawn == ENT_TYPE.MONS_HANGSPIDER then
-									spawn(ENT_TYPE.ITEM_WEB, ex, ey, el, 0, 0) -- move into HD_ENT properties
-									spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, s, 0, 0) -- tikitraps can use this
-								end
-								hd_ent_tolog = variation.entities[2]
-							else
-								s = spawn(variation.entities[2].tospawn, ex, ey, el, 0, 0)
-								hd_ent_tolog = variation.entities[2]
-							end
-							-- s = spawn(variation.entities[1].tospawn, ex, ey, el, 0, 0)
-						else
-							s = spawn(global_dangers[dangers_index].tospawn, ex, ey, el, 0, 0)
-						end
-					else
-						toast("IMPOSSIBLE!!")
-					end
-					if s ~= -1 then
-						
-						danger_spawn(s, hd_ent_tolog, ex, ey, el, 0, 0)
-						-- move_entity(ent, 0, 0, 0, 0)
-					-- else --if you uncomment this, remove "this. 0_0"
-						-- s = ent
-					-- end
-						-- Enemy features here
-						s_mov = get_entity(s):as_movable()
-						if hd_ent_tolog.color ~= nil and #hd_ent_tolog.color == 3 then
-							s_mov.color.r = hd_ent_tolog.color[1]
-							s_mov.color.g = hd_ent_tolog.color[2]
-							s_mov.color.b = hd_ent_tolog.color[3]
-						end
-						if hd_ent_tolog.health ~= nil and hd_ent_tolog.health > 0 then
-							s_mov.health = hd_ent_tolog.health
-						end
-						if hd_ent_tolog.dim ~= nil and #hd_ent_tolog.dim == 2 then
-							s_mov.width = hd_ent_tolog.dim[1]
-							s_mov.height = hd_ent_tolog.dim[2]
-						end
-						if hd_ent_tolog.hitbox ~= nil and #hd_ent_tolog.hitbox == 2 then
-							s_mov.hitboxx = hd_ent_tolog.hitbox[1]
-							s_mov.hitboxy = hd_ent_tolog.hitbox[2]
-						end
-						-- stunnable = false,-- s_mov.flags = clr_flag(s_mov.flags, 12)
-						if hd_ent_tolog.stunnable ~= nil then
-							if hd_ent_tolog.stunnable == true then
-								s_mov.flags = set_flag(s_mov.flags, 12)
-							else
-								s_mov.flags = clr_flag(s_mov.flags, 12)
-							end
+				-- TODO: Replace dangers.variation with HD_ENT property, including chance.
+					-- Frogs can replace mosquitos by having 100% chance. ie, if it was 99%, 1% chance not to spawn.
+				-- TODO: Make a table consisting of: [ENT_TYPE] = {uid, uid, etc...}
+					-- For each ENT_TYPE, split uids evenly amongst `replacements.danger`
+					-- Then run each replacement's chance to spawn, replacing it if successful, removing it if unsuccessful.
+				replacements = {}
+				for _, danger in ipairs(hd_types_toreplace) do
+					if danger.toreplace == e_type then replacements[#replacements+1] = danger end
+				end
+				-- map replacement and their chances here
+				if #replacements > 0 then --for _, replacement in ipairs(replacements) do
+					hd_ent_tolog = replacements[1]-- replacement
+					if variation ~= nil then
+						chance = math.random()
+						if (chance >= variation.chances[2] and giant_enemy == false) then
+							giant_enemy = true
+							hd_ent_tolog = variation.entities[2]
+						elseif (chance < variation.chances[2] and chance >= variation.chances[1]) then
+							hd_ent_tolog = variation.entities[1]
 						end
 					end
-					move_entity(ent, 0, 0, 0, 0) -- "this. 0_0"
+					danger_replace(ent_uid, hd_ent_tolog, true, 0, 0)
 				end
 			end
 		end
@@ -1980,6 +2046,9 @@ function onlevel_blackmarket_ankh()
 			hedjet_mov = get_entity(hedjet_uid):as_movable()
 			x, y, l = get_position(hedjet_uid)
 			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l, 0, 0)
+			-- TODO: Replace Ankh with skeleton key, upon pickup in inventory, give player ankh powerup.
+			-- Rename shop string for skeleton key as "Ankh", replace skeleton key with Ankh texture.
+			-- TODO: Slightly unrelated, but make a method to remove/replace useless items(like the skeleton key). Depending on the context, replace it with another item in the pool of even chance.
 			ankh_mov = get_entity(ankh_uid):as_movable()
 			ankh_mov.flags = set_flag(ankh_mov.flags, 23)
 			ankh_mov.flags = set_flag(ankh_mov.flags, 20)
@@ -2020,20 +2089,24 @@ function onlevel_add_wormtongue()
 					-- spawn worm
 					create_wormtongue(get_position(random_uid))
 				end
-				kill_entity(tonguepoint_uid, 0, 0, 0, 0)
+				move_entity(tonguepoint_uid, 0, 0, 0, 0)
 			end
 			if random_uid == -1 then
 				toast("No worm for you. YEOW!! (random_uid could not be set)")
 			end
 		else
-			for _, tonguepoint_uid in ipairs(tonguepoints) do kill_entity(tonguepoint_uid, 0, 0, 0, 0) end
+			for _, tonguepoint_uid in ipairs(tonguepoints) do move_entity(tonguepoint_uid, 0, 0, 0, 0) end
 		end
 	end
+	set_timeout(function()
+		tonguepoints = get_entities_by_type(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH)
+		for _, tonguepoint_uid in ipairs(tonguepoints) do kill_entity(tonguepoint_uid, 0, 0, 0, 0) end
+	end, 5)
 end
 
 function onlevel_acidbubbles()
 	if state.theme == THEME.EGGPLANT_WORLD then
-		set_interval(bubbles, 40) -- 15)
+		set_interval(bubbles, 35) -- 15)
 	end
 end
 
@@ -2097,7 +2170,7 @@ end
 function onlevel_boss_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		cutscene_move_olmec()
+		cutscene_move_olmec_pre()
 		cutscene_move_cavemen()
 		create_endingdoor(41, 99, LAYER.FRONT)
 		create_entrance_hell()
@@ -2118,12 +2191,16 @@ function create_endingdoor(x, y, l)
 	end
 end
 
-function cutscene_move_olmec()
+function cutscene_move_olmec_pre()
 	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
 		OLMEC_ID = olmecs[1]
-		move_entity(olmecs[1], 24.500, 100.500, 0, 0)
-	else toast("AGH no olmec found :(") end
+		move_entity(OLMEC_ID, 24.500, 100.500, 0, 0)
+	end
+end
+
+function cutscene_move_olmec_post()
+	move_entity(OLMEC_ID, 22.500, 99.500, 0, 0)--24.500, 100.500, 0, 0)
 end
 
 function cutscene_move_cavemen()
@@ -2131,7 +2208,8 @@ function cutscene_move_cavemen()
 	-- create a hawkman and disable his ai
 	-- set_timeout() to reenable his ai and set his stuntimer.
 	-- **does set_timeout() work during cutscenes?
-	-- **does set_timeout() account for pausing the game?
+		-- if not, use set_global_timeout
+			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
 	-- **consider problems for skipping the cutscene
 	cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
 	for i, caveman in ipairs(cavemen) do
@@ -2225,13 +2303,13 @@ function onlevel_detection_feeling()
 		
 		if state.level == 2 then
 			if math.random() <= 0.5 then
-				HD_FEELING_MOI = true
+				HD_FEELING_MOAI = true
 			else
-				LOAD_MOI = true -- load moi on the next level
+				LOAD_MOAI = true -- load MOAI on the next level
 			end
-		elseif state.level == 3 and LOAD_MOI == true then
-			HD_FEELING_MOI = true
-			LOAD_MOI = false
+		elseif state.level == 3 and LOAD_MOAI == true then
+			HD_FEELING_MOAI = true
+			LOAD_MOAI = false
 		end
 		if state.level == 4 then
 			if CANCEL_MOTHERSHIPENTRANCE == true then
@@ -2315,12 +2393,12 @@ end
 
 function onlevel_loadfeeling()
 	if LOAD_HAUNTEDCASTLE == true then HD_FEELING_HAUNTEDCASTLE = true end
-	if LOAD_MOI == true then HD_FEELING_MOI = true end
+	if LOAD_MOAI == true then HD_FEELING_MOAI = true end
 end
 
 function onlevel_revertloadfeeling()
 	if LOAD_HAUNTEDCASTLE == true then LOAD_HAUNTEDCASTLE = false end
-	-- if LOAD_MOI == true and HD_FEELING_MOI == false then LOAD_MOI = false end
+	-- if LOAD_MOAI == true and HD_FEELING_MOAI == false then LOAD_MOAI = false end
 end
 
 function onlevel_coffinunlocks()
@@ -2457,6 +2535,15 @@ function onlevel_coffinunlocks()
 				coffin_m.velocityy = 0
 			elseif state.theme == THEME.JUNGLE then
 				set_contents(coffins[1], ENT_TYPE.CHAR_OTAKU)
+				-- TODO: Black Market unlock
+				-- if character hasn't been unlocked yet:
+					-- if `blackmarket_char_witnessed` == false:
+						--`blackmarket_char_witnessed` = true
+						-- Have him up for sale in the black market
+							-- if purchased or shopkeeprs agrod:
+								-- unlock character
+					-- if `blackmarket_char_witnessed` == true:
+						-- found in coffin elsewhere (where?)
 			elseif state.theme == THEME.ICE_CAVES then
 				-- TODO: Find way to distinguish coffins
 				set_contents(coffins[1], ENT_TYPE.CHAR_COCO_VON_DIAMONDS)
@@ -2909,25 +2996,34 @@ end
 
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
 -- Used to be part of onlevel_generation_dangers().
-function onframe_replace_grubs()
-	grubs = get_entities_by_type({
-		ENT_TYPE.MONS_GRUB,
-	})
-	for _, danger in ipairs(grubs) do
-		d_mov = get_entity(danger):as_movable()
-		x, y, l = get_position(danger)
-		s = spawn(ENT_TYPE.MONS_MOLE, x, y, l, d_mov.velocityx, d_mov.velocityy)--HD_ENT.PIRANHA.entitydb, x, y, l, 0, 0)
-		-- TODO: Replace with danger_spawn()
-		behavior = {}
-		danger_object = {
-			["uid"] = s,
-			["x"] = x, ["y"] = y, ["l"] = l,
-			["hd_type"] = HD_ENT.WORMBABY,
-			["behavior"] = behavior,
-		}
-		danger_tracker[#danger_tracker+1] = danger_object
+function enttype_replace_danger(enttypes, hd_type, check_submerged, _vx, _vy)
+	check_submerged = check_submerged or false
+	
+	dangers_uids = get_entities_by_type(enttypes)
+	for _, danger_uid in ipairs(dangers_uids) do
 		
-		move_entity(danger, 0, 0, 0, 0)
+		d_mov = get_entity(danger_uid):as_movable()
+		d_submerged = test_flag(d_mov.more_flags, 11)
+		if (
+			check_submerged == false or
+			(check_submerged == true and d_submerged == true)
+		) then
+		
+			
+			-- d_mov = get_entity(danger_uid):as_movable()
+			-- d_type = get_entity(uid):as_container().type.id
+			-- uid_to_track = danger_uid
+			
+			-- if d_type ~= hd_type.toreplace
+				-- x, y, l = get_position(danger_uid)
+				-- vx = _vx or d_mov.velocityx
+				-- vy = _vy or d_mov.velocityy
+				-- uid_to_track = spawn(hd_type.tospawn, x, y, l, vx, vy)
+				-- move_entity(danger_uid, 0, 0, 0, 0)
+			-- end
+			
+			danger_replace(danger_uid, hd_type, false, _vx, _vy)
+		end
 	end
 end
 
@@ -3055,11 +3151,11 @@ function onframe_manage_dangers()
 				(
 					danger.hd_type.kill_on_standing ~= nil and
 					(
-						danger.hd_type.kill_on_standing == KILL_ON.STANDING and
+						danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING and
 						danger_mov.standing_on_uid ~= -1
 					) or
 					(
-						danger.hd_type.kill_on_standing == KILL_ON.STANDING_OUTOFWATER and
+						danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING_OUTOFWATER and
 						danger_mov.standing_on_uid ~= -1 and
 						test_flag(danger_mov.more_flags, 11) == false
 					)
@@ -3075,6 +3171,12 @@ function onframe_manage_dangers()
 		end
 		if killbool == true then
 			-- if there's no script-enduced death and we're left with a nil response to uid, track entity coordinates with HD_BEHAVIOR and upon a nil response set killbool in the danger_mov == nil statement. That should allow spawning the item here.
+			-- This should also alow for removing all enemy behaviors.
+			if danger.behavior ~= nil then
+				if danger.behavior.bat_uid ~= nil then
+					move_entity(danger.behavior.bat_uid, 0, 0, 0, 0)
+				end
+			end
 			if danger_tracker[i].hd_type.itemdrop ~= nil then -- if dead and has possible item drops
 				if danger_tracker[i].hd_type.itemdrop.item ~= nil and #danger_tracker[i].hd_type.itemdrop.item > 0 then
 					if (
@@ -3085,7 +3187,11 @@ function onframe_manage_dangers()
 							math.random() <= danger_tracker[i].hd_type.itemdrop.chance
 						)
 					) then
-						spawn(danger_tracker[i].hd_type.itemdrop.item[math.random(1, #danger_tracker[i].hd_type.itemdrop.item)], danger.x, danger.y, danger.l, 0, 0)
+						itemdrop = danger_tracker[i].hd_type.itemdrop.item[math.random(1, #danger_tracker[i].hd_type.itemdrop.item)]
+						if itemdrop == HD_ENT.ITEM_CRYSTALSKULL then
+							create_ghost()
+						end
+						danger_spawn(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)--spawn(itemdrop, etc)
 					end
 				end
 			end
@@ -3099,7 +3205,8 @@ function onframe_manage_dangers()
 							math.random() <= danger_tracker[i].hd_type.treasuredrop.chance
 						)
 					) then
-						spawn(danger_tracker[i].hd_type.treasuredrop.item[math.random(1, #danger_tracker[i].hd_type.treasuredrop.item)], danger.x, danger.y, danger.l, 0, 0)
+						itemdrop = danger_tracker[i].hd_type.treasuredrop.item[math.random(1, #danger_tracker[i].hd_type.treasuredrop.item)]
+						danger_spawn(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
 					end
 				end
 			end
@@ -3124,7 +3231,7 @@ end
 
 -- if enabled == true, enable target_uid and disable master
 -- if enabled == false, enable master_uid and disable behavior
--- loop through and disable behavior_uids unless it happends to be the behavior or the master uid
+-- loop through and disable behavior_uids unless it happeneds to be the behavior or the master uid
 function behavior_toggle(target_uid, master_uid, behavior_uids, enabled)
 	master_mov = get_entity(master_uid)
 	if master_mov ~= nil then
@@ -3206,7 +3313,7 @@ function onframe_ghosts()
 			if found_ghost_uid == cur_ghost_uid then accounted = cur_ghost_uid end
 			
 			ghost = get_entity(found_ghost_uid):as_ghost()
-			toast("timer: " .. tostring(ghost.split_timer) .. ", v_mult: " .. tostring(ghost.velocity_multiplier))
+			-- toast("timer: " .. tostring(ghost.split_timer) .. ", v_mult: " .. tostring(ghost.velocity_multiplier))
 			if (options.hd_og_ghost_nosplit == true) then ghost.split_timer = 0 end
 		end
 		if accounted == 0 then ghosttoset_uid = found_ghost_uid end
@@ -3281,7 +3388,7 @@ function onframe_olmec_cutscene() -- TODO: Move to set_interval() that you can c
 				end
 				b = b + 1
 			end
-			move_entity(OLMEC_ID, 22.500, 99.500, 0, 0)--24.500, 100.500, 0, 0)
+			cutscene_move_olmec_post()
 			BOSS_STATE = BOSS_SEQUENCE.FIGHT
 		end
 	end
@@ -3296,7 +3403,7 @@ function onframe_boss()
 				onframe_olmec_behavior()
 				onframe_boss_wincheck()
 			end
-		else toast("AGH no olmec found :(") end
+		end
 	end
 end
 
@@ -3324,51 +3431,45 @@ function onframe_olmec_behavior()
 		elseif olmec.velocityy < -0.400 then
 			OLMEC_STATE = OLMEC_SEQUENCE.FALL
 		end
-	else toast("AGHHHH olmec is nil :(") end
+	end
 end
 
 function olmec_attack(x, y, l)
-	s = spawn_entity(ENT_TYPE.ITEM_TIAMAT_SHOT, x, y, l, 0, 150)
-	-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
-	danger_setflags(s, { 13 }, { 4, 10 })
-	
-	xvel = math.random(7, 30)/100
-	yvel = math.random(5, 10)/100
-	if math.random() >= 0.5 then xvel = -1*xvel end
-	olmec_shot_object = {
-		["uid"] = s,
-		["x"] = x, ["y"] = y, ["l"] = l,
-		["hd_type"] = HD_ENT.OLMEC_SHOT,
-		["behavior"] = TableCopy(HD_BEHAVIOR.OLMEC_SHOT)
-	}
-	olmec_shot_object.behavior.velocityx = xvel
-	olmec_shot_object.behavior.velocityy = yvel
-	danger_tracker[#danger_tracker+1] = olmec_shot_object
-	
+	danger_spawn(HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
 end
 
-function danger_spawn(uid, hd_type, x, y, l, vx, vy)
-	behavior = {}
-	if hd_type.behavior ~= nil then
-		behavior = TableCopy(hd_type.behavior)
-		-- if hd_type.behavior.abilities ~= nil then
-			if hd_type.behavior == HD_BEHAVIOR.SCORPIONFLY then
+function danger_track(uid_to_track, x, y, l, hd_type)
+	danger_object = {
+		["uid"] = uid_to_track,
+		["x"] = x, ["y"] = y, ["l"] = l,
+		["hd_type"] = hd_type,
+		["behavior"] = create_behavior(hd_type.behavior)
+	}
+	danger_tracker[#danger_tracker+1] = danger_object
+end
+
+function create_behavior(behavior)
+	decorated_behavior = {}
+	if behavior ~= nil then
+		decorated_behavior = TableCopy(behavior)
+		-- if behavior.abilities ~= nil then
+			if behavior == HD_BEHAVIOR.SCORPIONFLY then
 				-- TODO: Ask the discord if it's actually possible to check if a variable exists even if it's set to nil
 				-- The solution is probably assigning ability parameters by setting the variable to -1
 					-- (which I CAN do in this situation considering it's a uid field)
 				-- ACTUALLYYYYYYYYYYYY The solution is probably using string indexes(I'm probably butchuring the terminology)
-					-- For instance; "for string, value in pairs(hd_type.behavior.abilities) do if string == "bat_uid" then toast("BAT!!") end end"
+					-- For instance; "for string, value in pairs(decorated_behavior.abilities) do if string == "bat_uid" then toast("BAT!!") end end"
 				
-				-- if hd_type.behavior.abilities.agro.bat_uid ~= nil then
+				-- if behavior.abilities.agro.bat_uid ~= nil then
 					
-					behavior.bat_uid = spawn(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)--behavior.abilities.agro.bat_uid = spawn(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
-					danger_setflags(behavior.bat_uid, { 1, 6, 25 })
+					decorated_behavior.bat_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)--decorated_behavior.abilities.agro.bat_uid = spawn(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
+					danger_setflags(decorated_behavior.bat_uid, { 1, 6, 25 })
 				
 				-- end
-				-- if hd_type.behavior.abilities.idle.mosquito_uid ~= nil then
+				-- if behavior.abilities.idle.mosquito_uid ~= nil then
 					
-					-- behavior.abilities.idle.mosquito_uid = spawn(ENT_TYPE.MONS_MOSQUITO, x, y, l, 0, 0)
-					-- ability_e = get_entity(behavior.abilities.idle.mosquito_uid)
+					-- decorated_behavior.abilities.idle.mosquito_uid = spawn(ENT_TYPE.MONS_MOSQUITO, x, y, l, 0, 0)
+					-- ability_e = get_entity(decorated_behavior.abilities.idle.mosquito_uid)
 					-- if options.hd_debug_invis == false then
 						-- ability_e.flags = set_flag(ability_e.flags, 1)
 					-- end
@@ -3377,18 +3478,195 @@ function danger_spawn(uid, hd_type, x, y, l, vx, vy)
 					
 				-- end
 				
-					-- toast("#behavior.abilities: " .. tostring(#behavior.abilities))
+					-- toast("#decorated_behavior.abilities: " .. tostring(#decorated_behavior.abilities))
+			end
+			if behavior == HD_BEHAVIOR.OLMEC_SHOT then
+				xvel = math.random(7, 30)/100
+				yvel = math.random(5, 10)/100
+				if math.random() >= 0.5 then xvel = -1*xvel end
+				decorated_behavior.velocityx = xvel
+				decorated_behavior.velocityy = yvel
 			end
 		-- end
 	end
-	-- s_e = get_entity(s)
-	danger_object = {
-		["uid"] = uid,
-		["x"] = x, ["y"] = y, ["l"] = l,
-		["hd_type"] = hd_type,
-		["behavior"] = behavior
-	}
-	danger_tracker[#danger_tracker+1] = danger_object
+	return decorated_behavior
+end
+
+-- velocity defaults to 0
+function create_danger(hd_type, x, y, l, _vx, _vy)
+	vx = _vx or 0
+	vy = _vy or 0
+	uid = -1
+	if (hd_type.collisiontype ~= nil and (hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL)) then
+		floor_uid = detection_floor(x, y, l, 0, -1, 0.5)
+		if floor_uid ~= -1 then
+			uid = spawn_entity_over(hd_type.tospawn, floor_uid, 0, 1)
+			if hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL then
+				s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
+			end
+		end
+		-- TODO: Modify to accommodate the following enemies:
+			-- The Mines:
+				-- Miniboss enemy: Giant spider
+				-- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
+			-- The Jungle:
+				-- Miniboss enemy: Giant frog
+				-- If there's a wall to the right, don't spawn. (For the future when we don't replace mosquitos (or any enemy at all), try to spawn on 2-block surfaces.
+		-- TODO: Move conflict detection into its own category.
+		-- TODO: Add an HD_ENT property that takes an enum to set collision detection.
+	else
+		uid = spawn(hd_type.tospawn, x, y, l, vx, vy)
+	end
+	return uid
+end
+
+function danger_applydb(uid, hd_type)
+	s_mov = get_entity(uid):as_movable()
+	x, y, l = get_position(uid)
+	
+	if hd_type == HD_ENT.HANGSPIDER then
+		spawn(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0) -- move into HD_ENT properties
+		spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0) -- tikitraps can use this
+	end
+	if hd_type.color ~= nil and #hd_type.color == 3 then
+		s_mov.color.r = hd_type.color[1]
+		s_mov.color.g = hd_type.color[2]
+		s_mov.color.b = hd_type.color[3]
+	end
+	if hd_type.health ~= nil and hd_type.health > 0 then
+		s_mov.health = hd_type.health
+	end
+	if hd_type.dim ~= nil and #hd_type.dim == 2 then
+		s_mov.width = hd_type.dim[1]
+		s_mov.height = hd_type.dim[2]
+	end
+	if hd_type.hitbox ~= nil and #hd_type.hitbox == 2 then
+		s_mov.hitboxx = hd_type.hitbox[1]
+		s_mov.hitboxy = hd_type.hitbox[2]
+	end
+	-- TODO: Move flags into a table of pairs(flagnumber, bool)
+	if hd_type.flag_stunnable ~= nil then
+		if hd_type.flag_stunnable == true then
+			s_mov.flags = set_flag(s_mov.flags, 12)
+		else
+			s_mov.flags = clr_flag(s_mov.flags, 12)
+		end
+	end
+	
+	if hd_type.flag_collideswalls ~= nil then
+		if hd_type.flag_collideswalls == true then
+			s_mov.flags = set_flag(s_mov.flags, 13)
+		else
+			s_mov.flags = clr_flag(s_mov.flags, 13)
+		end
+	end
+	
+	if hd_type.flag_nogravity ~= nil then
+		if hd_type.flag_nogravity == true then
+			s_mov.flags = set_flag(s_mov.flags, 4)
+		else
+			s_mov.flags = clr_flag(s_mov.flags, 4)
+		end
+	end
+	
+	if hd_type.flag_passes_through_objects ~= nil then
+		if hd_type.flag_passes_through_objects == true then
+			s_mov.flags = set_flag(s_mov.flags, 10)
+		else
+			s_mov.flags = clr_flag(s_mov.flags, 10)
+		end
+	end
+end
+
+-- velocity defaults to uid's
+function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
+	conflict = nil
+	uid_to_track = uid
+	d_mov = get_entity(uid_to_track):as_movable()
+	vx = _vx or d_mov.velocityx
+	vy = _vy or d_mov.velocityx
+	
+	x, y, l = get_position(uid_to_track)
+	
+	d_type = get_entity(uid_to_track).type.id
+	
+	if hd_type.collisiontype == nil then
+		conflict = { 0, 0 }
+	elseif (
+		collision_detection == true and
+		(
+			hd_type.collisiontype ~= nil and
+			(
+				hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
+				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
+				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			)
+		)
+	) then
+		conflict = conflictdetection(hd_type.collisiontype, x, y, l)
+	end
+	
+	if (
+		(hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type)
+		and
+		conflict ~= nil
+	) then --or (conflict == true and options.hd_z_antitrapcuck == false) then
+			-- if there is no conflict or there is conflict and the anti-cuck option is disabled, attempt to create trap
+		offsetx, offsety = danger_setoffset(hd_type, conflict) -- TODO: Take into account replaced enemies that are the same ENT_TYPE.
+		uid_to_track = create_danger(hd_type, x+offsetx, y+offsety, l, vx, vy)
+		
+		move_entity(uid, 0, 0, 0, 0)
+	else
+		d_mov.velocityx = _vx
+		d_mov.velocityy = _vy
+	end
+	if conflict == nil then
+		move_entity(uid, 0, 0, 0, 0)
+	end
+
+	if uid_to_track ~= -1 then
+		danger_applydb(uid_to_track, hd_type)
+		danger_track(uid_to_track, x, y, l, hd_type)
+	end
+end
+
+-- velocity defaults to 0 (by extension of `create_danger()`)
+function danger_spawn(hd_type, x, y, l, collision_detection, _vx, _vy)
+	conflict = nil
+	if hd_type.collisiontype == nil then
+		conflict = { 0, 0 }
+	elseif (
+		collision_detection == true and
+		(
+			hd_type.collisiontype ~= nil and
+			(
+				hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
+				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
+				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			)
+		)
+	) then
+		conflict = conflictdetection(hd_type.collisiontype, x, y, l)
+	end
+	if conflict ~= nil then --or (conflict == true and options.hd_z_antitrapcuck == false) then
+			-- if there is no conflict or there is conflict and the anti-cuck option is disabled, attempt to create trap
+		offset_conflict_x, offset_conflict_y = conflict[1], conflict[2]
+		uid = create_danger(hd_type, x+offsetx, y+offsety, l, _vx, _vy)
+		if uid ~= -1 then
+			danger_applydb(uid, hd_type)
+
+			danger_track(uid, x, y, l, hd_type)
+		end
+	end
+end
+
+function danger_setoffset(hd_type, conflict)
+	offset_conflict_x, offset_conflict_y = conflict[1], conflict[2]
+	offset_spawn_x, offset_spawn_y = 0, 0
+	if hd_type.offset_spawn ~= nil then
+		offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
+	end
+	return offset_conflict_x+offset_spawn_x, offset_conflict_y+offset_spawn_y
 end
 
 function danger_setflags(uid_assignto, flags_set, flags_clear)
@@ -3414,11 +3692,10 @@ function onframe_boss_wincheck()
 		if olmec ~= nil then
 			if olmec.attack_phase == 3 then
 				-- TODO: play cool win jingle
-				toast("big dummy hed is ded")
 				BOSS_STATE = BOSS_SEQUENCE.DEAD
 				unlock_door_at(41, 99)
 			end
-		else toast("AGHHHH olmec is nil :(") end
+		end
 	end
 end
 
@@ -3426,18 +3703,27 @@ function onguiframe_ui_info_boss()
 	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.theme == THEME.OLMEC and OLMEC_ID ~= nil then
 			olmec = get_entity(OLMEC_ID)
+			text_x = -0.95
+			text_y = -0.50
+			white = rgba(255, 255, 255, 255)
 			if olmec ~= nil then
-				-- code adapted from olmec.lua
 				olmec = get_entity(OLMEC_ID):as_olmec()
-				text_x = -0.95
-				text_y = -0.50
-				white = rgba(255, 255, 255, 255)
+				
 				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 				olmec_attack_state = "UNKNOWN"
 				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
 				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
-				draw_text(text_x, text_y, 0, "Custom Olmec State Detection: " .. olmec_attack_state, white)
-			else toast("AGHHHH olmec is nil :(") end
+				
+				-- BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
+				boss_attack_state = "UNKNOWN"
+				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then BOSS_attack_state = "CUTSCENE"
+				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then BOSS_attack_state = "FIGHT"
+				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then BOSS_attack_state = "DEAD" end
+				
+				draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
+				text_y = text_y - 0.1
+				draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
+			else draw_text(text_x, text_y, 0, "olmec is nil", white) end
 		end
 	end
 end
@@ -3540,12 +3826,12 @@ function onguiframe_ui_info_feelings()
 		text_hauntedcastle_bool = "FALSE"
 		text_yetikingdom_bool = "FALSE"
 		text_ufo_bool = "FALSE"
-		text_moi_bool = "FALSE"
+		text_MOAI_bool = "FALSE"
 		text_mothershipentrance_bool = "FALSE"
 		text_sacrificialpit_bool = "FALSE"
 		text_hell_bool = "FALSE"
 		
-		text_load_moi_bool = "FALSE"
+		text_LOAD_MOAI_bool = "FALSE"
 		text_load_hauntedcastle_bool = "FALSE"
 		text_cancel_mothershipentrance_bool = "FALSE"
 		
@@ -3558,12 +3844,12 @@ function onguiframe_ui_info_feelings()
 		if HD_FEELING_HAUNTEDCASTLE == true then text_hauntedcastle_bool = "TRUE" feelings = feelings + 1 end
 		if HD_FEELING_YETIKINGDOM == true then text_yetikingdom_bool = "TRUE" feelings = feelings + 1 end
 		if HD_FEELING_UFO == true then text_ufo_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_MOI == true then text_moi_bool = "TRUE" feelings = feelings + 1 end
+		if HD_FEELING_MOAI == true then text_MOAI_bool = "TRUE" feelings = feelings + 1 end
 		if HD_FEELING_MOTHERSHIPENTRANCE == true then text_mothershipentrance_bool = "TRUE" feelings = feelings + 1 end
 		if HD_FEELING_SACRIFICIALPIT == true then text_sacrificialpit_bool = "TRUE" feelings = feelings + 1 end
 		if HD_FEELING_HELL == true then text_hell_bool = "TRUE" feelings = feelings + 1 end
 		
-		if LOAD_MOI == true then text_load_moi_bool = "TRUE" end
+		if LOAD_MOAI == true then text_LOAD_MOAI_bool = "TRUE" end
 		if LOAD_HAUNTEDCASTLE == true then text_load_hauntedcastle_bool = "TRUE" end
 		if CANCEL_MOTHERSHIPENTRANCE == true then text_cancel_mothershipentrance_bool = "TRUE" end
 		
@@ -3579,12 +3865,12 @@ function onguiframe_ui_info_feelings()
 		text_hauntedcastle_bool = ("hauntedcastle_bool = " .. text_hauntedcastle_bool)
 		text_yetikingdom_bool = ("yetikingdom_bool = " .. text_yetikingdom_bool)
 		text_ufo_bool = ("ufo_bool = " .. text_ufo_bool)
-		text_moi_bool = ("moi_bool = " .. text_moi_bool)
+		text_MOAI_bool = ("MOAI_bool = " .. text_MOAI_bool)
 		text_mothershipentrance_bool = ("mothershipentrance_bool = " .. text_mothershipentrance_bool)
 		text_sacrificialpit_bool = ("sacrificialpit_bool = " .. text_sacrificialpit_bool)
 		text_hell_bool = ("hell_bool = " .. text_hell_bool)
 		
-		text_load_moi_bool = ("load_moi_bool = " .. text_load_moi_bool)
+		text_LOAD_MOAI_bool = ("LOAD_MOAI_bool = " .. text_LOAD_MOAI_bool)
 		text_load_hauntedcastle_bool = ("load_hauntedcastle_bool = " .. text_load_hauntedcastle_bool)
 		text_cancel_mothershipentrance_bool = ("cancel_mothershipentrance_bool = " .. text_cancel_mothershipentrance_bool)
 		
@@ -3608,7 +3894,7 @@ function onguiframe_ui_info_feelings()
 		text_y = text_y-0.05
 		draw_text(text_x, text_y, 0, text_ufo_bool, white)
 		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_moi_bool, white)
+		draw_text(text_x, text_y, 0, text_MOAI_bool, white)
 		text_y = text_y-0.05
 		draw_text(text_x, text_y, 0, text_mothershipentrance_bool, white)
 		text_y = text_y-0.05
@@ -3617,7 +3903,7 @@ function onguiframe_ui_info_feelings()
 		draw_text(text_x, text_y, 0, text_hell_bool, white)
 		text_y = text_y-0.1
 		
-		draw_text(text_x, text_y, 0, text_load_moi_bool, white)
+		draw_text(text_x, text_y, 0, text_LOAD_MOAI_bool, white)
 		text_y = text_y-0.05
 		draw_text(text_x, text_y, 0, text_load_hauntedcastle_bool, white)
 		text_y = text_y-0.05
@@ -3837,6 +4123,112 @@ end
 			-- 4: Move enemies from exit to designated rooms.
 				-- Parameters
 					-- `rooms_roomcodes_final`
+		-- Certain room constants will need to be recognized and marked for replacement. This includes:
+			-- Tun rooms
+				-- Constraints are ENT_TYPE.MONS_MERCHANT in the front layer
+			-- Tun rooms
+				-- Constraints are ENT_TYPE.MONS_THEIF in the front layer
+			-- Shops and vaults in HELL
+		-- Make the outline of a vault room tilecode `2` (50% chance to remove each outlining block)
+		-- TODO: HD_FEELING bool system Revamp:
+			-- HD_FEELING[FLOODED] = {
+				-- chance = 0.25, 				-- manditory
+				-- load = 0,					-- manditory -- set to level number to register when to load it
+				-- themes = { THEME.JUNGLE },	-- manditory
+				-- message = "I hear rushing water!" -- some feelings won't have this field
+			-- }
+			-- won't set if already set to the current level or a past level
+			-- function set_feeling_happenonce_future(feeling, levels, use_chance)
+				-- if (detect_feeling_themes(feeling) and HD_FEELING[feeling].load <= state.level) then return false
+				-- else
+					-- return set_feeling(feeling, levels, use_chance)
+				-- end
+			-- end
+			-- won't set if already set
+			-- function set_feeling_happenonce(feeling, levels, use_chance)
+				-- if HD_FEELING[feeling].load ~= 0 then return false
+				-- else
+					-- return set_feeling(feeling, levels, use_chance)
+				-- end
+			-- end
+			-- if multiple levels and false are passed in, a random level in the table is set
+			-- function set_feeling(feeling, levels, use_chance)
+				-- use_chance = use_chance or true
+				-- if use_chance == false
+					-- levels_indexed = {}
+					-- for _, level in ipairs(levels) do
+						-- levels_indexed[#levels_indexed+1] = level
+					-- end
+					-- HD_FEELING[feeling].load = levels_indexed[math.random(1, #level_indexed)]
+					-- return true
+				-- end
+				-- chance = math.random()
+				-- level_chosen = -1
+				-- for _, level in pairs(levels) do
+					-- if level_chosen == -1 and (use_chance == false or (use_chance == true and HD_FEELING[feeling].chance >= chance)) then
+						-- level_chosen = level
+					-- end
+				-- end
+				-- if level_chosen == -1 then
+					-- return false
+				-- else
+					-- HD_FEELING[feeling].load = level_chosen
+					-- return true
+				-- end
+			-- end
+			-- function detect_feeling_themes(feeling)
+				-- for _, level in ipairs(HD_FEELING[feeling].themes) do
+					-- if state.level == level then
+						-- return true
+					-- end
+				-- end
+				-- return false
+			-- end
+			-- function feeling_check(feeling)
+				-- if detect_feeling_themes(feeling) == true then
+					-- for _, load in ipairs(HD_FEELING[feeling].load) do
+						-- if state.level == load then return true end
+					-- end
+				-- end
+				-- return false
+			-- end
+			-- old way: if HD_FEELING_RESTLESS == true then toast("The dead are restless!") end
+			-- new way: if feeling_check("RESTLESS") == true then toast("The dead are restless!") end
+			-- new ways:
+				-- run a chance to set the current level feeling:
+					-- set_feeling("RESTLESS", {state.level}, true)
+				-- run a chance to set the level feeling for a random level when it hasn't been set already:
+					-- set_feeling_happenonce("RESTLESS", {state.level}, true)
+				-- queue the next level to load the feeling:
+					-- set_feeling("HAUNTEDCASTLE", {state.level}+1)
+		-- On loading each world, pre-set when some of the level feelings are going to spawn.
+			-- for instance: Black market entrance, 
+		-- Black Market & Flooded Revamp:
+			-- Replace S2 style black market with HD
+				-- HD and S2 differences:
+					-- S2 black market spawns are 2-2, 2-3, and 2-4
+					-- HD spawns are 2-1, 2-2, and 2-3
+						-- Prevents the black market from being accessed upon exiting the worm
+						-- Gives room for the next level to load as black market
+				-- script spawning LOGICAL_BLACKMARKET_DOOR
+					
+					-- if HD_FEELING_BLACKMARKET_ENTRANCE == false
+				-- if detect_s2market() == true 
+			-- Use S2 black market for flooded level feeling
+				-- Set LOAD_FLOODED: Detect when S2 black market spawns
+					-- function onloading_setfeeling_load_flooded: roll HD_FEELING_FLOODED_CHANCE 4 times (or 3 if you're not going to try to extend the levels to allow S2 black market to spawn)
+					-- for each roll: if true, return true
+					-- if it returned true, set LOAD_FLOODED to true
+					-- S2 Market Detection ideas:
+						-- function detect_s2market()
+							-- market_doors = get_entities_by_type(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR)
+							-- if (#market_doors > 0) -- or (state.theme == THEME.JUNGLE and levelsize[2] >= 4)
+								-- return true
+							-- end
+							-- return false
+						-- end
+						-- if detect_s2market() == true and LOAD_FLOODED == true, set HD_FEELING_FLOODED
+			
 	-- Roomcodes:
 		-- Level Feelings:
 			-- TIKI VILLAGE

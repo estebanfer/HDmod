@@ -13,7 +13,7 @@ register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info", false)
 register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info", false)
 register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", false)
 register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info", false)
-register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", false)
+register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", true)
 register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", false)
 register_option_bool("hd_og_boulder_agro", "OG: Boulder - Enrage shopkeepers as they did in HD", true)
 register_option_bool("hd_og_ghost_nosplit", "OG: Ghost - Prevent the ghost from splitting", false)
@@ -172,15 +172,471 @@ HD_SUBCHUNKID = {
 
 -- retains HD tilenames
 HD_TILENAME = {
-	["0"] = 0,
-	["1"] = ENT_TYPE.FLOOR_GENERIC,
-	["2"] = ENT_TYPE.FLOOR_GENERIC,
-	["+"] = ENT_TYPE.FLOORSTYLED_STONE,
-	["4"] = ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-	["G"] = ENT_TYPE.FLOOR_TOMB,
-	["I"] = ENT_TYPE.ITEM_IDOL,
-	["i"] = ENT_TYPE.FLOOR_ICE,
-	["j"] = ENT_TYPE.FLOOR_ICE
+	-- ["1"] = {
+		-- entity_type = ENT_TYPE.FLOOR_GENERIC,
+		-- description = "Terrain",
+	-- },
+	-- ["2"] = ENT_TYPE.FLOOR_GENERIC,
+	-- ["+"] = ENT_TYPE.FLOORSTYLED_STONE,
+	-- ["4"] = ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
+	-- ["G"] = ENT_TYPE.FLOOR_TOMB,
+	-- ["I"] = ENT_TYPE.ITEM_IDOL,
+	-- ["i"] = ENT_TYPE.FLOOR_ICE,
+	-- ["j"] = ENT_TYPE.FLOOR_ICE,
+	["0"] = {
+		description = "Empty",
+	},
+    ["#"] = {
+		entity_type = {ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
+		description = "TNT Box",
+	},
+    ["$"] = {
+		description = "Roulette Item",
+	},
+    ["%"] = {
+		description = "Roulette Door",
+	},
+    ["&"] = { -- 50% chance to spawn
+		entity_type = {ENT_TYPE.LOGICAL_WATER_DRAIN, 0},
+		alternate_types = {
+			[THEME.TEMPLE] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
+			[THEME.VOLCANA] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
+		},
+		offset = { 0, -2 },
+		alternate_offset = {
+			[THEME.TEMPLE] = { 0, 0 },
+			[THEME.VOLCANA] = { 0, 0 },
+		},
+		description = "Waterfall",
+	},
+    ["*"] = {
+		-- hd_type = HD_ENT.TRAP_SPIKEBALL
+		description = "Spikeball",
+	},
+    ["+"] = {
+		description = "Wooden Background",
+	},
+    [","] = {
+		entity_type = {
+			ENT_TYPE.FLOOR_GENERIC,
+			ENT_TYPE.FLOORSTYLED_MINEWOOD
+		},
+		description = "Terrain/Wood",
+	},
+    ["-"] = {
+		entity_type = {ENT_TYPE.ACTIVEFLOOR_THINICE},
+		description = "Cracking Ice",
+	},
+    ["."] = {
+		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		description = "Unmodified Terrain",
+	},
+    ["1"] = {
+		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		description = "Terrain",
+	},
+    ["2"] = {
+		entity_type = {
+			ENT_TYPE.FLOOR_GENERIC,
+			0
+		},
+		alternate_types = {
+			[THEME.EGGPLANT_WORLD] = {
+				ENT_TYPE.FLOORSTYLED_GUTS,
+				ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK,
+				0
+			},
+		},
+		description = "Terrain/Empty",
+	},
+    ["3"] = {
+		entity_type = {
+			ENT_TYPE.FLOOR_GENERIC,
+			ENT_TYPE.LIQUID_WATER
+		},
+		alternate_types = {
+			[THEME.TEMPLE] = {
+				ENT_TYPE.FLOOR_GENERIC,
+				ENT_TYPE.LIQUID_WATER
+			},
+			[THEME.VOLCANA] = {
+				ENT_TYPE.FLOOR_GENERIC,
+				ENT_TYPE.LIQUID_WATER
+			},
+		},
+		description = "Terrain/Water",
+	},
+    ["4"] = {
+		entity_type = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
+		description = "Pushblock",
+	},
+    ["5"] = {
+		-- TODO: subchunk parameters
+		description = "Ground Obstacle Block",
+	},
+    ["6"] = {
+		-- TODO: subchunk parameters
+		description = "Floating Obstacle Block",
+	},
+    ["7"] = {
+		entity_type = {
+			ENT_TYPE.FLOOR_SPIKES,
+			0
+		},
+		description = "Spikes/Empty",
+	},
+    ["8"] = {
+		-- TODO: subchunk parameters
+		description = "Door with Terrain Block",
+	},
+    ["9"] = {
+		-- TODO: subchunk parameters
+		description = "Door without Platform",
+	},
+    [":"] = {
+		entity_type = {ENT_TYPE.MONS_SCORPION},
+		alternate_types = {
+			[THEME.JUNGLE] = {ENT_TYPE.MONS_TIKIMAN}
+		},
+		description = "Tikiman or Scorpion from Mines Coffin",--"Scorpion from Mines Coffin",
+	},
+    [";"] = {
+		-- TODO: two across parameter
+		description = "Damsel and Idol from Kalipit",
+	},
+    ["="] = {
+		description = "Wood with Background",
+	},
+    ["A"] = {
+		-- TODO: two across parameter
+		entity_type = {ENT_TYPE.FLOOR_IDOL_BLOCK},
+		description = "Mines Idol Platform",
+	},
+    ["B"] = {
+		-- TODO: Find a good reskin replacement
+		entity_type = {ENT_TYPE.FLOORSTYLED_STONE},
+		description = "Jungle/Temple Idol Platform",
+	},
+    ["C"] = {
+		-- TODO: Ceiling Idol Trap
+		entity_type = {ENT_TYPE.FLOORSTYLED_STONE},
+		description = "Nonmovable Pushblock",
+	},
+    ["E"] = {
+		-- TODO: subchunk parameters
+		entity_type = {
+			ENT_TYPE.FLOOR_GENERIC,
+			ENT_TYPE.ITEM_CRATE,
+			ENT_TYPE.ITEM_CHEST,
+			0
+		},
+		description = "Terrain/Empty/Crate/Chest",
+	},
+    ["F"] = {
+		-- TODO: subchunk parameters
+		description = "Falling Platform Obstacle Block",
+	},
+    ["G"] = {
+		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		description = "Ladder",
+	},
+    ["H"] = {
+		entity_type = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		description = "Ladder Platform",
+	},
+    ["I"] = {
+		offset = { 0.5, 0 },
+		description = "Idol",
+	},
+    ["J"] = {
+		entity_type = {ENT_TYPE.MONS_GIANTFISH},
+		description = "Ol' Bitey",
+	},
+    ["K"] = {
+		description = "Shopkeeper",
+	},
+    ["L"] = {
+		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		alternate_types = {
+			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
+			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},
+			[THEME.VOLCANA] = {ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN},
+		},
+		description = "Ladder",
+	},
+    ["M"] = {
+		description = "Crust Mattock from Snake Pit",
+	},
+    ["N"] = {
+		entity_type = {ENT_TYPE.MONS_SNAKE},
+		description = "Snake from Snake Pit",
+	},
+    ["O"] = {
+		description = "Moai Head",
+	},
+    ["P"] = {
+		entity_type = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		description = "Ladder Platform",
+	},
+    ["Q"] = {
+		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		alternate_types = {
+			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
+			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},
+			[THEME.VOLCANA] = {ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN},
+		},
+		-- TODO: Generate ladder to just above floor.
+		description = "Variable-Length Ladder",
+	},
+    ["R"] = {
+		description = "Ruby from Snakepit",
+	},
+    ["S"] = {
+		description = "Shop Items",
+	},
+    ["T"] = {
+		-- TODO: Tree spawn method
+		description = "Tree",
+	},
+    ["U"] = {
+		entity_type = {ENT_TYPE.MONS_VLAD},
+		description = "Vlad",
+	},
+    ["V"] = {
+		-- TODO: subchunk parameters
+		description = "Vines Obstacle Block",
+	},
+    ["W"] = {
+		description = "Unknown: Something Shop-Related",
+	},
+    ["X"] = {
+		entity_type = {ENT_TYPE.MONS_GIANTSPIDER},
+		-- alternate_hd_types = {
+		-- -- Hell: Horse Head & Ox Face
+		-- },
+		-- offset = { 0.5, 0 },
+		description = "Giant Spider",
+	},
+    ["Y"] = {
+		entity_type = {ENT_TYPE.MONS_YETIKING},
+		alternate_types = {
+			[THEME.TEMPLE] = {ENT_TYPE.MONS_MUMMY},
+		},
+		description = "Yeti King",
+	},
+    ["Z"] = {
+		entity_type = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
+		description = "Beehive Tile with Background",
+	},
+    ["a"] = {
+		entity_type = {ENT_TYPE.ITEM_PICKUP_ANKH},
+		description = "Ankh",
+	},
+	-- TODO:
+		-- Add alternative shop floor of FLOOR_GENERIC
+		-- Modify all HD shop roomcodes to accommodate this.
+    ["b"] = {
+		entity_type = {ENT_TYPE.FLOOR_MINEWOOD},
+		flags = {
+			[24] = true
+		},
+		description = "Shop Floor",
+	},
+    ["c"] = {
+		spawnfunction = function()
+			set_timeout(create_idol_crystalskull, 10)
+		end,
+		offset = { 0.5, 0 },
+		description = "Crystal Skull",
+	},
+    ["d"] = {
+		entity_type = {ENT_TYPE.FLOOR_JUNGLE},
+		alternate_types = {
+			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK},
+		},
+		description = "Jungle Terrain",
+	},
+    ["e"] = {
+		entity_type = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
+		description = "Beehive Tile",
+	},
+    ["f"] = {
+		entity_type = {ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM},
+		description = "Falling Platform",
+	},
+    ["g"] = {
+		entity_type = {ENT_TYPE.ITEM_COFFIN},
+		description = "Coffin",
+	},
+    ["h"] = {
+		entity_type = {ENT_TYPE.FLOORSTYLED_VLAD},
+		description = "Hell Terrain",
+	},
+    ["i"] = {
+		entity_type = {ENT_TYPE.FLOOR_ICE},
+		description = "Ice Block",
+	},
+    ["j"] = {
+		-- TODO: Investigate in HD. Pretty sure this is "Ice Block/Empty".
+		description = "Ice Block with Caveman",
+	},
+    ["k"] = {
+		entity_type = {ENT_TYPE.DECORATION_SHOPSIGN},
+		offset = { 0, 4 },
+		description = "Shop Entrance Sign",
+	},
+    ["l"] = {
+		entity_type = {ENT_TYPE.ITEM_LAMP},
+		description = "Shop Lantern",
+	},
+    ["m"] = {
+		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		flags = {
+			[2] = true
+		},
+		description = "Unbreakable Terrain",
+	},
+    ["n"] = {
+		entity_type = {
+			ENT_TYPE.FLOOR_GENERIC,
+			ENT_TYPE.MONS_SNAKE,
+			0,
+		},
+		description = "Terrain/Empty/Snake",
+	},
+    ["o"] = {
+		entity_type = {ENT_TYPE.ITEM_ROCK},
+		description = "Rock",
+	},
+    ["p"] = {
+		-- Not sure about this one. It's only used in the corners of the crystal skull jungle roomcode.
+		-- TODO: Investigate in HD
+		entity_type = {ENT_TYPE.ITEM_GOLDBAR},
+		description = "Treasure/Damsel",
+	},
+    ["q"] = {
+		-- TODO: Trap Prevention.
+		entity_type = {ENT_TYPE.LIQUID_WATER},
+		description = "Obstacle-Resistant Terrain",
+	},
+    ["r"] = {
+		-- TODO: subchunk parameters
+		description = "Mines Terrain/Temple Terrain/Pushblock",
+	},
+    ["s"] = {
+		entity_type = {ENT_TYPE.FLOOR_SPIKES},
+		description = "Spikes",
+	},
+    ["t"] = {
+		-- entity_type = {
+			-- ENT_TYPE.FLOORSTYLED_TEMPLE,
+			-- ENT_TYPE.FLOOR_JUNGLE
+		-- },
+		-- TODO: ????? Investigate in HD.
+		description = "Temple/Castle Terrain",
+	},
+    ["u"] = {
+		entity_type = {ENT_TYPE.MONS_VAMPIRE},
+		description = "Vampire from Vlad's Tower",
+	},
+    ["v"] = {
+		entity_type = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
+		description = "Wood",
+	},
+    ["w"] = {
+		entity_type = {ENT_TYPE.LIQUID_WATER},
+		alternate_types = {
+			[THEME.TEMPLE] = {ENT_TYPE.LIQUID_LAVA},
+			[THEME.VOLCANA] = {ENT_TYPE.LIQUID_LAVA},
+		},
+		description = "Water",
+	},
+    ["x"] = {
+		description = "Kali Altar",
+	},
+    ["y"] = {
+		description = "Crust Ruby in Terrain",
+	},
+    ["z"] = {
+		entity_type = {
+			ENT_TYPE.FLOORSTYLED_BEEHIVE,
+			0
+		},
+		alternate_types = {
+			[THEME.DWELLING] = {ENT_TYPE.ITEM_GOLDBAR},
+		},
+		-- TODO: Temple has bg pillar as an alternative
+		description = "Beehive Tile/Empty",
+	},
+    ["|"] = {
+		description = "Vault",
+	},
+    ["~"] = {
+		entity_type = {ENT_TYPE.FLOOR_SPRING_TRAP},
+		description = "Bounce Trap",
+	},
+	
+		-- description = "Unknown",
+}
+
+
+TILEFRAMES_FLOOR = {
+	-- 1x1
+	{
+		frames = {0},
+		dim = {1, 1}
+	},
+	{
+		frames = {1},
+		dim = {1, 1}
+	},
+	{
+		frames = {12},
+		dim = {1, 1}
+	},
+	{
+		frames = {13},
+		dim = {1, 1}
+	},
+	-- 1x2
+	{
+		frames = {2, 14},
+		dim = {1, 2}
+	},
+	{
+		frames = {3, 15},
+		dim = {1, 2}
+	},
+	-- 2x1
+	{
+		frames = {24, 25},
+		dim = {2, 1}
+	},
+	{
+		frames = {26, 27},
+		dim = {2, 1}
+	},
+	-- 2x2
+	{
+		frames = {36, 37, 48, 49},
+		-- frames = {48, 49, 36, 37},
+		dim = {2, 2}
+	},
+	{
+		frames = {38, 39, 50, 51},
+		-- frames = {50, 51, 38, 39},
+		dim = {2, 2}
+	},
+	{
+		frames = {60, 61, 72, 73},
+		-- frames = {72, 73, 60, 61},
+		dim = {2, 2}
+	},
+	{
+		frames = {62, 63, 74, 75},
+		-- frames = {74, 75, 62, 63},
+		dim = {2, 2}
+	},
 }
 
 HD_COLLISIONTYPE = {
@@ -190,7 +646,7 @@ HD_COLLISIONTYPE = {
 	FLOORTRAP_TALL = 4,
 	GIANT_FROG = 5,
 	GIANT_SPIDER = 6,
-	-- GIANT_FISH = 7
+	-- GIANT_FISH = 7 -- not needed since it's always manually spawned
 }
 
 HD_DANGERTYPE = {
@@ -228,9 +684,21 @@ HD_KILL_ON = {
 	STANDING_OUTOFWATER = 2
 }
 
+-- TODO: Revise into HD_ABILITIES:
+	-- HD_ABILITY_STATE = {
+		-- IDLE = 1,
+		-- AGRO = 2,
+	-- }
+	-- skin = nil,
+	-- ability_uids = {
+		-- master = nil,
+		-- idle = nil,
+		-- agro = nil
+	-- },
+	-- ability_state = 1
 HD_BEHAVIOR = {
 	-- IDEAS:
-		-- Disable enemy attacks.
+		-- Disable monster attacks.
 			-- monster = get_entity():as_chasingmonster
 			-- monster.chased_target_uid = 0
 	OLMEC_SHOT = {
@@ -347,7 +815,6 @@ HD_BEHAVIOR = {
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
 			-- treasuredrop = { item = {HD_ENT, etc...}, chance = 0.0 }
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
-HD_ENT = {}
 HD_ENT = {
 	ITEM_IDOL = {
 		tospawn = ENT_TYPE.ITEM_IDOL
@@ -373,34 +840,6 @@ HD_ENT = {
 		tospawn = ENT_TYPE.MONS_FIREFROG,
 		-- toreplace = ENT_TYPE.MONS_MOSQUITO,
 		dangertype = HD_DANGERTYPE.ENEMY
-	},
-	GIANTFROG = {
-		tospawn = ENT_TYPE.MONS_OCTOPUS,
-		-- toreplace = ENT_TYPE.MONS_OCTOPUS,
-		entitydb = ENT_TYPE.MONS_OCTOPUS,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
-		GIANTSPIDER = 6,
-		health_db = 8,
-		sprint_factor = 0,
-		max_speed = 0.01,
-		jump = 0.2,
-		dim = {2.5, 2.5},
-		offset_spawn = {0.5, 0},
-		removecorpse = true,
-		hitbox = {
-			0.64,
-			0.8
-		},
-		flag_stunnable = false,
-		itemdrop = {
-			item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			chance = 0.15 -- 15% (1/6.7)
-		},
-		treasuredrop = {
-			item = {HD_ENT.ITEM_SAPPHIRE},
-			chance = 0.50
-		}
 	},
 	--TODO: Replace with regular frog
 		-- Use a giant fly for tospawn
@@ -467,16 +906,6 @@ HD_ENT = {
 		damage = 4
 		-- TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
 	},
-	OLDBITEY = {
-		tospawn = ENT_TYPE.MONS_GIANTFISH,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		entitydb = ENT_TYPE.MONS_GIANTFISH,
-		collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
-		itemdrop = {
-			item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
-			chance = 1
-		}
-	},
 	CRITTER_RAT = {
 		dangertype = HD_DANGERTYPE.CRITTER,
 		entitydb = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
@@ -519,27 +948,6 @@ HD_ENT = {
 		behavior = HD_BEHAVIOR.SCORPIONFLY,
 		color = { 0.902, 0.176, 0.176 },
 		removeinventory = HD_REMOVEINVENTORY.SCORPIONFLY
-	},
-	OLMEC_SHOT = {
-		tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		kill_on_standing = HD_KILL_ON.STANDING,
-		behavior = HD_BEHAVIOR.OLMEC_SHOT,
-		itemdrop = {
-			item = {
-				HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
-				HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
-				-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
-				-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
-				-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
-				-- HD_ENT.,--ENT_TYPE.MONS_BAT
-			},
-			chance = 1.0
-		},
-		-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
-		flag_collideswalls = true,
-		flag_nogravity = false,
-		flag_passes_through_objects = false
 	},
 	-- Devil Behavior:
 		-- when the octopi is in it's run state, use get_entities_overlapping() to detect the block {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK} it runs into.
@@ -593,9 +1001,92 @@ HD_ENT = {
 		-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
 		-- health = 3,
 		-- giveitem = ENT_TYPE.ITEM_METAL_SHIELD
+	-- },
+	-- SUCCUBUS = {
+		-- master: ENT_TYPE.MONS_MONKEY,
+		-- Skin: {ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}
+		-- abilities.agro = `master uid`
 	-- }
+	-- TODO:
+		-- Once at least 1 mask 0x1 is within a 2 block radius(? TOTEST: Investigate in HD.), change skin and set ability_state to agro.
+		-- cycle through players and if the player has the agro ability in its inventory(?), track it and deal one damage once it leaves.
+		-- Once :as_monkey() method is merged into the main branch, set jump_timer to 0 on every frame.
+		-- Once :as_leprechaun() method is merged into the main branch, set jump_timer to 0 on every frame.
+			-- Upside to using leprechaun is a good skin option
+			-- downside is no jump_timer and preventing the gold stealing and teleporting abilities
+		-- Once :as_pet() method is merged into the main branch, half its yell_counter field to 299 if it's higher than 300.
+	-- NOTES:
+		--She disguises herself as a Damsel to lure the Spelunker, then ambushes them once they are in range.
+		-- If she manages to pounce on the Spelunker, she will cling to them like a Monkey and take one hit point when she jumps off.
+		-- The Succubus mimics the appearance of the currently selected damsel type, disguising herself as a female, male, dog or sloth. Regardless of the disguise, she always transforms into a demonic woman upon attacking - there are no male, canine or sloth Succubus models.
+		-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
 }
-
+-- For HD_ENTs that include references to other HD_ENTs:
+HD_ENT = {
+	GIANTFROG = {
+		tospawn = ENT_TYPE.MONS_OCTOPUS,
+		-- toreplace = ENT_TYPE.MONS_OCTOPUS,
+		entitydb = ENT_TYPE.MONS_OCTOPUS,
+		dangertype = HD_DANGERTYPE.ENEMY,
+		collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
+		-- GIANTSPIDER = 6, -- ?????????
+		health_db = 8,
+		sprint_factor = 0,
+		max_speed = 0.01,
+		jump = 0.2,
+		dim = {2.5, 2.5},
+		offset_spawn = {0.5, 0},
+		removecorpse = true,
+		hitbox = {
+			0.64,
+			0.8
+		},
+		flags = {
+			{},
+			{12}
+		},
+		itemdrop = {
+			item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+			chance = 0.15 -- 15% (1/6.7)
+		},
+		treasuredrop = {
+			item = {HD_ENT.ITEM_SAPPHIRE},
+			chance = 0.50
+		}
+	},
+	OLDBITEY = {
+		tospawn = ENT_TYPE.MONS_GIANTFISH,
+		dangertype = HD_DANGERTYPE.ENEMY,
+		entitydb = ENT_TYPE.MONS_GIANTFISH,
+		collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
+		itemdrop = {
+			item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
+			chance = 1
+		}
+	},
+	OLMEC_SHOT = {
+		tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
+		dangertype = HD_DANGERTYPE.ENEMY,
+		kill_on_standing = HD_KILL_ON.STANDING,
+		behavior = HD_BEHAVIOR.OLMEC_SHOT,
+		itemdrop = {
+			item = {
+				HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
+				HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
+				-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
+				-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
+				-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
+				-- HD_ENT.,--ENT_TYPE.MONS_BAT
+			},
+			chance = 1.0
+		},
+		-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
+		flags = {
+			{13},
+			{4, 10}
+		},
+	},
+}
 
 TRANSITION_CRITTERS = {
 	[THEME.DWELLING] = {
@@ -866,6 +1357,16 @@ function CompactList(list, prev_size)
 	return list
 end
 
+
+function TableRandomElement(tbl)
+	local t = {}
+	if #tbl == 0 then return nil end
+	for _, v in ipairs(tbl) do
+		t[#t+1] = v
+	end
+	return t[math.random(1, #t)]
+end
+
 function TableConcat(t1, t2)
 	for i=1,#t2 do
         t1[#t1+1] = t2[i]
@@ -904,6 +1405,14 @@ function locate_roompos(e_x, e_y)
 	roomx = math.ceil((e_x-(xmin+0.5))/10)
 	roomy = math.ceil(((ymin-0.5)-e_y)/8)
 	return roomx, roomy
+end
+
+function get_levelsize()
+	xmin, ymin, xmax, ymax = get_bounds()
+	-- my brain can't do math, please excuse this embarrassing algorithm
+	levelw = math.ceil((xmin+0.5)/10)
+	levelh = math.ceil((ymin-0.5)/8)
+	return levelw, levelh
 end
 
 function create_ghost()
@@ -951,7 +1460,7 @@ function create_idol()
 	end
 end
 
-function create_idol_tusk()
+function create_idol_crystalskull()
 	idols = get_entities_by_type(ENT_TYPE.ITEM_MADAMETUSK_IDOL)
 	if #idols > 0 then
 		IDOL_UID = idols[1]
@@ -991,12 +1500,14 @@ function create_wormtongue(x, y, l)
 		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
 		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
 		
-		door_uid = spawn_door(x, y, l, state.world, state.level+1, THEME.EGGPLANT_WORLD)
+		worm_exit_uid = spawn_door(x, y, l, state.world, state.level+1, THEME.EGGPLANT_WORLD)
+		worm_exit = get_entity(worm_exit_uid)
+		worm_exit.flags = set_flag(worm_exit.flags, 28) -- pause ai to prevent magnetizing damsels
 		lock_door_at(x, y)
 		
 		
+		
 		TONGUE_STATE = TONGUE_SEQUENCE.READY
-		-- toast("door_uid:" .. tostring(door_uid))
 		
 		set_timeout(function()
 			x, y, l = get_position(TONGUE_UID)
@@ -1021,6 +1532,20 @@ function idol_disturbance()
 		x, y, l = get_position(IDOL_UID)
 		return (x ~= IDOL_X or y ~= IDOL_Y)
 	end
+end
+
+function detect_same_levelstate(t_a, l_a, w_a)
+	if state.theme == t_a and state.level == l_a and state.world == w_a then return true else return false end
+end
+
+function detect_s2market()
+	if test_flag(state.quest_flags, 18) == true then
+		market_doors = get_entities_by_type(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR)
+		if (#market_doors > 0) then -- or (state.theme == THEME.JUNGLE and levelsize[2] >= 4)
+			return true
+		end
+	end
+	return false
 end
 
 -- detect offset
@@ -1108,6 +1633,7 @@ end
 
 -- returns: optimal offset for conflicts
 function conflictdetection(hdctype, x, y, l)
+	offset = { 0, 0 }
 	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
 	-- HD_COLLISIONTYPE = {
 		-- AIR_TILE_1 = 1,
@@ -1117,63 +1643,119 @@ function conflictdetection(hdctype, x, y, l)
 		-- GIANT_FROG = 5,
 		-- GIANT_SPIDER = 6,
 		-- -- GIANT_FISH = 7
-	-- }
-	
-	if hdctype == HD_COLLISIONTYPE.FLOORTRAP or hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL then
-		conflict = conflictdetection_floortrap(hdctype, x, y, l)
-		if conflict == true then return nil else return { 0, 0 } end
+	-- } and
+	if (
+		hd_type.collisiontype ~= nil and
+		(
+			hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
+			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
+			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+		)
+	) then
+		if (
+			hdctype == HD_COLLISIONTYPE.FLOORTRAP or
+			hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+		) then
+			conflict = conflictdetection_floortrap(hdctype, x, y, l)
+			if conflict == true then
+				offset = nil
+			else
+				offset = { 0, 0 }
+			end
+		elseif (
+			hdctype == HD_COLLISIONTYPE.GIANT_FROG or
+			hdctype == HD_COLLISIONTYPE.GIANT_SPIDER
+		) then
+			side = conflictdetection_giant(hdctype, x, y, l)
+			if side > 0 then
+				offset = nil
+			else
+				offset = { side, 0 }
+			end
+		end
 	end
-	
-	if hdctype == HD_COLLISIONTYPE.GIANT_FROG or hdctype == HD_COLLISIONTYPE.GIANT_SPIDER then
-		side = conflictdetection_giant(hdctype, x, y, l)
-		if side > 0 then return nil
-		else return { side, 0 } end
-	end
-	
-	return nil
+	return offset
 end
 
 function decorate_floor(e_uid, offsetx, offsety)--e_type, --e_theme, orientation(?))
 	spawn_entity_over(ENT_TYPE.DECORATION_GENERIC, e_uid, offsetx, offsety)
 end
 
-function generate_floor(hd_tileid, e_x, e_y, e_l)
-	e_x_ = e_x
-	e_y_ = e_y
-	
-	e_type = 0
+function generate_tile(_tilechar, _x, _y, _l)--, replacetile)
+	--replacetile = replacetile or nil
+		-- Future room replacement methods may lead to have `replacetile` be:
+			-- uid
+				-- to replace a single tile; all other entities potentially occupying the space will be taken care of in other ways.
+			-- bool
+				-- Remove everything in the space. Use get_entities_overlapping().
+
+	x = _x
+	y = _y
+	hd_tiletype, hd_tiletype_post = HD_TILENAME[_tilechar], HD_TILENAME[_tilechar]
+	if hd_tiletype == nil then return nil end
 	-- chance_half = (math.random() >= 0.5)
 	
-	-- spawn
-	if hd_tileid == "2" and (math.random() >= 0.5) then--chance_half == true then -- if 2, 50% chance not to spawn.
-		e_type = 0
-	else
-		e_type = HD_TILENAME[hd_tileid]
-	end
-	if hd_tileid == "I" then -- if idol, move to middle
-		e_x_ = e_x_+0.5
-		-- if haunted replace with tusk idol
-		if HD_FEELING_RESTLESS == true then
-			e_type = ENT_TYPE.ITEM_MADAMETUSK_IDOL
-		end
-	end
+	-- TODO:
+		-- HD_FEELING:
+			-- RESTLESS:
+				-- Tomb: ENT_TYPE_DECORATION_LARGETOMB
+				-- Crown: ITEM_DIAMOND -> custom animation_frame of the gold crown
+					-- (worth $5000 in HD, might as well leave it as diamond)
 
-	if e_type ~= 0 then
-		floor_uid = spawn(e_type, e_x_, e_y_, e_l, 0, 0)
-		if hd_tileid == "I" and HD_FEELING_RESTLESS == true then
-			set_timeout(create_idol_tusk, 10)
+	-- HD_ENT and ENT_TYPE spawning
+	if hd_tiletype.entity_type ~= nil then
+		entity_type_pool = hd_tiletype.entity_type
+		entity_type = 0
+		if hd_tiletype.alternate_types ~= nil then entity_type_pool = hd_tiletype.alternate_types end
+		
+		if #entity_type_pool == 1 then
+			entity_type = entity_type_pool[1]
+		elseif #entity_type_pool > 1 then
+			entity_type = TableRandomElement(entity_type_pool)
 		end
+		
+		if entity_type == 0 then
+			return HD_TILENAME["0"]
+		else
+			-- TODO: Make specific checks for the result.
+			if entity_type == ENT_TYPE.FLOOR_GENERIC then hd_tiletype_post = HD_TILENAME["1"]
+			elseif (entity_type == ENT_TYPE.LIQUID_WATER or entity_type == ENT_TYPE.LIQUID_LAVA) then hd_tiletype_post = HD_TILENAME["w"]
+			-- If it doesn't have a matching HD_TILENAME, return the original one.
+			end
+		end
+		floor_uid = spawn(entity_type, x, y, _l, 0, 0)
+		
+		-- Notes:
+			-- It seems that floorstyled spawns with a specific animation_frame.
+			-- TODO: Make a system to inspect `postgen_levelcode` and based on its orientation, alter animation_frame for each.
+			-- Both floorstyled and floor need an animation frame changer that has the following parameters for each:
+			-- floorstyled:
+				-- tilepool:
+					-- single blocks
+						-- lower right bottom tileframe 1
+						-- lower right bottom tileframe 2
+			-- floor:
+				-- tilepool:
+					-- single blocks
+						-- lower right bottom tileframe 1
+						-- lower right bottom tileframe 2
 		-- decorate
 			-- TODO: Use for placing decorations on floor tiles once placed.
 			-- use orientation parameter to adjust what side the decorations need to go on. Take open sides into consideration.
 		-- for degrees = 0, 270.0, 90.0 do
-			-- offsetcoord = rotate(e_x_, e_y_, e_x_, e_y_+1, degrees)
-			-- conflict = (detection_floor(offsetcoord[1], offsetcoord[2], e_l, 0, 0) ~= -1)
+			-- offsetcoord = rotate(x, y, x, y+1, degrees)
+			-- conflict = (detection_floor(offsetcoord[1], offsetcoord[2], _l, 0, 0) ~= -1)
 			-- if conflict == false then
 				-- decorate_floor(floor_uid, offsetcoord[1], offsetcoord[2])
 			-- end
 		-- end
+	elseif hd_tiletype_post.hd_type ~= nil then
+		danger_spawn(hd_tiletype_post.hd_type, x, y, l, false)
 	end
+	
+	if hd_tiletype_post.spawnfunction ~= nil then hd_tiletype_post.spawnfunction() end
+	
+	return hd_tiletype_post
 end
 
 function generate_chunk(c_roomcode, c_dimw, c_dimh, x, y, layer, offsetx, offsety)
@@ -1182,7 +1764,7 @@ function generate_chunk(c_roomcode, c_dimw, c_dimh, x, y, layer, offsetx, offset
 	i = 1
 	for r_yi = 0, c_dimh-1, 1  do
 		for r_xi = 0, c_dimw-1, 1 do
-			generate_floor(c_roomcode:sub(i, i), x_+r_xi, y_-r_yi, layer)
+			generate_tile(c_roomcode:sub(i, i), x_+r_xi, y_-r_yi, layer)
 			i = i + 1
 		end
 	end
@@ -1199,6 +1781,17 @@ function remove_room(roomx, roomy, layer)
 		end
 	end
 	return tc_x, tc_y
+end
+
+function remove_borderfloor()
+	levelw, levelh = get_levelsize()
+	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
+	for yi = 90, 88, -1 do
+		for xi = 3, 42, 1 do
+			blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
+			kill_entity(blocks[1])
+		end
+	end
 end
 
 function replace_room(c_roomcode, c_dimw, c_dimh, roomx, roomy, layer)
@@ -1248,7 +1841,7 @@ function replace_room(c_roomcode, c_dimw, c_dimh, roomx, roomy, layer)
 				) then
 					move_entity(moved_damsel, xi, yi, 0, 0)
 				else
-					generate_floor(roomchar, cx+xi, cy-yi, layer)
+					generate_tile(roomchar, cx+xi, cy-yi, layer)
 				end
 				i = i + 1
 			end
@@ -1317,8 +1910,8 @@ function animate_bookofdead(tick_limit)
 	end
 end
 
-function change_target(w_a, l_a, t_a, w_b, l_b, t_b)
-	if state.theme == t_a and state.level == l_a and state.world == w_a then
+function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
+	if detect_same_levelstate(t_a, l_a, w_a) == true then
 		if test_flag(state.quest_flags, 1) == false then
 			state.level_next = l_b
 			state.world_next = w_b
@@ -1327,8 +1920,9 @@ function change_target(w_a, l_a, t_a, w_b, l_b, t_b)
 	end
 end
 
-function change_level(w_a, l_a, t_a, w_b, l_b, t_b)--w_b=0, l_b=0, t_b=0)
-	if state.theme == t_a and state.level == l_a and state.world == w_a then --and (w_b ~= 0 or l_b ~= 0 or t_b ~= 0) then
+-- Used to "fake" world/theme/level
+function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)--w_b=0, l_b=0, t_b=0)
+	if detect_same_levelstate(t_a, l_a, w_a) == true then --and (w_b ~= 0 or l_b ~= 0 or t_b ~= 0) then
 		-- if test_flag(state.quest_flags, 1) == false then
 			state.level = l_b
 			state.world = w_b
@@ -1336,6 +1930,28 @@ function change_level(w_a, l_a, t_a, w_b, l_b, t_b)--w_b=0, l_b=0, t_b=0)
 		-- end
 	end
 end
+
+-- "fake" world/theme/level to let you set quest flags that otherwise wouldn't apply to the first level of a world
+function changestate_onlevel_fake_applyquestflags(w_a, l_a, t_a, w_b, l_b, t_b, flags_set, flags_clear)
+	flags_set = flags_set or {}
+	flags_clear = flags_clear or {}
+	if detect_same_levelstate(t_a, l_a, w_a) == true then
+		applyflags_to_quest({flags_set, flags_clear})
+		-- TODO: Consider the consequences of skipping over a level (such as shopkeeper forgiveness)
+		
+		warp(w_b, l_b, t_b)
+	end
+end
+
+function changestate_onloading_applyquestflags(w_a, l_a, t_a, flags_set, flags_clear)--w_b, l_b, t_b, flags_set, flags_clear)
+	flags_set = flags_set or {}
+	flags_clear = flags_clear or {}
+	if detect_same_levelstate(t_a, l_a, w_a) == true then
+		applyflags_to_quest({flags_set, flags_clear})
+	end
+end
+
+
 
 function exit_restless()
 	ex, ey, _ = get_position(HAUNTEDCASTLEDOOR_UID)
@@ -1409,26 +2025,6 @@ function exit_reverse()
 end
 
 
-
--- ON.START
-set_callback(function()
-	OBTAINED_BOOKOFDEAD = options.hd_test_give_botd
-	if options.hd_og_ghost_time == true then GHOST_TIME = 9000 end
-
-	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
-	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
-	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
-	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
-	
-	
-	set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
-	
-	set_olmec_phase_y_level(0, 10.0)
-	set_olmec_phase_y_level(1, 9.0)
-	set_olmec_phase_y_level(2, 8.0)
-	
-end, ON.START)
-
 -- ON.CAMP
 set_callback(function()
 	oncamp_movetunnelman()
@@ -1438,6 +2034,28 @@ set_callback(function()
 	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
 	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
+	_x, _y, l = 45, 90, LAYER.FRONT -- next to entrance
+	testfloors = {}
+	width = 3
+	height = 4
+	toassign = {}
+	toassign = {
+		uid_offsetpair = {
+			-- {uid = testfloors[1], offset = {1, 1}},
+		},
+		dim = {width, height}
+	}
+	for yi = 0, -(height-1), -1 do -- 0 -> -3
+		for xi = 0, (width-1), 1 do -- 0 -> 2
+			-- testfloors[#testfloors+1] = spawn_entity(ENT_TYPE.FLOOR_GENERIC, _x+(xi-1), _y+(yi-1), l, 0, 0)
+			table.insert(toassign.uid_offsetpair, {uid = spawn_entity(ENT_TYPE.FLOOR_GENERIC, _x+xi, _y-yi, l, 0, 0), offset = {xi, yi}})
+		end
+	end
+	tileapplier9000(toassign)
+	-- testfloor_e = get_entity(testfloors[1])
+	-- testfloor_m = testfloor_e:as_movable()
+	-- animation_frame = testfloor_m.animation_frame
+	-- toast(tostring(_x) .. ", " .. tostring(_y) .. ": " .. tostring(animation_frame))
 	
 	-- Bacterium Creation
 		-- FLOOR_THORN_VINE:
@@ -1458,9 +2076,16 @@ set_callback(function()
 	
 end, ON.CAMP)
 
+-- ON.START
+set_callback(function()
+	onstart_init_options()
+	onstart_init_methods()
+end, ON.START)
+
 -- ON.LOADING
 set_callback(function()
 	onloading_levelrules()
+	onloading_applyquestflags()
 end, ON.LOADING)
 
 set_callback(function()
@@ -1473,6 +2098,8 @@ set_callback(function()
 	onlevel_reverse_exits()
 --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
 	onlevel_generation_chunks()
+	-- TODO: Once level generation for mothership and flooded is started, outdate onlevel_generation_removeborderfloor()
+	onlevel_generation_removeborderfloor()
 	-- onlevel_replace_powderkegs()
 	-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation_chunks()
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
@@ -1524,43 +2151,96 @@ end, ON.GUIFRAME)
 
 
 
+function onstart_init_options()	
+	OBTAINED_BOOKOFDEAD = options.hd_test_give_botd
+	if options.hd_og_ghost_time == true then GHOST_TIME = 9000 end
+
+	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
+	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
+	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
+	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
+end
+
+function onstart_init_methods()
+	set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
+	
+	set_olmec_phase_y_level(0, 10.0)
+	set_olmec_phase_y_level(1, 9.0)
+	set_olmec_phase_y_level(2, 8.0)
+end
+
 -- LEVEL HANDLING
 function onloading_levelrules()
+	
+	-- Base Camp -> Jungle 2-1
+    -- changestate_onloading_targets(1,1,THEME.BASE_CAMP,2,2,THEME.JUNGLE) -- fake 2-1
+	
 	-- Dwelling 1-3 -> Dwelling 1-5(Fake 1-4)
-    change_target(1,3,THEME.DWELLING,1,5,THEME.DWELLING)
+    changestate_onloading_targets(1,3,THEME.DWELLING,1,5,THEME.DWELLING)
     -- Dwelling -> Jungle
-    change_target(1,4,THEME.DWELLING,2,1,THEME.JUNGLE)
-    -- Jungle -> Ice Caves
-    change_target(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)
+    changestate_onloading_targets(1,4,THEME.DWELLING,2,1,THEME.JUNGLE)
+	-- -- Jungle 2-1 -> Jungle 2->2
+    -- if state.nexttheme ~= EGGPLANT_WORLD then
+		-- changestate_onloading_targets(2,1,THEME.JUNGLE,2,3,THEME.JUNGLE) -- fake 2-2
+	-- end
+	-- -- Jungle 2-2 -> Jungle 2->3
+    -- changestate_onloading_targets(2,2,THEME.JUNGLE,2,4,THEME.JUNGLE) -- fake 2-3
+	-- -- Jungle 2-3 -> Jungle 2->4
+    -- changestate_onloading_targets(2,3,THEME.JUNGLE,2,5,THEME.JUNGLE) -- fake 2-4
 	-- Jungle 2-1 -> Worm 2-2
 		-- TODO(? may not need to handle this)
 	-- Worm(Jungle) 2-2 -> Jungle 2-4
-	change_target(2,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
+	changestate_onloading_targets(2,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
+    -- Jungle -> Ice Caves
+    changestate_onloading_targets(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)
     -- Ice Caves -> Ice Caves
 		-- TODO: Test if there are differences for room generation chances for levels higher than 3-1 or 3-4.
-    change_target(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
-    change_target(3,2,THEME.ICE_CAVES,3,3,THEME.ICE_CAVES)
-    change_target(3,3,THEME.ICE_CAVES,3,4,THEME.ICE_CAVES)
+    changestate_onloading_targets(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
+    changestate_onloading_targets(3,2,THEME.ICE_CAVES,3,3,THEME.ICE_CAVES)
+    changestate_onloading_targets(3,3,THEME.ICE_CAVES,3,4,THEME.ICE_CAVES)
 	-- Mothership -> Ice Caves
-    change_target(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
+    changestate_onloading_targets(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
     -- Ice Caves -> Temple
-    change_target(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
+    changestate_onloading_targets(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
 	-- Ice Caves 3-1 -> Worm
 		-- TODO(? may not need to handle this)
 	-- Worm(Ice Caves) 3-2 -> Ice Caves 3-4
-	change_target(3,2,THEME.EGGPLANT_WORLD,3,4,THEME.ICE_CAVES)
+	changestate_onloading_targets(3,2,THEME.EGGPLANT_WORLD,3,4,THEME.ICE_CAVES)
     -- Temple -> Olmec
-    change_target(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
+    changestate_onloading_targets(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
     -- COG(4-3) -> Olmec
-    change_target(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
+    changestate_onloading_targets(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
 	-- Olmec -> Hell
-	-- change_target(4,4,THEME.OLMEC,5,1,THEME.VOLCANA)
+	-- changestate_onloading_targets(4,4,THEME.OLMEC,5,1,THEME.VOLCANA)
 	-- Hell -> Hell
-	change_target(5,1,THEME.OLMEC,5,5,THEME.VOLCANA)
-	change_target(5,2,THEME.OLMEC,5,6,THEME.VOLCANA)
+	changestate_onloading_targets(5,1,THEME.OLMEC,5,5,THEME.VOLCANA)
+	-- TOTEST:
+		-- Volcana: disable darklevels, vaults
+	
+	-- changestate_onloading_targets(5,2,THEME.OLMEC,5,6,THEME.VOLCANA)
+	
 	-- Hell -> Yama
 		-- TODO: Figure out a place to host Yama. Maybe a theme with different FLOOR_BORDERTILE textures?
-	-- change_target(5,3,THEME.VOLCANA,5,4,???)
+		-- IDEA: Tiamat's chamber.
+	-- changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,???)
+end
+
+-- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
+function onloading_applyquestflags()
+	-- TODO: Move these into WORLD_FLAGS for consistency's sake
+	if test_flag(state.quest_flags, 10) == false then state.quest_flags = set_flag(state.quest_flags, 10) end
+
+	-- Disable Moon, Star, and Sun challenges.
+	if test_flag(state.quest_flags, 25) == false then state.quest_flags = set_flag(state.quest_flags, 25) end
+	if test_flag(state.quest_flags, 26) == false then state.quest_flags = set_flag(state.quest_flags, 26) end
+	if test_flag(state.quest_flags, 27) == false then state.quest_flags = set_flag(state.quest_flags, 27) end
+	-- Disable drill -- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
+	if test_flag(state.quest_flags, 19) == false then state.quest_flags = set_flag(state.quest_flags, 19) end
+	
+	-- Jungle:
+	-- 3->4: Clr 18 -- allow rushing water feeling
+	changestate_onloading_applyquestflags(2, 3, THEME.JUNGLE, {}, {18})
+
 end
 
 -- Entities that spawn with methods that are only set once
@@ -1621,8 +2301,6 @@ end
 function onlevel_dangers_modifications()
 	-- loop through all dangers in global_dangers, setting enemy specific
 	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
-		-- dangers_tospawn = map(global_dangers, function(entity) return entity.tospawn end)
-		-- dangers_postspawn = map(global_dangers, function(entity) return entity.entitydb end)
 		for i = 1, #global_dangers, 1 do
 			if global_dangers[i].entitydb ~= nil and global_dangers[i].entitydb ~= 0 then
 				s = spawn(global_dangers[i].entitydb, 0, 0, LAYER.FRONT, 0, 0)
@@ -1762,16 +2440,18 @@ function onlevel_generation_chunks()
 		-- cx, cy = remove_room(roomx, roomy, idoll)
 		tmp_object = {
 			roomcodes = {
-				"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
+				"ttttttttttttttttttttttp0c00ptt0tt0000tt00400000040ttt0tt0tttttp0000ptt1111111111"
+				--"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
 			},
-			-- "++++++++++
-			-- ++++++++++
-			-- ++00I000++
-			-- 0++0++0++0
+			-- "tttttttttt
+			-- tttttttttt
+			-- ttp0c00ptt
+			-- 0tt0000tt0
 			-- 0400000040
-			-- +++0++0+++
-			-- ++000000++
-			-- 11GGGGGG11"
+			-- ttt0tt0ttt
+			-- ttp0000ptt
+			-- 1111111111"
+			
 			dimensions = { w = 10, h = 8 }
 		}
 		
@@ -1819,57 +2499,109 @@ end
 -- For cases where room generation is hardcoded to a theme's level
 -- and as a result we need to fake the world/level number
 function onlevel_levelrules()
-	-- Dwelling 1-3 -> Dwelling 1-4
-	change_level(1,5,THEME.DWELLING,1,4,THEME.DWELLING)
-	-- Volcana 5-1 -> Volcana 5-2
-	change_level(5,5,THEME.VOLCANA,5,2,THEME.VOLCANA)
-	-- Volcana 5-2 -> Volcana 5-3
-	change_level(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
+	-- Dwelling 1-5 = 1-4 (Dwelling 1-3 -> Dwelling 1-4)
+	changestate_onlevel_fake(1,5,THEME.DWELLING,1,4,THEME.DWELLING)
+	
+	-- TOTEST:
+	-- Use S2 Black Market as Flooded Feeling
+		-- HD and S2 differences:
+			-- S2 black market spawns are 2-2..4
+			-- HD spawns are 2-1..3
+				-- Prevents the black market from being accessed upon exiting the worm
+				-- Gives room for the next level to load as black market
+		
+		-- -- Jungle 2-4 = 2-1 (Dwelling 1-4 -> Jungle 2-1)
+	
+		-- changestate_onlevel_fake(2,2,THEME.JUNGLE,2,1,THEME.JUNGLE)
+		-- changestate_onlevel_fake(2,3,THEME.JUNGLE,2,2,THEME.JUNGLE)
+		-- changestate_onlevel_fake(2,4,THEME.JUNGLE,2,3,THEME.JUNGLE)
+		-- -- Jungle 2-5 = 2-4 (Jungle 2-3 -> Jungle 2-4)
+		-- changestate_onlevel_fake(2,5,THEME.JUNGLE,2,4,THEME.JUNGLE)
+
+	-- Disable dark levels and vaults "before" you enter the world:
+		-- Technically load into a total of 4 hell levels; 5-5 and 5-1..3
+		-- on.load 5-5, set state.quest_flags 3 and 2, then warp the player to 5-1
+		
+		-- Volcana 5-5 = 5-1
+		-- disable darklevels, vaults
+		changestate_onlevel_fake_applyquestflags(5,5,THEME.VOLCANA,5,1,THEME.VOLCANA, {2, 3}, {})
+		
+	-- -- Volcana 5-1 -> Volcana 5-2
+	-- changestate_onlevel_fake(5,5,THEME.VOLCANA,5,2,THEME.VOLCANA)
+	-- -- Volcana 5-2 -> Volcana 5-3
+	-- changestate_onlevel_fake(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
 end
 
 -- Reverse Level Handling
 -- For cases where the entrance and exit need to be swapped
+-- TODO: See if you can force-swap with `entrance` and `exit` tilecodes placed in door chunks
+-- TOTEST: Try it with eggplant world, if that works, apply it to neo-babylon as well
 function onlevel_reverse_exits()
 	if state.theme == THEME.EGGPLANT_WORLD then
 		set_timeout(exit_reverse, 15)
 	end
 end
 
+function onlevel_generation_removeborderfloor()
+	-- if S2 black market
+	-- TODO: Replace with if feeling_check("FLOODED") == true then
+	if detect_s2market() == true then
+		remove_borderfloor()
+	end
+	-- if Mothership level
+	if state.theme == THEME.NEO_BABYLON then
+		remove_borderfloor()
+	end
+end
+
 function onlevel_placement_lockedchest()
-	lockedchest_uids = get_entities_by_type(ENT_TYPE.ITEM_LOCKEDCHEST)
-	udjat_level = (#lockedchest_uids > 0)
-	if udjat_level == true then
-		random_uid = -1
-		random_index = math.random(1, #lockedchest_uids)
-		for i, lockedchest_loop_uid in ipairs(lockedchest_uids) do
-			if random_index == i then
-				random_uid = lockedchest_loop_uid
-			else
-				kill_entity(lockedchest_loop_uid, 0, 0, 0, 0)
+	-- Change udjat eye and black market detection to:
+	if test_flag(state.quest_flags, 17) == true then -- Udjat eye spawned
+		lockedchest_uids = get_entities_by_type(ENT_TYPE.ITEM_LOCKEDCHEST)
+		-- udjat_level = (#lockedchest_uids > 0)
+		if (
+			state.theme == THEME.DWELLING and
+			(
+				state.level == 2 or
+				state.level == 3
+				-- or state.level == 4
+			-- TODO: Extend availability of udjat chest to level 4.
+			) and
+			#lockedchest_uids > 0--udjat_level == true
+		) then
+			random_uid = -1
+			random_index = math.random(1, #lockedchest_uids)
+			for i, lockedchest_loop_uid in ipairs(lockedchest_uids) do
+				if random_index == i then
+					random_uid = lockedchest_loop_uid
+				else
+					kill_entity(lockedchest_loop_uid, 0, 0, 0, 0)
+				end
 			end
-		end
-		if random_uid ~= -1 then
-			lockedchest_uid = random_uid
-			lockedchest_mov = get_entity(lockedchest_uid):as_movable()
-			_, chest_y, _ = get_position(lockedchest_uid)
-			-- use surface_x to center
-			surface_x, surface_y, _ = get_position(lockedchest_mov.standing_on_uid)
-			move_entity(lockedchest_uid, surface_x, chest_y, 0, 0)
-			
-			-- swap cursed pot and chest locations
-			cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-			if #cursedpot_uids > 0 then 
-				cursedpot_uid = cursedpot_uids[1]
-				
-				pot_x, pot_y, pot_l = get_position(cursedpot_uid) -- initial pot coordinates
-				
+			if random_uid ~= -1 then
+				lockedchest_uid = random_uid
+				lockedchest_mov = get_entity(lockedchest_uid):as_movable()
+				_, chest_y, _ = get_position(lockedchest_uid)
 				-- use surface_x to center
-				move_entity(cursedpot_uid, surface_x, chest_y, 0, 0)
+				surface_x, surface_y, _ = get_position(lockedchest_mov.standing_on_uid)
+				move_entity(lockedchest_uid, surface_x, chest_y, 0, 0)
 				
-				move_entity(lockedchest_uid, pot_x, pot_y, 0, 0) -- move chest to initial pot coordinates
+				-- swap cursed pot and chest locations
+				cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
+				if #cursedpot_uids > 0 then 
+					cursedpot_uid = cursedpot_uids[1]
+					
+					pot_x, pot_y, pot_l = get_position(cursedpot_uid) -- initial pot coordinates
+					
+					-- use surface_x to center
+					move_entity(cursedpot_uid, surface_x, chest_y, 0, 0)
+					
+					move_entity(lockedchest_uid, pot_x, pot_y, 0, 0) -- move chest to initial pot coordinates
+				end
+			else
+				toast("onlevel_placement_lockedchest(): No Chest. (random_uid could not be set)")
 			end
-		else
-			toast("onlevel_placement_lockedchest(): No Chest. (random_uid could not be set)")
+		-- else toast("Couldn't find locked chest.")
 		end
 	end
 end
@@ -2817,16 +3549,16 @@ function onframe_tonguetimeout()
 				damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
 				damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
 				damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
-				
 				if #damsels > 0 then
-					local damsel = get_entity(damsels[1]):as_movable()
+					damsel = get_entity(damsels[1]):as_movable()
 					-- when alive damsel move_state == 9 for 4 seconds?
 					-- toast("damsel.move_state: " .. tostring(damsel.state))
-					local falling = (damsel.state == 9)
-					local dead = test_flag(damsel.flags, 29)
+					stuck_in_web = test_flag(damsel.more_flags, 8)--9)
+					-- local falling = (damsel.state == 9)
+					dead = test_flag(damsel.flags, 29)
 					if (
-						(dead == false and falling == true)
-						-- or (dead == true and ) -- TODO: Find some way to detect a dead pet that's not in a spelunker's arms
+						(stuck_in_web == true)
+						-- (dead == false and falling == true)
 					) then
 						if tongue_tick <= 0 then
 							spawn_entity(ENT_TYPE.LOGICAL_BOULDERSPAWNER, x, y, l, 0, 0)
@@ -2909,7 +3641,13 @@ function tongue_exit()
 		exit_x, exit_y, _ = get_position(exitdoor)
 		for _, damsel_uid in ipairs(damsels) do
 			damsel = get_entity(damsel_uid):as_movable()
-			if test_flag(damsel.flags, 29) == false then
+			stuck_in_web = test_flag(damsel.more_flags, 9)
+			-- local dead = test_flag(damsel.flags, 29)
+			if (
+				(stuck_in_web == true)
+				-- TODO: Don't swallow damsel if dead(? did this happen if the damsel was dead in HD? Investigate.)
+				-- (dead == false)
+			) then
 				damsel.stun_timer = 0
 				if options.hd_debug_invis == false then
 					damsel.flags = set_flag(damsel.flags, 1)
@@ -2920,7 +3658,12 @@ function tongue_exit()
 				move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
 			end
 		end
-		
+	else
+		toast("No Level Exitdoor found, can't force-rescue damsels.")
+	end
+	if worm_exit_uid ~= nil then
+		worm_exit = get_entity(worm_exit_uid)
+		worm_exit.flags = clr_flag(worm_exit.flags, 28) -- resume ai to magnetize damsels
 		if #ensnaredplayers > 0 then
 			-- unlock worm door, let players in
 			unlock_door_at(x, y)
@@ -2977,8 +3720,10 @@ function tongue_exit()
 						door_platform.flags = clr_flag(door_platform.flags, 3)
 						door_platform.flags = clr_flag(door_platform.flags, 8)
 					end
+					worm_exit = get_entity(exits[1])
+					worm_exit.flags = set_flag(worm_exit.flags, 28) -- pause ai to prevent magnetizing damsels
+					lock_door_at(x, y)
 				end
-				lock_door_at(x, y)
 			end, 55)
 		end
 		
@@ -2988,9 +3733,8 @@ function tongue_exit()
 			tongue.flags = set_flag(tongue.flags, 1)
 		end
 		tongue.flags = set_flag(tongue.flags, 4)-- disable interaction with objects
-		
 	else
-		toast("NO EXIT DOOR can't move damsels to exit")
+		toast("No Worm Exitdoor found, can't force-exit players.")
 	end
 end
 
@@ -3177,17 +3921,17 @@ function onframe_manage_dangers()
 					move_entity(danger.behavior.bat_uid, 0, 0, 0, 0)
 				end
 			end
-			if danger_tracker[i].hd_type.itemdrop ~= nil then -- if dead and has possible item drops
-				if danger_tracker[i].hd_type.itemdrop.item ~= nil and #danger_tracker[i].hd_type.itemdrop.item > 0 then
+			if danger.hd_type.itemdrop ~= nil then -- if dead and has possible item drops
+				if danger.hd_type.itemdrop.item ~= nil and #danger.hd_type.itemdrop.item > 0 then
 					if (
-						danger_tracker[i].hd_type.itemdrop.chance == nil or
+						danger.hd_type.itemdrop.chance == nil or
 						(
-							danger_tracker[i].hd_type.itemdrop.chance ~= nil and
-							-- danger_tracker[i].itemdrop.chance > 0 and
-							math.random() <= danger_tracker[i].hd_type.itemdrop.chance
+							danger.hd_type.itemdrop.chance ~= nil and
+							-- danger.itemdrop.chance > 0 and
+							math.random() <= danger.hd_type.itemdrop.chance
 						)
 					) then
-						itemdrop = danger_tracker[i].hd_type.itemdrop.item[math.random(1, #danger_tracker[i].hd_type.itemdrop.item)]
+						itemdrop = danger.hd_type.itemdrop.item[math.random(1, #danger.hd_type.itemdrop.item)]
 						if itemdrop == HD_ENT.ITEM_CRYSTALSKULL then
 							create_ghost()
 						end
@@ -3195,17 +3939,17 @@ function onframe_manage_dangers()
 					end
 				end
 			end
-			if danger_tracker[i].hd_type.treasuredrop ~= nil then -- if dead and has possible item drops
-				if danger_tracker[i].hd_type.treasuredrop.item ~= nil and #danger_tracker[i].hd_type.treasuredrop.item > 0 then
+			if danger.hd_type.treasuredrop ~= nil then -- if dead and has possible item drops
+				if danger.hd_type.treasuredrop.item ~= nil and #danger.hd_type.treasuredrop.item > 0 then
 					if (
-						danger_tracker[i].hd_type.treasuredrop.chance == nil or
+						danger.hd_type.treasuredrop.chance == nil or
 						(
-							danger_tracker[i].hd_type.treasuredrop.chance ~= nil and
-							-- danger_tracker[i].treasuredrop.chance > 0 and
-							math.random() <= danger_tracker[i].hd_type.treasuredrop.chance
+							danger.hd_type.treasuredrop.chance ~= nil and
+							-- danger.treasuredrop.chance > 0 and
+							math.random() <= danger.hd_type.treasuredrop.chance
 						)
 					) then
-						itemdrop = danger_tracker[i].hd_type.treasuredrop.item[math.random(1, #danger_tracker[i].hd_type.treasuredrop.item)]
+						itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
 						danger_spawn(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
 					end
 				end
@@ -3463,7 +4207,7 @@ function create_behavior(behavior)
 				-- if behavior.abilities.agro.bat_uid ~= nil then
 					
 					decorated_behavior.bat_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)--decorated_behavior.abilities.agro.bat_uid = spawn(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
-					danger_setflags(decorated_behavior.bat_uid, { 1, 6, 25 })
+					applyflags_to_uid(decorated_behavior.bat_uid, {{ 1, 6, 25 }})
 				
 				-- end
 				-- if behavior.abilities.idle.mosquito_uid ~= nil then
@@ -3545,42 +4289,45 @@ function danger_applydb(uid, hd_type)
 		s_mov.hitboxy = hd_type.hitbox[2]
 	end
 	-- TODO: Move flags into a table of pairs(flagnumber, bool)
-	if hd_type.flag_stunnable ~= nil then
-		if hd_type.flag_stunnable == true then
-			s_mov.flags = set_flag(s_mov.flags, 12)
-		else
-			s_mov.flags = clr_flag(s_mov.flags, 12)
-		end
+	if hd_type.flags ~= nil then
+		applyflags_to_uid(uid, hd_type.flags)
 	end
 	
-	if hd_type.flag_collideswalls ~= nil then
-		if hd_type.flag_collideswalls == true then
-			s_mov.flags = set_flag(s_mov.flags, 13)
-		else
-			s_mov.flags = clr_flag(s_mov.flags, 13)
-		end
-	end
+	-- if hd_type.flag_stunnable ~= nil then
+		-- if hd_type.flag_stunnable == true then
+			-- s_mov.flags = set_flag(s_mov.flags, 12)
+		-- else
+			-- s_mov.flags = clr_flag(s_mov.flags, 12)
+		-- end
+	-- end
 	
-	if hd_type.flag_nogravity ~= nil then
-		if hd_type.flag_nogravity == true then
-			s_mov.flags = set_flag(s_mov.flags, 4)
-		else
-			s_mov.flags = clr_flag(s_mov.flags, 4)
-		end
-	end
+	-- if hd_type.flag_collideswalls ~= nil then
+		-- if hd_type.flag_collideswalls == true then
+			-- s_mov.flags = set_flag(s_mov.flags, 13)
+		-- else
+			-- s_mov.flags = clr_flag(s_mov.flags, 13)
+		-- end
+	-- end
 	
-	if hd_type.flag_passes_through_objects ~= nil then
-		if hd_type.flag_passes_through_objects == true then
-			s_mov.flags = set_flag(s_mov.flags, 10)
-		else
-			s_mov.flags = clr_flag(s_mov.flags, 10)
-		end
-	end
+	-- if hd_type.flag_nogravity ~= nil then
+		-- if hd_type.flag_nogravity == true then
+			-- s_mov.flags = set_flag(s_mov.flags, 4)
+		-- else
+			-- s_mov.flags = clr_flag(s_mov.flags, 4)
+		-- end
+	-- end
+	
+	-- if hd_type.flag_passes_through_objects ~= nil then
+		-- if hd_type.flag_passes_through_objects == true then
+			-- s_mov.flags = set_flag(s_mov.flags, 10)
+		-- else
+			-- s_mov.flags = clr_flag(s_mov.flags, 10)
+		-- end
+	-- end
 end
 
 -- velocity defaults to uid's
 function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
-	conflict = nil
 	uid_to_track = uid
 	d_mov = get_entity(uid_to_track):as_movable()
 	vx = _vx or d_mov.velocityx
@@ -3590,41 +4337,29 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 	
 	d_type = get_entity(uid_to_track).type.id
 	
-	if hd_type.collisiontype == nil then
-		conflict = { 0, 0 }
-	elseif (
-		collision_detection == true and
-		(
-			hd_type.collisiontype ~= nil and
-			(
-				hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
-				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
-			)
-		)
-	) then
-		conflict = conflictdetection(hd_type.collisiontype, x, y, l)
+	offset_collision = { 0, 0 }
+	if collision_detection == true then
+		offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
 	end
-	
-	if (
-		(hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type)
-		and
-		conflict ~= nil
-	) then --or (conflict == true and options.hd_z_antitrapcuck == false) then
-			-- if there is no conflict or there is conflict and the anti-cuck option is disabled, attempt to create trap
-		offsetx, offsety = danger_setoffset(hd_type, conflict) -- TODO: Take into account replaced enemies that are the same ENT_TYPE.
-		uid_to_track = create_danger(hd_type, x+offsetx, y+offsety, l, vx, vy)
-		
-		move_entity(uid, 0, 0, 0, 0)
-	else
-		d_mov.velocityx = _vx
-		d_mov.velocityy = _vy
-	end
-	if conflict == nil then
-		move_entity(uid, 0, 0, 0, 0)
+	if offset_collision ~= nil then
+		if (hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type) then
+			offset_spawn_x, offset_spawn_y = 0, 0
+			if hd_type.offset_spawn ~= nil then
+				offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
+			end
+			uid_to_track = create_danger(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, vx, vy)
+			
+			move_entity(uid, 0, 0, 0, 0)
+		else -- don't replace, apply velocities to and track what you normally would replace
+			d_mov.velocityx = vx
+			d_mov.velocityy = vy
+			uid_to_track = uid
+		end
+	-- else
+		-- move_entity(uid, 0, 0, 0, 0)
 	end
 
-	if uid_to_track ~= -1 then
+	if uid_to_track ~= -1 then 
 		danger_applydb(uid_to_track, hd_type)
 		danger_track(uid_to_track, x, y, l, hd_type)
 	end
@@ -3632,58 +4367,72 @@ end
 
 -- velocity defaults to 0 (by extension of `create_danger()`)
 function danger_spawn(hd_type, x, y, l, collision_detection, _vx, _vy)
-	conflict = nil
-	if hd_type.collisiontype == nil then
-		conflict = { 0, 0 }
-	elseif (
-		collision_detection == true and
-		(
-			hd_type.collisiontype ~= nil and
-			(
-				hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
-				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-				-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
-			)
-		)
-	) then
-		conflict = conflictdetection(hd_type.collisiontype, x, y, l)
+	offset_collision = { 0, 0 }
+	if collision_detection == true then
+		offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
 	end
-	if conflict ~= nil then --or (conflict == true and options.hd_z_antitrapcuck == false) then
-			-- if there is no conflict or there is conflict and the anti-cuck option is disabled, attempt to create trap
-		offset_conflict_x, offset_conflict_y = conflict[1], conflict[2]
-		uid = create_danger(hd_type, x+offsetx, y+offsety, l, _vx, _vy)
+	if offset_collision ~= nil then
+		offset_spawn_x, offset_spawn_y = 0, 0
+		if hd_type.offset_spawn ~= nil then
+			offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
+		end
+		uid = create_danger(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
 		if uid ~= -1 then
 			danger_applydb(uid, hd_type)
-
 			danger_track(uid, x, y, l, hd_type)
 		end
 	end
 end
 
-function danger_setoffset(hd_type, conflict)
-	offset_conflict_x, offset_conflict_y = conflict[1], conflict[2]
-	offset_spawn_x, offset_spawn_y = 0, 0
-	if hd_type.offset_spawn ~= nil then
-		offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
-	end
-	return offset_conflict_x+offset_spawn_x, offset_conflict_y+offset_spawn_y
+function applyflags_to_level(flags)
+	if #flags > 0 then
+		flags_set = flags[1]
+		for _, flag in ipairs(flags_set) do
+			state.level_flags = set_flag(state.level_flags, flag)
+		end
+		if #flags > 1 then
+			flags_clear = flags[2]
+			for _, flag in ipairs(flags_clear) do
+				state.level_flags = clr_flag(state.level_flags, flag)
+			end
+		end
+	else toast("No level flags") end
 end
 
-function danger_setflags(uid_assignto, flags_set, flags_clear)
-	flags_set = flags_set or {}
-	flags_clear = flags_clear or {}
-	ability_e = get_entity(uid_assignto)
-	for _, flag in ipairs(flags_set) do
-		if (
-			flag ~= 1 or
-			(flag == 1 and options.hd_debug_invis == false)
-		) then
-			ability_e.flags = set_flag(ability_e.flags, flag)
+function applyflags_to_quest(flags)
+	if #flags > 0 then
+		flags_set = flags[1]
+		for _, flag in ipairs(flags_set) do
+			state.quest_flags = set_flag(state.quest_flags, flag)
 		end
-	end
-	for _, flag in ipairs(flags_clear) do
-		ability_e.flags = clr_flag(ability_e.flags, flag)
-	end
+		if #flags > 1 then
+			flags_clear = flags[2]
+			for _, flag in ipairs(flags_clear) do
+				state.quest_flags = clr_flag(state.quest_flags, flag)
+			end
+		end
+	else toast("No quest flags") end
+end
+
+function applyflags_to_uid(uid_assignto, flags)
+	if #flags > 0 then
+		ability_e = get_entity(uid_assignto)
+		flags_set = flags[1]
+		for _, flag in ipairs(flags_set) do
+			if (
+				flag ~= 1 or
+				(flag == 1 and options.hd_debug_invis == false)
+			) then
+				ability_e.flags = set_flag(ability_e.flags, flag)
+			end
+		end
+		if #flags > 1 then
+			flags_clear = flags[2]
+			for _, flag in ipairs(flags_clear) do
+				ability_e.flags = clr_flag(ability_e.flags, flag)
+			end
+		end
+	else toast("No flags") end
 end
 
 function onframe_boss_wincheck()
@@ -4001,10 +4750,114 @@ function inventory_checkpickup_botd()
 	end
 end
 
+-- apply randomized frame offsets to uids of ENT_TYPE.FLOOR tiles
+	-- pass in:
+		-- a table of uids
+		-- a table of dimensions
+	-- assign each uid a random animation_frame
+	-- This method has recursive potential. Would work for areas much larger than 2x2 but would need adjustment for that
+	
+function tileapplier9000(_tilegroup)
+	uid_offsetpair = _tilegroup.uid_offsetpair
+	dim = _tilegroup.dim
+		-- width = 3
+		-- height = 4
+	for yi = 0, -(dim[2]-1), -1 do -- 0 -> -3
+		for xi = 0, (dim[1]-1), 1 do -- 0 -> 2
+			dim_viable = {(dim[1]-xi), (dim[2]+yi)} -- 3, 4 -> 1, 1
+			for _, offsetpair in ipairs(uid_offsetpair) do
+				-- Will have no uid if already applied.
+				if offsetpair.uid == nil and offsetpair.offset ~= nil then
+					dim_viable = tileapplier_get_viabledim(dim, xi, yi, offsetpair.offset)
+				end
+			end
+			-- if floor available, apply random animation_frame to uids
+			if dim_viable[1] > 0 and dim_viable[2] > 0 then
+				-- find applicable uids with the given dimensions
+				origin = { xi, yi }
+				tileapplier_apply_randomframe(_tilegroup, origin, dim_viable)
+			end
+		end
+	end
+end
+
+-- return uids (debug purposes)
+function tileapplier_apply_randomframe(_tilegroup, origin, dim_viable)
+	uids = {}
+	setup_apply = tileapplier_get_randomwithin(dim_viable)
+	dim = setup_apply.dim--_tilegroup.dim
+	-- if origin[1] == 2 then
+		-- toast(tostring(origin[1]) .. ", " .. tostring(origin[2]))-- .. ": " .. tostring(setup_apply.frames[1]))
+	-- end
+	uid_offsetpair = _tilegroup.uid_offsetpair
+	frames_i = 1 -- ah yes, frames_i, the ugly older brother of iframes
+	for yi = origin[2], dim[2]-1, 1 do -- start at origin[2], end at dim[2]
+		for xi = origin[1], dim[1]-1, 1 do
+			for _, offsetpair in ipairs(uid_offsetpair) do
+				if offsetpair.uid ~= nil and offsetpair.offset ~= nil then
+					if offsetpair.offset[1] == xi and offsetpair.offset[2] == yi then
+						floor_e = get_entity(offsetpair.uid)
+						floor_m = floor_e:as_movable()
+						frame = setup_apply.frames[frames_i]
+						-- toast(tostring(xi) .. ", " .. tostring(yi) .. ": " .. tostring(frame))
+						floor_m.animation_frame = frame
+						-- apply to uids, then assign offset in dim
+						table.insert(uids, offsetpair.uid)
+						offsetpair.uid = nil
+					end
+				end
+			end
+			frames_i = frames_i + 1
+		end
+	end
+	return uids
+end
+
+function tileapplier_get_viabledim(dim, xi, yi, offset)
+	dim_viable = {(dim[1]-xi), (dim[2]+yi)}--{1+(dim[1]-xi), 1+(dim[2]-yi)}
+	x_larger = offset[1] > xi
+	x_equals = offset[1] == xi
+	y_larger = offset[2] > yi
+	y_equals = offset[2] == yi
+	both_equals = x_equals and y_equals
+	both_larger = x_larger and y_larger
+	if (x_equals or x_larger) and (y_equals or y_larger) then
+		if x_larger and y_equals then -- subtract from viable dimension
+			dim_viable[1] = dim_viable[1] - 1
+		elseif both_equals then
+			dim_viable[1] = dim_viable[1] - 2
+		end
+		if y_larger and x_equals then -- subtract from viable dimension
+			dim_viable[2] = dim_viable[2] - 1
+		elseif both_equals then
+			dim_viable[2] = dim_viable[2] - 2
+		end
+	end
+	return dim_viable
+end
+
+-- Compact tileframes_floor into a local table of matching dimensions
+function tileapplier_get_randomwithin(_dim)
+	tileframes_floor_matching = TableCopy(TILEFRAMES_FLOOR)
+	n = #tileframes_floor_matching
+	for i, setup in ipairs(tileframes_floor_matching) do
+		if (
+			(setup.dim ~= nil and #setup.dim == 2) and
+			(setup.dim[1] > _dim[1] or setup.dim[2] > _dim[2])
+		) then tileframes_floor_matching[i] = nil end
+	end
+	tileframes_floor_matching = CompactList(tileframes_floor_matching, n)
+	-- toast("#tileframes_floor_matching: " .. tostring(#tileframes_floor_matching))
+	-- toast("_dim[1]: " .. tostring(_dim[1]).. ", _dim[2]: " .. tostring(_dim[2]))
+	return TableRandomElement(tileframes_floor_matching)
+end
 
 -- SHOPS
 -- Hiredhand shops have 1-3 hiredhands
 -- Damzel for sale: The price for a kiss will be $8000 in The Mines, and it will increase by $2000 every area, so the prices will be $8000, $10000, $12000 and $14000 for a Damsel kiss in the four areas shops can spawn in. The price for buying the Damsel will be an extra 50% over the kiss price, making the prices $12000, $15000, $18000 and $21000 for all zones.
+-- If custom shop generation ever becomes possible:
+	-- Determine item pool, allow enabling certain S2 specific items with register_option_bool()
+	
 
 -- Wheel Gambling Ideas:
 -- Detect purchasing from the game when the player loses 5k and stands right next to a machine
@@ -4038,7 +4891,9 @@ end
 -- ICE_CAVES
 -- ENEMIES:
 -- Mammoth - Use an enemy that never agros and paces between ledges. Store a bool to fire icebeam on stopping its idle walking cycle.
---  - If runs into player while frozen, damage player.
+--  - If runs into player while frozen, kill/damage player.
+-- Snowball
+	-- once it hits something (has a victim?), revert animation_frame and remove uid from danger_tracker.
 
 -- TEMPLE
 -- ENEMIES:
@@ -4065,6 +4920,7 @@ end
 						-- 1002: Kali (rename in the future?)
 						-- 1003: Idol (rename in the future?)
 				-- 2: Detect whether there's an exit. Without the exit, we can't move enemies. if there IS no exit, generate a new path with one or adjust the existing path to make one.
+					-- UPDATE: May be possible to fix broken exit generation by preventing waddler's shop from spawning entirely.
 					-- For instance, the ice caves can sometimes generate no exit on the 4th row.
 					-- If no 1 subchunkid exists on the fourth row:
 						-- if 2 on the third row exists:
@@ -4103,12 +4959,29 @@ end
 					-- Mask (default to any mask of 0x4)
 				-- Method moves all found entities to the exit door and returns a table of their uids
 				-- append each table into a 2d array based on the room they occupied
-			-- 3: Generate rooms, log generated rooms
+			-- 3: ???
+			-- 4: Generate rooms, log generated rooms
 				-- Parameters
 					-- optional table of ENT_TYPE
 					-- Path
+				-- For rooms you replace, keep in mind:
+					-- Checks to make sure killing/moving certain floors won't lead to problems, such as shops
+						-- IDEA: TOTEST: If flag for shop floor is checked, uncheck it.
+					-- Establish a system of methods/parameters for removing certain elements from rooms.
+						-- Some scenarios:
+							-- get_entities_overlapping() on LIQUID_WATER or LIQUID_LAVA to remove it, otherwise there'd be consequences.
+						-- pushblocks/powderkegs, crates/goldbars, encrusted gems/items/goldbits/cavemen(?)
+						-- Theme specific entities:
+							-- falling platforms
+						-- S2 Level feeling-specific entities:
+							-- Restless:
+								-- remove fog effect, music(? is that possible?)
+								-- replace FLOOR_TOMB with normal
+								-- remove restless-specific enemies
+							-- Dark level: remove torches on rooms you replace
+								-- Once all rooms to be replaced are replaced, place torches in those rooms.
 				-- Determine roomcodes to use with global list constant (same way as LEVEL_DANGERS[state.theme]) and the current room
-					-- HD_FEELING_* overrides some or all rooms
+					-- HD_FEELING[*] overrides some or all rooms
 				-- append each table into a 2d array based on the room they occupied
 				-- for each room, process HD_TILENAME, spawn_entity()
 					-- if (tilename == 2 or tilename == j) and math.random() >= 0.5
@@ -4119,10 +4992,15 @@ end
 							-- mark as i
 					-- else
 						-- mark as 0
-				-- return into `rooms_roomcodes_final`
-			-- 4: Move enemies from exit to designated rooms.
+				-- return into `postgen_roomcodes`
+			-- 5: Once `rooms_roomcodes_postgen` is finished, gets baked into a full array of the characters
+				-- `postgen_levelcode`
+			-- 6: Move enemies from exit to designated rooms/custom spawning system
 				-- Parameters
-					-- `rooms_roomcodes_final`
+					-- `postgen_levelcode`
+			-- 7: Final touchups. This MAY include level background details, ambient sounds.				
+				-- If dark level, place torches in rooms you replaced earlier
+					-- Once all rooms to be replaced are replaced, place torches in those rooms.
 		-- Certain room constants will need to be recognized and marked for replacement. This includes:
 			-- Tun rooms
 				-- Constraints are ENT_TYPE.MONS_MERCHANT in the front layer
@@ -4131,27 +5009,27 @@ end
 			-- Shops and vaults in HELL
 		-- Make the outline of a vault room tilecode `2` (50% chance to remove each outlining block)
 		-- TODO: HD_FEELING bool system Revamp:
-			-- HD_FEELING[FLOODED] = {
-				-- chance = 0.25, 				-- manditory
-				-- load = 0,					-- manditory -- set to level number to register when to load it
-				-- themes = { THEME.JUNGLE },	-- manditory
-				-- message = "I hear rushing water!" -- some feelings won't have this field
+			-- HD_FEELING["FLOODED"] = {
+				-- chance = 0.25, 						-- manditory
+				-- load = 0,							-- manditory	-- set to level number
+				-- themes = { THEME.JUNGLE },			-- manditory
+				-- message = "I hear rushing water!"	-- optional
 			-- }
-			-- won't set if already set to the current level or a past level
+			-- -- won't set if already set to the current level or a past level
 			-- function set_feeling_happenonce_future(feeling, levels, use_chance)
 				-- if (detect_feeling_themes(feeling) and HD_FEELING[feeling].load <= state.level) then return false
 				-- else
 					-- return set_feeling(feeling, levels, use_chance)
 				-- end
 			-- end
-			-- won't set if already set
+			-- -- won't set if already set
 			-- function set_feeling_happenonce(feeling, levels, use_chance)
 				-- if HD_FEELING[feeling].load ~= 0 then return false
 				-- else
 					-- return set_feeling(feeling, levels, use_chance)
 				-- end
 			-- end
-			-- if multiple levels and false are passed in, a random level in the table is set
+			-- -- if multiple levels and false are passed in, a random level in the table is set
 			-- function set_feeling(feeling, levels, use_chance)
 				-- use_chance = use_chance or true
 				-- if use_chance == false
@@ -4211,22 +5089,16 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					
-					-- if HD_FEELING_BLACKMARKET_ENTRANCE == false
+					-- if HD_FEELINGBLACKMARKET_ENTRANCE"] == false
+				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
+					-- Will need at least:
+						-- 
 				-- if detect_s2market() == true 
 			-- Use S2 black market for flooded level feeling
 				-- Set LOAD_FLOODED: Detect when S2 black market spawns
 					-- function onloading_setfeeling_load_flooded: roll HD_FEELING_FLOODED_CHANCE 4 times (or 3 if you're not going to try to extend the levels to allow S2 black market to spawn)
 					-- for each roll: if true, return true
 					-- if it returned true, set LOAD_FLOODED to true
-					-- S2 Market Detection ideas:
-						-- function detect_s2market()
-							-- market_doors = get_entities_by_type(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR)
-							-- if (#market_doors > 0) -- or (state.theme == THEME.JUNGLE and levelsize[2] >= 4)
-								-- return true
-							-- end
-							-- return false
-						-- end
 						-- if detect_s2market() == true and LOAD_FLOODED == true, set HD_FEELING_FLOODED
 			
 	-- Roomcodes:
@@ -4257,3 +5129,6 @@ end
 -- print(7 >> 1) -- bitwise right shift
 -- print(7 << 1) -- bitwise left shift
 -- print(~7)     -- bitwise not
+
+-- For mammoth behavior: If set, run it as a function: within the function, run a check on an array you pass in defining the `animation_frame`s you replace and the enemy you are having override its idle state.
+

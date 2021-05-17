@@ -11,7 +11,7 @@ meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info", false)
 register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info", false)
-register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", false)
+register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", true)
 register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info", false)
 register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", true)
 register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", false)
@@ -41,6 +41,7 @@ TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 wheel_items = {}
 global_dangers = {}
+global_feelings = {}
 danger_tracker = {}
 IDOL_X = nil
 IDOL_Y = nil
@@ -91,34 +92,63 @@ UI_BOTD_PLACEMENT_H = 0.12
 UI_BOTD_PLACEMENT_X = 0.2
 UI_BOTD_PLACEMENT_Y = 0.93
 
-HD_FEELING_SPIDERLAIR_CHANCE = -1
-HD_FEELING_SNAKEPIT_CHANCE = -1
-HD_FEELING_RESTLESS_CHANCE = -1
-HD_FEELING_TIKIVILLAGE_CHANCE = -1
-HD_FEELING_FLOODED_CHANCE = -1
-HD_FEELING_YETIKINGDOM_CHANCE = -1
-HD_FEELING_UFO_CHANCE = -1
-HD_FEELING_SACRIFICIALPIT_CHANCE = -1
-
-
-HD_FEELING_SPIDERLAIR = false
-HD_FEELING_SNAKEPIT = false
-HD_FEELING_RESTLESS = false
-HD_FEELING_TIKIVILLAGE = false
-HD_FEELING_FLOODED = false
-HD_FEELING_HAUNTEDCASTLE = false -- IDEA: Global variable that tracks previous levels.
-HD_FEELING_YETIKINGDOM = false
-HD_FEELING_UFO = false
-HD_FEELING_MOAI = false
-HD_FEELING_MOTHERSHIPENTRANCE = false -- This level feeling only, and always, occurs on level 3-4.
-										-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
-										-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
-HD_FEELING_SACRIFICIALPIT = false
-HD_FEELING_HELL = false
-
-LOAD_MOAI = false
-LOAD_HAUNTEDCASTLE = false
-CANCEL_MOTHERSHIPENTRANCE = false
+HD_FEELING = {
+	["SPIDERLAIR"] = {
+		chance = 1,
+		themes = { THEME.DWELLING },
+		message = "My skin is crawling..."
+	},
+	["SNAKEPIT"] = {
+		chance = 1,
+		themes = { THEME.DWELLING },
+		message = "I hear snakes... I hate snakes!"
+	},
+	["RESTLESS"] = {
+		chance = 0,
+		themes = { THEME.JUNGLE },
+		message = "The dead are restless!"
+	},
+	["TIKIVILLAGE"] = {
+		chance = 1,
+		themes = { THEME.JUNGLE }
+	},
+	["FLOODED"] = {
+		chance = 1,
+		themes = { THEME.JUNGLE },
+		message = "I hear rushing water!"
+	},
+	["HAUNTEDCASTLE"] = {
+		themes = { THEME.JUNGLE },
+		message = "A wolf howls in the distance..."
+	},
+	["YETIKINGDOM"] = {
+		chance = 0,
+		themes = { THEME.ICE_CAVES },
+		message = "It smells like wet fur in here."
+	},
+	["UFO"] = {
+		chance = 0,
+		themes = { THEME.ICE_CAVES },
+		message = "I sense a psychic presence here!"
+	},
+	["MOAI"] = {
+		themes = { THEME.ICE_CAVES }
+	},
+	["MOTHERSHIPENTRANCE"] = {
+		themes = { THEME.ICE_CAVES },
+		message = "It feels like the fourth of July..."
+	},
+	["SACRIFICIALPIT"] = {
+		chance = 0,
+		themes = { THEME.TEMPLE },
+		message = "You hear prayers to Kali!"
+	},
+	["HELL"] = {
+		themes = { THEME.VOLCANA },
+		load = 1,
+		message = "A horrible feeling of nausea comes over you!"
+	},
+}
 
 MESSAGE_FEELING = nil
 
@@ -841,29 +871,6 @@ HD_ENT = {
 		-- toreplace = ENT_TYPE.MONS_MOSQUITO,
 		dangertype = HD_DANGERTYPE.ENEMY
 	},
-	--TODO: Replace with regular frog
-		-- Use a giant fly for tospawn
-		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
-			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
-				-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
-	
-	-- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
-		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-		-- toreplace = ENT_TYPE.MONS_GIANTFLY,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- health = 8,
-		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
-		-- behavior = HD_BEHAVIOR.GIANTFROG,
-		-- dim = {2.5, 2.5},
-		-- itemdrop = {
-			-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			-- chance = 0.15 -- 15% (1/6.7)
-		-- }
-		-- treasuredrop = {
-			-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- TODO: Determine which gems.
-			-- chance = 1.0
-		-- }
-	-- },
 	SNAIL = {
 		tospawn = ENT_TYPE.MONS_HERMITCRAB,
 		toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
@@ -1022,8 +1029,7 @@ HD_ENT = {
 		-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
 }
 -- For HD_ENTs that include references to other HD_ENTs:
-HD_ENT = {
-	GIANTFROG = {
+	HD_ENT.GIANTFROG = {
 		tospawn = ENT_TYPE.MONS_OCTOPUS,
 		-- toreplace = ENT_TYPE.MONS_OCTOPUS,
 		entitydb = ENT_TYPE.MONS_OCTOPUS,
@@ -1053,8 +1059,31 @@ HD_ENT = {
 			item = {HD_ENT.ITEM_SAPPHIRE},
 			chance = 0.50
 		}
-	},
-	OLDBITEY = {
+	}
+	--TODO: Replace with regular frog
+		-- Use a giant fly for tospawn
+		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
+			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
+				-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
+	
+	-- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
+		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
+		-- toreplace = ENT_TYPE.MONS_GIANTFLY,
+		-- dangertype = HD_DANGERTYPE.ENEMY,
+		-- health = 8,
+		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
+		-- behavior = HD_BEHAVIOR.GIANTFROG,
+		-- dim = {2.5, 2.5},
+		-- itemdrop = {
+			-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+			-- chance = 0.15 -- 15% (1/6.7)
+		-- }
+		-- treasuredrop = {
+			-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- TODO: Determine which gems.
+			-- chance = 1.0
+		-- }
+	-- },
+	HD_ENT.OLDBITEY = {
 		tospawn = ENT_TYPE.MONS_GIANTFISH,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		entitydb = ENT_TYPE.MONS_GIANTFISH,
@@ -1063,8 +1092,8 @@ HD_ENT = {
 			item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
 			chance = 1
 		}
-	},
-	OLMEC_SHOT = {
+	}
+	HD_ENT.OLMEC_SHOT = {
 		tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
 		dangertype = HD_DANGERTYPE.ENEMY,
 		kill_on_standing = HD_KILL_ON.STANDING,
@@ -1085,8 +1114,7 @@ HD_ENT = {
 			{13},
 			{4, 10}
 		},
-	},
-}
+	}
 
 TRANSITION_CRITTERS = {
 	[THEME.DWELLING] = {
@@ -1238,19 +1266,6 @@ function init()
 	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
-	HD_FEELING_SPIDERLAIR = false
-	HD_FEELING_SNAKEPIT = false
-	HD_FEELING_RESTLESS = false
-	HD_FEELING_TIKIVILLAGE = false
-	HD_FEELING_FLOODED = false
-	HD_FEELING_HAUNTEDCASTLE = false
-	HD_FEELING_YETIKINGDOM = false
-	HD_FEELING_UFO = false
-	HD_FEELING_MOAI = false
-	HD_FEELING_MOTHERSHIPENTRANCE = false
-	HD_FEELING_SACRIFICIALPIT = false
-	HD_FEELING_HELL = false
-	
 	MESSAGE_FEELING = nil
 	
 	OLMEC_ID = nil
@@ -1275,12 +1290,12 @@ end
 function onlevel_dangers_init()
 	if LEVEL_DANGERS[state.theme] then
 		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
-		if HD_FEELING_FLOODED == true then
-			if HD_FEELING_RESTLESS == true then
-				oldbitey_modified = TableCopy(HD_ENT.OLDBITEY)
-				oldbitey_modified.itemdrop.item = {HD_ENT.ITEM_CRYSTALSKULL}--ENT_TYPE.ITEM_MADAMETUSK_IDOL}
-				table.insert(global_dangers, oldbitey_modified)
-			else table.insert(global_dangers, HD_ENT.OLDBITEY) end
+		if feeling_check("FLOODED") == true then
+			oldbitey = TableCopy(HD_ENT.OLDBITEY)
+			if feeling_check("RESTLESS") == true then
+				oldbitey.itemdrop.item = {HD_ENT.ITEM_CRYSTALSKULL}
+			end
+			table.insert(global_dangers, oldbitey) 
 		end
 		
 		if (options.hd_og_boulder_phys == true and
@@ -1436,7 +1451,7 @@ function create_idol()
 	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
 	if (
 		#idols > 0 and
-		HD_FEELING_RESTLESS == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
+		feeling_check("RESTLESS") == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
 	) then
 		IDOL_UID = idols[1]
 		IDOL_X, IDOL_Y, idol_l = get_position(IDOL_UID)
@@ -1545,6 +1560,68 @@ function detect_s2market()
 			return true
 		end
 	end
+	return false
+end
+
+
+-- -- won't set if already set to the current level or a past level
+-- function feeling_set_once_future(feeling, levels, use_chance)
+	-- if ( -- don't set it if it's on the correct theme and the level is set and it's set to the current level or a past level
+		-- detect_feeling_themes(feeling) == false or
+		-- (
+			-- global_feelings[feeling].load ~= nil and
+			-- global_feelings[feeling].load <= state.level
+		-- )
+	-- ) then return false
+	-- else
+		-- return feeling_set(feeling, levels, use_chance)
+	-- end
+-- end
+-- won't set if the current theme doesn't match and load has already been set
+function feeling_set_once(feeling, levels)
+	if (
+		detect_feeling_themes(feeling) == false or
+		global_feelings[feeling].load ~= nil
+	) then return false
+	else
+		return feeling_set(feeling, levels)
+	end
+end
+
+-- if multiple levels and false are passed in, a random level in the table is set
+	-- NOTE: won't set to a past level
+function feeling_set(feeling, levels)
+	roll = math.random()
+	chance = 1
+	if global_feelings[feeling].chance ~= nil then
+		chance = global_feelings[feeling].chance
+	end
+	if chance >= roll then
+		levels_indexed = {}
+		for _, level in ipairs(levels) do
+			if level >= state.level then
+				levels_indexed[#levels_indexed+1] = level
+			end
+		end
+		global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
+		return true
+	else return false end
+end
+
+function detect_feeling_themes(feeling)
+	for _, theme in ipairs(global_feelings[feeling].themes) do
+		if state.theme == theme then
+			return true
+		end
+	end
+	return false
+end
+
+function feeling_check(feeling)
+	if (
+		detect_feeling_themes(feeling) == true and
+		state.level == global_feelings[feeling].load
+	) then return true end
 	return false
 end
 
@@ -2080,6 +2157,7 @@ end, ON.CAMP)
 set_callback(function()
 	onstart_init_options()
 	onstart_init_methods()
+	global_feelings = TableCopy(HD_FEELING)
 end, ON.START)
 
 -- ON.LOADING
@@ -2124,8 +2202,6 @@ set_callback(function()
 	onlevel_boss_init()
 	onlevel_coffinunlocks()
 	onlevel_toastfeeling()
-	onlevel_revertloadfeeling()
-	
 end, ON.LEVEL)
 
 set_callback(function()
@@ -2434,7 +2510,7 @@ function onlevel_generation_chunks()
 			-- toast("topx: " .. topx .. ", topy: " .. topy)
 			
 	idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	if #idols > 0 and HD_FEELING_RESTLESS == true then
+	if #idols > 0 and feeling_check("RESTLESS") == true then
 		idolx, idoly, idoll = get_position(idols[1])
 		roomx, roomy = locate_roompos(idolx, idoly)
 		-- cx, cy = remove_room(roomx, roomy, idoll)
@@ -2545,7 +2621,7 @@ end
 function onlevel_generation_removeborderfloor()
 	-- if S2 black market
 	-- TODO: Replace with if feeling_check("FLOODED") == true then
-	if detect_s2market() == true then
+	if feeling_check("FLOODED") == true then
 		remove_borderfloor()
 	end
 	-- if Mothership level
@@ -2754,7 +2830,7 @@ function onlevel_decorate_trees()
 		for _, treetop in ipairs(treetops) do
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
-			if HD_FEELING_RESTLESS == false then
+			if feeling_check("RESTLESS") == false then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
 			-- else
@@ -2999,72 +3075,86 @@ end
 function onlevel_detection_feeling()
 	if state.theme == THEME.DWELLING then
 		encounter = math.random(1,2)
-		if encounter == 1 and math.random() <= HD_FEELING_SPIDERLAIR_CHANCE then
-			HD_FEELING_SPIDERLAIR = true
+		if encounter == 1 then
+			feeling_set_once("SPIDERLAIR", {state.level})
 			-- TODO: pots will not spawn on this level.
 			-- Spiders, spinner spiders, and webs appear much more frequently.
 			-- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
 			-- Move pots into the void
-		elseif encounter == 2 and math.random() <= HD_FEELING_SNAKEPIT_CHANCE then
-			HD_FEELING_SNAKEPIT = true
+		elseif encounter == 2 then
+			feeling_set_once("SNAKEPIT", {state.level})
 		end
 	end
 	if state.theme == THEME.JUNGLE then
-		if HD_FEELING_HAUNTEDCASTLE == false then
-			encounter = math.random(1,2)
-			
-			if encounter == 1 and math.random() <= HD_FEELING_TIKIVILLAGE_CHANCE then
-				HD_FEELING_TIKIVILLAGE = true
-			elseif encounter == 2 and math.random() <= HD_FEELING_FLOODED_CHANCE then
-				HD_FEELING_FLOODED = true
+		if feeling_check("HAUNTEDCASTLE") == false then
+			if detect_s2market() == true then
+				encounter = 1
+				if ( -- if tikivillage has already been assigned, roll for flooded. Otherwise roll both
+					global_feelings["TIKIVILLAGE"].load ~= nil
+				) then
+					encounter = 2
+				else
+					encounter = math.random(1,2)
+				end
+				if encounter == 1 then
+					feeling_set_once("TIKIVILLAGE", {state.level})
+				elseif encounter == 2 then
+					feeling_set_once("FLOODED", {state.level})
+				end
+			else
+				feeling_set_once("TIKIVILLAGE", {state.level})
 			end
 			
-			if HD_FEELING_TIKIVILLAGE == false and math.random() <= HD_FEELING_RESTLESS_CHANCE then
-				HD_FEELING_RESTLESS = true
+			
+			if feeling_check("TIKIVILLAGE") == false then
+				feeling_set_once("RESTLESS", {state.level})
 			end
 		end
+		-- TODO: Set BLACKMARKET_ENTRANCE and BLACKMARKET here
 	end
 	if state.theme == THEME.ICE_CAVES then
+		
+		-- TODO(?): Really weird and possibly unintentional exception:
+			-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
+		if state.level == 2 then
+			feeling_set_once("MOAI", {2, 3})
+		end
+		
+		if state.level == 4 then
+			if global_feelings["MOTHERSHIPENTRANCE"].load == nil then
+				feeling_set_once("MOTHERSHIPENTRANCE", {state.level})
+			else
+				global_feelings["MOTHERSHIPENTRANCE"].load = nil
+				feeling_set_once("YETIKINGDOM", {state.level})
+			end
+			-- This level feeling only, and always, occurs on level 3-4.
+				-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
+				-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
+				-- Only available once in a run
+		end
+		
 		encounter = math.random(1,2)
 		
-		if encounter == 1 and math.random() <= HD_FEELING_YETIKINGDOM_CHANCE then
-			HD_FEELING_YETIKINGDOM = true
-		elseif encounter == 2 and math.random() <= HD_FEELING_UFO_CHANCE then
-			HD_FEELING_UFO = true
+		if encounter == 1 and
+		(
+			feeling_check("MOAI") == false and
+			state.level ~= 4
+		) then
+			feeling_set_once("YETIKINGDOM", {1,2,3})
+		elseif encounter == 2 then
+			feeling_set_once("UFO", {state.level})
 		end
-		
-		if state.level == 2 then
-			if math.random() <= 0.5 then
-				HD_FEELING_MOAI = true
-			else
-				LOAD_MOAI = true -- load MOAI on the next level
-			end
-		elseif state.level == 3 and LOAD_MOAI == true then
-			HD_FEELING_MOAI = true
-			LOAD_MOAI = false
-		end
-		if state.level == 4 then
-			if CANCEL_MOTHERSHIPENTRANCE == true then
-				CANCEL_MOTHERSHIPENTRANCE = false
-			else
-				HD_FEELING_MOTHERSHIPENTRANCE = true
-			end
-		end
-	end
-	if state.theme == THEME.NEO_BABYLON then
-		CANCEL_MOTHERSHIPENTRANCE = true
 	end
 	if state.theme == THEME.TEMPLE then
-		if math.random() <= HD_FEELING_SACRIFICIALPIT_CHANCE then
-			HD_FEELING_SACRIFICIALPIT = true
-		end
+		feeling_set_once("SACRIFICIALPIT", {1,2,3})
 	end
-	-- HELL
-	if state.theme == THEME.VOLCANA and state.level == 1 then
-		HD_FEELING_HELL = true
-	end
+	-- -- HELL
+	-- if state.theme == THEME.VOLCANA and state.level == 1 then
+		-- feeling_set("HELL", {state.level})
+	-- end
 	
 	-- GAME ENDUCED RESTLESS
+	-- TODO: Find a way to just remove and replace everything given this occurance
 	if (
 		state.theme == THEME.JUNGLE or
 		state.theme == THEME.VOLCANA or
@@ -3073,7 +3163,7 @@ function onlevel_detection_feeling()
 	) then
 		tombstones = get_entities_by_type(ENT_TYPE.DECORATION_TOMB)
 		if #tombstones > 0 then
-			HD_FEELING_RESTLESS = true
+			feeling_set("RESTLESS", {state.level})
 		end
 	end
 end
@@ -3082,35 +3172,27 @@ function onlevel_setfeelingmessage()
 	-- theme message priorities are here (ie; rushingwater over restless)
 	-- NOTES:
 		-- Black Market, COG and Beehive are currently handled by the game
-	if HD_FEELING_SPIDERLAIR == true then
-		MESSAGE_FEELING = "My skin is crawling..."
+	
+	loadchecks = TableCopy(HD_FEELING)
+	
+	n = #loadchecks
+	for feelingname, loadcheck in pairs(loadchecks) do
+		if (
+			detect_feeling_themes(feelingname) == false or
+			(
+				detect_feeling_themes(feelingname) == true and
+				loadcheck.load == nil and
+				loadcheck.message == nil
+			)
+		) then loadchecks[feelingname] = nil end
 	end
-	if HD_FEELING_SNAKEPIT == true then
-		MESSAGE_FEELING = "I hear snakes... I hate snakes!"
-	end
-	if HD_FEELING_RESTLESS == true then
-		MESSAGE_FEELING = "The dead are restless!"
-	end
-	if HD_FEELING_FLOODED == true then
-		MESSAGE_FEELING = "I hear rushing water!"
-	end
-	if HD_FEELING_HAUNTEDCASTLE == true then
-		MESSAGE_FEELING = "A wolf howls in the distance..."
-	end
-	if HD_FEELING_YETIKINGDOM == true then
-		MESSAGE_FEELING = "It smells like wet fur in here."
-	end
-	if HD_FEELING_UFO == true then
-		MESSAGE_FEELING = "I sense a psychic presence here!"
-	end
-	if HD_FEELING_MOTHERSHIPENTRANCE == true then
-		MESSAGE_FEELING = "It feels like the fourth of July..."
-	end
-	if HD_FEELING_SACRIFICIALPIT == true then
-		MESSAGE_FEELING = "You hear prayers to Kali!"
-	end
-	if HD_FEELING_HELL == true then
-		MESSAGE_FEELING = "A horrible feeling of nausea comes over you!"
+	loadchecks = CompactList(loadchecks, n)
+	
+	for feelingname, feeling in ipairs(loadchecks) do
+		-- Message Overrides may happen here:
+		-- For example:
+			-- if feelingname == "FLOODED" and feeling_check("RESTLESS") == true then break end
+		MESSAGE_FEELING = feeling.message
 	end
 end
 
@@ -3121,16 +3203,6 @@ function onlevel_toastfeeling()
 	) then
 		toast(MESSAGE_FEELING)
 	end
-end
-
-function onlevel_loadfeeling()
-	if LOAD_HAUNTEDCASTLE == true then HD_FEELING_HAUNTEDCASTLE = true end
-	if LOAD_MOAI == true then HD_FEELING_MOAI = true end
-end
-
-function onlevel_revertloadfeeling()
-	if LOAD_HAUNTEDCASTLE == true then LOAD_HAUNTEDCASTLE = false end
-	-- if LOAD_MOAI == true and HD_FEELING_MOAI == false then LOAD_MOAI = false end
 end
 
 function onlevel_coffinunlocks()
@@ -3400,7 +3472,7 @@ function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
 		IDOLTRAP_TRIGGER = true
-		if HD_FEELING_RESTLESS == true then
+		if feeling_check("RESTLESS") == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
 			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, idol_l, 0, 0)
@@ -4337,9 +4409,13 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 	
 	d_type = get_entity(uid_to_track).type.id
 	
-	offset_collision = { 0, 0 }
-	if collision_detection == true then
-		offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
+	offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
+	if collision_detection == true and offset_collision == nil then
+		offset_collision = nil
+		uid_to_track = -1
+		move_entity(uid, 0, 0, 0, 0)
+	elseif collision_detection == false then
+		offset_collision = { 0, 0 }
 	end
 	if offset_collision ~= nil then
 		if (hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type) then
@@ -4355,8 +4431,6 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 			d_mov.velocityy = vy
 			uid_to_track = uid
 		end
-	-- else
-		-- move_entity(uid, 0, 0, 0, 0)
 	end
 
 	if uid_to_track ~= -1 then 
@@ -4561,103 +4635,33 @@ function onguiframe_ui_info_feelings()
 		text_x = -0.95
 		text_y = -0.35
 		white = rgba(255, 255, 255, 255)
-		green_enabled = rgba(102, 108, 82, 255)
+		green = rgba(55, 200, 75, 255)
 		
 		text_levelfeelings = "No Level Feelings"
 		feelings = 0
 		
-		
-		text_spiderlair_bool = "FALSE"
-		text_snakepit_bool = "FALSE"
-		text_restless_bool = "FALSE"
-		text_tikivillage_bool = "FALSE"
-		text_flooded_bool = "FALSE"
-		text_hauntedcastle_bool = "FALSE"
-		text_yetikingdom_bool = "FALSE"
-		text_ufo_bool = "FALSE"
-		text_MOAI_bool = "FALSE"
-		text_mothershipentrance_bool = "FALSE"
-		text_sacrificialpit_bool = "FALSE"
-		text_hell_bool = "FALSE"
-		
-		text_LOAD_MOAI_bool = "FALSE"
-		text_load_hauntedcastle_bool = "FALSE"
-		text_cancel_mothershipentrance_bool = "FALSE"
-		
-		
-		if HD_FEELING_SPIDERLAIR == true then text_spiderlair_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_SNAKEPIT == true then text_snakepit_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_RESTLESS == true then text_restless_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_TIKIVILLAGE == true then text_tikivillage_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_FLOODED == true then text_flooded_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_HAUNTEDCASTLE == true then text_hauntedcastle_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_YETIKINGDOM == true then text_yetikingdom_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_UFO == true then text_ufo_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_MOAI == true then text_MOAI_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_MOTHERSHIPENTRANCE == true then text_mothershipentrance_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_SACRIFICIALPIT == true then text_sacrificialpit_bool = "TRUE" feelings = feelings + 1 end
-		if HD_FEELING_HELL == true then text_hell_bool = "TRUE" feelings = feelings + 1 end
-		
-		if LOAD_MOAI == true then text_LOAD_MOAI_bool = "TRUE" end
-		if LOAD_HAUNTEDCASTLE == true then text_load_hauntedcastle_bool = "TRUE" end
-		if CANCEL_MOTHERSHIPENTRANCE == true then text_cancel_mothershipentrance_bool = "TRUE" end
-		
-		
+		for feelingname, feeling in pairs(global_feelings) do
+			if feeling_check(feelingname) == true then
+				feelings = feelings + 1
+			end
+		end
 		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
-		
-		
-		text_spiderlair_bool = ("spiderlair_bool = " .. text_spiderlair_bool)
-		text_snakepit_bool = ("snakepit_bool = " .. text_snakepit_bool)
-		text_restless_bool = ("restless_bool = " .. text_restless_bool)
-		text_tikivillage_bool = ("tikivillage_bool = " .. text_tikivillage_bool)
-		text_flooded_bool = ("flooded_bool = " .. text_flooded_bool)
-		text_hauntedcastle_bool = ("hauntedcastle_bool = " .. text_hauntedcastle_bool)
-		text_yetikingdom_bool = ("yetikingdom_bool = " .. text_yetikingdom_bool)
-		text_ufo_bool = ("ufo_bool = " .. text_ufo_bool)
-		text_MOAI_bool = ("MOAI_bool = " .. text_MOAI_bool)
-		text_mothershipentrance_bool = ("mothershipentrance_bool = " .. text_mothershipentrance_bool)
-		text_sacrificialpit_bool = ("sacrificialpit_bool = " .. text_sacrificialpit_bool)
-		text_hell_bool = ("hell_bool = " .. text_hell_bool)
-		
-		text_LOAD_MOAI_bool = ("LOAD_MOAI_bool = " .. text_LOAD_MOAI_bool)
-		text_load_hauntedcastle_bool = ("load_hauntedcastle_bool = " .. text_load_hauntedcastle_bool)
-		text_cancel_mothershipentrance_bool = ("cancel_mothershipentrance_bool = " .. text_cancel_mothershipentrance_bool)
-		
 		
 		draw_text(text_x, text_y, 0, text_levelfeelings, white)
 		text_y = text_y-0.1
-		
-		draw_text(text_x, text_y, 0, text_spiderlair_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_snakepit_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_restless_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_tikivillage_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_flooded_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_hauntedcastle_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_yetikingdom_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_ufo_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_MOAI_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_mothershipentrance_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_sacrificialpit_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_hell_bool, white)
-		text_y = text_y-0.1
-		
-		draw_text(text_x, text_y, 0, text_LOAD_MOAI_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_load_hauntedcastle_bool, white)
-		text_y = text_y-0.05
-		draw_text(text_x, text_y, 0, text_cancel_mothershipentrance_bool, white)
-		text_y = text_y-0.05
+		for feelingname, feeling in pairs(global_feelings) do
+			color = white
+			message = ""
+			
+			feeling_bool = feeling_check(feelingname)
+			if feeling.message ~= nil then message = (": \"" .. feeling.message .. "\"") end
+			if feeling_bool == true then color = green end
+			
+			text_feeling = (feelingname) .. message
+			
+			draw_text(text_x, text_y, 0, text_feeling, color)
+			text_y = text_y-0.035
+		end
 
 	end
 end
@@ -4981,7 +4985,7 @@ end
 							-- Dark level: remove torches on rooms you replace
 								-- Once all rooms to be replaced are replaced, place torches in those rooms.
 				-- Determine roomcodes to use with global list constant (same way as LEVEL_DANGERS[state.theme]) and the current room
-					-- HD_FEELING[*] overrides some or all rooms
+					-- global_feelings[*] overrides some or all rooms
 				-- append each table into a 2d array based on the room they occupied
 				-- for each room, process HD_TILENAME, spawn_entity()
 					-- if (tilename == 2 or tilename == j) and math.random() >= 0.5
@@ -5009,76 +5013,15 @@ end
 			-- Shops and vaults in HELL
 		-- Make the outline of a vault room tilecode `2` (50% chance to remove each outlining block)
 		-- TODO: HD_FEELING bool system Revamp:
-			-- HD_FEELING["FLOODED"] = {
-				-- chance = 0.25, 						-- manditory
-				-- load = 0,							-- manditory	-- set to level number
-				-- themes = { THEME.JUNGLE },			-- manditory
-				-- message = "I hear rushing water!"	-- optional
-			-- }
-			-- -- won't set if already set to the current level or a past level
-			-- function set_feeling_happenonce_future(feeling, levels, use_chance)
-				-- if (detect_feeling_themes(feeling) and HD_FEELING[feeling].load <= state.level) then return false
-				-- else
-					-- return set_feeling(feeling, levels, use_chance)
-				-- end
-			-- end
-			-- -- won't set if already set
-			-- function set_feeling_happenonce(feeling, levels, use_chance)
-				-- if HD_FEELING[feeling].load ~= 0 then return false
-				-- else
-					-- return set_feeling(feeling, levels, use_chance)
-				-- end
-			-- end
-			-- -- if multiple levels and false are passed in, a random level in the table is set
-			-- function set_feeling(feeling, levels, use_chance)
-				-- use_chance = use_chance or true
-				-- if use_chance == false
-					-- levels_indexed = {}
-					-- for _, level in ipairs(levels) do
-						-- levels_indexed[#levels_indexed+1] = level
-					-- end
-					-- HD_FEELING[feeling].load = levels_indexed[math.random(1, #level_indexed)]
-					-- return true
-				-- end
-				-- chance = math.random()
-				-- level_chosen = -1
-				-- for _, level in pairs(levels) do
-					-- if level_chosen == -1 and (use_chance == false or (use_chance == true and HD_FEELING[feeling].chance >= chance)) then
-						-- level_chosen = level
-					-- end
-				-- end
-				-- if level_chosen == -1 then
-					-- return false
-				-- else
-					-- HD_FEELING[feeling].load = level_chosen
-					-- return true
-				-- end
-			-- end
-			-- function detect_feeling_themes(feeling)
-				-- for _, level in ipairs(HD_FEELING[feeling].themes) do
-					-- if state.level == level then
-						-- return true
-					-- end
-				-- end
-				-- return false
-			-- end
-			-- function feeling_check(feeling)
-				-- if detect_feeling_themes(feeling) == true then
-					-- for _, load in ipairs(HD_FEELING[feeling].load) do
-						-- if state.level == load then return true end
-					-- end
-				-- end
-				-- return false
-			-- end
 			-- old way: if HD_FEELING_RESTLESS == true then toast("The dead are restless!") end
 			-- new way: if feeling_check("RESTLESS") == true then toast("The dead are restless!") end
 			-- new ways:
 				-- run a chance to set the current level feeling:
-					-- set_feeling("RESTLESS", {state.level}, true)
+					-- feeling_set("RESTLESS", {state.level}, true)
 				-- run a chance to set the level feeling for a random level when it hasn't been set already:
-					-- set_feeling_happenonce("RESTLESS", {state.level}, true)
+					-- feeling_set_once("RESTLESS", {state.level}, true)
 				-- queue the next level to load the feeling:
-					-- set_feeling("HAUNTEDCASTLE", {state.level}+1)
+					-- feeling_set("HAUNTEDCASTLE", {state.level}+1)
 		-- On loading each world, pre-set when some of the level feelings are going to spawn.
 			-- for instance: Black market entrance, 
 		-- Black Market & Flooded Revamp:
@@ -5089,13 +5032,13 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					-- if HD_FEELINGBLACKMARKET_ENTRANCE"] == false
+					-- if feeling_check("BLACKMARKET_ENTRANCE") == true
 				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
 					-- Will need at least:
 						-- 
 				-- if detect_s2market() == true 
 			-- Use S2 black market for flooded level feeling
-				-- Set LOAD_FLOODED: Detect when S2 black market spawns
+				-- Set FLOODED: Detect when S2 black market spawns
 					-- function onloading_setfeeling_load_flooded: roll HD_FEELING_FLOODED_CHANCE 4 times (or 3 if you're not going to try to extend the levels to allow S2 black market to spawn)
 					-- for each roll: if true, return true
 					-- if it returned true, set LOAD_FLOODED to true

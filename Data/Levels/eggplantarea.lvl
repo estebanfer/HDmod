@@ -1,4 +1,3 @@
-
 \-size                                   2 12       // level size in rooms
 \-back_room_chance                       0          // % chance of a second room (default = 5%)
 \-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
@@ -604,7 +603,7 @@ p"www*ww""
 """0"0""""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.setroom0-0   //  YAMA TOP
+\.setroom0-0   // YAMA TOP
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -725,7 +724,7 @@ Y000000000
 0000==0=""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.setroom1-0   //  YAMA FLOOR
+\.setroom1-0   // YAMA FLOOR
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -744,7 +743,7 @@ wwwwww0000
 \!liquid
 0000000!!0
 00"""""""w
-0""w,,w,,w
+0"",,,,,,w
 0",wwwwwww
 0",wwwwwww
 0""wwwwwww
@@ -771,7 +770,7 @@ wwwwww0000
 \!liquid
 0000000!!0
 00"""""""w
-0""w,,w,,w
+0"",,,,,,w
 0",wwwwwww
 0",wwwwwww
 0""wwwwwww
@@ -810,7 +809,7 @@ wwwwww0000
 ====00""""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player   //  Coffin room holding a dead player (both sides must be open)
+\.coffin_player   // Coffin room holding a dead player (both sides must be open)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -835,7 +834,7 @@ wwwwww0000
 """"00""""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player_vertical   //  Coffin room holding a dead player (opened on all sides)
+\.coffin_player_vertical   // Coffin room holding a dead player (opened on all sides)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -860,21 +859,8 @@ wwwwww0000
 """"00""""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.ghistshop   //  Ghist shop
+\.ghistshop   // Ghist shop
 ////////////////////////////////////////////////////////////////////////////////
-
-// room
-\!dual
-\!flip
-\!ignore
-""",00===" XXXXXXXXXX
-0V00000000 XXXXXXXXXX
-000000==00 XXXXXXXXXX
-000"""==00 X00000000X
-000"V====0 X00000000X
-00==00===0 X0A0000A0X
-000000=k== X#0S000D0X
-"==,00==== XXXXXXXXXX
 
 // room COPY
 \!flip
@@ -888,30 +874,8 @@ wwwwww0000
 """"00""""
 
 ////////////////////////////////////////////////////////////////////////////////
-\.empress_grave   //  Room where the empress rests
+\.empress_grave   // Room where the empress rests
 ////////////////////////////////////////////////////////////////////////////////
-
-// room
-\!ignore
-0000000000
-0000000000
-0000000000
-0000000000
-0000000000
-="E"=00000
-="""="""""
-""""""""""
-
-// room
-\!ignore
-0000000000
-0000000000
-0000000000
-0000000000
-0000000000
-00000="E"=
-"""""="""=
-""""""""""
 
 // room COPY
 "00000000"

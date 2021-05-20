@@ -571,6 +571,9 @@ HD_TILENAME = {
 	},
     ["v"] = {
 		entity_type = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
+		alternate_types = {
+			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.LIQUID_WATER},
+		},
 		description = "Wood",
 	},
     ["w"] = {
@@ -845,276 +848,276 @@ HD_BEHAVIOR = {
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
 			-- treasuredrop = { item = {HD_ENT, etc...}, chance = 0.0 }
 				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
-HD_ENT = {
-	ITEM_IDOL = {
-		tospawn = ENT_TYPE.ITEM_IDOL
-	},
-	ITEM_CRYSTALSKULL = {
-		tospawn = ENT_TYPE.ITEM_MADAMETUSK_IDOL
-	},
-	ITEM_PICKUP_SPRINGSHOES = {
-		tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
-	},
-	ITEM_FREEZERAY = {
-		tospawn = ENT_TYPE.ITEM_FREEZERAY
-	},
-	ITEM_SAPPHIRE = {
-		tospawn = ENT_TYPE.ITEM_SAPPHIRE
-	},
-	FROG = {
-		tospawn = ENT_TYPE.MONS_FROG,
-		toreplace = ENT_TYPE.MONS_WITCHDOCTOR,--MOSQUITO,
-		dangertype = HD_DANGERTYPE.ENEMY
-	},
-	FIREFROG = {
-		tospawn = ENT_TYPE.MONS_FIREFROG,
-		-- toreplace = ENT_TYPE.MONS_MOSQUITO,
-		dangertype = HD_DANGERTYPE.ENEMY
-	},
-	SNAIL = {
-		tospawn = ENT_TYPE.MONS_HERMITCRAB,
-		toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
-		entitydb = ENT_TYPE.MONS_HERMITCRAB,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		health_db = 1,
-		removecorpse = true,
-		removeinventory = HD_REMOVEINVENTORY.SNAIL,
-	},
-	PIRANHA = {
-		tospawn = ENT_TYPE.MONS_TADPOLE,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
-		-- entitydb = ENT_TYPE.MONS_TADPOLE,
-		-- sprint_factor = -1,
-		-- max_speed = -1,
-		-- acceleration = -1,
-		kill_on_standing = HD_KILL_ON.STANDING_OUTOFWATER
-	},
-	WORMBABY = {
-		tospawn = ENT_TYPE.MONS_MOLE,
-		entitydb = ENT_TYPE.MONS_MOLE,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		health_db = 1,
-		removecorpse = true
-	},
-	EGGSAC = {
-		tospawn = ENT_TYPE.ITEM_EGGSAC,
-		toreplace = ENT_TYPE.MONS_JUMPDOG,
-		dangertype = HD_DANGERTYPE.FLOORTRAP,
-		collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
-		replaceoffspring = HD_REPLACE.EGGSAC
-	},
-	TRAP_TIKI = {
-		tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
-		toreplace = ENT_TYPE.ITEM_SNAP_TRAP,
-		entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
-		dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
-		collisiontype = HD_COLLISIONTYPE.FLOORTRAP_TALL,
-		damage = 4
-		-- TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
-	},
-	CRITTER_RAT = {
-		dangertype = HD_DANGERTYPE.CRITTER,
-		entitydb = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
-		max_speed = 0.05,
-		acceleration = 0.05
-	},
-	CRITTER_FROG = { -- TODO: behavior for jumping
-		tospawn = ENT_TYPE.MONS_CRITTERCRAB,
-		toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
-		dangertype = HD_DANGERTYPE.CRITTER,
-		entitydb = ENT_TYPE.MONS_CRITTERCRAB
-		-- TODO: Make jumping script, adjust movement EntityDB properties
-		-- behavior = HD_BEHAVIOR.CRITTER_FROG,
-	},
-	SPIDER = {
-		tospawn = ENT_TYPE.MONS_SPIDER,
-		toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY
-	},
-	HANGSPIDER = {
-		tospawn = ENT_TYPE.MONS_HANGSPIDER,
-		-- toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY
-	},
-	GIANTSPIDER = {
-		tospawn = ENT_TYPE.MONS_GIANTSPIDER,
-		-- toreplace = ENT_TYPE.MONS_SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
-		offset_spawn = {0.5, 0}
-	},
-	BOULDER = {
-		dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
-		entitydb = ENT_TYPE.ACTIVEFLOOR_BOULDER
-	},
-	SCORPIONFLY = {
-		tospawn = ENT_TYPE.MONS_SCORPION,
-		toreplace = ENT_TYPE.MONS_CATMUMMY,--SPIDER,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		behavior = HD_BEHAVIOR.SCORPIONFLY,
-		color = { 0.902, 0.176, 0.176 },
-		removeinventory = HD_REMOVEINVENTORY.SCORPIONFLY
-	},
-	-- Devil Behavior:
-		-- when the octopi is in it's run state, use get_entities_overlapping() to detect the block {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK} it runs into.
-			-- then kill block, set octopi stuntimer.
-	-- DEVIL = {
-		-- tospawn = ENT_TYPE.MONS_OCTOPUS,
-		-- toreplace = ?,
-		-- entitydb = ENT_TYPE.MONS_OCTOPUS,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- sprint_factor = 7.0
-		-- max_speed = 7.0
-	-- },
-	-- MAMMOTH = { -- TODO: Frozen Immunity
-		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-		-- toreplace = ?,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
-		-- behavior = HD_BEHAVIOR.MAMMOTH,
-		-- health_db = 8,
-		-- itemdrop = {
-			-- item = {HD_ENT.ITEM_FREEZERAY},
-			-- chance = 1.0
-		-- },
-		-- treasuredrop = {
-			-- item = {HD_ENT.ITEM_SAPPHIRE},
-			-- chance = 1.0
-		-- }
-	-- },
-	-- HAWKMAN = {
-		-- tospawn = ENT_TYPE.MONS_SHOPKEEPERCLONE, -- Maybe.
-		-- toreplace = ENT_TYPE.MONS_CAVEMAN,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- entitydb = ENT_TYPE.MONS_SHOPKEEPERCLONE,
-		-- behavior = HD_BEHAVIOR.HAWKMAN
-	-- },
-	-- GREENKNIGHT = {
-		-- tospawn = ENT_TYPE.MONS_OLMITE_BODYARMORED,
-		-- toreplace = ENT_TYPE.MONS_CAVEMAN,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- entitydb = ENT_TYPE.MONS_OLMITE_BODYARMORED,
-		-- behavior = HD_BEHAVIOR.GREENKNIGHT,
-		-- stompdamage = false, -- TODO: Add this(?)
-	-- },
-	-- NOTE: Shopkeeperclones are immune to whip damage, while the black knight in HD wasn't.
-		-- May be able to override this by syncing the stun of a duct-taped entity (ie, if caveman is stunned, shopkeeperclone.stun_timer = 10)
-			-- Might as well use a caveman for the master, considering that in HD when the blackknight drops his shield, he behaves like a green knight (so, a caveman)
-	-- BLACKKNIGHT = {
-		-- tospawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- entitydb = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
-		-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
-		-- health = 3,
-		-- giveitem = ENT_TYPE.ITEM_METAL_SHIELD
-	-- },
-	-- SUCCUBUS = {
-		-- master: ENT_TYPE.MONS_MONKEY,
-		-- Skin: {ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}
-		-- abilities.agro = `master uid`
-	-- }
-	-- TODO:
-		-- Once at least 1 mask 0x1 is within a 2 block radius(? TOTEST: Investigate in HD.), change skin and set ability_state to agro.
-		-- cycle through players and if the player has the agro ability in its inventory(?), track it and deal one damage once it leaves.
-		-- Once :as_monkey() method is merged into the main branch, set jump_timer to 0 on every frame.
-		-- Once :as_leprechaun() method is merged into the main branch, set jump_timer to 0 on every frame.
-			-- Upside to using leprechaun is a good skin option
-			-- downside is no jump_timer and preventing the gold stealing and teleporting abilities
-		-- Once :as_pet() method is merged into the main branch, half its yell_counter field to 299 if it's higher than 300.
-	-- NOTES:
-		--She disguises herself as a Damsel to lure the Spelunker, then ambushes them once they are in range.
-		-- If she manages to pounce on the Spelunker, she will cling to them like a Monkey and take one hit point when she jumps off.
-		-- The Succubus mimics the appearance of the currently selected damsel type, disguising herself as a female, male, dog or sloth. Regardless of the disguise, she always transforms into a demonic woman upon attacking - there are no male, canine or sloth Succubus models.
-		-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
+HD_ENT = {}
+HD_ENT.ITEM_IDOL = {
+	tospawn = ENT_TYPE.ITEM_IDOL
 }
--- For HD_ENTs that include references to other HD_ENTs:
-	HD_ENT.GIANTFROG = {
-		tospawn = ENT_TYPE.MONS_OCTOPUS,
-		-- toreplace = ENT_TYPE.MONS_OCTOPUS,
-		entitydb = ENT_TYPE.MONS_OCTOPUS,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
-		-- GIANTSPIDER = 6, -- ?????????
-		health_db = 8,
-		sprint_factor = 0,
-		max_speed = 0.01,
-		jump = 0.2,
-		dim = {2.5, 2.5},
-		offset_spawn = {0.5, 0},
-		removecorpse = true,
-		hitbox = {
-			0.64,
-			0.8
-		},
-		flags = {
-			{},
-			{12}
-		},
-		itemdrop = {
-			item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			chance = 0.15 -- 15% (1/6.7)
-		},
-		treasuredrop = {
-			item = {HD_ENT.ITEM_SAPPHIRE},
-			chance = 0.50
-		}
-	}
-	--TODO: Replace with regular frog
-		-- Use a giant fly for tospawn
-		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
-			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
-				-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
-	
-	-- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
-		-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-		-- toreplace = ENT_TYPE.MONS_GIANTFLY,
-		-- dangertype = HD_DANGERTYPE.ENEMY,
-		-- health = 8,
-		-- entitydb = ENT_TYPE.MONS_GIANTFLY,
-		-- behavior = HD_BEHAVIOR.GIANTFROG,
-		-- dim = {2.5, 2.5},
-		-- itemdrop = {
-			-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-			-- chance = 0.15 -- 15% (1/6.7)
-		-- }
-		-- treasuredrop = {
-			-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- TODO: Determine which gems.
-			-- chance = 1.0
-		-- }
+HD_ENT.ITEM_CRYSTALSKULL = {
+	tospawn = ENT_TYPE.ITEM_MADAMETUSK_IDOL
+}
+ITEM_PICKUP_SPRINGSHOES = {
+	tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
+}
+HD_ENT.ITEM_FREEZERAY = {
+	tospawn = ENT_TYPE.ITEM_FREEZERAY
+}
+HD_ENT.ITEM_SAPPHIRE = {
+	tospawn = ENT_TYPE.ITEM_SAPPHIRE
+}
+HD_ENT.FROG = {
+	tospawn = ENT_TYPE.MONS_FROG,
+	toreplace = ENT_TYPE.MONS_WITCHDOCTOR,--MOSQUITO,
+	dangertype = HD_DANGERTYPE.ENEMY
+}
+HD_ENT.FIREFROG = {
+	tospawn = ENT_TYPE.MONS_FIREFROG,
+	-- toreplace = ENT_TYPE.MONS_MOSQUITO,
+	dangertype = HD_DANGERTYPE.ENEMY
+}
+HD_ENT.SNAIL = {
+	tospawn = ENT_TYPE.MONS_HERMITCRAB,
+	toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
+	entitydb = ENT_TYPE.MONS_HERMITCRAB,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	health_db = 1,
+	removecorpse = true,
+	removeinventory = HD_REMOVEINVENTORY.SNAIL,
+}
+HD_ENT.PIRANHA = {
+	tospawn = ENT_TYPE.MONS_TADPOLE,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
+	-- entitydb = ENT_TYPE.MONS_TADPOLE,
+	-- sprint_factor = -1,
+	-- max_speed = -1,
+	-- acceleration = -1,
+	kill_on_standing = HD_KILL_ON.STANDING_OUTOFWATER
+}
+HD_ENT.WORMBABY = {
+	tospawn = ENT_TYPE.MONS_MOLE,
+	entitydb = ENT_TYPE.MONS_MOLE,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	health_db = 1,
+	removecorpse = true
+}
+HD_ENT.EGGSAC = {
+	tospawn = ENT_TYPE.ITEM_EGGSAC,
+	toreplace = ENT_TYPE.MONS_JUMPDOG,
+	dangertype = HD_DANGERTYPE.FLOORTRAP,
+	collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
+	replaceoffspring = HD_REPLACE.EGGSAC
+}
+HD_ENT.TRAP_TIKI = {
+	tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
+	toreplace = ENT_TYPE.ITEM_SNAP_TRAP,
+	entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
+	dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
+	collisiontype = HD_COLLISIONTYPE.FLOORTRAP_TALL,
+	damage = 4
+	-- TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
+}
+HD_ENT.CRITTER_RAT = {
+	dangertype = HD_DANGERTYPE.CRITTER,
+	entitydb = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
+	max_speed = 0.05,
+	acceleration = 0.05
+}
+HD_ENT.CRITTER_FROG = { -- TODO: behavior for jumping
+	tospawn = ENT_TYPE.MONS_CRITTERCRAB,
+	toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
+	dangertype = HD_DANGERTYPE.CRITTER,
+	entitydb = ENT_TYPE.MONS_CRITTERCRAB
+	-- TODO: Make jumping script, adjust movement EntityDB properties
+	-- behavior = HD_BEHAVIOR.CRITTER_FROG,
+}
+HD_ENT.SPIDER = {
+	tospawn = ENT_TYPE.MONS_SPIDER,
+	toreplace = ENT_TYPE.MONS_SPIDER,
+	dangertype = HD_DANGERTYPE.ENEMY
+}
+HD_ENT.HANGSPIDER = {
+	tospawn = ENT_TYPE.MONS_HANGSPIDER,
+	-- toreplace = ENT_TYPE.MONS_SPIDER,
+	dangertype = HD_DANGERTYPE.ENEMY
+}
+HD_ENT.GIANTSPIDER = {
+	tospawn = ENT_TYPE.MONS_GIANTSPIDER,
+	-- toreplace = ENT_TYPE.MONS_SPIDER,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
+	offset_spawn = {0.5, 0}
+}
+HD_ENT.BOULDER = {
+	dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
+	entitydb = ENT_TYPE.ACTIVEFLOOR_BOULDER
+}
+HD_ENT.SCORPIONFLY = {
+	tospawn = ENT_TYPE.MONS_SCORPION,
+	toreplace = ENT_TYPE.MONS_CATMUMMY,--SPIDER,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	behavior = HD_BEHAVIOR.SCORPIONFLY,
+	color = { 0.902, 0.176, 0.176 },
+	removeinventory = HD_REMOVEINVENTORY.SCORPIONFLY
+}
+-- Devil Behavior:
+	-- when the octopi is in it's run state, use get_entities_overlapping() to detect the block {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK} it runs into.
+		-- then kill block, set octopi stuntimer.
+-- DEVIL = {
+	-- tospawn = ENT_TYPE.MONS_OCTOPUS,
+	-- toreplace = ?,
+	-- entitydb = ENT_TYPE.MONS_OCTOPUS,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- sprint_factor = 7.0
+	-- max_speed = 7.0
+-- },
+-- MAMMOTH = { -- TODO: Frozen Immunity
+	-- tospawn = ENT_TYPE.MONS_GIANTFLY,
+	-- toreplace = ?,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- entitydb = ENT_TYPE.MONS_GIANTFLY,
+	-- behavior = HD_BEHAVIOR.MAMMOTH,
+	-- health_db = 8,
+	-- itemdrop = {
+		-- item = {HD_ENT.ITEM_FREEZERAY},
+		-- chance = 1.0
 	-- },
-	HD_ENT.OLDBITEY = {
-		tospawn = ENT_TYPE.MONS_GIANTFISH,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		entitydb = ENT_TYPE.MONS_GIANTFISH,
-		collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
-		itemdrop = {
-			item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
-			chance = 1
-		}
+	-- treasuredrop = {
+		-- item = {HD_ENT.ITEM_SAPPHIRE},
+		-- chance = 1.0
+	-- }
+-- },
+-- HAWKMAN = {
+	-- tospawn = ENT_TYPE.MONS_SHOPKEEPERCLONE, -- Maybe.
+	-- toreplace = ENT_TYPE.MONS_CAVEMAN,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- entitydb = ENT_TYPE.MONS_SHOPKEEPERCLONE,
+	-- behavior = HD_BEHAVIOR.HAWKMAN
+-- },
+-- GREENKNIGHT = {
+	-- tospawn = ENT_TYPE.MONS_OLMITE_BODYARMORED,
+	-- toreplace = ENT_TYPE.MONS_CAVEMAN,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- entitydb = ENT_TYPE.MONS_OLMITE_BODYARMORED,
+	-- behavior = HD_BEHAVIOR.GREENKNIGHT,
+	-- stompdamage = false, -- TODO: Add this(?)
+-- },
+-- NOTE: Shopkeeperclones are immune to whip damage, while the black knight in HD wasn't.
+	-- May be able to override this by syncing the stun of a duct-taped entity (ie, if caveman is stunned, shopkeeperclone.stun_timer = 10)
+		-- Might as well use a caveman for the master, considering that in HD when the blackknight drops his shield, he behaves like a green knight (so, a caveman)
+-- BLACKKNIGHT = {
+	-- tospawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- entitydb = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
+	-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
+	-- health = 3,
+	-- giveitem = ENT_TYPE.ITEM_METAL_SHIELD
+-- },
+-- SUCCUBUS = {
+	-- master: ENT_TYPE.MONS_MONKEY,
+	-- Skin: {ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}
+	-- abilities.agro = `master uid`
+-- }
+-- TODO:
+	-- Once at least 1 mask 0x1 is within a 2 block radius(? TOTEST: Investigate in HD.), change skin and set ability_state to agro.
+	-- cycle through players and if the player has the agro ability in its inventory(?), track it and deal one damage once it leaves.
+	-- Once :as_monkey() method is merged into the main branch, set jump_timer to 0 on every frame.
+	-- Once :as_leprechaun() method is merged into the main branch, set jump_timer to 0 on every frame.
+		-- Upside to using leprechaun is a good skin option
+		-- downside is no jump_timer and preventing the gold stealing and teleporting abilities
+	-- Once :as_pet() method is merged into the main branch, half its yell_counter field to 299 if it's higher than 300.
+-- NOTES:
+	--She disguises herself as a Damsel to lure the Spelunker, then ambushes them once they are in range.
+	-- If she manages to pounce on the Spelunker, she will cling to them like a Monkey and take one hit point when she jumps off.
+	-- The Succubus mimics the appearance of the currently selected damsel type, disguising herself as a female, male, dog or sloth. Regardless of the disguise, she always transforms into a demonic woman upon attacking - there are no male, canine or sloth Succubus models.
+	-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
+
+-- For HD_ENTs that include references to other HD_ENTs:
+HD_ENT.GIANTFROG = {
+	tospawn = ENT_TYPE.MONS_OCTOPUS,
+	-- toreplace = ENT_TYPE.MONS_OCTOPUS,
+	entitydb = ENT_TYPE.MONS_OCTOPUS,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
+	-- GIANTSPIDER = 6, -- ?????????
+	health_db = 8,
+	sprint_factor = 0,
+	max_speed = 0.01,
+	jump = 0.2,
+	dim = {2.5, 2.5},
+	offset_spawn = {0.5, 0},
+	removecorpse = true,
+	hitbox = {
+		0.64,
+		0.8
+	},
+	flags = {
+		{},
+		{12}
+	},
+	itemdrop = {
+		item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+		chance = 0.15 -- 15% (1/6.7)
+	},
+	treasuredrop = {
+		item = {HD_ENT.ITEM_SAPPHIRE},
+		chance = 0.50
 	}
-	HD_ENT.OLMEC_SHOT = {
-		tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
-		dangertype = HD_DANGERTYPE.ENEMY,
-		kill_on_standing = HD_KILL_ON.STANDING,
-		behavior = HD_BEHAVIOR.OLMEC_SHOT,
-		itemdrop = {
-			item = {
-				HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
-				HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
-				-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
-				-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
-				-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
-				-- HD_ENT.,--ENT_TYPE.MONS_BAT
-			},
-			chance = 1.0
-		},
-		-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
-		flags = {
-			{13},
-			{4, 10}
-		},
+}
+--TODO: Replace with regular frog
+	-- Use a giant fly for tospawn
+	-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
+		-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
+			-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
+
+-- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
+	-- tospawn = ENT_TYPE.MONS_GIANTFLY,
+	-- toreplace = ENT_TYPE.MONS_GIANTFLY,
+	-- dangertype = HD_DANGERTYPE.ENEMY,
+	-- health = 8,
+	-- entitydb = ENT_TYPE.MONS_GIANTFLY,
+	-- behavior = HD_BEHAVIOR.GIANTFROG,
+	-- dim = {2.5, 2.5},
+	-- itemdrop = {
+		-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
+		-- chance = 0.15 -- 15% (1/6.7)
+	-- }
+	-- treasuredrop = {
+		-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- TODO: Determine which gems.
+		-- chance = 1.0
+	-- }
+-- },
+HD_ENT.OLDBITEY = {
+	tospawn = ENT_TYPE.MONS_GIANTFISH,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	entitydb = ENT_TYPE.MONS_GIANTFISH,
+	collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
+	itemdrop = {
+		item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
+		chance = 1
 	}
+}
+HD_ENT.OLMEC_SHOT = {
+	tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
+	dangertype = HD_DANGERTYPE.ENEMY,
+	kill_on_standing = HD_KILL_ON.STANDING,
+	behavior = HD_BEHAVIOR.OLMEC_SHOT,
+	itemdrop = {
+		item = {
+			HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
+			HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
+			-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
+			-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
+			-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
+			-- HD_ENT.,--ENT_TYPE.MONS_BAT
+		},
+		chance = 1.0
+	},
+	-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
+	flags = {
+		{13},
+		{4, 10}
+	},
+}
 
 TRANSITION_CRITTERS = {
 	[THEME.DWELLING] = {

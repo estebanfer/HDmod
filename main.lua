@@ -83,6 +83,7 @@ bookofdead_tick = 0
 bookofdead_frames = 4
 bookofdead_frames_index = 1
 bookofdead_squash = (1/bookofdead_frames) --options.hd_ui_botd_e_squash
+PREFIRSTLEVEL_NUM = 40
 
 OBTAINED_BOOKOFDEAD = false
 
@@ -91,6 +92,8 @@ UI_BOTD_PLACEMENT_W = 0.08
 UI_BOTD_PLACEMENT_H = 0.12
 UI_BOTD_PLACEMENT_X = 0.2
 UI_BOTD_PLACEMENT_Y = 0.93
+
+MESSAGE_FEELING = nil
 
 HD_FEELING = {
 	["SPIDERLAIR"] = {
@@ -149,8 +152,6 @@ HD_FEELING = {
 		message = "A horrible feeling of nausea comes over you!"
 	},
 }
-
-MESSAGE_FEELING = nil
 
 -- TODO: Choose a unique ENT_TYPE for (at least the first 4) SUBCHUNKIDs
 HD_SUBCHUNKID = {
@@ -1269,7 +1270,6 @@ function init()
 	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
-	MESSAGE_FEELING = nil
 	
 	OLMEC_ID = nil
 	BOSS_STATE = nil
@@ -1410,15 +1410,19 @@ function TableCopy(obj, seen)
   return res
 end
 
+function setn(t,n)
+	setmetatable(t,{__len=function() return n end})
+end
+
 function locate_cornerpos(roomx, roomy)
-	xmin, ymin, xmax, ymax = get_bounds()
+	xmin, ymin, _, _ = get_bounds()
 	tc_x = (roomx-1)*10+(xmin+0.5)
 	tc_y = (ymin-0.5) - ((roomy-1)*(8))
 	return tc_x, tc_y
 end
 
 function locate_roompos(e_x, e_y)
-	xmin, ymin, xmax, ymax = get_bounds()
+	xmin, ymin, _, _ = get_bounds()
 	-- my brain can't do math, please excuse this embarrassing algorithm
 	roomx = math.ceil((e_x-(xmin+0.5))/10)
 	roomy = math.ceil(((ymin-0.5)-e_y)/8)
@@ -1427,14 +1431,13 @@ end
 
 function get_levelsize()
 	xmin, ymin, xmax, ymax = get_bounds()
-	-- my brain can't do math, please excuse this embarrassing algorithm
-	levelw = math.ceil((xmin+0.5)/10)
-	levelh = math.ceil((ymin-0.5)/8)
+	levelw = math.ceil((xmax-xmin)/10)
+	levelh = math.ceil((ymin-ymax)/8)
 	return levelw, levelh
 end
 
 function create_ghost()
-	xmin, ymin, xmax, ymax = get_bounds()
+	xmin, _, xmax, _ = get_bounds()
 	-- toast("xmin: " .. xmin .. " ymin: " .. ymin .. " xmax: " .. xmax .. " ymax: " .. ymax)
 	
 	if #players > 0 then
@@ -1864,8 +1867,7 @@ function remove_room(roomx, roomy, layer)
 end
 
 function remove_borderfloor()
-	levelw, levelh = get_levelsize()
-	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
+	test_levelsize()
 	for yi = 90, 88, -1 do
 		for xi = 3, 42, 1 do
 			blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
@@ -2012,14 +2014,15 @@ function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)--w_b=0, l_b=0, t
 end
 
 -- "fake" world/theme/level to let you set quest flags that otherwise wouldn't apply to the first level of a world
-function changestate_onlevel_fake_applyquestflags(w_a, l_a, t_a, w_b, l_b, t_b, flags_set, flags_clear)
+function changestate_onlevel_fake_applyquestflags(w, l, t, flags_set, flags_clear)--w_a, l_a, t_a, w_b, l_b, t_b, flags_set, flags_clear)
 	flags_set = flags_set or {}
 	flags_clear = flags_clear or {}
-	if detect_same_levelstate(t_a, l_a, w_a) == true then
+	if detect_same_levelstate(t, PREFIRSTLEVEL_NUM, w) == true then--t_a, l_a, w_a) == true then
 		applyflags_to_quest({flags_set, flags_clear})
 		-- TODO: Consider the consequences of skipping over a level (such as shopkeeper forgiveness)
-		
-		warp(w_b, l_b, t_b)
+			-- IDEAS:
+				-- if wantedlevel > 0 then wantedlevel = wantedlevel+1
+		warp(w, l, t)
 	end
 end
 
@@ -2104,16 +2107,7 @@ function exit_reverse()
 	end
 end
 
-
--- ON.CAMP
-set_callback(function()
-	oncamp_movetunnelman()
-	oncamp_shortcuts()
-	
-	
-	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
-	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
-	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
+function test_tileapplier9000()
 	_x, _y, l = 45, 90, LAYER.FRONT -- next to entrance
 	testfloors = {}
 	width = 3
@@ -2136,6 +2130,10 @@ set_callback(function()
 	-- testfloor_m = testfloor_e:as_movable()
 	-- animation_frame = testfloor_m.animation_frame
 	-- toast(tostring(_x) .. ", " .. tostring(_y) .. ": " .. tostring(animation_frame))
+
+end
+
+function test_bacterium()
 	
 	-- Bacterium Creation
 		-- FLOOR_THORN_VINE:
@@ -2153,6 +2151,24 @@ set_callback(function()
 			-- disable physics
 				-- re-enable once detached from surface
 	-- Challenge: Let rock attatch to surface, move it on frame.
+
+end
+
+function test_levelsize()
+	levelw, levelh = get_levelsize()
+	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
+end
+
+-- ON.CAMP
+set_callback(function()
+	oncamp_movetunnelman()
+	oncamp_shortcuts()
+	
+	
+	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
+	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
+	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
+	
 	
 end, ON.CAMP)
 
@@ -2257,7 +2273,7 @@ function onloading_levelrules()
 	-- Dwelling 1-3 -> Dwelling 1-5(Fake 1-4)
     changestate_onloading_targets(1,3,THEME.DWELLING,1,5,THEME.DWELLING)
     -- Dwelling -> Jungle
-    changestate_onloading_targets(1,4,THEME.DWELLING,2,1,THEME.JUNGLE)
+    changestate_onloading_targets(1,4,THEME.DWELLING,2,1,THEME.JUNGLE)--PREFIRSTLEVEL_NUM,THEME.JUNGLE)
 	-- -- Jungle 2-1 -> Jungle 2->2
     -- if state.nexttheme ~= EGGPLANT_WORLD then
 		-- changestate_onloading_targets(2,1,THEME.JUNGLE,2,3,THEME.JUNGLE) -- fake 2-2
@@ -2271,7 +2287,7 @@ function onloading_levelrules()
 	-- Worm(Jungle) 2-2 -> Jungle 2-4
 	changestate_onloading_targets(2,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
     -- Jungle -> Ice Caves
-    changestate_onloading_targets(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)
+    changestate_onloading_targets(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)--PREFIRSTLEVEL_NUM,THEME.ICE_CAVES)
     -- Ice Caves -> Ice Caves
 		-- TODO: Test if there are differences for room generation chances for levels higher than 3-1 or 3-4.
     changestate_onloading_targets(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
@@ -2280,7 +2296,7 @@ function onloading_levelrules()
 	-- Mothership -> Ice Caves
     changestate_onloading_targets(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
     -- Ice Caves -> Temple
-    changestate_onloading_targets(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
+    changestate_onloading_targets(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)--PREFIRSTLEVEL_NUM,THEME.TEMPLE)
 	-- Ice Caves 3-1 -> Worm
 		-- TODO(? may not need to handle this)
 	-- Worm(Ice Caves) 3-2 -> Ice Caves 3-4
@@ -2289,14 +2305,6 @@ function onloading_levelrules()
     changestate_onloading_targets(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
     -- COG(4-3) -> Olmec
     changestate_onloading_targets(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
-	-- Olmec -> Hell
-	-- changestate_onloading_targets(4,4,THEME.OLMEC,5,1,THEME.VOLCANA)
-	-- Hell -> Hell
-	changestate_onloading_targets(5,1,THEME.OLMEC,5,5,THEME.VOLCANA)
-	-- TOTEST:
-		-- Volcana: disable darklevels, vaults
-	
-	-- changestate_onloading_targets(5,2,THEME.OLMEC,5,6,THEME.VOLCANA)
 	
 	-- Hell -> Yama
 		-- TODO: Figure out a place to host Yama. Maybe a theme with different FLOOR_BORDERTILE textures?
@@ -2306,15 +2314,14 @@ end
 
 -- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
 function onloading_applyquestflags()
-	-- TODO: Move these into WORLD_FLAGS for consistency's sake
-	if test_flag(state.quest_flags, 10) == false then state.quest_flags = set_flag(state.quest_flags, 10) end
-
-	-- Disable Moon, Star, and Sun challenges.
-	if test_flag(state.quest_flags, 25) == false then state.quest_flags = set_flag(state.quest_flags, 25) end
-	if test_flag(state.quest_flags, 26) == false then state.quest_flags = set_flag(state.quest_flags, 26) end
-	if test_flag(state.quest_flags, 27) == false then state.quest_flags = set_flag(state.quest_flags, 27) end
-	-- Disable drill -- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
-	if test_flag(state.quest_flags, 19) == false then state.quest_flags = set_flag(state.quest_flags, 19) end
+	flags_failsafe = {
+		10, -- Disable Waddler's
+		25, 26, -- Disable Moon and Star challenges.
+		19 -- Disable drill -- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
+	}
+	for i = 1, #flags_failsafe, 1 do
+		if test_flag(state.quest_flags, flags_failsafe[i]) == false then state.quest_flags = set_flag(state.quest_flags, flags_failsafe[i]) end
+	end
 	
 	-- Jungle:
 	-- 3->4: Clr 18 -- allow rushing water feeling
@@ -2601,9 +2608,19 @@ function onlevel_levelrules()
 		-- Technically load into a total of 4 hell levels; 5-5 and 5-1..3
 		-- on.load 5-5, set state.quest_flags 3 and 2, then warp the player to 5-1
 		
+		-- Jungle 2-0 = 2-1
+		-- Disable Moon challenge.
+		changestate_onlevel_fake_applyquestflags(2,1,THEME.JUNGLE, {25}, {})
+		-- Ice Caves 3-0 = 3-1
+		-- Disable Waddler's
+		changestate_onlevel_fake_applyquestflags(3,1,THEME.ICE_CAVES, {10}, {})
+		-- Temple 4-0 = 4-1
+		-- Disable Star challenge.
+		changestate_onlevel_fake_applyquestflags(4,1,THEME.TEMPLE, {26}, {})
 		-- Volcana 5-5 = 5-1
-		-- disable darklevels, vaults
-		changestate_onlevel_fake_applyquestflags(5,5,THEME.VOLCANA,5,1,THEME.VOLCANA, {2, 3}, {})
+		-- Disable Moon challenge and drill
+			-- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
+		changestate_onlevel_fake_applyquestflags(5,1,THEME.VOLCANA, {19, 25}, {})
 		
 	-- -- Volcana 5-1 -> Volcana 5-2
 	-- changestate_onlevel_fake(5,5,THEME.VOLCANA,5,2,THEME.VOLCANA)
@@ -3048,7 +3065,7 @@ end
 function create_entrance_hell()
 	HELL_X = math.random(4,41)
 	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, HELL_X, 87, LAYER.FRONT, 0, 0)
-	set_door_target(door_target, 5, 1, THEME.VOLCANA)
+	set_door_target(door_target, 5, PREFIRSTLEVEL_NUM, THEME.VOLCANA)
 	
 	if OBTAINED_BOOKOFDEAD == true then
 		helldoor_e = get_entity(door_target):as_movable()
@@ -3176,22 +3193,26 @@ function onlevel_setfeelingmessage()
 	-- NOTES:
 		-- Black Market, COG and Beehive are currently handled by the game
 	
-	loadchecks = TableCopy(HD_FEELING)
+	loadchecks = TableCopy(global_feelings)
 	
 	n = #loadchecks
 	for feelingname, loadcheck in pairs(loadchecks) do
 		if (
-			detect_feeling_themes(feelingname) == false or
-			(
-				detect_feeling_themes(feelingname) == true and
-				loadcheck.load == nil and
-				loadcheck.message == nil
-			)
+			-- detect_feeling_themes(feelingname) == false or
+			-- (
+				-- detect_feeling_themes(feelingname) == true and
+				-- (
+					-- (loadcheck.load == nil or loadcheck.message == nil) or
+					-- (feeling_check(feelingname))
+				-- )
+			-- )
+			feeling_check(feelingname) == false
 		) then loadchecks[feelingname] = nil end
 	end
 	loadchecks = CompactList(loadchecks, n)
 	
-	for feelingname, feeling in ipairs(loadchecks) do
+	MESSAGE_FEELING = nil
+	for feelingname, feeling in pairs(loadchecks) do
 		-- Message Overrides may happen here:
 		-- For example:
 			-- if feelingname == "FLOODED" and feeling_check("RESTLESS") == true then break end
@@ -3388,9 +3409,9 @@ function oncamp_shortcuts()
 	doors_bgs = {}
 	doors_signs = {}
 	shortcut_worlds = {4, 3, 2}
-	shortcut_levels = {1, 1, 1}
+	shortcut_levels = {PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM}
 	shortcut_themes = {THEME.TEMPLE, THEME.ICE_CAVES, THEME.JUNGLE}
-	-- shortcut_doorframes = {1, 1, 1}
+	shortcut_doortextures = {569, 409, 343}--{569, 343, 409}
 	x = 21.0
 	for y = 90, 84, -3 do
 		doors_or_constructionsigns = TableConcat(doors_or_constructionsigns, get_entities_at(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, 0, x, y, LAYER.FRONT, 0.5))
@@ -3410,7 +3431,7 @@ function oncamp_shortcuts()
 			move_entity(doors_signs[i], new_x+1, 86, 0, 0)
 			
 			move_entity(doors_bgs[i], new_x, 86.31, 0, 0)
-			-- get_entity(doors_bgs[i]):as_movable().animation_frame = shortcut_doorframes[i]
+			-- get_type(doors_bgs[i]).texture = shortcut_doortextures[i]
 			
 		else
 			move_entity(doors_or_constructionsigns[i], new_x, 86, 0, 0)
@@ -3419,8 +3440,11 @@ function oncamp_shortcuts()
 		new_x = new_x + 3 -- adjusted for S2 camera
 	end
 	
-	-- door_bg_frame = get_entity(doors_bgs[3]):as_movable().animation_frame
-	-- toast("third door_bg_frame: " .. door_bg_frame)
+	-- door_bg = get_entity(doors_bgs[1]):as_movable()
+	-- toast("third door_bg first_tile: " .. door_bg.first_tile)
+	
+	door_bg_type = get_type(doors_bgs[3])
+	toast("first door_bg_type.texture: " .. door_bg_type.texture)
 	
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 	spawn(ENT_TYPE.FLOOR_GENERIC, 23, 84, LAYER.FRONT, 0, 0)
@@ -4651,7 +4675,12 @@ function onguiframe_ui_info_feelings()
 		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
 		
 		draw_text(text_x, text_y, 0, text_levelfeelings, white)
-		text_y = text_y-0.1
+		text_y = text_y-0.035
+		color = white
+		if MESSAGE_FEELING ~= nil then color = green end
+		text_message_feeling = ("MESSAGE_FEELING: " .. tostring(MESSAGE_FEELING))
+		draw_text(text_x, text_y, 0, text_message_feeling, color)
+		text_y = text_y-0.05
 		for feelingname, feeling in pairs(global_feelings) do
 			color = white
 			message = ""

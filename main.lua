@@ -3,6 +3,9 @@ meta.version = "1"
 meta.description = "Spelunky HD's campaign inside of Spelunky 2"
 meta.author = "Super Ninja Fat"
 
+-- uncomment to allow loading unlocks.txt
+-- meta.unsafe = true
+
 -- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
 -- register_option_float("hd_ui_botd_b_h", "UI: botd height", 0.12, 0.0, 99.0)
 -- register_option_float("hd_ui_botd_c_x", "UI: botd x", 0.2, -999.0, 999.0)
@@ -59,7 +62,8 @@ BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 TONGUE_UID = nil
 TONGUE_BG_UID = nil
-HAUNTEDCASTLEDOOR_UID = nil
+HAUNTEDCASTLE_ENTRANCE_UID = nil
+BLACKMARKET_ENTRANCE_UID = nil
 wheel_speed = 0
 wheel_tick = WHEEL_SPINTIME
 acid_tick = ACID_POISONTIME
@@ -93,6 +97,29 @@ UI_BOTD_PLACEMENT_H = 0.12
 UI_BOTD_PLACEMENT_X = 0.2
 UI_BOTD_PLACEMENT_Y = 0.93
 
+HD_UNLOCKS = {}
+HD_UNLOCKS.STARTER1 = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
+HD_UNLOCKS.STARTER2 = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
+HD_UNLOCKS.STARTER3 = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
+HD_UNLOCKS.STARTER4 = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
+HD_UNLOCKS.RAND1 = { unlock_id = 12, unlocked = false }				--ENT_TYPE.CHAR_TINA_FLAN
+HD_UNLOCKS.RAND2 = { unlock_id = 01, unlocked = false }				--ENT_TYPE.CHAR_ANA_SPELUNKY
+HD_UNLOCKS.RAND3 = { unlock_id = 02, unlocked = false }				--ENT_TYPE.CHAR_MARGARET_TUNNEL
+HD_UNLOCKS.RAND4 = { unlock_id = 09, unlocked = false }				--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
+HD_UNLOCKS.OLMEC_WIN = { unlock_id = 07, unlocked = false }			--ENT_TYPE.CHAR_AMAZON
+HD_UNLOCKS.WORM = { unlock_id = 16, unlocked = false }				--ENT_TYPE.CHAR_PILOT
+HD_UNLOCKS.SPIDERLAIR = { unlock_id = 13, unlocked = false }		--ENT_TYPE.CHAR_VALERIE_CRUMP
+HD_UNLOCKS.YETIKINGDOM = { unlock_id = 15, unlocked = false }		--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
+HD_UNLOCKS.HAUNTEDCASTLE = { unlock_id = 17, unlocked = false }		--ENT_TYPE.CHAR_PRINCESS_AIRYN
+HD_UNLOCKS.YAMA = { unlock_id = 20, unlocked = false }				--ENT_TYPE.CHAR_CLASSIC_GUY
+HD_UNLOCKS.OLMEC_CHAMBER = { unlock_id = 18, unlocked = false }		--ENT_TYPE.CHAR_DIRK_YAMAOKA
+HD_UNLOCKS.TIKIVILLAGE = { unlock_id = 11, unlocked = false }		--ENT_TYPE.CHAR_OTAKU
+HD_UNLOCKS.BLACKMARKET = { unlock_id = 04, unlocked = false }		--ENT_TYPE.CHAR_ROFFY_D_SLOTH
+HD_UNLOCKS.RESTLESS_FLOODED = { unlock_id = 10, unlocked = false }	--ENT_TYPE.CHAR_MANFRED_TUNNEL
+HD_UNLOCKS.MOTHERSHIP = { unlock_id = 08, unlocked = false }		--ENT_TYPE.CHAR_LISE_SYSTEM
+HD_UNLOCKS.COG = { unlock_id = 14, unlocked = false }				--ENT_TYPE.CHAR_AU
+
+
 MESSAGE_FEELING = nil
 
 HD_FEELING = {
@@ -119,6 +146,13 @@ HD_FEELING = {
 		chance = 1,
 		themes = { THEME.JUNGLE },
 		message = "I hear rushing water!"
+	},
+	["BLACKMARKET_ENTRANCE"] = {
+		themes = { THEME.JUNGLE }
+	},
+	["BLACKMARKET"] = {
+		themes = { THEME.JUNGLE },
+		message = "Welcome to the Black Market!"
 	},
 	["HAUNTEDCASTLE"] = {
 		themes = { THEME.JUNGLE },
@@ -1266,7 +1300,8 @@ function init()
 	BOULDER_DEBUG_PLAYERTOUCH = false
 	TONGUE_UID = nil
 	TONGUE_BG_UID = nil
-	HAUNTEDCASTLEDOOR_UID = nil
+	HAUNTEDCASTLE_ENTRANCE_UID = nil
+	BLACKMARKET_ENTRANCE_UID = nil
 	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
@@ -1361,6 +1396,23 @@ function rotate(cx, cy, x, y, degrees)
 	return result
 end
 
+function file_exists(file)
+	local f = io.open(file, "rb")
+	if f then f:close() end
+	return f ~= nil
+end
+
+-- get all lines from a file, returns an empty 
+-- list/table if the file does not exist
+function lines_from(file)
+  if not file_exists(file) then return {} end
+  lines = {}
+  for line in io.lines(file) do 
+    lines[#lines + 1] = line
+  end
+  return lines
+end
+
 function CompactList(list, prev_size)
 	local j=0
 	for i=1,prev_size do
@@ -1434,6 +1486,61 @@ function get_levelsize()
 	levelw = math.ceil((xmax-xmin)/10)
 	levelh = math.ceil((ymin-ymax)/8)
 	return levelw, levelh
+end
+
+function create_unlockcoffin(unlock_name, x, y, l)
+	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
+	-- 193 + unlock_num = ENT_TYPE.CHAR_*
+	set_contents(coffin_uid, 193 + HD_UNLOCKS[unlock_name].unlock_id)
+	return coffin_uid
+end
+
+function create_endingdoor(x, y, l)
+	-- TODO: Remove exit door from the editor and spawn it manually here.
+	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
+	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
+	-- TODO: Test if the compass works for this
+	exitdoor = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	set_door_target(exitdoor, 4, 2, THEME.TIAMAT)
+	if options.hd_test_unlockbossexits == false then
+		lock_door_at(x, y)
+	end
+end
+
+function create_entrance_hell()
+	HELL_X = math.random(4,41)
+	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, HELL_X, 87, LAYER.FRONT, 0, 0)
+	set_door_target(door_target, 5, PREFIRSTLEVEL_NUM, THEME.VOLCANA)
+	
+	if OBTAINED_BOOKOFDEAD == true then
+		helldoor_e = get_entity(door_target):as_movable()
+		helldoor_e.flags = set_flag(helldoor_e.flags, 20)
+		helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
+		-- set_timeout(function()
+			-- helldoors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, 0, HELL_X, 87, LAYER.FRONT, 2)
+			-- if #helldoors > 0 then
+				-- helldoor_e = get_entity(helldoors[1]):as_movable()
+				-- helldoor_e.flags = set_flag(helldoor_e.flags, 20)
+				-- helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
+				-- -- toast("Aaalllright come on in!!! It's WARM WHER YOU'RE GOIN HAHAHAH")
+			-- end
+		-- end, 5)
+	end
+end
+
+function create_entrance_mothership(x, y, l)
+	spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
+end
+
+function create_entrance_blackmarket(x, y, l)
+	BLACKMARKET_ENTRANCE_UID = spawn_door(x, y, l, state.world, state.level+1, state.theme)
+	-- spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
+	set_interval(entrance_blackmarket, 1)
+end
+
+function create_entrance_hauntedcastle(x, y, l)
+	HAUNTEDCASTLE_ENTRANCE_UID = spawn_door(x, y, l, state.world, state.level+1, state.theme)
+	set_interval(entrance_hauntedcastle, 1)
 end
 
 function create_ghost()
@@ -1867,7 +1974,6 @@ function remove_room(roomx, roomy, layer)
 end
 
 function remove_borderfloor()
-	test_levelsize()
 	for yi = 90, 88, -1 do
 		for xi = 3, 42, 1 do
 			blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
@@ -2034,10 +2140,8 @@ function changestate_onloading_applyquestflags(w_a, l_a, t_a, flags_set, flags_c
 	end
 end
 
-
-
-function exit_restless()
-	ex, ey, _ = get_position(HAUNTEDCASTLEDOOR_UID)
+function entrance_blackmarket()
+	ex, ey, _ = get_position(BLACKMARKET_ENTRANCE_UID)
 	for i = 1, #players, 1 do
 		x, y, _ = get_position(players[i].uid)
 		closetodoor = 0.5
@@ -2047,7 +2151,23 @@ function exit_restless()
 			(y+closetodoor >= ey and y-closetodoor <= ey) and
 			(x+closetodoor >= ex and x-closetodoor <= ex)
 		) then
-			LOAD_HAUNTEDCASTLE = true
+			feeling_set_once("BLACKMARKET", {state.level+1})
+		end
+	end
+end
+
+function entrance_hauntedcastle()
+	ex, ey, _ = get_position(HAUNTEDCASTLE_ENTRANCE_UID)
+	for i = 1, #players, 1 do
+		x, y, _ = get_position(players[i].uid)
+		closetodoor = 0.5
+		
+		if (
+			players[i].state == 19 and
+			(y+closetodoor >= ey and y-closetodoor <= ey) and
+			(x+closetodoor >= ex and x-closetodoor <= ex)
+		) then
+			feeling_set_once("HAUNTEDCASTLE", {state.level+1})
 		end
 	end
 end
@@ -2159,6 +2279,13 @@ function test_levelsize()
 	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
 end
 
+
+function test_unlocks()
+	unlocks_init()
+	
+	toast("DID I GET YANG YET???: " .. tostring(HD_UNLOCKS["YAMA"].unlocked))
+end
+
 -- ON.CAMP
 set_callback(function()
 	oncamp_movetunnelman()
@@ -2169,6 +2296,7 @@ set_callback(function()
 	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
+	test_unlocks()
 	
 end, ON.CAMP)
 
@@ -2176,6 +2304,7 @@ end, ON.CAMP)
 set_callback(function()
 	onstart_init_options()
 	onstart_init_methods()
+	unlocks_init()
 	global_feelings = TableCopy(HD_FEELING)
 end, ON.START)
 
@@ -2188,6 +2317,7 @@ end, ON.LOADING)
 set_callback(function()
 --ONLEVEL_PRIORITY: 1 - Set level constants (ie, init(), level feelings, levelrules)
 	init()
+	unlocks_load()
 	onlevel_levelrules()
 	onlevel_detection_feeling()
 	onlevel_setfeelingmessage()
@@ -2219,7 +2349,6 @@ set_callback(function()
 	onlevel_acidbubbles()
 	onlevel_add_botd()
 	onlevel_boss_init()
-	onlevel_coffinunlocks()
 	onlevel_toastfeeling()
 end, ON.LEVEL)
 
@@ -2861,11 +2990,11 @@ function onlevel_decorate_trees()
 end
 
 function onlevel_blackmarket_ankh()
-	if state.theme == THEME.JUNGLE and (
-		state.level == 2 or
-		state.level == 3 or
-		state.level == 4
-	) then
+	if detect_s2market() == true then
+		-- (state.theme == THEME.JUNGLE and (
+		-- state.level == 2 or
+		-- state.level == 3 or
+		-- state.level == 4) then
 		-- find the hedjet
 		hedjets = get_entities_by_type(ENT_TYPE.ITEM_PICKUP_HEDJET)
 		if #hedjets ~= 0 then
@@ -2874,9 +3003,11 @@ function onlevel_blackmarket_ankh()
 			hedjet_mov = get_entity(hedjet_uid):as_movable()
 			x, y, l = get_position(hedjet_uid)
 			ankh_uid = spawn(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l, 0, 0)
-			-- TODO: Replace Ankh with skeleton key, upon pickup in inventory, give player ankh powerup.
-			-- Rename shop string for skeleton key as "Ankh", replace skeleton key with Ankh texture.
-			-- TODO: Slightly unrelated, but make a method to remove/replace useless items(like the skeleton key). Depending on the context, replace it with another item in the pool of even chance.
+			-- IDEA: Replace Ankh with skeleton key, upon pickup in inventory, give player ankh powerup.
+				-- Rename shop string for skeleton key as "Ankh", replace skeleton key with Ankh texture.
+			-- TODO: Slightly unrelated, but make a method to remove/replace useless items. Depending on the context, replace it with another item in the pool of even chance.
+				-- Skeleton key
+				-- Metal Shield
 			ankh_mov = get_entity(ankh_uid):as_movable()
 			ankh_mov.flags = set_flag(ankh_mov.flags, 23)
 			ankh_mov.flags = set_flag(ankh_mov.flags, 20)
@@ -3007,18 +3138,6 @@ function onlevel_boss_init()
 	exit_winstate()
 end
 
-function create_endingdoor(x, y, l)
-	-- TODO: Remove exit door from the editor and spawn it manually here.
-	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
-	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
-	-- TODO: Test if the compass works for this
-	exitdoor = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	set_door_target(exitdoor, 4, 2, THEME.TIAMAT)
-	if options.hd_test_unlockbossexits == false then
-		lock_door_at(x, y)
-	end
-end
-
 function cutscene_move_olmec_pre()
 	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
@@ -3061,36 +3180,6 @@ end
 		-- The problem is, there's going to be a lot of visible broken terrain as a result.
 	-- end
 -- end
-
-function create_entrance_hell()
-	HELL_X = math.random(4,41)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, HELL_X, 87, LAYER.FRONT, 0, 0)
-	set_door_target(door_target, 5, PREFIRSTLEVEL_NUM, THEME.VOLCANA)
-	
-	if OBTAINED_BOOKOFDEAD == true then
-		helldoor_e = get_entity(door_target):as_movable()
-		helldoor_e.flags = set_flag(helldoor_e.flags, 20)
-		helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
-		-- set_timeout(function()
-			-- helldoors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, 0, HELL_X, 87, LAYER.FRONT, 2)
-			-- if #helldoors > 0 then
-				-- helldoor_e = get_entity(helldoors[1]):as_movable()
-				-- helldoor_e.flags = set_flag(helldoor_e.flags, 20)
-				-- helldoor_e.flags = clr_flag(helldoor_e.flags, 22)
-				-- -- toast("Aaalllright come on in!!! It's WARM WHER YOU'RE GOIN HAHAHAH")
-			-- end
-		-- end, 5)
-	end
-end
-
-function create_entrance_mothership(x, y, l)
-	spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
-end
-
-function create_entrance_hauntedcastle(x, y, l)
-	HAUNTEDCASTLEDOOR_UID = spawn_door(x, y, l, state.world, state.level+1, state.theme)
-	set_interval(exit_restless, 1)
-end
 
 function onlevel_detection_feeling()
 	if state.theme == THEME.DWELLING then
@@ -3229,158 +3318,6 @@ function onlevel_toastfeeling()
 	end
 end
 
-function onlevel_coffinunlocks()
--- coffin replacement
-	if #players == 1 then
-		coffins = get_entities_by_type(ENT_TYPE.ITEM_COFFIN)
-		if #coffins > 0 then
-			-- TODO: Implement system that reviews savedata to unlock coffins.
-			-- Some cases should be as simple as "If it's not unlocked yet, set this coffin to this character."
-			-- Other cases... well... involve filtering through multiple coffins in the same area,
-			-- giving a random character unlock, and level feeling specific unlocks.
-			-- Some may need to be enabled as unlocked from the beginning!
-			
-			-- Character list: SUBJECT TO CHANGE.
-			-- - Decide whether original colors should be preserved, should we want to include reskins;
-			-- - (HD Little Jay = mint green; S2 Little Jay = Lime)
-			-- - Could just wing it and decide on case-by-case, ie, Roffy D Sloth -> PacoEspelanko
-			-- - But that may not make everyone happy; we want the mod to appeal to widest audience
-			-- - Heck, maybe we don't reskin any of them and leave it up to the users.
-			-- - But that's the problem, what coffins do we replace then...
-			-- - Maybe we make two versions: One to preserve HD's unlocks by color, and one for character equivalents
-			
-			-- https://spelunky.fandom.com/wiki/Spelunkers
-			-- https://spelunky.fandom.com/wiki/Spelunky_2_Characters
-			-- ###HD EQUIVALENTS###
-			-- Spelunky Guy: 	Available from the beginning.
-			-- Replacement:		ENT_TYPE.CHAR_GUY_SPELUNKY
-			-- Solution:		Enable from the start via savedata.
-			
-			-- Colin Northward:	Available from the beginning.
-			-- Replacement:		ENT_TYPE.CHAR_COLIN_NORTHWARD
-			-- Solution:		Already enabled(?)
-			
-			-- Alto Singh:		Available from the beginning.
-			-- Replacement:		ENT_TYPE.CHAR_BANDA
-			-- Solution:		Enable from the start via savedata.
-			
-			-- Liz Mutton:		Available from the beginning.
-			-- Replacement:		ENT_TYPE.CHAR_GREEN_GIRL
-			-- Solution:		Enable from the start via savedata.
-			
-			-- Tina Flan:		Random Coffin in one of the four areas, only one character can be found per area.
-			-- Replacement:		ENT_TYPE.CHAR_TINA_FLAN
-			-- Solution:		No modifications necessary.
-			
-			-- Lime:			Random Coffin in one of the four areas, only one character can be found per area.
-			-- Replacement:		ENT_TYPE.ROFFY_D_SLOTH
-			-- Solution:		RESKIN -> PacoEspelanko. https://spelunky.fyi/mods/m/pacoespelanko/
-			
-			-- Margaret Tunnel:	Random Coffin in one of the four areas, only one character can be found per area.
-			-- Replacement:		ENT_TYPE.CHAR_MARGARET_TUNNEL
-			-- Solution:		IF NEEDED, lock from the start in savedata.
-			
-			-- Cyan:			Random Coffin in one of the four areas, only one character can be found per area.
-			-- Replacement:		ENT_TYPE.
-			-- Solution:		NO IDEA. https://spelunky.fyi/mods/m/cyan-from-hd/
-			
-			-- Van Horsing:		Coffin at the top of the Haunted Castle level.
-			-- Replacement:		ENT_TYPE.
-			-- Solution:		NO IDEA. https://spelunky.fyi/mods/m/van-horsing-sprite-sheet-all-animations/
-			
-			-- Jungle Warrior:	Defeat Olmec and get to the exit.
-			-- Replacement:		ENT_TYPE.CHAR_AMAZON
-			-- Solution:		No modifications necessary.
-			
-			-- Meat Boy:		Dark green pod near the end of the Worm.
-			-- Replacement:		ENT_TYPE.CHAR_PILOT
-			-- Solution:		RESKIN -> Meat Boy. https://spelunky.fyi/mods/m/meat-boy-with-bandage-rope/
-			
-			-- Yang:			Defeat King Yama and get to the exit.
-			-- Replacement:		ENT_TYPE.CHAR_CLASSIC_GUY
-			-- Solution:		RESKIN(?)
-			
-			-- The Inuk:		Found inside a coffin in a Yeti Kingdom level.
-			-- Replacement:		ENT_TYPE.
-			-- Solution:		NO IDEA.
-			
-			-- The Round Girl:	Found inside a coffin in a Spider's Lair level.
-			-- Replacement:		ENT_TYPE.CHAR_VALERIE_CRUMP
-			-- Solution:		No modifications necessary.
-			
-			-- Ninja:			Found inside a coffin in Olmec's Chamber.
-			-- Replacement:		ENT_TYPE.CHAR_DIRK_YAMAOKA
-			-- Solution:		No modifications necessary.
-			
-			-- The Round Boy:	Found inside a coffin in a Tiki Village in the Jungle.
-			-- Replacement:		ENT_TYPE.OTAKU
-			-- Solution:		No modifications necessary.
-			
-			-- Cyclops:			Can be bought from the Black Market for $10,000, or simply 'kidnapped'. May also be found in a coffin after seeing him in the Black Market.
-			-- Replacement:		ENT_TYPE.
-			-- Solution:		NO IDEA. S2 has a coffin in the black market.
-			
-			-- Viking:			Found inside a coffin in a Flooded Cavern or "The Dead Are Restless" level.
-			-- Replacement:		ENT_TYPE.
-			-- Solution:		NO IDEA
-			
-			-- Robot:			Found inside a capsule in the Mothership.
-			-- Replacement:		ENT_TYPE.CHAR_LISE_SYSTEM
-			-- Solution:		No modifications necessary.
-			
-			-- Golden Monk:		Found inside a coffin in the City of Gold.
-			-- Replacement:		ENT_TYPE.CHAR_AU
-			-- Solution:		Literally no modifications necessary, maybe not even scripting anything.
-			
-			-- ###UNDETERMINED###
-			
-			-- Ana Spelunky:	ENT_TYPE.CHAR_ANA_SPELUNKY
-			-- Solution:		IF NEEDED, lock from the start in savedata.
-			
-			-- Princess Airyn:	ENT_TYPE.CHAR_PRINCESS_AIRYN
-			-- Solution:		NO IDEA
-			
-			-- Manfred Tunnel:	ENT_TYPE.CHAR_MANFRED_TUNNEL
-			-- Solution:		NO IDEA
-			
-			-- Coco Von Diamonds:	ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-			-- Solution:		NO IDEA
-			
-			-- Demi Von Diamonds:	ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-			-- Solution:		
-			
-			
-			if state.theme == THEME.OLMEC then
-				set_contents(coffins[1], ENT_TYPE.CHAR_DIRK_YAMAOKA)
-			elseif state.theme == THEME.EGGPLANT_WORLD then
-				-- todo: replace with ITEM_ANUBIS_COFFIN
-				set_contents(coffins[1], ENT_TYPE.CHAR_PILOT)
-				coffin_e = get_entity(coffins[1])
-				coffin_e.flags = set_flag(coffin_e.flags, 10)
-				coffin_m = coffin_e:as_movable()
-				-- coffin_m.animation_frame = 0
-				coffin_m.velocityx = 0
-				coffin_m.velocityy = 0
-			elseif state.theme == THEME.JUNGLE then
-				set_contents(coffins[1], ENT_TYPE.CHAR_OTAKU)
-				-- TODO: Black Market unlock
-				-- if character hasn't been unlocked yet:
-					-- if `blackmarket_char_witnessed` == false:
-						--`blackmarket_char_witnessed` = true
-						-- Have him up for sale in the black market
-							-- if purchased or shopkeeprs agrod:
-								-- unlock character
-					-- if `blackmarket_char_witnessed` == true:
-						-- found in coffin elsewhere (where?)
-			elseif state.theme == THEME.ICE_CAVES then
-				-- TODO: Find way to distinguish coffins
-				set_contents(coffins[1], ENT_TYPE.CHAR_COCO_VON_DIAMONDS)
-				-- set_contents(coffins[2], ENT_TYPE.CHAR_LISE_SYSTEM)
-				coffin_e = get_entity(coffins[1])
-			end
-		end
-	end
-end
 
 function oncamp_movetunnelman()
 	marlas = get_entities_by_type(ENT_TYPE.MONS_MARLA_TUNNEL)
@@ -3411,7 +3348,7 @@ function oncamp_shortcuts()
 	shortcut_worlds = {4, 3, 2}
 	shortcut_levels = {PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM}
 	shortcut_themes = {THEME.TEMPLE, THEME.ICE_CAVES, THEME.JUNGLE}
-	shortcut_doortextures = {569, 409, 343}--{569, 343, 409}
+	-- shortcut_doortextures = {569, 409, 343}--{569, 343, 409}
 	x = 21.0
 	for y = 90, 84, -3 do
 		doors_or_constructionsigns = TableConcat(doors_or_constructionsigns, get_entities_at(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, 0, x, y, LAYER.FRONT, 0.5))
@@ -3443,8 +3380,8 @@ function oncamp_shortcuts()
 	-- door_bg = get_entity(doors_bgs[1]):as_movable()
 	-- toast("third door_bg first_tile: " .. door_bg.first_tile)
 	
-	door_bg_type = get_type(doors_bgs[3])
-	toast("first door_bg_type.texture: " .. door_bg_type.texture)
+	-- door_bg_type = get_type(doors_bgs[3])
+	-- toast("first door_bg_type.texture: " .. door_bg_type.texture)
 	
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 	spawn(ENT_TYPE.FLOOR_GENERIC, 23, 84, LAYER.FRONT, 0, 0)
@@ -4888,6 +4825,39 @@ function tileapplier_get_randomwithin(_dim)
 	return TableRandomElement(tileframes_floor_matching)
 end
 
+function unlocks_file()
+	lines = lines_from('Mods/Packs/HDmod/unlocks.txt')
+	for _, inputstr in ipairs(lines) do
+		t = {}
+		for str in string.gmatch(inputstr, "([^//]+)") do
+			table.insert(t, str)
+		end
+		inputstr_stripped = {}
+		for str in string.gmatch(t[1], "([^%s]+)") do
+			table.insert(inputstr_stripped, str)
+		end
+		HD_UNLOCKS[inputstr_stripped[1]].unlock_id = tonumber(inputstr_stripped[2])
+	end
+end
+
+-- if `meta.unsafe` is enabled, load character unlocks as defined in the character file
+-- otherwise use a hardcoded table for character unlocks
+function unlocks_init()
+	if meta.unsafe == true then
+		unlocks_file()
+	else
+		unlocks_load()
+	end
+	-- toast("MOTHERSHIP: " .. tostring(HD_UNLOCKS["MOTHERSHIP"].unlock_id))
+end
+
+function unlocks_load()
+	for _unlockname, k in pairs(HD_UNLOCKS) do
+		HD_UNLOCKS[_unlockname].unlocked = test_flag(savegame.characters, k.unlock_id)
+	end
+	-- toast("MOTHERSHIP: " .. tostring(HD_UNLOCKS["MOTHERSHIP"].unlock_id))
+end
+
 -- SHOPS
 -- Hiredhand shops have 1-3 hiredhands
 -- Damzel for sale: The price for a kiss will be $8000 in The Mines, and it will increase by $2000 every area, so the prices will be $8000, $10000, $12000 and $14000 for a Damsel kiss in the four areas shops can spawn in. The price for buying the Damsel will be an extra 50% over the kiss price, making the prices $12000, $15000, $18000 and $21000 for all zones.
@@ -4936,7 +4906,6 @@ end
 -- Hawk man: Shopkeeper clone without shotgun (Or non teleporting Croc Man???)
 
 -- LEVEL:
--- Move unlock coffin to frontlayer
 -- Script in hell door spawning
 -- The Book of the Dead on the player's HUD will writhe faster the closer the player is to the X-coordinate of the entrance (HELL_X)
 -- 
@@ -5037,25 +5006,15 @@ end
 			-- 7: Final touchups. This MAY include level background details, ambient sounds.				
 				-- If dark level, place torches in rooms you replaced earlier
 					-- Once all rooms to be replaced are replaced, place torches in those rooms.
-		-- Certain room constants will need to be recognized and marked for replacement. This includes:
+		-- Certain room constants may need to be recognized and marked for replacement. This includes:
 			-- Tun rooms
 				-- Constraints are ENT_TYPE.MONS_MERCHANT in the front layer
 			-- Tun rooms
 				-- Constraints are ENT_TYPE.MONS_THEIF in the front layer
 			-- Shops and vaults in HELL
 		-- Make the outline of a vault room tilecode `2` (50% chance to remove each outlining block)
-		-- TODO: HD_FEELING bool system Revamp:
-			-- old way: if HD_FEELING_RESTLESS == true then toast("The dead are restless!") end
-			-- new way: if feeling_check("RESTLESS") == true then toast("The dead are restless!") end
-			-- new ways:
-				-- run a chance to set the current level feeling:
-					-- feeling_set("RESTLESS", {state.level}, true)
-				-- run a chance to set the level feeling for a random level when it hasn't been set already:
-					-- feeling_set_once("RESTLESS", {state.level}, true)
-				-- queue the next level to load the feeling:
-					-- feeling_set("HAUNTEDCASTLE", {state.level}+1)
-		-- On loading each world, pre-set when some of the level feelings are going to spawn.
-			-- for instance: Black market entrance, 
+		-- pass in tiles as nil to ignore.
+			-- initialize an empty table t of size n: setn(t, n)
 		-- Black Market & Flooded Revamp:
 			-- Replace S2 style black market with HD
 				-- HD and S2 differences:
@@ -5107,3 +5066,136 @@ end
 
 -- For mammoth behavior: If set, run it as a function: within the function, run a check on an array you pass in defining the `animation_frame`s you replace and the enemy you are having override its idle state.
 
+
+-- TODO: Implement system that reviews savedata to unlock coffins.
+-- Some cases should be as simple as "If it's not unlocked yet, set this coffin to this character."
+-- Other cases... well... involve filtering through multiple coffins in the same area,
+-- giving a random character unlock, and level feeling specific unlocks.
+-- Some may need to be enabled as unlocked from the beginning!
+
+-- Character list: SUBJECT TO CHANGE.
+-- - Decide whether original colors should be preserved, should we want to include reskins;
+-- - (HD Little Jay = mint green; S2 Little Jay = Lime)
+-- - Could just wing it and decide on case-by-case, ie, Roffy D Sloth -> PacoEspelanko
+-- - But that may not make everyone happy; we want the mod to appeal to widest audience
+-- - Heck, maybe we don't reskin any of them and leave it up to the users.
+-- - But that's the problem, what coffins do we replace then...
+-- - Maybe we make two versions: One to preserve HD's unlocks by color, and one for character equivalents
+
+-- https://spelunky.fandom.com/wiki/Spelunkers
+-- https://spelunky.fandom.com/wiki/Spelunky_2_Characters
+-- ###HD EQUIVALENTS###
+-- Spelunky Guy: 	Available from the beginning.
+-- Replacement:		ENT_TYPE.CHAR_GUY_SPELUNKY
+-- Solution:		Enable from the start via savedata.
+
+-- Colin Northward:	Available from the beginning.
+-- Replacement:		ENT_TYPE.CHAR_COLIN_NORTHWARD
+-- Solution:		Already enabled(?)
+
+-- Alto Singh:		Available from the beginning.
+-- Replacement:		ENT_TYPE.CHAR_BANDA
+-- Solution:		Enable from the start via savedata.
+
+-- Liz Mutton:		Available from the beginning.
+-- Replacement:		ENT_TYPE.CHAR_GREEN_GIRL
+-- Solution:		Enable from the start via savedata.
+
+-- Tina Flan:		Random Coffin in one of the four areas, only one character can be found per area.
+-- Replacement:		ENT_TYPE.CHAR_TINA_FLAN
+-- Solution:		No modifications necessary.
+
+-- Lime:			Random Coffin in one of the four areas, only one character can be found per area.
+-- Replacement:		ENT_TYPE.ROFFY_D_SLOTH
+-- Solution:		RESKIN -> PacoEspelanko. https://spelunky.fyi/mods/m/pacoespelanko/
+
+-- Margaret Tunnel:	Random Coffin in one of the four areas, only one character can be found per area.
+-- Replacement:		ENT_TYPE.CHAR_MARGARET_TUNNEL
+-- Solution:		IF NEEDED, lock from the start in savedata.
+
+-- Cyan:			Random Coffin in one of the four areas, only one character can be found per area.
+-- Replacement:		ENT_TYPE.
+-- Solution:		NO IDEA. https://spelunky.fyi/mods/m/cyan-from-hd/
+
+-- Van Horsing:		Coffin at the top of the Haunted Castle level.
+-- Replacement:		ENT_TYPE.
+-- Solution:		NO IDEA. https://spelunky.fyi/mods/m/van-horsing-sprite-sheet-all-animations/
+
+-- Jungle Warrior:	Defeat Olmec and get to the exit.
+-- Replacement:		ENT_TYPE.CHAR_AMAZON
+-- Solution:		No modifications necessary.
+
+-- Meat Boy:		Dark green pod near the end of the Worm.
+-- Replacement:		ENT_TYPE.CHAR_PILOT
+-- Solution:		RESKIN -> Meat Boy. https://spelunky.fyi/mods/m/meat-boy-with-bandage-rope/
+
+-- Yang:			Defeat King Yama and get to the exit.
+-- Replacement:		ENT_TYPE.CHAR_CLASSIC_GUY
+-- Solution:		RESKIN(?)
+
+-- The Inuk:		Found inside a coffin in a Yeti Kingdom level.
+-- Replacement:		ENT_TYPE.
+-- Solution:		NO IDEA.
+
+-- The Round Girl:	Found inside a coffin in a Spider's Lair level.
+-- Replacement:		ENT_TYPE.CHAR_VALERIE_CRUMP
+-- Solution:		No modifications necessary.
+
+-- Ninja:			Found inside a coffin in Olmec's Chamber.
+-- Replacement:		ENT_TYPE.CHAR_DIRK_YAMAOKA
+-- Solution:		No modifications necessary.
+
+-- The Round Boy:	Found inside a coffin in a Tiki Village in the Jungle.
+-- Replacement:		ENT_TYPE.OTAKU
+-- Solution:		No modifications necessary.
+
+-- Cyclops:			Can be bought from the Black Market for $10,000, or simply 'kidnapped'. May also be found in a coffin after seeing him in the Black Market.
+-- Replacement:		ENT_TYPE.
+-- Solution:		NO IDEA. S2 has a coffin in the black market.
+
+-- Viking:			Found inside a coffin in a Flooded Cavern or "The Dead Are Restless" level.
+-- Replacement:		ENT_TYPE.
+-- Solution:		NO IDEA
+
+-- Robot:			Found inside a capsule in the Mothership.
+-- Replacement:		ENT_TYPE.CHAR_LISE_SYSTEM
+-- Solution:		No modifications necessary.
+
+-- Golden Monk:		Found inside a coffin in the City of Gold.
+-- Replacement:		ENT_TYPE.CHAR_AU
+-- Solution:		Literally no modifications necessary, maybe not even scripting anything.
+
+-- ###UNDETERMINED###
+
+-- Ana Spelunky:	ENT_TYPE.CHAR_ANA_SPELUNKY
+-- Solution:		IF NEEDED, lock from the start in savedata.
+
+-- Princess Airyn:	ENT_TYPE.CHAR_PRINCESS_AIRYN
+-- Solution:		NO IDEA
+
+-- Manfred Tunnel:	ENT_TYPE.CHAR_MANFRED_TUNNEL
+-- Solution:		NO IDEA
+
+-- Coco Von Diamonds:	ENT_TYPE.CHAR_COCO_VON_DIAMONDS
+-- Solution:		NO IDEA
+
+-- Demi Von Diamonds:	ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
+-- Solution:		
+
+-- WORM UNLOCK
+-- coffin_e = get_entity(create_unlockcoffin("WORM", x, y, l))
+-- coffin_e.flags = set_flag(coffin_e.flags, 10)
+-- coffin_m = coffin_e:as_movable()
+-- -- coffin_m.animation_frame = 0
+-- coffin_m.velocityx = 0
+-- coffin_m.velocityy = 0
+
+-- IDEA: Black Market unlock
+-- if character hasn't been unlocked yet:
+	-- if `blackmarket_char_witnessed` == false:
+		--`blackmarket_char_witnessed` = true
+		-- Have him up for sale in the black market
+			-- if purchased or shopkeeprs agrod:
+				-- unlock character
+	-- if `blackmarket_char_witnessed` == true:
+		-- found in coffin elsewhere (where?)

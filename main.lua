@@ -14,9 +14,10 @@ meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info", false)
 register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info", false)
-register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", true)
+register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", false)
+register_option_bool("hd_debug_info_path", "Debug: Path debug info", true)
 register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info", false)
-register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", true)
+register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", false)
 register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", false)
 register_option_bool("hd_og_boulder_agro", "OG: Boulder - Enrage shopkeepers as they did in HD", true)
 register_option_bool("hd_og_ghost_nosplit", "OG: Ghost - Prevent the ghost from splitting", false)
@@ -46,6 +47,7 @@ wheel_items = {}
 global_dangers = {}
 global_feelings = {}
 danger_tracker = {}
+LEVEL_PATH = {}
 IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
@@ -115,10 +117,12 @@ HD_UNLOCKS.YAMA = { unlock_id = 20, unlocked = false }				--ENT_TYPE.CHAR_CLASSI
 HD_UNLOCKS.OLMEC_CHAMBER = { unlock_id = 18, unlocked = false }		--ENT_TYPE.CHAR_DIRK_YAMAOKA
 HD_UNLOCKS.TIKIVILLAGE = { unlock_id = 11, unlocked = false }		--ENT_TYPE.CHAR_OTAKU
 HD_UNLOCKS.BLACKMARKET = { unlock_id = 04, unlocked = false }		--ENT_TYPE.CHAR_ROFFY_D_SLOTH
-HD_UNLOCKS.RESTLESS_FLOODED = { unlock_id = 10, unlocked = false }	--ENT_TYPE.CHAR_MANFRED_TUNNEL
+HD_UNLOCKS.FLOODED = { unlock_id = 10, unlocked = false }			--ENT_TYPE.CHAR_MANFRED_TUNNEL
 HD_UNLOCKS.MOTHERSHIP = { unlock_id = 08, unlocked = false }		--ENT_TYPE.CHAR_LISE_SYSTEM
 HD_UNLOCKS.COG = { unlock_id = 14, unlocked = false }				--ENT_TYPE.CHAR_AU
 
+RUN_UNLOCK_RANDCHANCE = 1
+RUN_UNLOCK = false
 
 MESSAGE_FEELING = nil
 
@@ -187,12 +191,55 @@ HD_FEELING = {
 	},
 }
 
+HD_ROOMOBJECT = {
+	MINES = {
+		SPIDERLAIR = {
+			
+		},
+		SNAKEPIT = {
+			
+		},
+		RAND = {
+			
+		},
+	}
+	TEMPLE = {
+		SACRIFICIALPIT = {
+		
+		}
+	}
+}
+
+-- NEW:
+	-- Subchunkid terminology
+	-- 00 -- side				-- Empty/unassigned
+	-- 01 -- path_normal		-- Standard room (horizontal exit)
+
 -- TODO: Choose a unique ENT_TYPE for (at least the first 4) SUBCHUNKIDs
 HD_SUBCHUNKID = {
-	-- ["0" = , -- Non-main path subchunk
-	-- ["1" = , -- Main path, goes L/R (also entrance/exit)
-	-- ["2" = , -- Main path, goes L/R and down (and up if it's below another 2)
-	-- ["3" = , -- Main path, goes L/R and up
+	["0"] = { -- Non-main path subchunk
+		{ entity_type = 0 }
+	},
+	["1"] = { -- Main path, goes L/R (also entrance/exit)
+		{
+			entity_type = ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER,
+			kill = true
+		},
+		{ entity_type = ENT_TYPE.FLOOR_DOOR_ENTRANCE },
+		{ entity_type = ENT_TYPE.FLOOR_DOOR_EXIT }
+	},
+	["2"] = { -- Main path, goes L/R and down (and up if it's below another 2)
+		{
+			entity_type = ENT_TYPE.BG_BASECAMP_DRESSER,
+			kill = true
+		}
+	},
+	["3"] = { -- Main path, goes L/R and up
+		{
+			entity_type = ENT_TYPE.BG_BASECAMP_SIDETABLE,
+			kill = true
+		}
+	},
 	-- ["6" = , -- Upper part of snake pit
 	-- ["7" = , -- Middle part of snake pit
 	-- ["8" = , -- Bottom part of snake pit
@@ -828,7 +875,7 @@ HD_BEHAVIOR = {
 		-- Supported Variables:
 			-- dim = { w, h }
 				-- sets height and width
-				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
+				-- TODO: Split into two variables: One that gets set in onlevel_dangers_replace(), and one in onlevel_dangers_modifications.
 					-- IDEA: dim_db and dim
 			-- acceleration
 			-- max_speed
@@ -843,19 +890,19 @@ HD_BEHAVIOR = {
 		-- TODO:
 			-- blood_content
 			-- draw_depth
-	-- onlevel_generation_dangers
+	-- onlevel_dangers_replace
 		-- Supported Variables:
 			-- tospawn
 				-- if set, determines the ENT_TYPE to spawn.
 			-- toreplace
-				-- if set, determines the ENT_TYPE to replace inside onlevel_generation_dangers.
+				-- if set, determines the ENT_TYPE to replace inside onlevel_dangers_replace.
 			-- entitydb
 				-- If set, determines the ENT_TYPE to apply EntityDB modifications to
 	-- danger_applydb
 		-- Supported Variables:
 			-- dim = { w, h }
 				-- sets height and width
-				-- TODO: Split into two variables: One that gets set in onlevel_generation_dangers(), and one in onlevel_dangers_modifications.
+				-- TODO: Split into two variables: One that gets set in onlevel_dangers_replace(), and one in onlevel_dangers_modifications.
 					-- IDEA: dim_db and dim
 			-- color = { r, g, b }
 				-- TODO: Add alpha channel support
@@ -1378,6 +1425,49 @@ function replace(ent1, ent2, x_mod, y_mod)
 	end
 end
 
+-- ha wrote this
+function embed(enum, uid)
+  local uid_x, uid_y, uid_l = get_position(uid)
+  local ents = get_entities_at(0, 0, uid_x, uid_y, uid_l, 0.1)
+  if (#ents > 1) then return end
+
+  local entitydb = get_type(enum)
+  local previousdraw, previousflags = entitydb.draw_depth, entitydb.default_flags
+  entitydb.draw_depth = 9
+  entitydb.default_flags = 3278409 -- don't really need some flags for other things that dont explode, example is for jetpack
+
+  local entity = get_entity(spawn_entity_over(enum, uid, 0, 0))
+  entitydb.draw_depth = previousdraw
+  entitydb.default_flags = previousflags  
+  
+  message("Spawned " .. tostring(entity.uid))
+  return 0;
+end
+-- Example:
+-- register_option_button('button', "Attempt to embed a Jetpack", function()
+  -- first_level_entity = get_entities()[1] -- probably a floor
+  -- embed(ENT_TYPE.ITEM_JETPACK, first_level_entity)
+-- end)
+
+-- Malacath wrote this
+-- Randomly distributes treasure in minewood_floor
+set_post_tile_code_callback(function(x, y, layer)
+    local rand = math.random(100)
+    if rand > 65 then
+        local ents = get_entities_overlapping(ENT_TYPE.FLOORSTYLED_MINEWOOD, 0, x - 0.45, y - 0.45, x + 0.45, y + 0.45, layer);
+        if #ents == 1 then -- if not 1 then something else was spawned here already
+            if rand > 95 then
+                spawn_entity_over(ENT_TYPE.ITEM_JETPACK, ents[1], 0, 0);
+            elseif rand > 80 then
+                spawn_entity_over(ENT_TYPE.EMBED_GOLD_BIG, ents[1], 0, 0);
+            else
+                spawn_entity_over(ENT_TYPE.EMBED_GOLD, ents[1], 0, 0);
+            end
+        end
+    end
+end, "minewood_floor")
+
+
 function teleport_mount(ent, x, y)
     if ent.overlay ~= nil then
         move_entity(ent.overlay.uid, x, y, 0, 0)
@@ -1574,7 +1664,7 @@ function create_idol()
 			spawn(ENT_TYPE.BG_BOULDER_STATUE, IDOL_X, IDOL_Y+2.5, idol_l, 0, 0)
 		elseif state.theme == THEME.JUNGLE then
 			for j = 1, 6, 1 do
-				blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
+				local blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
 				idoltrap_blocks[j] = blocks[1]
 			end
 		elseif state.theme == THEME.ICE_CAVES then
@@ -1741,7 +1831,7 @@ end
 -- detect offset
 function detection_floor(x, y, l, offsetx, offsety, _radius)
 	_radius = _radius or 0.1
-	blocks = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, l, _radius)
+	local blocks = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, l, _radius)
 	if (#blocks > 0) then
 		return blocks[1]
 	end
@@ -1964,7 +2054,7 @@ function remove_room(roomx, roomy, layer)
 	tc_x, tc_y = locate_cornerpos(roomx, roomy)
 	for yi = 0, 8-1, 1  do
 		for xi = 0, 10-1, 1 do
-			blocks = get_entities_at(0, MASK.FLOOR, tc_x+xi, tc_y-yi, layer, 0.1)
+			local blocks = get_entities_at(0, MASK.FLOOR, tc_x+xi, tc_y-yi, layer, 0.1)
 			for _, block in ipairs(blocks) do
 				kill_entity(block)
 			end
@@ -1976,7 +2066,7 @@ end
 function remove_borderfloor()
 	for yi = 90, 88, -1 do
 		for xi = 3, 42, 1 do
-			blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
+			local blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
 			kill_entity(blocks[1])
 		end
 	end
@@ -1999,7 +2089,7 @@ function replace_room(c_roomcode, c_dimw, c_dimh, roomx, roomy, layer)
 				ghostpots = get_entities_at(ENT_TYPE.ITEM_CURSEDPOT, 0, cx+xi, cy-yi, layer, checkradius)
 				
 				if #damsels == 0 and #ghostpots == 0 then
-					blocks = get_entities_at(0, 0, cx+xi, cy-yi, layer, checkradius)
+					local blocks = get_entities_at(0, 0, cx+xi, cy-yi, layer, checkradius)
 					for _, block in ipairs(blocks) do
 						kill_entity(block)
 					end
@@ -2306,6 +2396,7 @@ set_callback(function()
 	onstart_init_methods()
 	unlocks_init()
 	global_feelings = TableCopy(HD_FEELING)
+	RUN_UNLOCK = false
 end, ON.START)
 
 -- ON.LOADING
@@ -2324,18 +2415,20 @@ set_callback(function()
 --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 	onlevel_reverse_exits()
 --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
-	onlevel_generation_chunks()
-	-- TODO: Once level generation for mothership and flooded is started, outdate onlevel_generation_removeborderfloor()
-	onlevel_generation_removeborderfloor()
+	onlevel_generation_detection()
+	onlevel_generation_modification()
+	onlevel_generation_execution()
+	generation_removeborderfloor() -- TODO: Once level generation for mothership and flooded is started, outdate
+	
 	-- onlevel_replace_powderkegs()
-	-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation_chunks()
+	-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 	onlevel_dangers_init()
 	onlevel_dangers_modifications()
 	onlevel_dangers_setonce()
-	set_timeout(onlevel_generation_dangers, 3)
+	set_timeout(onlevel_dangers_replace, 3)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
-	onlevel_placement_lockedchest()
+	onlevel_placement_lockedchest() -- TODO: Revise into onlevel_generation
 	onlevel_nocursedpot() -- PLACE AFTER onlevel_placement_lockedchest()
 	onlevel_prizewheel()
 	onlevel_idoltrap()
@@ -2370,6 +2463,7 @@ set_callback(function()
 	onguiframe_ui_info_wormtongue() 	--
 	onguiframe_ui_info_boulder()		--
 	onguiframe_ui_info_feelings()		--
+	onguiframe_ui_info_path()			--
 	onguiframe_env_animate_prizewheel()
 end, ON.GUIFRAME)
 
@@ -2561,7 +2655,7 @@ end
 
 -- DANGER MODIFICATIONS - ON.LEVEL
 -- Find everything in the level within the given parameters, apply enemy modifications within parameters.
-function onlevel_generation_dangers()
+function onlevel_dangers_replace()
 	if LEVEL_DANGERS[state.theme] then
 		hd_types_toreplace = TableCopy(global_dangers)
 		
@@ -2627,27 +2721,45 @@ function onlevel_generation_dangers()
 	end
 end
 
+function onlevel_generation_detection()
+	level_init()
+end
+
+function onlevel_generation_execution()
+	
+end
+
+-- roomobject ideas:
+	-- to spawn a coffin in olmec:
+	-- add_coffin
+		-- if RUN_UNLCOK == false then:
+		-- if RUN_UNLOCK_RANDCHANCE >= chance then
+			-- pick a random number between 
+		-- 1: create the room object
+			-- add to:
+				-- subchunkid (optional): determine what to replace
+				-- levelcoords (optional): level coordinates it can possibly spawn in (top left and top right)
+				-- roomcodes: roomcodes it can possibly spawn
+		-- NOTE: Use these like you use HD_ENT; You don't modify, instead use it to place roomcodes into global_levelassembly.roomcodes
+		ROOMOBJECT = {
+			-- subchunkid = 2 (
+			levelcoords = {
+				{1, 1},
+				{4, 1}
+			},
+			roomcodes = {
+				"1132032323...",
+				"5454534434..."
+			},
+			dimensions = { w = 10, h = 8 }
+		}
+		-- 2: figure out if global_levelassembly.roomobjects interfere with the path, if so, clean up
+		-- 3: fill in appropriate levelcoord in global_levelassembly.roomobjects
+			-- rooomobjects[4][1] = "1132032323..."
+
 -- CHUNK GENERATION - ON.LEVEL
 -- Script-based roomcode and chunk generation
-function onlevel_generation_chunks()
-	-- For cases where S2 differs in roomcode generation:
-		-- Determine the level dimensions based on the map bounds
-			-- level: 40 wide, 32 tall
-			-- roomcode size: 10 wide, 8 tall
-			-- room width = 40/10 = 4
-			-- room height = 32/8 = 4
-		-- Obtain coordinates that reside within the room you want to replace
-			-- (use a unique entity or hardcode it if it's a setroom)
-			
-			-- challenge: based on idol coordinates, find the roompos, then find the top left coordinates of the room it is in.
-			-- idol: 38, 117
-			-- find tc_x and tc_y
-			
-			-- e_x = 38
-			-- e_y = 117
-			-- topx, topy = locate_cornerpos(locate_roompos(e_x, e_y))
-			-- toast("topx: " .. topx .. ", topy: " .. topy)
-			
+function onlevel_generation_modification()
 	idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
 	if #idols > 0 and feeling_check("RESTLESS") == true then
 		idolx, idoly, idoll = get_position(idols[1])
@@ -2673,7 +2785,6 @@ function onlevel_generation_chunks()
 		roomcode = tmp_object.roomcodes[1]
 		dimw = tmp_object.dimensions.w
 		dimh = tmp_object.dimensions.h
-		-- generate_chunk(roomcode, dimw, dimh, cx, cy, idoll, 0, 0)
 		replace_room(roomcode, dimw, dimh, roomx, roomy, idoll)
 	end
 	
@@ -2767,7 +2878,7 @@ function onlevel_reverse_exits()
 	end
 end
 
-function onlevel_generation_removeborderfloor()
+function generation_removeborderfloor()
 	-- if S2 black market
 	-- TODO: Replace with if feeling_check("FLOODED") == true then
 	if feeling_check("FLOODED") == true then
@@ -3035,7 +3146,7 @@ function onlevel_add_wormtongue()
 	-- TODO: For all path generation blocks (include side?) (with space of course), add a unique tile to detect inside on.level
 	-- On loading the first jungle or ice cave level, find all of the unique entities spawned, select a random one, and spawn the worm tongue.
 	-- Then kill all of said unique entities.
-	-- ALTERNATIVE: Move into onlevel_generation_chunks(); find all blocks that have 2 spaces above it free, pick a random one, then spawn the worm tongue.
+	-- ALTERNATIVE: Move into onlevel_generation; find all blocks that have 2 spaces above it free, pick a random one, then spawn the worm tongue.
 
 	if state.theme == THEME.JUNGLE then -- or state.theme == THEME.ICE_CAVES then
 		tonguepoints = get_entities_by_type(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH)
@@ -3166,7 +3277,7 @@ end
 
 -- function onlevel_replace_powderkegs()
 	-- if state.theme == THEME.VOLCANA then
-		-- TODO: Maybe, in order to save memory, merge this with onlevel_generation_chunks
+		-- TODO: Maybe, in order to save memory, merge this with onlevel_generation
 		-- -- replace powderkegs with pushblocks, move_entity(powderkeg, 0, 0, 0, 0)
 	-- end
 -- end
@@ -3494,7 +3605,7 @@ function onframe_idoltrap()
 				BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
 				BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
 				BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
-				blocks = get_entities_overlapping(
+				local blocks = get_entities_overlapping(
 					ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
 					0,
 					BOULDER_SX,
@@ -3775,7 +3886,7 @@ function tongue_exit()
 end
 
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
--- Used to be part of onlevel_generation_dangers().
+-- Used to be part of onlevel_dangers_replace().
 function enttype_replace_danger(enttypes, hd_type, check_submerged, _vx, _vy)
 	check_submerged = check_submerged or false
 	
@@ -4162,7 +4273,7 @@ function onframe_olmec_cutscene() -- TODO: Move to set_interval() that you can c
 			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
 			-- kill the blocks olmec would normally smash.
 			for b = 1, 4, 1 do
-				blocks = get_entities_at(ENT_TYPE.FLOORSTYLED_STONE, 0, 21+b, 98, LAYER.FRONT, 0.5)
+				local blocks = get_entities_at(ENT_TYPE.FLOORSTYLED_STONE, 0, 21+b, 98, LAYER.FRONT, 0.5)
 				if #blocks > 0 then
 					kill_entity(blocks[1])
 				end
@@ -4635,6 +4746,28 @@ function onguiframe_ui_info_feelings()
 	end
 end
 
+function onguiframe_ui_info_path()
+	if options.hd_debug_info_path == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+		text_x = -0.95
+		text_y = -0.35
+		white = rgba(255, 255, 255, 255)
+		
+		levelw, levelh = #LEVEL_PATH, #LEVEL_PATH[1]--get_levelsize()
+		text_y_space = text_y
+		for hi = 1, levelh, 1 do -- hi :)
+			text_x_space = text_x
+			for wi = 1, levelw, 1 do
+				text_subchunkid = tostring(LEVEL_PATH[wi][hi])
+				if text_subchunkid == nil then text_subchunkid = "nil" end
+				draw_text(text_x_space, text_y_space, 0, text_subchunkid, white)
+				
+				text_x_space = text_x_space+0.04
+			end
+			text_y_space = text_y_space-0.04
+		end
+	end
+end
+
 -- Prize Wheel
 -- TODO: Once using diceposter texture, remove this.
 function onguiframe_env_animate_prizewheel()
@@ -4825,6 +4958,10 @@ function tileapplier_get_randomwithin(_dim)
 	return TableRandomElement(tileframes_floor_matching)
 end
 
+-- TODO: Move HD_UNLOCKS to its own module
+	-- Remove loading from external file, keep as hard-coded
+	-- Still within it's own module, move HD_UNLOCKS to its own dedicated lua file so it can be easily overriden with a future mod.
+		-- character_colors.zip?
 function unlocks_file()
 	lines = lines_from('Mods/Packs/HDmod/unlocks.txt')
 	for _, inputstr in ipairs(lines) do
@@ -4856,6 +4993,76 @@ function unlocks_load()
 		HD_UNLOCKS[_unlockname].unlocked = test_flag(savegame.characters, k.unlock_id)
 	end
 	-- toast("MOTHERSHIP: " .. tostring(HD_UNLOCKS["MOTHERSHIP"].unlock_id))
+end
+
+function level_init()
+	level_loadpath()
+end
+
+function level_loadpath()
+	levelw, levelh = get_levelsize()
+	LEVEL_PATH = {}
+	setn(LEVEL_PATH, levelw)
+	
+	for wi = 1, levelw, 1 do
+		th = {}
+		setn(th, levelh)
+		LEVEL_PATH[wi] = th
+	end
+	subchunkid_types = {}
+	for subchunk_id, subchunks in pairs(HD_SUBCHUNKID) do
+		if subchunk_id ~= "0" then
+			for i = 1, #subchunks, 1 do
+				subchunkid_types[#subchunkid_types+1] = TableCopy(subchunks[i])
+				subchunkid_types[#subchunkid_types].id = subchunk_id
+			end
+		end
+	end
+	for hi = 1, levelh, 1 do -- hi :)
+		for wi = 1, levelw, 1 do
+			x, y = locate_cornerpos(wi, hi)
+			edge = 0--.5
+			ROOM_SX = x+edge
+			ROOM_SY = y-7+edge
+			ROOM_SX2 = x+9-edge
+			ROOM_SY2 = y-edge
+			local subchunkid_uids = {}
+			id = "0"
+			for _, subchunk in ipairs(subchunkid_types) do -- check each type
+				if subchunk.entity_type ~= nil then
+					uids = get_entities_overlapping(
+						subchunk.entity_type,
+						0,
+						ROOM_SX,
+						ROOM_SY,
+						ROOM_SX2,
+						ROOM_SY2,
+						LAYER.FRONT
+					)
+					if #uids > 0 then
+						uid = uids[1]
+						enttype_tomatch = get_entity_type(uid)
+						if ( -- 1
+							enttype_tomatch == subchunk.entity_type
+						) then
+							if subchunk.id ~= nil then
+								id = subchunk.id
+							else
+								toast("AH, " .. tostring(subchunk.entity_type))
+							end
+						end
+						if options.hd_debug_invis == false then -- kill HD_SUBCHUNKID entities
+							if subchunk.kill ~= nil then
+								-- move_entity(uid, 0, 0, 0, 0)
+								kill_entity(uid)
+							end
+						end
+					end
+				end
+			end
+			LEVEL_PATH[wi][hi] = id
+		end
+	end
 end
 
 -- SHOPS

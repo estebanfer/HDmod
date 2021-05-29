@@ -244,56 +244,151 @@ HD_FEELING = {
 
 	-- if you need the variation that's facing left, use roomcodes[2].
 	-- dimensions are assumed to be 10x8, but you can define them with dimensions = { w = 10, h = 8 }
-HD_ROOMOBJECT = {
-	DWELLING = { -- Depending on how we access HD_ROOMOBJECT, rename this to MINES
-		
-		SPIDERLAIR = {
-			
-			
-			-- coffin_unlockable = {
-				
-			-- },
-			-- coffin_unlockable_vertical = {
-			
-			-- },
-		},
-		SNAKEPIT = {
-			-- Notes:
-				-- spawn steps:
-					-- 106
-						-- levelw, levelh = get_levelsize()
-						-- structx = math.random(1, levelw)
-						-- spawn 106 at structx, 1
-					-- 107
-						-- _, levelh = get_levelsize()
-						-- struct_midheight = math.random(1, levelh-2)
-						-- for i = 1, struct_midheight, 1 do
-							-- spawn 107 at structx, i
-						-- end
-					-- 108
-						-- spawn 108 at structx, struct_midheight+1
-			{
-				subchunk_id = "106",
-				-- grabs 5 and upwards from path_drop
-				roomcodes = {
-				"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
-				"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
-				"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
-				"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
-				"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
-				"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
-				"11111111112111111112021111112000211112000002112000000022000002200002201111001111"
-				}
-			},
-			{
-				subchunk_id = "107",
-				roomcodes = {"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}
-			},
-			{
-				subchunk_id = "108",
-				roomcodes = {"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}
+HD_ROOMOBJECT = {}
+HD_ROOMOBJECT.GENERIC = {
+	shop = {
+		{ -- prize wheel
+			subchunk_id = "1001",
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb",
+				"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"
 			}
 		},
+		{ -- Damzel
+			subchunk_id = "1002",
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"
+			}
+		},
+		{ -- Hiredhands(?)
+			subchunk_id = "1003",
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"
+			}
+		},
+		{ -- Hiredhands(?)
+			subchunk_id = "1004",
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"
+			}
+		},
+		{ -- ?
+			subchunk_id = "1005",
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"
+			}
+		}
+	},
+	vault = {
+		{
+			subchunk_id = "1010",
+			roomcodes = {
+				"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"
+			}
+		}
+	},
+	alter = {
+		{
+			subchunk_id = "1011",
+			roomcodes = {
+				"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"
+			}
+		}
+	}
+}
+HD_ROOMOBJECT.FEELINGS = {
+	SPIDERLAIR = {
+		
+		
+		-- coffin_unlockable = {
+			
+		-- },
+		-- coffin_unlockable_vertical = {
+		
+		-- },
+	},
+	SNAKEPIT = {
+		-- Notes:
+			-- spawn steps:
+				-- 106
+					-- levelw, levelh = get_levelsize()
+					-- structx = math.random(1, levelw)
+					-- spawn 106 at structx, 1
+				-- 107
+					-- _, levelh = get_levelsize()
+					-- struct_midheight = math.random(1, levelh-2)
+					-- for i = 1, struct_midheight, 1 do
+						-- spawn 107 at structx, i
+					-- end
+				-- 108
+					-- spawn 108 at structx, struct_midheight+1
+		{
+			subchunk_id = "106",
+			-- grabs 5 and upwards from path_drop
+			roomcodes = {
+			"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
+			"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
+			"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
+			"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
+			"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
+			"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
+			"11111111112111111112021111112000211112000002112000000022000002200002201111001111"
+			}
+		},
+		{
+			subchunk_id = "107",
+			roomcodes = {"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}
+		},
+		{
+			subchunk_id = "108",
+			roomcodes = {"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}
+		}
+	},
+	SACRIFICIALPIT = {
+		-- Notes:
+			-- start from top
+			-- seems to always be top to bottom
+		-- Spawn steps:
+			-- 116
+				-- levelw, levelh = get_levelsize()
+				-- structx = math.random(1, levelw)
+				-- spawn 116 at structx, 1
+			-- 117
+				-- _, levelh = get_levelsize()
+				-- struct_midheight = levelh-2
+				-- for i = 1, struct_midheight, 1 do
+					-- spawn 117 at structx, i
+				-- end
+			-- 118
+				-- spawn 118 at structx, struct_midheight+1
+		{
+			subchunk_id = "116",
+			-- grabs 5 and upwards from path_drop
+			roomcodes = {
+			"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"
+			}
+		},
+		{
+			subchunk_id = "117",
+			roomcodes = {"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}
+		},
+		{
+			subchunk_id = "118",
+			roomcodes = {"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}
+		}
+	},
+}
+HD_ROOMOBJECT.WORLDS = {
+	DWELLING = { -- Depending on how we access HD_ROOMOBJECT, rename this to MINES
 		coffin_unlockable = {
 			{
 				subchunk_id = "74",
@@ -306,52 +401,10 @@ HD_ROOMOBJECT = {
 		},
 	},
 	JUNGLE = {
-		coffin_unlockable = {
-			
-		},
 	},
 	ICE_CAVES = {
-		coffin_unlockable = {
-			
-		},
 	},
 	TEMPLE = {
-		SACRIFICIALPIT = {
-			-- Notes:
-				-- start from top
-				-- seems to always be top to bottom
-			-- Spawn steps:
-				-- 116
-					-- levelw, levelh = get_levelsize()
-					-- structx = math.random(1, levelw)
-					-- spawn 116 at structx, 1
-				-- 117
-					-- _, levelh = get_levelsize()
-					-- struct_midheight = levelh-2
-					-- for i = 1, struct_midheight, 1 do
-						-- spawn 117 at structx, i
-					-- end
-				-- 118
-					-- spawn 118 at structx, struct_midheight+1
-			{
-				subchunk_id = "116",
-				-- grabs 5 and upwards from path_drop
-				roomcodes = {
-				"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"
-				}
-			},
-			{
-				subchunk_id = "117",
-				roomcodes = {"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}
-			},
-			{
-				subchunk_id = "118",
-				roomcodes = {"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}
-			}
-		},
-		-- coffin_unlockable = {
-			
-		-- },
 	},
 	OLMEC = {
 		coffin_unlockable = {

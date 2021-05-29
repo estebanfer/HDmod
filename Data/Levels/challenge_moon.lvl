@@ -1,5 +1,4 @@
 
-
 \?stone_floor                      -
 \?ladder                           L
 \?ladder_plat                      P
@@ -31,13 +30,9 @@
 \?door2                            D
 \?spikes                           ^
 \?push_block                       4
-\?bush_block                       b
-\?thorn_vine                       *
-\?jungle_spear_trap                ~
 \?treasure                         t
 \?tree_base                        T
 \?cookfire                         r
-\?key                              s
 \?sister                           i
 \?altar                            x
 \?idol                             I
@@ -57,7 +52,7 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-\.challenge_entrance   //  Dual entrance to the challenge rooms facing right, flipped for other side
+\.challenge_entrance   // Dual entrance to the challenge rooms facing right, flipped for other side
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -82,7 +77,7 @@
 1111111111
 
 ////////////////////////////////////////////////////////////////////////////////
-\.challenge_bottom   //  Room appearing right below challenge entrance
+\.challenge_bottom   // Room appearing right below challenge entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // room

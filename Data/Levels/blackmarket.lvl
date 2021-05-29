@@ -1,8 +1,10 @@
-
 \-size                                   4 8        // level size in rooms
 
 \?locked_door                      /
 \?stone_floor                      -
+\?thorn_vine                       *
+\?jungle_spear_trap                ~
+\?key                              s
 \?tomb_floor                       G
 \?cursed_pot                       u
 \?litwalltorch                     O
@@ -52,11 +54,12 @@
 \?ladder                           L
 \?platform                         p
 \?ladder_plat                      P
+\?coarse_water                     b
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-\.blackmarket_entrance   //  Room behind hidden entrance
+\.blackmarket_entrance   // Room behind hidden entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -70,7 +73,7 @@ XXXXXXXXXX
 XXXXXXXXXX
 
 ////////////////////////////////////////////////////////////////////////////////
-\.blackmarket_exit   //  Room that leads to the front layer (appears on a side)
+\.blackmarket_exit   // Room that leads to the front layer (appears on a side)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -250,7 +253,7 @@ K...22...:
 ::::::::::
 
 ////////////////////////////////////////////////////////////////////////////////
-\.setroom6-3   //  HEDJET
+\.setroom6-3   // HEDJET
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -320,7 +323,7 @@ K...22....
 ====111111
 
 ////////////////////////////////////////////////////////////////////////////////
-\.blackmarket_coffin   //  Coffin room for unlockable characters
+\.blackmarket_coffin   // Coffin room for unlockable characters
 ////////////////////////////////////////////////////////////////////////////////
 
 // room

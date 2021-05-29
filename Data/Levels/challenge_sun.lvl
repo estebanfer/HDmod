@@ -1,5 +1,4 @@
 
-
 \?ladder                           L
 \?ladder_plat                      P
 \?locked_door                      /
@@ -45,7 +44,6 @@
 \?shop_item                        S
 \?wanted_poster                    W
 \?shopkeeper                       $
-\?storage_guy                      G
 \?storage_floor                    q
 \?autowalltorch                    M
 \?mother_statue                    s
@@ -60,7 +58,7 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-\.challenge_entrance   //  Dual entrance to the challenge rooms facing right, flipped for other side
+\.challenge_entrance   // Dual entrance to the challenge rooms facing right, flipped for other side
 ////////////////////////////////////////////////////////////////////////////////
 
 // room

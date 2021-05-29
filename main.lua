@@ -46,6 +46,7 @@ IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 wheel_items = {}
 global_dangers = {}
 global_feelings = {}
+global_levelassembly = {}
 danger_tracker = {}
 LEVEL_PATH = {}
 IDOL_X = nil
@@ -99,51 +100,88 @@ UI_BOTD_PLACEMENT_H = 0.12
 UI_BOTD_PLACEMENT_X = 0.2
 UI_BOTD_PLACEMENT_Y = 0.93
 
+RUN_UNLOCK_AREA_CHANCE = 1
+RUN_UNLOCK_AREA = {
+	DWELLING = false,
+	JUNGLE = false,
+	ICE_CAVES = false,
+	TEMPLE = false
+}
+RUN_UNLOCK = nil
+
 HD_UNLOCKS = {}
 HD_UNLOCKS.STARTER1 = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
 HD_UNLOCKS.STARTER2 = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
 HD_UNLOCKS.STARTER3 = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
 HD_UNLOCKS.STARTER4 = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
-HD_UNLOCKS.RAND1 = { unlock_id = 12, unlocked = false }				--ENT_TYPE.CHAR_TINA_FLAN
-HD_UNLOCKS.RAND2 = { unlock_id = 01, unlocked = false }				--ENT_TYPE.CHAR_ANA_SPELUNKY
-HD_UNLOCKS.RAND3 = { unlock_id = 02, unlocked = false }				--ENT_TYPE.CHAR_MARGARET_TUNNEL
-HD_UNLOCKS.RAND4 = { unlock_id = 09, unlocked = false }				--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-HD_UNLOCKS.OLMEC_WIN = { unlock_id = 07, unlocked = false }			--ENT_TYPE.CHAR_AMAZON
-HD_UNLOCKS.WORM = { unlock_id = 16, unlocked = false }				--ENT_TYPE.CHAR_PILOT
-HD_UNLOCKS.SPIDERLAIR = { unlock_id = 13, unlocked = false }		--ENT_TYPE.CHAR_VALERIE_CRUMP
-HD_UNLOCKS.YETIKINGDOM = { unlock_id = 15, unlocked = false }		--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-HD_UNLOCKS.HAUNTEDCASTLE = { unlock_id = 17, unlocked = false }		--ENT_TYPE.CHAR_PRINCESS_AIRYN
-HD_UNLOCKS.YAMA = { unlock_id = 20, unlocked = false }				--ENT_TYPE.CHAR_CLASSIC_GUY
-HD_UNLOCKS.OLMEC_CHAMBER = { unlock_id = 18, unlocked = false }		--ENT_TYPE.CHAR_DIRK_YAMAOKA
-HD_UNLOCKS.TIKIVILLAGE = { unlock_id = 11, unlocked = false }		--ENT_TYPE.CHAR_OTAKU
-HD_UNLOCKS.BLACKMARKET = { unlock_id = 04, unlocked = false }		--ENT_TYPE.CHAR_ROFFY_D_SLOTH
-HD_UNLOCKS.FLOODED = { unlock_id = 10, unlocked = false }			--ENT_TYPE.CHAR_MANFRED_TUNNEL
-HD_UNLOCKS.MOTHERSHIP = { unlock_id = 08, unlocked = false }		--ENT_TYPE.CHAR_LISE_SYSTEM
-HD_UNLOCKS.COG = { unlock_id = 14, unlocked = false }				--ENT_TYPE.CHAR_AU
+HD_UNLOCKS.AREA_RAND1 = { unlock_id = 12, unlocked = false }		--ENT_TYPE.CHAR_TINA_FLAN
+HD_UNLOCKS.AREA_RAND2 = { unlock_id = 01, unlocked = false }		--ENT_TYPE.CHAR_ANA_SPELUNKY
+HD_UNLOCKS.AREA_RAND3 = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
+HD_UNLOCKS.AREA_RAND4 = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
+HD_UNLOCKS.OLMEC_WIN = {
+	win = 1,
+	unlock_id = 07,													--ENT_TYPE.CHAR_AMAZON
+	unlocked = false
+}
+HD_UNLOCKS.WORM = {
+	unlock_theme = THEME.EGGPLANT_WORLD,
+	unlock_id = 16,													--ENT_TYPE.CHAR_PILOT
+	unlocked = false
+}				
+HD_UNLOCKS.SPIDERLAIR = {
+	feeling = "SPIDERLAIR",
+	unlock_id = 13, unlocked = false }								--ENT_TYPE.CHAR_VALERIE_CRUMP
+HD_UNLOCKS.YETIKINGDOM = {
+	feeling = "YETIKINGDOM",
+	unlock_id = 15, unlocked = false }								--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
+HD_UNLOCKS.HAUNTEDCASTLE = {
+	feeling = "HAUNTEDCASTLE",
+	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
+HD_UNLOCKS.YAMA = {
+	win = 2,
+	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
+	unlocked = false
+}				
+HD_UNLOCKS.OLMEC_CHAMBER = {
+	unlock_theme = THEME.OLMEC,
+	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
+HD_UNLOCKS.TIKIVILLAGE = { -- RESIDENT TIK-EVIL: VILLAGE
+	feeling = "TIKIVILLAGE",
+	unlock_id = 11, unlocked = false }								--ENT_TYPE.CHAR_OTAKU
+HD_UNLOCKS.BLACKMARKET = {
+	feeling = "BLACKMARKET",
+	unlock_id = 04, unlocked = false }								--ENT_TYPE.CHAR_ROFFY_D_SLOTH
+HD_UNLOCKS.FLOODED = {
+	feeling = "FLOODED",
+	unlock_id = 10, unlocked = false }								--ENT_TYPE.CHAR_MANFRED_TUNNEL
+HD_UNLOCKS.MOTHERSHIP = {
+	unlock_theme = THEME.NEO_BABYLON,
+	unlock_id = 08, unlocked = false }								--ENT_TYPE.CHAR_LISE_SYSTEM
+HD_UNLOCKS.COG = {
+	unlock_theme = THEME.CITY_OF_GOLD,
+	unlock_id = 14, unlocked = false }								--ENT_TYPE.CHAR_AU
 
-RUN_UNLOCK_RANDCHANCE = 1
-RUN_UNLOCK = false
 
 MESSAGE_FEELING = nil
 
 HD_FEELING = {
 	["SPIDERLAIR"] = {
-		chance = 1,
+		chance = 0,
 		themes = { THEME.DWELLING },
 		message = "My skin is crawling..."
 	},
 	["SNAKEPIT"] = {
-		chance = 1,
+		chance = 0,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
 	["RESTLESS"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.JUNGLE },
 		message = "The dead are restless!"
 	},
 	["TIKIVILLAGE"] = {
-		chance = 1,
+		chance = 0,
 		themes = { THEME.JUNGLE }
 	},
 	["FLOODED"] = {
@@ -163,12 +201,12 @@ HD_FEELING = {
 		message = "A wolf howls in the distance..."
 	},
 	["YETIKINGDOM"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.ICE_CAVES },
 		message = "It smells like wet fur in here."
 	},
 	["UFO"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.ICE_CAVES },
 		message = "I sense a psychic presence here!"
 	},
@@ -180,7 +218,7 @@ HD_FEELING = {
 		message = "It feels like the fourth of July..."
 	},
 	["SACRIFICIALPIT"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.TEMPLE },
 		message = "You hear prayers to Kali!"
 	},
@@ -191,54 +229,214 @@ HD_FEELING = {
 	},
 }
 
+-- TODO: issues with current hardcodedgeneration-dependent features:
+	-- Vaults
+		-- May interfere with the process of altering the level_path
+	-- Idol traps
+		-- Currently messes up mines level generation since S2 assumes that it's part of path
+	-- Udjat eye placement
+		-- mines level generation isn't as accurate
+			-- slightly incorrect side rooms
+			-- can't spawn on 1-4
+	-- My own system for spawning the wormtongue
+		-- Has to be hardcoded in order to work for both jungle and ice caves
+		-- Has to be hardcoded in order to work for both jungle and ice caves
+
+	-- if you need the variation that's facing left, use roomcodes[2].
+	-- dimensions are assumed to be 10x8, but you can define them with dimensions = { w = 10, h = 8 }
 HD_ROOMOBJECT = {
-	MINES = {
+	DWELLING = { -- Depending on how we access HD_ROOMOBJECT, rename this to MINES
+		
 		SPIDERLAIR = {
 			
+			
+			-- coffin_unlockable = {
+				
+			-- },
+			-- coffin_unlockable_vertical = {
+			
+			-- },
 		},
 		SNAKEPIT = {
+			-- Notes:
+				-- spawn steps:
+					-- 106
+						-- levelw, levelh = get_levelsize()
+						-- structx = math.random(1, levelw)
+						-- spawn 106 at structx, 1
+					-- 107
+						-- _, levelh = get_levelsize()
+						-- struct_midheight = math.random(1, levelh-2)
+						-- for i = 1, struct_midheight, 1 do
+							-- spawn 107 at structx, i
+						-- end
+					-- 108
+						-- spawn 108 at structx, struct_midheight+1
+			{
+				subchunk_id = "106",
+				-- grabs 5 and upwards from path_drop
+				roomcodes = {
+				"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
+				"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
+				"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
+				"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
+				"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
+				"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
+				"11111111112111111112021111112000211112000002112000000022000002200002201111001111"
+				}
+			},
+			{
+				subchunk_id = "107",
+				roomcodes = {"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}
+			},
+			{
+				subchunk_id = "108",
+				roomcodes = {"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}
+			}
+		},
+		coffin_unlockable = {
+			{
+				subchunk_id = "74",
+				pathalign = true,
+				roomcodes = {
+					"vvvvvvvvvvv++++++++vvL00000g0vvPvvvvvvvv0L000000000L0:000:0011111111111111111111",
+					"vvvvvvvvvvv++++++++vvg000000LvvvvvvvvvPv00000000L000:000:0L011111111111111111111" -- facing left
+				}
+			},
+		},
+	},
+	JUNGLE = {
+		coffin_unlockable = {
 			
 		},
-		RAND = {
+	},
+	ICE_CAVES = {
+		coffin_unlockable = {
 			
 		},
-	}
+	},
 	TEMPLE = {
 		SACRIFICIALPIT = {
-		
+			-- Notes:
+				-- start from top
+				-- seems to always be top to bottom
+			-- Spawn steps:
+				-- 116
+					-- levelw, levelh = get_levelsize()
+					-- structx = math.random(1, levelw)
+					-- spawn 116 at structx, 1
+				-- 117
+					-- _, levelh = get_levelsize()
+					-- struct_midheight = levelh-2
+					-- for i = 1, struct_midheight, 1 do
+						-- spawn 117 at structx, i
+					-- end
+				-- 118
+					-- spawn 118 at structx, struct_midheight+1
+			{
+				subchunk_id = "116",
+				-- grabs 5 and upwards from path_drop
+				roomcodes = {
+				"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"
+				}
+			},
+			{
+				subchunk_id = "117",
+				roomcodes = {"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}
+			},
+			{
+				subchunk_id = "118",
+				roomcodes = {"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}
+			}
+		},
+		-- coffin_unlockable = {
+			
+		-- },
+	},
+	OLMEC = {
+		coffin_unlockable = {
+			-- Spawn steps:
+				-- levelw, _ = get_levelsize()
+				-- structx = 1
+				-- chance = math.random()
+				-- if chance >= 0.5 then structx = levelw end
+				-- spawn 143 at structx, 1
+			{
+				subchunk_id = "143",
+				roomcodes = {
+					"00000100000E110111E001100001100E100001E00110g00110001111110000000000000000000000",
+					"00001000000E111011E001100001100E100001E00110g00110001111110000000000000000000000"
+				}
+			}
 		}
 	}
 }
 
--- NEW:
-	-- Subchunkid terminology
+-- path:	DRESSER
+-- drop:	SIDETABLE
+-- notop:	SHORTCUTSTATIONBANNER
+HD_SUBCHUNKID_TERM = {
+	["path"] = {
+		entity_type = ENT_TYPE.BG_BASECAMP_DRESSER,
+		kill = true
+	},
+	["drop"] = {
+		entity_type = ENT_TYPE.BG_BASECAMP_SIDETABLE,
+		kill = true
+	},
+	["notop"] = {
+		entity_type = ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER,
+		kill = true
+	},
+	["entrance"] = { entity_type = ENT_TYPE.FLOOR_DOOR_ENTRANCE },
+	["exit"] = { entity_type = ENT_TYPE.FLOOR_DOOR_EXIT },
+}
+-- TODO: Player Coffins
+-- Subchunkid terminology
 	-- 00 -- side				-- Empty/unassigned
 	-- 01 -- path_normal		-- Standard room (horizontal exit)
+	-- 02 -- path_drop			-- Path to exit (vertical exit)
+	-- 03 -- path_notop			-- Path to exit (horizontal exit)
+	-- 04 -- path_drop_notop	-- Path to exit (vertical exit)
+	-- 05 -- entrance			-- Player start (horizontal exit)
+	-- 06 -- entrance_drop		-- Player start (vertical exit)
+	-- 07 -- exit				-- Exit door (horizontal entrance)
+	-- 08 -- exit_notop			-- Exit door (vertical entrance)
 
 -- TODO: Choose a unique ENT_TYPE for (at least the first 4) SUBCHUNKIDs
 HD_SUBCHUNKID = {
-	["0"] = { -- Non-main path subchunk
+	["0"] = {
 		{ entity_type = 0 }
 	},
-	["1"] = { -- Main path, goes L/R (also entrance/exit)
-		{
-			entity_type = ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER,
-			kill = true
-		},
-		{ entity_type = ENT_TYPE.FLOOR_DOOR_ENTRANCE },
-		{ entity_type = ENT_TYPE.FLOOR_DOOR_EXIT }
+	["1"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["path"].entity_type }
 	},
-	["2"] = { -- Main path, goes L/R and down (and up if it's below another 2)
-		{
-			entity_type = ENT_TYPE.BG_BASECAMP_DRESSER,
-			kill = true
-		}
+	["2"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["path"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["drop"].entity_type }
 	},
-	["3"] = { -- Main path, goes L/R and up
-		{
-			entity_type = ENT_TYPE.BG_BASECAMP_SIDETABLE,
-			kill = true
-		}
+	["3"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["path"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["notop"].entity_type }
+	},
+	["4"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["path"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["drop"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["notop"].entity_type }
+	},
+	["5"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["entrance"].entity_type }
+	},
+	["6"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["entrance"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["drop"].entity_type }
+	},
+	["7"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["exit"].entity_type }
+	},
+	["8"] = {
+		{ entity_type = HD_SUBCHUNKID_TERM["exit"].entity_type },
+		{ entity_type = HD_SUBCHUNKID_TERM["notop"].entity_type }
 	},
 	-- ["6" = , -- Upper part of snake pit
 	-- ["7" = , -- Middle part of snake pit
@@ -555,7 +753,7 @@ HD_TILENAME = {
 		description = "Shop Floor",
 	},
     ["c"] = {
-		spawnfunction = function()
+		spawnfunction = function(params)
 			set_timeout(create_idol_crystalskull, 10)
 		end,
 		offset = { 0.5, 0 },
@@ -577,6 +775,9 @@ HD_TILENAME = {
 		description = "Falling Platform",
 	},
     ["g"] = {
+		spawnfunction = function(params)
+			create_unlockcoffin(params[1], params[2], params[3])
+		end,
 		entity_type = {ENT_TYPE.ITEM_COFFIN},
 		description = "Coffin",
 	},
@@ -1332,6 +1533,7 @@ LEVEL_DANGERS = {
 function init()
 	wheel_items = {}
 	idoltrap_blocks = {}
+	global_levelassembly = {}
 	danger_tracker = {}
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	IDOL_X = nil
@@ -1425,6 +1627,7 @@ function replace(ent1, ent2, x_mod, y_mod)
 	end
 end
 
+-- TODO: Use this as a base for embedding items in generate_tile()
 -- ha wrote this
 function embed(enum, uid)
   local uid_x, uid_y, uid_l = get_position(uid)
@@ -1449,23 +1652,24 @@ end
   -- embed(ENT_TYPE.ITEM_JETPACK, first_level_entity)
 -- end)
 
+-- TODO: Use this as a base for distributing embedded treasure
 -- Malacath wrote this
 -- Randomly distributes treasure in minewood_floor
-set_post_tile_code_callback(function(x, y, layer)
-    local rand = math.random(100)
-    if rand > 65 then
-        local ents = get_entities_overlapping(ENT_TYPE.FLOORSTYLED_MINEWOOD, 0, x - 0.45, y - 0.45, x + 0.45, y + 0.45, layer);
-        if #ents == 1 then -- if not 1 then something else was spawned here already
-            if rand > 95 then
-                spawn_entity_over(ENT_TYPE.ITEM_JETPACK, ents[1], 0, 0);
-            elseif rand > 80 then
-                spawn_entity_over(ENT_TYPE.EMBED_GOLD_BIG, ents[1], 0, 0);
-            else
-                spawn_entity_over(ENT_TYPE.EMBED_GOLD, ents[1], 0, 0);
-            end
-        end
-    end
-end, "minewood_floor")
+-- set_post_tile_code_callback(function(x, y, layer)
+    -- local rand = math.random(100)
+    -- if rand > 65 then
+        -- local ents = get_entities_overlapping(ENT_TYPE.FLOORSTYLED_MINEWOOD, 0, x - 0.45, y - 0.45, x + 0.45, y + 0.45, layer);
+        -- if #ents == 1 then -- if not 1 then something else was spawned here already
+            -- if rand > 95 then
+                -- spawn_entity_over(ENT_TYPE.ITEM_JETPACK, ents[1], 0, 0);
+            -- elseif rand > 80 then
+                -- spawn_entity_over(ENT_TYPE.EMBED_GOLD_BIG, ents[1], 0, 0);
+            -- else
+                -- spawn_entity_over(ENT_TYPE.EMBED_GOLD, ents[1], 0, 0);
+            -- end
+        -- end
+    -- end
+-- end, "minewood_floor")
 
 
 function teleport_mount(ent, x, y)
@@ -1517,6 +1721,23 @@ function CompactList(list, prev_size)
 	return list
 end
 
+function TableLength(t)
+  local count = 0
+  for _ in pairs(t) do count = count + 1 end
+  return count
+end
+
+function TableFirstKey(t)
+  local count = 0
+  for k,_ in pairs(t) do return k end
+  return nil
+end
+
+function TableFirstValue(t)
+  local count = 0
+  for _,v in pairs(t) do return v end
+  return nil
+end
 
 function TableRandomElement(tbl)
 	local t = {}
@@ -1578,7 +1799,58 @@ function get_levelsize()
 	return levelw, levelh
 end
 
-function create_unlockcoffin(unlock_name, x, y, l)
+function get_unlock()
+	-- TODO: Boss win unlocks.
+		-- Either move the following uncommented code into a dedicated method, or move this method to a place that works for a post-win screen
+	-- unlockconditions_win = {}
+	-- for unlock_name, unlock_properties in pairs(HD_UNLOCKS) do
+		-- if unlock_properties.win ~= nil then
+			-- unlockconditions_win[unlock_name] = unlock_properties
+		-- end
+	-- end
+	unlock = nil
+	unlockconditions_feeling = {} -- TODO: Maybe move into HD_FEELING as `unlock = true`
+	unlockconditions_theme = {}
+	for unlock_name, unlock_properties in pairs(HD_UNLOCKS) do
+		if unlock_properties.feeling ~= nil then
+			unlockconditions_feeling[unlock_name] = unlock_properties
+		elseif unlock_properties.unlock_theme ~= nil then
+			unlockconditions_theme[unlock_name] = unlock_properties
+		end
+	end
+	
+	for unlock_name, unlock_properties in pairs(unlockconditions_theme) do
+		if unlock_properties.unlock_theme == state.theme then
+			unlock = unlock_name
+		end
+	end
+	for unlock_name, unlock_properties in pairs(unlockconditions_feeling) do
+		if feeling_check(unlock_properties.feeling) == true then
+			-- Probably won't be overridden by theme
+			unlock = unlock_name
+		end
+	end
+	
+	return unlock
+end
+
+function get_unlock_area()
+	rand_pool = {"AREA_RAND1","AREA_RAND2","AREA_RAND3","AREA_RAND4"}
+	coffin_rand_pool = {}
+	rand_index = 1
+	n = #rand_pool
+	for rand_index = 1, #rand_pool, 1 do
+		if HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
+			rand_pool[rand_index] = nil
+		end
+	end
+	rand_pool = CompactList(rand_pool, n)
+	rand_index = math.random(1, #rand_pool)
+	unlock = rand_pool[rand_index]
+	return unlock
+end
+
+function create_unlockcoffin(x, y, l)
 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	-- 193 + unlock_num = ENT_TYPE.CHAR_*
 	set_contents(coffin_uid, 193 + HD_UNLOCKS[unlock_name].unlock_id)
@@ -1812,8 +2084,8 @@ function feeling_set(feeling, levels)
 end
 
 function detect_feeling_themes(feeling)
-	for _, theme in ipairs(global_feelings[feeling].themes) do
-		if state.theme == theme then
+	for _, feeling_theme in ipairs(global_feelings[feeling].themes) do
+		if state.theme == feeling_theme then
 			return true
 		end
 	end
@@ -1971,6 +2243,7 @@ function generate_tile(_tilechar, _x, _y, _l)--, replacetile)
 
 	x = _x
 	y = _y
+	l = _l
 	hd_tiletype, hd_tiletype_post = HD_TILENAME[_tilechar], HD_TILENAME[_tilechar]
 	if hd_tiletype == nil then return nil end
 	-- chance_half = (math.random() >= 0.5)
@@ -2003,7 +2276,7 @@ function generate_tile(_tilechar, _x, _y, _l)--, replacetile)
 			-- If it doesn't have a matching HD_TILENAME, return the original one.
 			end
 		end
-		floor_uid = spawn(entity_type, x, y, _l, 0, 0)
+		floor_uid = spawn(entity_type, x, y, l, 0, 0)
 		
 		-- Notes:
 			-- It seems that floorstyled spawns with a specific animation_frame.
@@ -2032,8 +2305,8 @@ function generate_tile(_tilechar, _x, _y, _l)--, replacetile)
 	elseif hd_tiletype_post.hd_type ~= nil then
 		danger_spawn(hd_tiletype_post.hd_type, x, y, l, false)
 	end
-	
-	if hd_tiletype_post.spawnfunction ~= nil then hd_tiletype_post.spawnfunction() end
+	params = {x, y, l}
+	if hd_tiletype_post.spawnfunction ~= nil then hd_tiletype_post.spawnfunction(params) end
 	
 	return hd_tiletype_post
 end
@@ -2396,7 +2669,7 @@ set_callback(function()
 	onstart_init_methods()
 	unlocks_init()
 	global_feelings = TableCopy(HD_FEELING)
-	RUN_UNLOCK = false
+	RUN_UNLOCK = nil
 end, ON.START)
 
 -- ON.LOADING
@@ -2653,6 +2926,40 @@ function onlevel_dangers_modifications()
 	end
 end
 
+-- TODO: Replace with a manual enemy spawning system.
+	-- Notes:
+		-- kays:
+			-- "I believe it's a 1/N chance that any possible place for that enemy to spawn, it spawns. so in your example, for level 2 about 1/20 of the possible tiles for that enemy to spawn will actually spawn it"
+	
+		-- Dr.BaconSlices:
+			-- "Yup, all it does is roll that chance on any viable tile. There are a couple more quirks, or so I've heard, like enemies spawning with more air around them rather than in enclosed areas, whereas treasure is more likely to be in cramped places. And of course, it checks for viable tiles instead of any tile, so it won't place things inside of floors or other solids, within a liquid it isn't supposed to be in, etc. There's also stuff like bats generating along celiengs instead of the ground, but I don't think I need to explain that haha"
+			-- "Oh yeah, I forgot to mention that. The priority is determined based on the list, which you can see here with 50 million bats but 0 spiders. I'm assuming both of their chances are set to 1,1,1,1 but you're still only seeing bats, and that's because they're generating in all of the places that spiders are able to."
+	-- Spawn requirements:
+		-- Traps
+			-- Notes:
+				-- replaces FLOOR_* and FLOORSTYLED_* (so platforms count as spaces)
+				-- don't spawn in place of gold/rocks/pots
+			-- Arrow Trap:
+				-- Notes:
+					-- are the only damaging entity to spawn in the entrance 
+				-- viable tiles:
+					-- if there are two blocks and two spaces, mark the inside block for replacement, unless the trigger hitbox would touch the entrance door
+				-- while spawning:
+					-- don't spawn if it would result in its back touching another arrow trap
+				
+			-- Tiki Traps:
+				-- Notes:
+					-- Spawn after arrow traps
+					-- are the only damaging entity to spawn in the entrance 
+				-- viable space to place:
+					-- Require a block on both sides of the block it's standing on
+					-- Require a 3x2 space above the spawn
+				-- viable tile to replace:
+					-- 
+				-- while spawning:
+					-- don't spawn if it would result in its sides touching another tiki trap 
+						-- HD doesn't check for this
+
 -- DANGER MODIFICATIONS - ON.LEVEL
 -- Find everything in the level within the given parameters, apply enemy modifications within parameters.
 function onlevel_dangers_replace()
@@ -2723,17 +3030,36 @@ end
 
 function onlevel_generation_detection()
 	level_init()
+	global_levelassembly.detection = {
+		path = TableCopy(LEVEL_PATH)
+		-- levelcode = 
+	}
+	-- loop over each room, detecting each block and writing it into .levelcode
+end
+
+-- CHUNK GENERATION - ON.LEVEL
+-- Script-based roomcode and chunk generation
+function onlevel_generation_modification()
+	set_run_unlock()
+	-- global_levelassembly.modification = {
+		-- path = path_setn(get_levelsize())
+		-- levelcode = levelcode_setn(get_levelsize())
+	-- }
+
 end
 
 function onlevel_generation_execution()
+	global_levelassembly.execution = {
+		path = TableCopy(global_levelassembly.detection.path)
+	}
+	-- overwrite .execution.path with .modification.path in the places that it's not nil
 	
-end
-
--- roomobject ideas:
+	LEVEL_PATH = global_levelassembly.execution.path
+	
+-- kinda outdated nonsense:
+	-- roomobject ideas:
 	-- to spawn a coffin in olmec:
 	-- add_coffin
-		-- if RUN_UNLCOK == false then:
-		-- if RUN_UNLOCK_RANDCHANCE >= chance then
 			-- pick a random number between 
 		-- 1: create the room object
 			-- add to:
@@ -2741,84 +3067,134 @@ end
 				-- levelcoords (optional): level coordinates it can possibly spawn in (top left and top right)
 				-- roomcodes: roomcodes it can possibly spawn
 		-- NOTE: Use these like you use HD_ENT; You don't modify, instead use it to place roomcodes into global_levelassembly.roomcodes
-		ROOMOBJECT = {
-			-- subchunkid = 2 (
-			levelcoords = {
-				{1, 1},
-				{4, 1}
-			},
-			roomcodes = {
-				"1132032323...",
-				"5454534434..."
-			},
-			dimensions = { w = 10, h = 8 }
-		}
 		-- 2: figure out if global_levelassembly.roomobjects interfere with the path, if so, clean up
 		-- 3: fill in appropriate levelcoord in global_levelassembly.roomobjects
 			-- rooomobjects[4][1] = "1132032323..."
+	
 
--- CHUNK GENERATION - ON.LEVEL
--- Script-based roomcode and chunk generation
-function onlevel_generation_modification()
-	idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	if #idols > 0 and feeling_check("RESTLESS") == true then
-		idolx, idoly, idoll = get_position(idols[1])
-		roomx, roomy = locate_roompos(idolx, idoly)
-		-- cx, cy = remove_room(roomx, roomy, idoll)
-		tmp_object = {
-			roomcodes = {
-				"ttttttttttttttttttttttp0c00ptt0tt0000tt00400000040ttt0tt0tttttp0000ptt1111111111"
-				--"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
-			},
-			-- "tttttttttt
-			-- tttttttttt
-			-- ttp0c00ptt
-			-- 0tt0000tt0
-			-- 0400000040
-			-- ttt0tt0ttt
-			-- ttp0000ptt
-			-- 1111111111"
+	-- idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
+	-- if #idols > 0 and feeling_check("RESTLESS") == true then
+		-- idolx, idoly, idoll = get_position(idols[1])
+		-- roomx, roomy = locate_roompos(idolx, idoly)
+		-- -- cx, cy = remove_room(roomx, roomy, idoll)
+		-- tmp_object = {
+			-- roomcodes = {
+				-- "ttttttttttttttttttttttp0c00ptt0tt0000tt00400000040ttt0tt0tttttp0000ptt1111111111"
+				-- --"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
+			-- },
+			-- -- "tttttttttt
+			-- -- tttttttttt
+			-- -- ttp0c00ptt
+			-- -- 0tt0000tt0
+			-- -- 0400000040
+			-- -- ttt0tt0ttt
+			-- -- ttp0000ptt
+			-- -- 1111111111"
 			
-			dimensions = { w = 10, h = 8 }
-		}
+			-- dimensions = { w = 10, h = 8 }
+		-- }
 		
-		roomcode = tmp_object.roomcodes[1]
-		dimw = tmp_object.dimensions.w
-		dimh = tmp_object.dimensions.h
-		replace_room(roomcode, dimw, dimh, roomx, roomy, idoll)
+		-- roomcode = tmp_object.roomcodes[1]
+		-- dimw = tmp_object.dimensions.w
+		-- dimh = tmp_object.dimensions.h
+		-- replace_room(roomcode, dimw, dimh, roomx, roomy, idoll)
+	-- end
+	
+	
+	
+	-- -- For cases where S2 differs in chunk (aka subchunk) generation:
+		-- -- use a unique tilecode in the level editor to signify chunk placement
+		-- -- Challenge: Jungle vine chunk.
+		
+		-- -- JUNGLE - SUBCHUNK - VINE
+	-- tmp_object = {
+		-- roomcodes = {
+			-- "L0L0LL0L0LL000LL0000",
+			-- -- L0L0L
+			-- -- L0L0L
+			-- -- L000L
+			-- -- L0000
+			
+			-- "L0L0LL0L0LL000L0000L",
+			-- -- L0L0L
+			-- -- L0L0L
+			-- -- L000L
+			-- -- 0000L
+			
+			-- "0L0L00L0L00L0L0000L0"
+			-- -- 0L0L0
+			-- -- 0L0L0
+			-- -- 0L0L0
+			-- -- 000L0
+		-- },
+		-- dimensions = { w = 5, h = 4 }
+	-- }
+		
+end
+
+function detect_viable_unlock_area()
+	-- Where can AREA unlocks spawn?
+		-- When it's in one of the four areas.
+			-- Any exceptions to this, such as special areas?
+				-- I'm going to ignore special cases, such as WORM where you're in another world, or BLACKMARKET. At least for now.
+	if (
+		state.theme == THEME.DWELLING
+		or
+		state.theme == THEME.JUNGLE
+		or
+		state.theme == THEME.ICE_CAVES
+		or
+		state.theme == THEME.TEMPLE
+	) then return true end
+	return false
+end
+
+function path_setn(levelw, levelh)
+	path = {}
+	setn(path, levelw)
+	
+	for wi = 1, levelw, 1 do
+		th = {}
+		setn(th, levelh)
+		path[wi] = th
 	end
-	
-	
-	
-	-- For cases where S2 differs in chunk (aka subchunk) generation:
-		-- use a unique tilecode in the level editor to signify chunk placement
-		-- Challenge: Jungle vine chunk.
-		
-		-- JUNGLE - SUBCHUNK - VINE
-	tmp_object = {
-		roomcodes = {
-			"L0L0LL0L0LL000LL0000",
-			-- L0L0L
-			-- L0L0L
-			-- L000L
-			-- L0000
-			
-			"L0L0LL0L0LL000L0000L",
-			-- L0L0L
-			-- L0L0L
-			-- L000L
-			-- 0000L
-			
-			"0L0L00L0L00L0L0000L0"
-			-- 0L0L0
-			-- 0L0L0
-			-- 0L0L0
-			-- 000L0
-		},
-		dimensions = { w = 5, h = 4 }
-	}
-		
+	return path
+end
 
+function levelcode_setn(levelw, levelh)
+	levelcodew, levelcodeh = levelw*10, levelh*8 
+	levelcode = {}
+	setn(levelcode, levelcodew)
+	
+	for wi = 1, levelcodew, 1 do
+		th = {}
+		setn(th, levelcodeh)
+		levelcode[wi] = th
+	end
+	return levelcode
+end
+
+function set_run_unlock()
+	-- BronxTaco:
+		-- "rando characters will replace the character inside the level feeling coffin"
+		-- "you can see this happen in kinnis old AC wr"
+	-- jjg27:
+		-- "I don't think randos can appear in the coffins for special areas: Worm, Castle, Mothership, City of Gold, Olmec's Lair."
+	if RUN_UNLOCK == nil then
+		chance = math.random()
+		if (
+			detect_viable_unlock_area() == true and
+			RUN_UNLOCK_AREA_CHANCE >= chance
+		) then
+			RUN_UNLOCK = get_unlock_area()
+		else
+			RUN_UNLOCK = get_unlock()
+		end
+		
+		if RUN_UNLOCK ~= nil then
+			message("RUN_UNLOCK: " .. RUN_UNLOCK)
+		end
+	end
 end
 
 -- LEVEL HANDLING
@@ -3556,7 +3932,6 @@ function onframe_idoltrap()
 			if #idoltrap_blocks > 0 then
 				kill_entity(idoltrap_blocks[1])
 				kill_entity(idoltrap_blocks[6])
-				-- TODO: TEST THIS INSTEAD:
 				set_timeout(function()
 					kill_entity(idoltrap_blocks[2])
 					kill_entity(idoltrap_blocks[5])
@@ -3826,7 +4201,6 @@ function tongue_exit()
 			
 			for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
 				ensnaredplayer = get_entity(ensnaredplayer_uid):as_movable()
-				-- TODO:
 				ensnaredplayer.stun_timer = 0
 				-- ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, 16)-- disable input
 				
@@ -4985,14 +5359,12 @@ function unlocks_init()
 	else
 		unlocks_load()
 	end
-	-- toast("MOTHERSHIP: " .. tostring(HD_UNLOCKS["MOTHERSHIP"].unlock_id))
 end
 
 function unlocks_load()
 	for _unlockname, k in pairs(HD_UNLOCKS) do
 		HD_UNLOCKS[_unlockname].unlocked = test_flag(savegame.characters, k.unlock_id)
 	end
-	-- toast("MOTHERSHIP: " .. tostring(HD_UNLOCKS["MOTHERSHIP"].unlock_id))
 end
 
 function level_init()
@@ -5001,23 +5373,7 @@ end
 
 function level_loadpath()
 	levelw, levelh = get_levelsize()
-	LEVEL_PATH = {}
-	setn(LEVEL_PATH, levelw)
-	
-	for wi = 1, levelw, 1 do
-		th = {}
-		setn(th, levelh)
-		LEVEL_PATH[wi] = th
-	end
-	subchunkid_types = {}
-	for subchunk_id, subchunks in pairs(HD_SUBCHUNKID) do
-		if subchunk_id ~= "0" then
-			for i = 1, #subchunks, 1 do
-				subchunkid_types[#subchunkid_types+1] = TableCopy(subchunks[i])
-				subchunkid_types[#subchunkid_types].id = subchunk_id
-			end
-		end
-	end
+	LEVEL_PATH = path_setn(levelw, levelh)
 	for hi = 1, levelh, 1 do -- hi :)
 		for wi = 1, levelw, 1 do
 			x, y = locate_cornerpos(wi, hi)
@@ -5026,40 +5382,69 @@ function level_loadpath()
 			ROOM_SY = y-7+edge
 			ROOM_SX2 = x+9-edge
 			ROOM_SY2 = y-edge
-			local subchunkid_uids = {}
 			id = "0"
-			for _, subchunk in ipairs(subchunkid_types) do -- check each type
-				if subchunk.entity_type ~= nil then
-					uids = get_entities_overlapping(
-						subchunk.entity_type,
-						0,
-						ROOM_SX,
-						ROOM_SY,
-						ROOM_SX2,
-						ROOM_SY2,
-						LAYER.FRONT
-					)
-					if #uids > 0 then
-						uid = uids[1]
-						enttype_tomatch = get_entity_type(uid)
-						if ( -- 1
-							enttype_tomatch == subchunk.entity_type
-						) then
-							if subchunk.id ~= nil then
-								id = subchunk.id
-							else
-								toast("AH, " .. tostring(subchunk.entity_type))
-							end
+			terms = {}
+			terms_toavoid = {}
+			for term_name, term_properties in pairs(HD_SUBCHUNKID_TERM) do
+				entity_type = term_properties.entity_type
+				uids = get_entities_overlapping(
+					entity_type,
+					0,
+					ROOM_SX,
+					ROOM_SY,
+					ROOM_SX2,
+					ROOM_SY2,
+					LAYER.FRONT
+				)
+				if #uids > 0 then
+					terms[term_name] = entity_type
+					if term_properties.kill ~= nil and options.hd_debug_invis == false then
+						for _, uid in ipairs(uids) do
+							kill_entity(uid)
 						end
-						if options.hd_debug_invis == false then -- kill HD_SUBCHUNKID entities
-							if subchunk.kill ~= nil then
-								-- move_entity(uid, 0, 0, 0, 0)
-								kill_entity(uid)
+					end
+				else
+					terms_toavoid[term_name] = entity_type
+				end
+			end
+			if TableLength(terms) > 0 then
+				-- loop over terms to avoid. if it contains those, abort.
+				
+				subchunkids_tonarrow = TableCopy(HD_SUBCHUNKID)
+				for subchunk_id, types in pairs(subchunkids_tonarrow) do
+					
+					contains_terms_all = false
+					tnum = 0
+					for term_name, entity_type in pairs(terms) do
+						for i = 1, #types, 1 do
+							if entity_type == types[i].entity_type then
+								tnum = tnum + 1
 							end
 						end
 					end
+					if tnum == TableLength(terms) then contains_terms_all = true end
+					
+					contains_terms_toavoid = false
+					for term_name, term_enttype in pairs(terms_toavoid) do
+						for i = 1, #types, 1 do
+							if term_enttype == types[i].entity_type then
+								contains_terms_toavoid = true
+							end
+						end
+					end
+					
+					if (
+						subchunk_id == "0" or
+						contains_terms_all == false or
+						contains_terms_toavoid == true
+					) then
+						subchunkids_tonarrow[subchunk_id] = nil
+					end
 				end
+				
+				if TableLength(subchunkids_tonarrow) == 1 then id = TableFirstKey(subchunkids_tonarrow) end
 			end
+			
 			LEVEL_PATH[wi][hi] = id
 		end
 	end
@@ -5390,7 +5775,7 @@ end
 -- Solution:		
 
 -- WORM UNLOCK
--- coffin_e = get_entity(create_unlockcoffin("WORM", x, y, l))
+-- coffin_e = get_entity(create_unlockcoffin(x, y, l))
 -- coffin_e.flags = set_flag(coffin_e.flags, 10)
 -- coffin_m = coffin_e:as_movable()
 -- -- coffin_m.animation_frame = 0

@@ -536,7 +536,7 @@ HD_SUBCHUNKID = {
 -- retains HD tilenames
 HD_TILENAME = {
 	-- ["1"] = {
-		-- entity_type = ENT_TYPE.FLOOR_GENERIC,
+		-- entity_types = ENT_TYPE.FLOOR_GENERIC,
 		-- description = "Terrain",
 	-- },
 	-- ["2"] = ENT_TYPE.FLOOR_GENERIC,
@@ -550,7 +550,7 @@ HD_TILENAME = {
 		description = "Empty",
 	},
     ["#"] = {
-		entity_type = {ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
+		entity_types = {ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
 		description = "TNT Box",
 	},
     ["$"] = {
@@ -560,7 +560,7 @@ HD_TILENAME = {
 		description = "Roulette Door",
 	},
     ["&"] = { -- 50% chance to spawn
-		entity_type = {ENT_TYPE.LOGICAL_WATER_DRAIN, 0},
+		entity_types = {ENT_TYPE.LOGICAL_WATER_DRAIN, 0},
 		alternate_types = {
 			[THEME.TEMPLE] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
 			[THEME.VOLCANA] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
@@ -580,26 +580,26 @@ HD_TILENAME = {
 		description = "Wooden Background",
 	},
     [","] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.FLOORSTYLED_MINEWOOD
 		},
 		description = "Terrain/Wood",
 	},
     ["-"] = {
-		entity_type = {ENT_TYPE.ACTIVEFLOOR_THINICE},
+		entity_types = {ENT_TYPE.ACTIVEFLOOR_THINICE},
 		description = "Cracking Ice",
 	},
     ["."] = {
-		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		description = "Unmodified Terrain",
 	},
     ["1"] = {
-		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		description = "Terrain",
 	},
     ["2"] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			0
 		},
@@ -613,7 +613,7 @@ HD_TILENAME = {
 		description = "Terrain/Empty",
 	},
     ["3"] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.LIQUID_WATER
 		},
@@ -630,7 +630,7 @@ HD_TILENAME = {
 		description = "Terrain/Water",
 	},
     ["4"] = {
-		entity_type = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
+		entity_types = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
 		description = "Pushblock",
 	},
     ["5"] = {
@@ -642,7 +642,7 @@ HD_TILENAME = {
 		description = "Floating Obstacle Block",
 	},
     ["7"] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_SPIKES,
 			0
 		},
@@ -657,7 +657,7 @@ HD_TILENAME = {
 		description = "Door without Platform",
 	},
     [":"] = {
-		entity_type = {ENT_TYPE.MONS_SCORPION},
+		entity_types = {ENT_TYPE.MONS_SCORPION},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.MONS_TIKIMAN}
 		},
@@ -672,22 +672,22 @@ HD_TILENAME = {
 	},
     ["A"] = {
 		-- TODO: two across parameter
-		entity_type = {ENT_TYPE.FLOOR_IDOL_BLOCK},
+		entity_types = {ENT_TYPE.FLOOR_IDOL_BLOCK},
 		description = "Mines Idol Platform",
 	},
     ["B"] = {
 		-- TODO: Find a good reskin replacement
-		entity_type = {ENT_TYPE.FLOORSTYLED_STONE},
+		entity_types = {ENT_TYPE.FLOORSTYLED_STONE},
 		description = "Jungle/Temple Idol Platform",
 	},
     ["C"] = {
 		-- TODO: Ceiling Idol Trap
-		entity_type = {ENT_TYPE.FLOORSTYLED_STONE},
+		entity_types = {ENT_TYPE.FLOORSTYLED_STONE},
 		description = "Nonmovable Pushblock",
 	},
     ["E"] = {
 		-- TODO: subchunk parameters
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.ITEM_CRATE,
 			ENT_TYPE.ITEM_CHEST,
@@ -700,11 +700,11 @@ HD_TILENAME = {
 		description = "Falling Platform Obstacle Block",
 	},
     ["G"] = {
-		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		description = "Ladder",
 	},
     ["H"] = {
-		entity_type = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		entity_types = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		description = "Ladder Platform",
 	},
     ["I"] = {
@@ -712,14 +712,14 @@ HD_TILENAME = {
 		description = "Idol",
 	},
     ["J"] = {
-		entity_type = {ENT_TYPE.MONS_GIANTFISH},
+		entity_types = {ENT_TYPE.MONS_GIANTFISH},
 		description = "Ol' Bitey",
 	},
     ["K"] = {
 		description = "Shopkeeper",
 	},
     ["L"] = {
-		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},
@@ -731,18 +731,18 @@ HD_TILENAME = {
 		description = "Crust Mattock from Snake Pit",
 	},
     ["N"] = {
-		entity_type = {ENT_TYPE.MONS_SNAKE},
+		entity_types = {ENT_TYPE.MONS_SNAKE},
 		description = "Snake from Snake Pit",
 	},
     ["O"] = {
 		description = "Moai Head",
 	},
     ["P"] = {
-		entity_type = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		entity_types = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		description = "Ladder Platform",
 	},
     ["Q"] = {
-		entity_type = {ENT_TYPE.FLOOR_LADDER},
+		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},
@@ -762,7 +762,7 @@ HD_TILENAME = {
 		description = "Tree",
 	},
     ["U"] = {
-		entity_type = {ENT_TYPE.MONS_VLAD},
+		entity_types = {ENT_TYPE.MONS_VLAD},
 		description = "Vlad",
 	},
     ["V"] = {
@@ -773,7 +773,7 @@ HD_TILENAME = {
 		description = "Unknown: Something Shop-Related",
 	},
     ["X"] = {
-		entity_type = {ENT_TYPE.MONS_GIANTSPIDER},
+		entity_types = {ENT_TYPE.MONS_GIANTSPIDER},
 		-- alternate_hd_types = {
 		-- -- Hell: Horse Head & Ox Face
 		-- },
@@ -781,25 +781,25 @@ HD_TILENAME = {
 		description = "Giant Spider",
 	},
     ["Y"] = {
-		entity_type = {ENT_TYPE.MONS_YETIKING},
+		entity_types = {ENT_TYPE.MONS_YETIKING},
 		alternate_types = {
 			[THEME.TEMPLE] = {ENT_TYPE.MONS_MUMMY},
 		},
 		description = "Yeti King",
 	},
     ["Z"] = {
-		entity_type = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
+		entity_types = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
 		description = "Beehive Tile with Background",
 	},
     ["a"] = {
-		entity_type = {ENT_TYPE.ITEM_PICKUP_ANKH},
+		entity_types = {ENT_TYPE.ITEM_PICKUP_ANKH},
 		description = "Ankh",
 	},
 	-- TODO:
 		-- Add alternative shop floor of FLOOR_GENERIC
 		-- Modify all HD shop roomcodes to accommodate this.
     ["b"] = {
-		entity_type = {ENT_TYPE.FLOOR_MINEWOOD},
+		entity_types = {ENT_TYPE.FLOOR_MINEWOOD},
 		flags = {
 			[24] = true
 		},
@@ -813,33 +813,33 @@ HD_TILENAME = {
 		description = "Crystal Skull",
 	},
     ["d"] = {
-		entity_type = {ENT_TYPE.FLOOR_JUNGLE},
+		entity_types = {ENT_TYPE.FLOOR_JUNGLE},
 		alternate_types = {
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK},
 		},
 		description = "Jungle Terrain",
 	},
     ["e"] = {
-		entity_type = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
+		entity_types = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
 		description = "Beehive Tile",
 	},
     ["f"] = {
-		entity_type = {ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM},
+		entity_types = {ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM},
 		description = "Falling Platform",
 	},
     ["g"] = {
 		spawnfunction = function(params)
 			create_unlockcoffin(params[1], params[2], params[3])
 		end,
-		entity_type = {ENT_TYPE.ITEM_COFFIN},
+		entity_types = {ENT_TYPE.ITEM_COFFIN},
 		description = "Coffin",
 	},
     ["h"] = {
-		entity_type = {ENT_TYPE.FLOORSTYLED_VLAD},
+		entity_types = {ENT_TYPE.FLOORSTYLED_VLAD},
 		description = "Hell Terrain",
 	},
     ["i"] = {
-		entity_type = {ENT_TYPE.FLOOR_ICE},
+		entity_types = {ENT_TYPE.FLOOR_ICE},
 		description = "Ice Block",
 	},
     ["j"] = {
@@ -847,23 +847,23 @@ HD_TILENAME = {
 		description = "Ice Block with Caveman",
 	},
     ["k"] = {
-		entity_type = {ENT_TYPE.DECORATION_SHOPSIGN},
+		entity_types = {ENT_TYPE.DECORATION_SHOPSIGN},
 		offset = { 0, 4 },
 		description = "Shop Entrance Sign",
 	},
     ["l"] = {
-		entity_type = {ENT_TYPE.ITEM_LAMP},
+		entity_types = {ENT_TYPE.ITEM_LAMP},
 		description = "Shop Lantern",
 	},
     ["m"] = {
-		entity_type = {ENT_TYPE.FLOOR_GENERIC},
+		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		flags = {
 			[2] = true
 		},
 		description = "Unbreakable Terrain",
 	},
     ["n"] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.MONS_SNAKE,
 			0,
@@ -871,18 +871,18 @@ HD_TILENAME = {
 		description = "Terrain/Empty/Snake",
 	},
     ["o"] = {
-		entity_type = {ENT_TYPE.ITEM_ROCK},
+		entity_types = {ENT_TYPE.ITEM_ROCK},
 		description = "Rock",
 	},
     ["p"] = {
 		-- Not sure about this one. It's only used in the corners of the crystal skull jungle roomcode.
 		-- TODO: Investigate in HD
-		entity_type = {ENT_TYPE.ITEM_GOLDBAR},
+		entity_types = {ENT_TYPE.ITEM_GOLDBAR},
 		description = "Treasure/Damsel",
 	},
     ["q"] = {
 		-- TODO: Trap Prevention.
-		entity_type = {ENT_TYPE.LIQUID_WATER},
+		entity_types = {ENT_TYPE.LIQUID_WATER},
 		description = "Obstacle-Resistant Terrain",
 	},
     ["r"] = {
@@ -890,11 +890,11 @@ HD_TILENAME = {
 		description = "Mines Terrain/Temple Terrain/Pushblock",
 	},
     ["s"] = {
-		entity_type = {ENT_TYPE.FLOOR_SPIKES},
+		entity_types = {ENT_TYPE.FLOOR_SPIKES},
 		description = "Spikes",
 	},
     ["t"] = {
-		-- entity_type = {
+		-- entity_types = {
 			-- ENT_TYPE.FLOORSTYLED_TEMPLE,
 			-- ENT_TYPE.FLOOR_JUNGLE
 		-- },
@@ -902,18 +902,18 @@ HD_TILENAME = {
 		description = "Temple/Castle Terrain",
 	},
     ["u"] = {
-		entity_type = {ENT_TYPE.MONS_VAMPIRE},
+		entity_types = {ENT_TYPE.MONS_VAMPIRE},
 		description = "Vampire from Vlad's Tower",
 	},
     ["v"] = {
-		entity_type = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
+		entity_types = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
 		alternate_types = {
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.LIQUID_WATER},
 		},
 		description = "Wood",
 	},
     ["w"] = {
-		entity_type = {ENT_TYPE.LIQUID_WATER},
+		entity_types = {ENT_TYPE.LIQUID_WATER},
 		alternate_types = {
 			[THEME.TEMPLE] = {ENT_TYPE.LIQUID_LAVA},
 			[THEME.VOLCANA] = {ENT_TYPE.LIQUID_LAVA},
@@ -927,7 +927,7 @@ HD_TILENAME = {
 		description = "Crust Ruby in Terrain",
 	},
     ["z"] = {
-		entity_type = {
+		entity_types = {
 			ENT_TYPE.FLOORSTYLED_BEEHIVE,
 			0
 		},
@@ -941,7 +941,7 @@ HD_TILENAME = {
 		description = "Vault",
 	},
     ["~"] = {
-		entity_type = {ENT_TYPE.FLOOR_SPRING_TRAP},
+		entity_types = {ENT_TYPE.FLOOR_SPRING_TRAP},
 		description = "Bounce Trap",
 	},
 	
@@ -1903,11 +1903,36 @@ function get_unlock_area()
 	return unlock
 end
 
+
 function create_unlockcoffin(x, y, l)
 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	-- 193 + unlock_num = ENT_TYPE.CHAR_*
 	set_contents(coffin_uid, 193 + HD_UNLOCKS[unlock_name].unlock_id)
 	return coffin_uid
+end
+
+-- test if gold/gems automatically get placed into scripted tile generation or not
+function gen_embedtreasures(uids_toembedin)
+	for _, uid_toembedin in ipairs(uids_toembedin) do
+		create_embedded(uid_toembedin)
+	end
+end
+
+function create_embedded(ent_toembedin, entity_type)
+	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
+		local entity_db = get_type(entity_type)
+		local previous_draw, previous_flags = entity_db.draw_depth, entity_db.default_flags
+		entity_db.draw_depth = 9
+		entity_db.default_flags = set_flag(entity_db.default_flags, 1)
+		entity_db.default_flags = set_flag(entity_db.default_flags, 4)
+		entity_db.default_flags = set_flag(entity_db.default_flags, 10)
+		entity_db.default_flags = clr_flag(entity_db.default_flags, 13)
+		local entity = get_entity(spawn_entity_over(entity_type, ent_toembedin, 0, 0))
+		entity_db.draw_depth = previous_draw
+		entity_db.default_flags = previous_flags
+	else
+		spawn_entity_over(entity_type, ent_toembedin, 0, 0)
+	end
 end
 
 function create_endingdoor(x, y, l)
@@ -2309,10 +2334,15 @@ function generate_tile(_tilechar, _x, _y, _l)--, replacetile)
 					-- (worth $5000 in HD, might as well leave it as diamond)
 
 	-- HD_ENT and ENT_TYPE spawning
-	if hd_tiletype.entity_type ~= nil then
-		entity_type_pool = hd_tiletype.entity_type
+	if hd_tiletype.entity_types ~= nil then
+		entity_type_pool = hd_tiletype.entity_types
 		entity_type = 0
-		if hd_tiletype.alternate_types ~= nil then entity_type_pool = hd_tiletype.alternate_types end
+		if (
+			hd_tiletype.alternate_types ~= nil and
+			hd_tiletype.alternate_types[state.theme] ~= nil
+		) then
+			entity_type_pool = hd_tiletype.alternate_types[state.theme]
+		end
 		
 		if #entity_type_pool == 1 then
 			entity_type = entity_type_pool[1]
@@ -2695,12 +2725,68 @@ function test_levelsize()
 	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
 end
 
+define_tile_code("side")
 
-function test_unlocks()
-	unlocks_init()
-	
-	toast("DID I GET YANG YET???: " .. tostring(HD_UNLOCKS["YAMA"].unlocked))
-end
+set_pre_tile_code_callback(function(x, y, layer)
+	generate_chunk("222111", 3, 2, x, y, layer, 0, 0)
+	return false
+end, "side")
+
+set_pre_tile_code_callback(function(x, y, layer)
+	if x == 21 then
+		if y == 84 then
+			spawn(ENT_TYPE.FLOOR_GENERIC, x, y, LAYER.FRONT, 0, 0)
+		end
+		return true
+	end
+	return false
+end, "starting_exit")
+
+-- set_pre_tile_code_callback(function(x, y, layer)
+	-- if state.screen == ON.TRANSITION then
+		-- -- if state.theme_next == THEME.EGGPLANTWORLD then
+			-- spawn(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer, 0, 0)
+			-- return true
+		-- -- end
+	-- end
+	-- return false
+-- end, "floor")
+
+-- set_pre_tile_code_callback(function(x, y, layer)
+	-- if state.screen == transition then
+		-- if state.theme == THEME.EGGPLANTWORLD then
+			-- spawn(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer, 0, 0)
+		-- end
+	-- end
+	-- return true
+-- end, "padagoa_floor")
+
+-- `set_pre_tile_code_callback` todos:
+	-- “floor” -- if state.camp and shortcuts discovered, then
+		-- if state.transition, if transition between worm and next level then
+			-- replace floor with worm guts
+		-- end
+		-- if transition from jungle to ice caves then
+			-- replace stone with floor_jungle end if transition from ice caves to temple then replace quicksand with stone
+		-- end
+		-- if state.level and detect_s2blackmarket()
+			-- if (within the coordinates of where water should be)
+				-- replace with water
+			-- if (within the coordinates of where border should be)
+				-- return false
+			-- if (within the coordinates of where void should be)
+				-- replace with nothing
+			-- end
+	-- “border(?)” see if you can change styles from here
+		-- if detect_s2blackmarket() and `within the coordinates of where water should be` then
+			-- replace with water
+		-- end
+
+	-- “treasure” if state.theme == THEME.OLMEC (or temple?) then use the hd tilecode chance for treasure when in temple/olmec
+	-- “regenerating_wall50%” if state.theme == THEME.EGGPLANTWORLD then use the hd tilecode chance for floor50%(“2”) when in the worm
+
+-- `set_post_tile_code_callback` todos:
+	-- “fountain_head”/“fountain_drain” if state.theme == THEME.VOLCANA then change the color of the fountain head (In the future, this should be replaced by changing which texture sheet it pulls from *adjusting when needed, for instance, COG)
 
 -- ON.CAMP
 set_callback(function()
@@ -2712,7 +2798,6 @@ set_callback(function()
 	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
-	test_unlocks()
 	
 end, ON.CAMP)
 
@@ -2761,7 +2846,7 @@ set_callback(function()
 	onlevel_remove_mounts()
 	-- onlevel_decorate_cookfire()
 	onlevel_decorate_trees()
-	onlevel_blackmarket_ankh()
+	-- onlevel_blackmarket_ankh()
 	onlevel_add_wormtongue()
 	onlevel_crysknife()
 	onlevel_hide_yama()
@@ -3182,7 +3267,8 @@ function onlevel_generation_execution()
 		-- },
 		-- dimensions = { w = 5, h = 4 }
 	-- }
-		
+	
+	-- fill uids_toembedin using global_levelassembly.modification.levelcode
 end
 
 function detect_viable_unlock_area()
@@ -3531,10 +3617,7 @@ end
 
 function onlevel_blackmarket_ankh()
 	if detect_s2market() == true then
-		-- (state.theme == THEME.JUNGLE and (
-		-- state.level == 2 or
-		-- state.level == 3 or
-		-- state.level == 4) then
+		
 		-- find the hedjet
 		hedjets = get_entities_by_type(ENT_TYPE.ITEM_PICKUP_HEDJET)
 		if #hedjets ~= 0 then
@@ -3881,52 +3964,32 @@ function oncamp_shortcuts()
 	--shortcut signs: ENT_TYPE.ITEM_SHORTCUT_SIGN
 	--(+2.0 to x)
 	
-	doors_or_constructionsigns = {}
-	doors_floors = {}
-	doors_bgs = {}
-	doors_signs = {}
-	shortcut_worlds = {4, 3, 2}
+	-- shortcut_signframes = {}
+	shortcut_flagstocheck = {4, 7, 10}
+	shortcut_worlds = {2, 3, 4}
 	shortcut_levels = {PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM, PREFIRSTLEVEL_NUM}
-	shortcut_themes = {THEME.TEMPLE, THEME.ICE_CAVES, THEME.JUNGLE}
+	shortcut_themes = {THEME.JUNGLE, THEME.ICE_CAVES, THEME.TEMPLE}
+	-- TODO: Once we are able to change which texture an entity is pulling from, assign bg textures here:
 	-- shortcut_doortextures = {569, 409, 343}--{569, 343, 409}
-	x = 21.0
-	for y = 90, 84, -3 do
-		doors_or_constructionsigns = TableConcat(doors_or_constructionsigns, get_entities_at(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, 0, x, y, LAYER.FRONT, 0.5))
-		doors_or_constructionsigns = TableConcat(doors_or_constructionsigns, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y, LAYER.FRONT, 0.5))
-		doors_floors = TableConcat(doors_floors, get_entities_at(ENT_TYPE.FLOOR_DOOR_STARTING_EXIT, 0, x, y, LAYER.FRONT, 0.5))
-		doors_bgs = TableConcat(doors_bgs, get_entities_at(ENT_TYPE.BG_DOOR, 0, x, y, LAYER.FRONT, 0.5))
-		doors_signs = TableConcat(doors_signs, get_entities_at(ENT_TYPE.ITEM_SHORTCUT_SIGN, 0, x+2.0, y, LAYER.FRONT, 0.5))
-	end
+	
+	
 	-- Placement of first shortcut door in HD: 16.0
 	new_x = 19.0 -- adjusted for S2 camera
-	for i = #doors_or_constructionsigns, 1, -1 do
+	for i, flagtocheck in ipairs(shortcut_flagstocheck) do
 		-- door_or_constructionsign
-		if get_entity(doors_or_constructionsigns[i]):as_container().type.id == ENT_TYPE.LOGICAL_DOOR then
-			kill_entity(doors_or_constructionsigns[i])
+		if savegame.shortcuts >= flagtocheck then
 			spawn_door(new_x, 86, LAYER.FRONT, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])
-			move_entity(doors_floors[i], new_x, 86, 0, 0)
-			move_entity(doors_signs[i], new_x+1, 86, 0, 0)
-			
-			move_entity(doors_bgs[i], new_x, 86.31, 0, 0)
-			-- get_type(doors_bgs[i]).texture = shortcut_doortextures[i]
-			
+			-- spawn_entity(ENT_TYPE.FLOOR_DOOR_STARTING_EXIT, new_x, 86, 0, 0)
+			door_bg = spawn_entity(ENT_TYPE.BG_DOOR, new_x, 86.31, LAYER.FRONT, 0, 0)
+			-- get_entity(door_bg).texture = shortcut_doortextures[i]
+			sign = spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, 86, LAYER.FRONT, 0, 0)
+			-- get_entity(sign).animation_frame = shortcut_signframes[i]
 		else
-			move_entity(doors_or_constructionsigns[i], new_x, 86, 0, 0)
+			spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, 86, LAYER.FRONT, 0, 0)
 		end
 		-- Space between shortcut doors in HD: 4.0
 		new_x = new_x + 3 -- adjusted for S2 camera
-	end
-	
-	-- door_bg = get_entity(doors_bgs[1]):as_movable()
-	-- toast("third door_bg first_tile: " .. door_bg.first_tile)
-	
-	-- door_bg_type = get_type(doors_bgs[3])
-	-- toast("first door_bg_type.texture: " .. door_bg_type.texture)
-	
-	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
-	spawn(ENT_TYPE.FLOOR_GENERIC, 23, 84, LAYER.FRONT, 0, 0)
-	-- TODO: Remove destroyed block artifacts surrounding these blocks
-	
+	end	
 end
 
 function onframe_prizewheel()

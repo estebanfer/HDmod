@@ -36,6 +36,7 @@
 \?crate_ropes                      R
 \?water                            w
 \?shortcut_station_banner          8
+\?campfix                          f
 
 
 
@@ -120,13 +121,13 @@
 
 // room COPY
 \!dual
-=L0bS00000 XXXXXXXXXX
+=L0bS000f0 XXXXXXXXXX
 =P======00 XXXXXXXXXX
 =L===0l000 XXXXXXXXXX
-=L00=00000 XXXXXXXXXX
+=L00=000f0 XXXXXXXXXX
 =L00000000 XXXXXXXXXX
 ========== XXXXXXXXXX
-11111111s1 XXXXXXXXXX
+11111111f1 XXXXXXXXXX
 1111111111 XXXXXXXXXX
 
 ////////////////////////////////////////////////////////////////////////////////

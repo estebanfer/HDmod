@@ -2725,41 +2725,36 @@ function test_levelsize()
 	toast("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
 end
 
-define_tile_code("side")
+define_tile_code("campfix")
+define_tile_code("generation")
 
 set_pre_tile_code_callback(function(x, y, layer)
 	generate_chunk("222111", 3, 2, x, y, layer, 0, 0)
-	return false
-end, "side")
+	return true
+end, "generation")
 
 set_pre_tile_code_callback(function(x, y, layer)
+	tospawn = ENT_TYPE.FLOOR_DOOR_STARTING_EXIT
 	if x == 21 then
 		if y == 84 then
-			spawn(ENT_TYPE.FLOOR_GENERIC, x, y, LAYER.FRONT, 0, 0)
-		end
-		return true
+			tospawn = ENT_TYPE.FLOOR_GENERIC
+		else return true end
 	end
-	return false
-end, "starting_exit")
+	spawn(tospawn, x, y, LAYER.FRONT, 0, 0)
+	return true
+end, "campfix")
 
 -- set_pre_tile_code_callback(function(x, y, layer)
-	-- if state.screen == ON.TRANSITION then
-		-- -- if state.theme_next == THEME.EGGPLANTWORLD then
-			-- spawn(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer, 0, 0)
+	-- if state.theme == THEME.JUNGLE then
+		-- if detect_s2market() == true and layer == LAYER.FRONT and y < 88 then
+			-- -- spawn(ENT_TYPE., x, y, layer, 0, 0)
 			-- return true
-		-- -- end
-	-- end
-	-- return false
--- end, "floor")
-
--- set_pre_tile_code_callback(function(x, y, layer)
-	-- if state.screen == transition then
-		-- if state.theme == THEME.EGGPLANTWORLD then
-			-- spawn(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer, 0, 0)
 		-- end
 	-- end
+	-- spawn(ENT_TYPE.FLOOR_GENERIC, x, y, layer, 0, 0)
+	
 	-- return true
--- end, "padagoa_floor")
+-- end, "floor")
 
 -- `set_pre_tile_code_callback` todos:
 	-- “floor” -- if state.camp and shortcuts discovered, then
@@ -2769,7 +2764,7 @@ end, "starting_exit")
 		-- if transition from jungle to ice caves then
 			-- replace stone with floor_jungle end if transition from ice caves to temple then replace quicksand with stone
 		-- end
-		-- if state.level and detect_s2blackmarket()
+		-- if state.level and detect_s2market()
 			-- if (within the coordinates of where water should be)
 				-- replace with water
 			-- if (within the coordinates of where border should be)
@@ -2778,7 +2773,7 @@ end, "starting_exit")
 				-- replace with nothing
 			-- end
 	-- “border(?)” see if you can change styles from here
-		-- if detect_s2blackmarket() and `within the coordinates of where water should be` then
+		-- if detect_s2market() and `within the coordinates of where water should be` then
 			-- replace with water
 		-- end
 
@@ -2786,7 +2781,8 @@ end, "starting_exit")
 	-- “regenerating_wall50%” if state.theme == THEME.EGGPLANTWORLD then use the hd tilecode chance for floor50%(“2”) when in the worm
 
 -- `set_post_tile_code_callback` todos:
-	-- “fountain_head”/“fountain_drain” if state.theme == THEME.VOLCANA then change the color of the fountain head (In the future, this should be replaced by changing which texture sheet it pulls from *adjusting when needed, for instance, COG)
+	-- probably not needed since you don't use these tilecodes anymore
+		-- “fountain_head”/“fountain_drain” if state.theme == THEME.VOLCANA then change the color of the fountain head (In the future, this should be replaced by changing which texture sheet it pulls from *adjusting when needed, for instance, COG)
 
 -- ON.CAMP
 set_callback(function()

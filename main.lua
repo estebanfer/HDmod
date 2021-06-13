@@ -45,10 +45,11 @@ TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 wheel_items = {}
 global_dangers = {}
-global_feelings = {}
+global_feelings = nil
 global_levelassembly = nil
 danger_tracker = {}
 LEVEL_START = {} --LEVEL_PATH = {}
+POSTTILE_STARTBOOL = false
 IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
@@ -1591,8 +1592,23 @@ LEVEL_DANGERS = {
 	-- }
 -- }
 
+-- TODO: For development of the new scripted level gen system, move tables/variables into here from init_onlevel() as needed.
+function init_posttile_door()
+	global_levelassembly = {}
+end
 
-function init()
+-- post_tile-sensitive ON.START initializations
+	-- Since ON.START runs on the first ON.SCREEN of a run, it runs after post_tile runs.
+	-- Run this in post_tile to circumvent the issue.
+function init_posttile_onstart()
+	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
+		POSTTILE_STARTBOOL = true
+		global_feelings = TableCopy(HD_FEELING)
+		-- other stuff
+	end
+end
+
+function init_onlevel()
 	wheel_items = {}
 	idoltrap_blocks = {}
 	-- global_levelassembly = nil
@@ -2737,31 +2753,31 @@ end
 define_tile_code("campfix")
 define_tile_code("generation")
 
-set_pre_tile_code_callback(function(x, y, layer)
-	-- generate_chunk("222111", 3, 2, x, y, layer, 0, 0)
-	if global_levelassembly == nil then
-		message("PLOOP")
-		levelcreation_init()
-	end
+-- set_pre_tile_code_callback(function(x, y, layer)
+	-- -- generate_chunk("222111", 3, 2, x, y, layer, 0, 0)
+	-- if global_levelassembly == nil then
+		-- message("PLOOP")
+		-- levelcreation_init()
+	-- end
 	
-	-- TODO: Here's where you would be using the coordinates to spawn_entity out of global_levelassembly.execution.levelcode
-	wi, hi = locate_roompos(x, y)
-	room_hi_len = hi*8
-	room_wi_len = wi*10
+	-- -- TODO: Here's where you would be using the coordinates to spawn_entity out of global_levelassembly.execution.levelcode
+	-- wi, hi = locate_roompos(x, y)
+	-- room_hi_len = hi*8
+	-- room_wi_len = wi*10
 	
-	for room_hi = room_hi_len-8, room_hi_len, 1 do
-		for room_wi = room_wi_len-10, room_wi_len, 1 do
-			if global_levelassembly.modification.levelcode[room_hi][room_wi] == "9" and hi == 1 then -- TODO: Move into generate_tile() and modify to work with MOTHERSHIP
-				for j = 1, #players, 1 do
-					move_entity(players[j].uid, x+(room_wi-1), y-(room_hi-1), 0, 0)
-				end
-			end
-			generate_tile(global_levelassembly.modification.levelcode[room_hi][room_wi], x+(room_wi-1), y-(room_hi-1), layer)
-		end
-	end
+	-- for room_hi = room_hi_len-8, room_hi_len, 1 do
+		-- for room_wi = room_wi_len-10, room_wi_len, 1 do
+			-- if global_levelassembly.modification.levelcode[room_hi][room_wi] == "9" and hi == 1 then -- TODO: Move into generate_tile() and modify to work with MOTHERSHIP
+				-- for j = 1, #players, 1 do
+					-- move_entity(players[j].uid, x+(room_wi-1), y-(room_hi-1), 0, 0)
+				-- end
+			-- end
+			-- generate_tile(global_levelassembly.modification.levelcode[room_hi][room_wi], x+(room_wi-1), y-(room_hi-1), layer)
+		-- end
+	-- end
 	
-	return true
-end, "generation")
+	-- return true
+-- end, "generation")
 
 set_pre_tile_code_callback(function(x, y, layer)
 	tospawn = ENT_TYPE.FLOOR_DOOR_STARTING_EXIT
@@ -2815,9 +2831,61 @@ end, "campfix")
 		-- “fountain_head”/“fountain_drain” if state.theme == THEME.VOLCANA then change the color of the fountain head (In the future, this should be replaced by changing which texture sheet it pulls from *adjusting when needed, for instance, COG)
 
 set_post_tile_code_callback(function(x, y, layer)
-	if state.screen == 12 then
-		-- remove door when it gets here
+	init_posttile_door()
+	init_posttile_onstart()
+	levelcreation_init()
+	
+	-- TODO: print to console all of the overlapping entities.
+		-- try seeing if players/torches/skulls/pots spawn at this point
+	
+	
+	-- leveldoor_sx = x-1
+	-- leveldoor_sy = y
+	-- leveldoor_sx2 = x+1
+	-- leveldoor_sy2 = y+3
+	-- door_ents_masks = {
+		-- MASK.PLAYER,	-- players (duh)
+		-- MASK.MOUNT,		-- player mounts
+		-- MASK.MONSTER,	-- exit-aggroed shopkeepers
+		-- MASK.ITEM,		-- player-held items; entrance-spawned pots, skulls, torches;
+		-- MASK.LOGICAL,
+	-- }
+	-- door_ents_uids = {}
+	-- for _, door_ent_mask in ipairs(door_ents_masks) do
+		-- door_ents_uids = TableConcat(door_ents_uids, get_entities_overlapping(
+			-- 0,
+			-- door_ent_mask,
+			-- leveldoor_sx,
+			-- leveldoor_sy,
+			-- leveldoor_sx2,
+			-- leveldoor_sy2,
+			-- LAYER.FRONT
+		-- ))
+	-- end
+	
+	-- move door ent test
+	
+	de_x_offset = 2
+	de_y_offset = 3
+	
+	door_ents_uids = get_entities_at(0, 0, x, y, layer, 1)
+	for _, door_ents_uid in ipairs(door_ents_uids) do
+		de_x, de_y, _ = get_position(door_ents_uid)
+		move_entity(door_ents_uid, de_x+de_x_offset, de_y+de_y_offset, 0, 0)
 	end
+	
+	-- -- print to console
+	
+	-- message("door_ents_uids => types: ")
+	for _, door_ent_uid in ipairs(door_ents_uids) do
+		de_type_id = get_type(door_ent_uid).id
+		message("   " .. tostring(de_type_id))
+	end
+	
+	-- generate_chunk("111212", 3, 2, x, y, layer, -1, -1)
+	-- message("post-door: " .. tostring(state.time_level))
+	-- if state.screen == 12 then
+	-- end
 end, "door")
 
 -- ON.CAMP
@@ -2830,17 +2898,28 @@ set_callback(function()
 	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
-	
+	-- pre_tile ON.START stuff
+	global_feelings = nil
 end, ON.CAMP)
+
+set_callback(function()
+	unlocks_init()
+end, ON.LOGO)
 
 -- ON.START
 set_callback(function()
 	onstart_init_options()
 	onstart_init_methods()
-	unlocks_init()
-	global_feelings = TableCopy(HD_FEELING)
+	-- global_feelings = TableCopy(HD_FEELING)
+	
 	RUN_UNLOCK = nil
 end, ON.START)
+
+set_callback(function()
+	-- pre_tile ON.START stuff
+	global_feelings = nil
+	POSTTILE_STARTBOOL = false
+end, ON.RESET)
 
 -- ON.LOADING
 set_callback(function()
@@ -2849,16 +2928,16 @@ set_callback(function()
 end, ON.LOADING)
 
 set_callback(function()
-	global_levelassembly = nil
+	-- global_levelassembly = nil
 end, ON.TRANSITION)
 
 function levelcreation_init()
 	
-	-- init()
-	-- unlocks_load()
-	-- onlevel_levelrules()
-	-- onlevel_detection_feeling()
-	-- onlevel_setfeelingmessage()
+	init_onlevel()
+	unlocks_load()
+	onlevel_levelrules()
+	onlevel_detection_feeling()
+	onlevel_setfeelingmessage()
 --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 	onlevel_reverse_exits() -- TODO: Outdate.
 --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
@@ -2893,12 +2972,12 @@ function levelcreation_setlevelcode_rand(num, wi, hi)
 end
 
 set_callback(function()
-
--- --ONLEVEL_PRIORITY: 1 - Set level constants (ie, init(), level feelings, levelrules)
-	init()
-	unlocks_load()
+	message("ON.LEVEL: " .. tostring(state.time_level))
+-- --ONLEVEL_PRIORITY: 1 - Set level constants (ie, init_onlevel(), levelrules)
+	init_onlevel()
+	-- unlocks_load()
 	onlevel_levelrules()
-	onlevel_detection_feeling()
+	-- onlevel_detection_feeling()
 	onlevel_setfeelingmessage()
 -- --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 	-- onlevel_reverse_exits()
@@ -5590,7 +5669,7 @@ end
 function level_init()
 	-- level_loadpath()
 	if state.theme ~= THEME.OLMEC and state.theme ~= THEME.TIAMAT then
-		level_createpath(false, feeling_check("MOTHERSHIP"))
+		level_createpath(false, (state.theme == THEME.NEOBABYLON))
 	end
 end
 
@@ -5660,6 +5739,7 @@ end
 		-- used for mothership level
 function level_createpath(spread, reverse_path)
 	levelw, levelh = get_levelsize()
+	message("levelw, levelh: " .. tostring(levelw) .. ", " .. tostring(levelh))
 	-- chose an open space to start winding downwards from
 	rand_startindexes = {}
 	for wi = 1, levelw, 1 do

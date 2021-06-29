@@ -14,7 +14,7 @@ meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info", false)
 register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info", false)
-register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", false)
+register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info", true)
 register_option_bool("hd_debug_info_path", "Debug: Path debug info", true)
 register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info", false)
 register_option_bool("hd_debug_invis", "Debug: Enable visibility of bts entities (invis ents for custom enemies, etc)", false)
@@ -142,7 +142,7 @@ HD_UNLOCKS.YAMA = {
 	win = 2,
 	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
 	unlocked = false
-}				
+}
 HD_UNLOCKS.OLMEC_CHAMBER = {
 	unlock_theme = THEME.OLMEC,
 	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
@@ -172,7 +172,7 @@ HD_FEELING = {
 		message = "My skin is crawling..."
 	},
 	["SNAKEPIT"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
@@ -230,758 +230,6 @@ HD_FEELING = {
 	},
 }
 
--- # TODO: issues with current hardcodedgeneration-dependent features:
-	-- Vaults
-		-- May interfere with the process of altering the level_path
-	-- Idol traps
-		-- Currently messes up mines level generation since S2 assumes that it's part of path
-	-- Udjat eye placement
-		-- mines level generation isn't as accurate
-			-- slightly incorrect side rooms
-			-- can't spawn on 1-4
-	-- My own system for spawning the wormtongue
-		-- Has to be hardcoded in order to work for both jungle and ice caves
-		-- Has to be hardcoded in order to work for both jungle and ice caves
-
-	-- if you need the variation that's facing left, use roomcodes[2].
-	-- dimensions are assumed to be 10x8, but you can define them with dimensions = { w = 10, h = 8 }
-HD_ROOMOBJECT = {}
-HD_ROOMOBJECT.GENERIC = {
-	shop = {
-		{ -- prize wheel
-			subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE,
-			pathalign = true,
-			roomcodes = {
-				"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb",
-				"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"
-			}
-		},
-		{ -- Damzel
-			subchunk_id = HD_SUBCHUNKID.SHOP_BROTHEL,
-			pathalign = true,
-			roomcodes = {
-				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb",
-				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"
-			}
-		},
-		{ -- Hiredhands(?)
-			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN1,
-			pathalign = true,
-			roomcodes = {
-				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb",
-				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"
-			}
-		},
-		{ -- Hiredhands(?)
-			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN2,
-			pathalign = true,
-			roomcodes = {
-				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb",
-				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"
-			}
-		},
-		{ -- ?
-			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN3,
-			pathalign = true,
-			roomcodes = {
-				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb",
-				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"
-			}
-		}
-	},
-	vault = {
-		{
-			subchunk_id = HD_SUBCHUNKID.VAULT,
-			roomcodes = {
-				"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"
-			}
-		}
-	},
-	altar = {
-		{
-			subchunk_id = HD_SUBCHUNKID.ALTAR,
-			roomcodes = {
-				"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"
-			}
-		}
-	}
-}
-HD_ROOMOBJECT.FEELINGS = {
-	SPIDERLAIR = {
-		
-		
-		-- coffin_unlockable = {
-			
-		-- },
-		-- coffin_unlockable_vertical = {
-		
-		-- },
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = -1,
-		-- 		-- grabs 5 and upwards from path_drop
-		-- 		roomcodes = {
-		-- 			"",
-		-- 		}
-		-- 	},
-		-- }
-	},
-	SNAKEPIT = {
-		genMethod = {
-			-- Notes:
-				-- spawn steps:
-					-- 106
-						-- levelw, levelh = get_levelsize()
-						-- structx = math.random(1, levelw)
-						-- spawn 106 at structx, 1
-					-- 107
-						-- _, levelh = get_levelsize()
-						-- struct_midheight = math.random(1, levelh-2)
-						-- for i = 1, struct_midheight, 1 do
-							-- spawn 107 at structx, i
-						-- end
-					-- 108
-						-- spawn 108 at structx, struct_midheight+1
-			prePath = true,
-			method = function ()
-				-- # TODO: use above pseudocode to fill `global_levelassembly.modification.*`
-			end,
-			rooms = {
-				{
-					subchunk_id = HD_SUBCHUNKID.SNAKEPIT_TOP,
-					roomcodes = { -- grabs 5 and upwards from HD's path_drop roomcodes
-					"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
-					"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
-					"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
-					"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
-					"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
-					"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
-					"11111111112111111112021111112000211112000002112000000022000002200002201111001111"
-					}
-				},
-				{
-					subchunk_id = HD_SUBCHUNKID.SNAKEPIT_MIDSECTION,
-					roomcodes = {"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}
-				},
-				{
-					subchunk_id = HD_SUBCHUNKID.SNAKEPIT_BOTTOM,
-					roomcodes = {"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}
-				}
-			}
-		}
-	},
-	SACRIFICIALPIT = {
-		pit = {
-			-- Notes:
-				-- start from top
-				-- seems to always be top to bottom
-			-- Spawn steps:
-				-- 116
-					-- levelw, levelh = get_levelsize()
-					-- structx = math.random(1, levelw)
-					-- spawn 116 at structx, 1
-				-- 117
-					-- _, levelh = get_levelsize()
-					-- struct_midheight = levelh-2
-					-- for i = 1, struct_midheight, 1 do
-						-- spawn 117 at structx, i
-					-- end
-				-- 118
-					-- spawn 118 at structx, struct_midheight+1
-			prePath = true,
-			method = function ()
-				-- # TODO: use above pseudocode to fill `global_levelassembly.modification.*`
-			end,
-			rooms = {
-				{
-					subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
-					roomcodes = {"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"}
-				},
-				{
-					subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION,
-					roomcodes = {"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}
-				},
-				{
-					subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM,
-					roomcodes = {"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}
-				}
-			}
-		}
-	},
-}
-HD_ROOMOBJECT.WORLDS = {
-	[THEME.DWELLING] = {
-		pathRooms = {
-			{
-				subchunk_id = HD_SUBCHUNKID.SIDE,
-				roomcodes = {
-					"00000000000010111100000000000000011010000050000000000000000000000000001111111111",
-					"110000000040L600000011P000000011L000000011L5000000110000000011000000001111111111",--flipped
-					"00000000110060000L040000000P110000000L110050000L11000000001100000000111111111111",--
-					"11000000110#000000#0111100111111200002112200000022110000001111200002111111111111",--if statement involving < 3 just before this is goto line 26. (hard?)
-					"11111111112000L000021vvvP0vvv11v0vL0v0v10000L000001v=v11v=v111111111111111111111",
-					"111111111120000L00021vvv0Pvvv11v0v0Lv0v100000L00001v=v11v=v111111111111111111111",
-					"11111111110221111220002111120000022220000002222000002111120002211112201111111111",
-					"11111111111112222111112000021111102201111120000211111022011111200002111112222111",
-					"11111111110000000000110000001111222222111111111111012222221200000000201100000011",--flipped
-					"11111111110000000000110000001111222222111111111111212222221002000000001100000011",--
-					"11111111110000000000110000001111222222111111111111112222221112000000211100000011",--
-					"121111112100L2112L0011P1111P1111L2112L1111L1111L1111L1221L1100L0000L001111221111",
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH,
-				roomcodes = {
-					-- "60000600000000000000000000000000000000000050000000000000000000000000001111111111",
-					-- "60000600000000000000000000000000000000005000050000000000000000000000001111111111",
-					-- "60000600000000000000000000000000050000000000000000000000000011111111111111111111",
-					-- "60000600000000000000000600000000000000000000000000000222220000111111001111111111",
-					-- "11111111112222222222000000000000000000000050000000000000000000000000001111111111",
-					-- "11111111112111111112022222222000000000000050000000000000000000000000001111111111",
-					"11111111112111111112211111111201111111100111111110022222222000000000001111111111",
-					-- "1111111111000000000L111111111P000000000L5000050000000000000000000000001111111111",--flipped
-					-- "1111111111L000000000P111111111L0000000005000050000000000000000000000001111111111",--
-					-- "000000000000L0000L0000PvvvvP0000L0000L0000PvvvvP0000L1111L0000L1111L001111111111",
-					-- "00000000000111111110001111110000000000005000050000000000000000000000001111111111",
-					"00000000000000000000000000000000000000000021111200021111112021111111121111111111",
-					-- "2222222222000000000000000000L00vvvvvvvP00v050000L0vv000000L0v0000000L01111111111",--flipped
-					-- "222222222200000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111",--
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.EXIT,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-		},
-		idol = {
-			subchunk_id = HD_SUBCHUNKID.IDOL,
-			roomcodes = {"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}
-		},
-		coffin_unlockable = {
-			{
-				subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-				pathalign = true,
-				roomcodes = {
-					"vvvvvvvvvvv++++++++vvL00000g0vvPvvvvvvvv0L000000000L0:000:0011111111111111111111",
-					"vvvvvvvvvvv++++++++vvg000000LvvvvvvvvvPv00000000L000:000:0L011111111111111111111" -- facing left
-				}
-			},
-		},
-	},
-	[THEME.JUNGLE] = {
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.SIDE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- },
-		-- idol = {
-		-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
-		-- 	roomcodes = {}
-		-- },
-		-- coffin_unlockable = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- },
-	},
-	[THEME.EGGPLANT_WORLD] = {
-		setRooms = {
-			{
-				-- prePath = false,
-				subchunk_id = 41,
-				placement = {6, 1},
-				roomcodes = { "0000000dd00011111110011vvvvvvw01vwwwwwww01vwwwwwww011cwwwwww00111111110000000000" }
-			},
-			{
-				-- prePath = false,
-				subchunk_id = 42,
-				placement = {6, 2},
-				roomcodes = { "0dd00000000111111100wvvvvvv110wwwwwwwv10wwwwwwwv10wwwwwww11011111111000000000000" }
-			}
-		},
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.SIDE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- },
-		-- idol = {
-		-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
-		-- 	roomcodes = {}
-		-- },
-		-- coffin_unlockable = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- },
-	},
-	[THEME.ICE_CAVES] = {
-		pathRooms = {
-			{
-				subchunk_id = HD_SUBCHUNKID.SIDE,
-				roomcodes = {
-
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH,
-				roomcodes = {
-
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.EXIT,
-				roomcodes = {
-					
-				}
-			},
-			{
-				subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-				roomcodes = {
-					
-				}
-			},
-		},
-		idol = {
-			subchunk_id = HD_SUBCHUNKID.IDOL,
-			roomcodes = {}
-		},
-		altar = {
-			subchunk_id = HD_SUBCHUNKID.ALTAR,
-			roomcodes = {}
-		},
-		coffin_unlockable = {
-			{
-				subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-				roomcodes = {
-
-				}
-			},
-		},
-	},
-	[THEME.NEO_BABYLON] = {
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.SIDE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- },
-		-- idol = {
-		-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
-		-- 	roomcodes = {}
-		-- },
-		-- coffin_unlockable = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- },
-	},
-	[THEME.TEMPLE] = {
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.SIDE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- },
-		-- idol = {
-		-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
-		-- 	roomcodes = {}
-		-- },
-		-- coffin_unlockable = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- },
-	},
-	[THEME.CITY_OF_GOLD] = {
-		setRooms = {
-			{
-				subchunk_id = -1,
-				placement = {3, 2},
-				-- # TODO: alter this roomcode's alter (HAHHHH)
-				roomcodes = { "00000111110000011000000001100000Y00110001111111000000001100#00Y001100A1111111111" }
-			},
-			{
-				subchunk_id = -1,
-				placement = {3, 3},
-				roomcodes = { "111110000000011000000001100Y000001111111000110000000011000000001100Y001111111111" }
-			}
-		},
-		-- pathRooms = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.SIDE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
-		-- 		roomcodes = {
-					
-		-- 		}
-		-- 	},
-		-- },
-		-- idol = {
-		-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
-		-- 	roomcodes = {}
-		-- },
-		-- coffin_unlockable = {
-		-- 	{
-		-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
-		-- 		roomcodes = {
-
-		-- 		}
-		-- 	},
-		-- },
-	},
-	[THEME.OLMEC] = {
-		-- setRooms = {
-		-- 	{
-		-- 		subchunk_id = -1,
-		-- 		placement = {, },
-		-- 		roomcodes = {}
-		-- 	},
-		-- },
-		coffin_unlockable = {
-			-- Spawn steps:
-				-- levelw, _ = get_levelsize()
-				-- structx = 1
-				-- chance = math.random()
-				-- if chance >= 0.5 then structx = levelw end
-				-- spawn 143 at structx, 1
-			{
-				subchunk_id = 143,
-				roomcodes = {
-					"00000100000E110111E001100001100E100001E00110g00110001111110000000000000000000000",
-					"00001000000E111011E001100001100E100001E00110g00110001111110000000000000000000000"
-				}
-			}
-		}
-	}
-}
 
 -- # TODO: Player Coffins
 -- Subchunkid terminology
@@ -1072,23 +320,88 @@ HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM = 118
 --HD_SUBCHUNKID. = 47					-- DaR Castle Entrance
 --HD_SUBCHUNKID. = 48					-- DaR Crystal Idol
 
+-- "5", "6", "8", "F", "V", "r"
+HD_OBSTACLEBLOCK = {}
+HD_OBSTACLEBLOCK.GROUND = {
+	tilename = "5",
+	dim = {3,5}
+}
+HD_OBSTACLEBLOCK.AIR = {
+	tilename = "6",
+	dim = {3,5}
+}
+HD_OBSTACLEBLOCK.DOOR = {
+	tilename = "8",
+	dim = {3,5}
+}
+HD_OBSTACLEBLOCK.PLATFORM = {
+	tilename = "F",
+	dim = {3,3},
+	chunkcodes = {
+		"0ff000000",
+		"0000ff000",
+		"0000000ff",
+		"00f000000",
+		"0000f0000",
+		"0000000f0",
+		"0ji000000",
+		"0000ji000",
+		"0000000ji",
+		"00i000000",
+		"0000i0000",
+		"0000000i0"
+	}
+}
+HD_OBSTACLEBLOCK.VINE = {
+	tilename = "V",
+	dim = {4,5},
+	chunkcodes = {
+		"L0L0LL0L0LL000LL0000",
+		"L0L0LL0L0LL000L0000L",
+		"0L0L00L0L00L0L0000L0"
+	}
+}
+HD_OBSTACLEBLOCK.TEMPLE = {
+	tilename = "r",
+	dim = {3,4},
+	chunkcodes = {
+		"111100000000",
+		"222200000000",
+		"222022200000",
+		"022202220000",
+		"000011110000",
+		"000011112222",
+		"000022221111",
+		"000002202112",
+		"000020021221"
+	}
+}
+
+HD_OBSTACLEBLOCK_TILENAME = {}
+HD_OBSTACLEBLOCK_TILENAME["5"] = HD_OBSTACLEBLOCK.GROUND
+HD_OBSTACLEBLOCK_TILENAME["6"] = HD_OBSTACLEBLOCK.AIR
+HD_OBSTACLEBLOCK_TILENAME["8"] = HD_OBSTACLEBLOCK.DOOR
+HD_OBSTACLEBLOCK_TILENAME["F"] = HD_OBSTACLEBLOCK.PLATFORM
+HD_OBSTACLEBLOCK_TILENAME["V"] = HD_OBSTACLEBLOCK.VINE
+HD_OBSTACLEBLOCK_TILENAME["r"] = HD_OBSTACLEBLOCK.TEMPLE
+
 
 -- retains HD tilenames
 HD_TILENAME = {
 	["0"] = {
 		description = "Empty",
 	},
-    ["#"] = {
+	["#"] = {
 		entity_types = {ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
 		description = "TNT Box",
 	},
-    ["$"] = {
+	["$"] = {
 		description = "Roulette Item",
 	},
-    ["%"] = {
+	["%"] = {
 		description = "Roulette Door",
 	},
-    ["&"] = { -- 50% chance to spawn
+	["&"] = { -- 50% chance to spawn
 		entity_types = {ENT_TYPE.LOGICAL_WATER_DRAIN, 0},
 		alternate_types = {
 			[THEME.CITY_OF_GOLD] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
@@ -1110,36 +423,36 @@ HD_TILENAME = {
 			-- TEMPLE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\TEMPLE\templesmallbg.png
 			-- ICE_CAVES: N/A(?)
 	},
-    ["*"] = {
+	["*"] = {
 		-- hd_type = HD_ENT.TRAP_SPIKEBALL
 		description = "Spikeball",
 	},
-    ["+"] = {
+	["+"] = {
 		description = "Wooden Background",
 	},
-    [","] = {
+	[","] = {
 		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.FLOORSTYLED_MINEWOOD
 		},
 		description = "Terrain/Wood",
 	},
-    ["-"] = {
+	["-"] = {
 		entity_types = {ENT_TYPE.ACTIVEFLOOR_THINICE},
 		description = "Cracking Ice",
 	},
-    ["."] = {
+	["."] = {
 		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		description = "Unmodified Terrain",
 	},
-    ["1"] = {
+	["1"] = {
 		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		alternate_types = {
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOORSTYLED_GUTS}
 		},
 		description = "Terrain",
 	},
-    ["2"] = {
+	["2"] = {
 		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			0
@@ -1153,7 +466,7 @@ HD_TILENAME = {
 		},
 		description = "Terrain/Empty",
 	},
-    ["3"] = {
+	["3"] = {
 		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.LIQUID_WATER
@@ -1178,68 +491,69 @@ HD_TILENAME = {
 		},
 		description = "Terrain/Water",
 	},
-    ["4"] = {
+	["4"] = {
 		entity_types = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
 		description = "Pushblock",
 	},
-    ["5"] = {
+	["5"] = {
 		-- # TODO: subchunk parameters
 		description = "Ground Obstacle Block",
 	},
-    ["6"] = {
+	["6"] = {
 		-- # TODO: subchunk parameters
 		description = "Floating Obstacle Block",
 	},
-    ["7"] = {
+	["7"] = {
 		entity_types = {
 			ENT_TYPE.FLOOR_SPIKES,
 			0
 		},
 		description = "Spikes/Empty",
 	},
-    ["8"] = {
+	["8"] = {
 		-- # TODO: subchunk parameters
 		description = "Door with Terrain Block",
 	},
-    ["9"] = {
-		-- # TODO: subchunk parameters
-		description = "Door without Platform",
+	["9"] = {
+		-- # TODO: figure out how to distinguish placing exits/entrances/misc doors
+		description = "Exit/Entrance Door", -- old description: "Door without Platform"
 	},
-    [":"] = {
+	[":"] = {
 		entity_types = {ENT_TYPE.MONS_SCORPION},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.MONS_TIKIMAN}
 		},
 		description = "Tikiman or Scorpion from Mines Coffin",--"Scorpion from Mines Coffin",
 	},
-    [";"] = {
+	[";"] = {
 		-- # TODO: two across parameter, also create background statue
 		description = "Damsel and Idol from Kalipit",
 	},
-    ["="] = {
+	["="] = {
+		entity_types = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
 		description = "Wood with Background",
 	},
-    ["A"] = {
+	["A"] = {
 		-- # TODO: two across parameter
 		entity_types = {ENT_TYPE.FLOOR_IDOL_BLOCK},
 		description = "Mines Idol Platform",
 	},
-    ["B"] = {
+	["B"] = {
 		-- # TODO: Find a good reskin replacement
 		entity_types = {ENT_TYPE.FLOORSTYLED_STONE},
 		description = "Jungle/Temple Idol Platform",
 	},
-    ["C"] = {
+	["C"] = {
 		-- # TODO: Ceiling Idol Trap
 		entity_types = {ENT_TYPE.FLOORSTYLED_STONE},
 		description = "Nonmovable Pushblock", -- also idol trap ceiling blocks
 	},
-    ["D"] = {
+	["D"] = {
 		-- # TODO: door creation (should be same door as "%")
 		description = "Door Gate", -- also used in temple idol trap
 	},
-    ["E"] = {
-		-- # TODO: subchunk parameters
+	["E"] = {
+		-- # TODO: figure out what this is and how it spawns
 		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.ITEM_CRATE,
@@ -1248,30 +562,30 @@ HD_TILENAME = {
 		},
 		description = "Terrain/Empty/Crate/Chest",
 	},
-    ["F"] = {
+	["F"] = {
 		-- # TODO: subchunk parameters
 		description = "Falling Platform Obstacle Block",
 	},
-    ["G"] = {
+	["G"] = {
 		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		description = "Ladder",
 	},
-    ["H"] = {
+	["H"] = {
 		entity_types = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		description = "Ladder Platform",
 	},
-    ["I"] = {
+	["I"] = {
 		offset = { 0.5, 0 },
 		description = "Idol",
 	},
-    ["J"] = {
+	["J"] = {
 		entity_types = {ENT_TYPE.MONS_GIANTFISH},
 		description = "Ol' Bitey",
 	},
-    ["K"] = {
+	["K"] = {
 		description = "Shopkeeper",
 	},
-    ["L"] = {
+	["L"] = {
 		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
@@ -1280,26 +594,26 @@ HD_TILENAME = {
 		},
 		description = "Ladder",
 	},
-    ["M"] = {
+	["M"] = {
 		-- # TODO: Embed mattock into FLOOR_GENERIC.
 		description = "Crust Mattock from Snake Pit",
 	},
-    ["N"] = {
+	["N"] = {
 		-- # TODO: In HD, this may be telling the spawn system to spawn using the chance of a snake against a cobra
 		entity_types = {ENT_TYPE.MONS_SNAKE},
 		description = "Snake from Snake Pit",
 	},
-    ["O"] = {
+	["O"] = {
 		description = "Moai Head",
 		-- # TODO: Generation.
 		-- # TODO: Blocks/foreground reskins
 			-- # TODO in ASE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\ICE\icesmallbg.png
 	},
-    ["P"] = {
+	["P"] = {
 		entity_types = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		description = "Ladder Platform",
 	},
-    ["Q"] = {
+	["Q"] = {
 		entity_types = {ENT_TYPE.FLOOR_LADDER},
 		alternate_types = {
 			[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
@@ -1309,28 +623,28 @@ HD_TILENAME = {
 		-- # TODO: Generate ladder to just above floor.
 		description = "Variable-Length Ladder",
 	},
-    ["R"] = {
+	["R"] = {
 		description = "Ruby from Snakepit",
 	},
-    ["S"] = {
+	["S"] = {
 		description = "Shop Items",
 	},
-    ["T"] = {
+	["T"] = {
 		description = "Tree",
 		-- # TODO: Generation.
 	},
-    ["U"] = {
+	["U"] = {
 		entity_types = {ENT_TYPE.MONS_VLAD},
 		description = "Vlad",
 	},
-    ["V"] = {
+	["V"] = {
 		-- # TODO: subchunk parameters
 		description = "Vines Obstacle Block",
 	},
-    ["W"] = {
+	["W"] = {
 		description = "Unknown: Something Shop-Related",
 	},
-    ["X"] = {
+	["X"] = {
 		entity_types = {ENT_TYPE.MONS_GIANTSPIDER},
 		-- alternate_hd_types = {
 		-- -- Hell: Horse Head & Ox Face
@@ -1338,90 +652,93 @@ HD_TILENAME = {
 		-- offset = { 0.5, 0 },
 		description = "Giant Spider",
 	},
-    ["Y"] = {
+	["Y"] = {
 		entity_types = {ENT_TYPE.MONS_YETIKING},
 		alternate_types = {
 			[THEME.TEMPLE] = {ENT_TYPE.MONS_MUMMY},
 		},
 		description = "Yeti King",
 	},
-    ["Z"] = {
+	["Z"] = {
 		entity_types = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
 		description = "Beehive Tile with Background",
 	},
-    ["a"] = {
+	["a"] = {
 		entity_types = {ENT_TYPE.ITEM_PICKUP_ANKH},
 		description = "Ankh",
 	},
 	-- # TODO:
 		-- Add alternative shop floor of FLOOR_GENERIC
 		-- Modify all HD shop roomcodes to accommodate this.
-    ["b"] = {
+	["b"] = {
 		entity_types = {ENT_TYPE.FLOOR_MINEWOOD},
 		flags = {
 			[ENT_FLAG.SHOP_FLOOR] = true
 		},
 		description = "Shop Floor",
 	},
-    ["c"] = {
+	["c"] = {
 		spawnfunction = function(params)
 			set_timeout(create_idol_crystalskull, 10)
 		end,
 		offset = { 0.5, 0 },
 		description = "Crystal Skull",
 	},
-    ["d"] = {
+	["d"] = {
 		entity_types = {ENT_TYPE.FLOOR_JUNGLE},
 		alternate_types = {
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK},
 		},
 		description = "Jungle Terrain",
 	},
-    ["e"] = {
+	["e"] = {
 		entity_types = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
 		description = "Beehive Tile",
 	},
-    ["f"] = {
+	["f"] = {
 		entity_types = {ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM},
 		description = "Falling Platform",
 	},
-    ["g"] = {
+	["g"] = {
 		-- spawnfunction = function(params)
 		-- 	create_unlockcoffin(params[1], params[2], params[3])
 		-- end,
 		entity_types = {ENT_TYPE.ITEM_COFFIN},
 		description = "Coffin",
 	},
-    ["h"] = {
+	["h"] = {
 		entity_types = {ENT_TYPE.FLOORSTYLED_VLAD},
-		description = "Hell Terrain", -- haunted castle alter
-		-- # TODO: subchunk parameters
+		description = "Vlad's Castle Brick",--Hell Terrain",
+		-- in HD it's also the haunted castle altar
 	},
-    ["i"] = {
+	["i"] = {
 		entity_types = {ENT_TYPE.FLOOR_ICE},
 		description = "Ice Block",
 	},
-    ["j"] = {
-		-- # TODO: Investigate in HD. Pretty sure this is "Ice Block/Empty".
-		description = "Ice Block with Caveman",
+	["j"] = {
+		entity_types = {
+			ENT_TYPE.FLOOR_ICE,
+			0
+		},
+		description = "Ice Block/Empty", -- Old description: "Ice Block with Caveman".
 	},
-    ["k"] = {
+	["k"] = {
 		entity_types = {ENT_TYPE.DECORATION_SHOPSIGN},
 		offset = { 0, 4 },
 		description = "Shop Entrance Sign",
 	},
-    ["l"] = {
+	["l"] = {
 		entity_types = {ENT_TYPE.ITEM_LAMP},
 		description = "Shop Lantern",
 	},
-    ["m"] = {
+	["m"] = {
 		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		flags = {
 			[ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR] = true
 		},
 		description = "Unbreakable Terrain",
 	},
-    ["n"] = {
+	["n"] = {
 		entity_types = {
 			ENT_TYPE.FLOOR_GENERIC,
 			ENT_TYPE.MONS_SNAKE,
@@ -1429,30 +746,31 @@ HD_TILENAME = {
 		},
 		description = "Terrain/Empty/Snake",
 	},
-    ["o"] = {
+	["o"] = {
 		entity_types = {ENT_TYPE.ITEM_ROCK},
 		description = "Rock",
 	},
-    ["p"] = {
+	["p"] = {
 		-- Not sure about this one. It's only used in the corners of the crystal skull jungle roomcode.
 		-- # TODO: Investigate in HD
 		entity_types = {ENT_TYPE.ITEM_GOLDBAR},
 		description = "Treasure/Damsel",
 	},
-    ["q"] = {
+	["q"] = {
 		-- # TODO: Trap Prevention.
 		entity_types = {ENT_TYPE.FLOOR_GENERIC},
 		description = "Obstacle-Resistant Terrain",
 	},
-    ["r"] = {
+	["r"] = {
 		-- # TODO: subchunk parameters
-		description = "Mines Terrain/Temple Terrain/Pushblock",
+		description = "Temple Obstacle Block", -- old description: "Mines Terrain/Temple Terrain/Pushblock"
+		-- # TODO: figure out what the alternate use for this is and how it spawns
 	},
-    ["s"] = {
+	["s"] = {
 		entity_types = {ENT_TYPE.FLOOR_SPIKES},
 		description = "Spikes",
 	},
-    ["t"] = {
+	["t"] = {
 		-- entity_types = {
 			-- ENT_TYPE.FLOORSTYLED_TEMPLE,
 			-- ENT_TYPE.FLOOR_JUNGLE
@@ -1460,18 +778,18 @@ HD_TILENAME = {
 		-- # TODO: ????? Investigate in HD.
 		description = "Temple/Castle Terrain",
 	},
-    ["u"] = {
+	["u"] = {
 		entity_types = {ENT_TYPE.MONS_VAMPIRE},
 		description = "Vampire from Vlad's Tower",
 	},
-    ["v"] = {
+	["v"] = {
 		entity_types = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
 		alternate_types = {
 			[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.LIQUID_WATER},
 		},
 		description = "Wood",
 	},
-    ["w"] = {
+	["w"] = {
 		entity_types = {ENT_TYPE.LIQUID_WATER},
 		alternate_types = {
 			[THEME.TEMPLE] = {ENT_TYPE.LIQUID_LAVA},
@@ -1480,13 +798,13 @@ HD_TILENAME = {
 		},
 		description = "Liquid",
 	},
-    ["x"] = {
+	["x"] = {
 		description = "Kali Altar",
 	},
-    ["y"] = {
+	["y"] = {
 		description = "Crust Ruby in Terrain",
 	},
-    ["z"] = {
+	["z"] = {
 		entity_types = {
 			ENT_TYPE.FLOORSTYLED_BEEHIVE,
 			0
@@ -1497,10 +815,10 @@ HD_TILENAME = {
 		-- # TODO: Temple has bg pillar as an alternative
 		description = "Beehive Tile/Empty",
 	},
-    ["|"] = {
+	["|"] = {
 		description = "Vault",
 	},
-    ["~"] = {
+	["~"] = {
 		entity_types = {ENT_TYPE.FLOOR_SPRING_TRAP},
 		description = "Bounce Trap",
 	},
@@ -1509,64 +827,871 @@ HD_TILENAME = {
 }
 
 
--- TILEFRAMES_FLOOR = {
--- 	-- 1x1
--- 	{
--- 		frames = {0},
--- 		dim = {1, 1}
--- 	},
--- 	{
--- 		frames = {1},
--- 		dim = {1, 1}
--- 	},
--- 	{
--- 		frames = {12},
--- 		dim = {1, 1}
--- 	},
--- 	{
--- 		frames = {13},
--- 		dim = {1, 1}
--- 	},
--- 	-- 1x2
--- 	{
--- 		frames = {2, 14},
--- 		dim = {1, 2}
--- 	},
--- 	{
--- 		frames = {3, 15},
--- 		dim = {1, 2}
--- 	},
--- 	-- 2x1
--- 	{
--- 		frames = {24, 25},
--- 		dim = {2, 1}
--- 	},
--- 	{
--- 		frames = {26, 27},
--- 		dim = {2, 1}
--- 	},
--- 	-- 2x2
--- 	{
--- 		frames = {36, 37, 48, 49},
--- 		-- frames = {48, 49, 36, 37},
--- 		dim = {2, 2}
--- 	},
--- 	{
--- 		frames = {38, 39, 50, 51},
--- 		-- frames = {50, 51, 38, 39},
--- 		dim = {2, 2}
--- 	},
--- 	{
--- 		frames = {60, 61, 72, 73},
--- 		-- frames = {72, 73, 60, 61},
--- 		dim = {2, 2}
--- 	},
--- 	{
--- 		frames = {62, 63, 74, 75},
--- 		-- frames = {74, 75, 62, 63},
--- 		dim = {2, 2}
--- 	},
--- }
+-- # TODO: issues with current hardcodedgeneration-dependent features:
+	-- Vaults
+		-- May interfere with the process of altering the level_path
+	-- Idol traps
+		-- Currently messes up mines level generation since S2 assumes that it's part of path
+	-- Udjat eye placement
+		-- mines level generation isn't as accurate
+			-- slightly incorrect side rooms
+			-- can't spawn on 1-4
+	-- My own system for spawning the wormtongue
+		-- Has to be hardcoded in order to work for both jungle and ice caves
+		-- Has to be hardcoded in order to work for both jungle and ice caves
+
+	-- if you need the variation that's facing left, use roomcodes[2].
+	-- dimensions are assumed to be 10x8, but you can define them with dimensions = { w = 10, h = 8 }
+HD_ROOMOBJECT = {}
+HD_ROOMOBJECT.DIM = {h = 8, w = 10}
+HD_ROOMOBJECT.GENERIC = {
+	shop = {
+		{ -- prize wheel
+			subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE,
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb",
+				"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"
+			}
+		},
+		{ -- Damzel
+			subchunk_id = HD_SUBCHUNKID.SHOP_BROTHEL,
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"
+			}
+		},
+		{ -- Hiredhands(?)
+			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN1,
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"
+			}
+		},
+		{ -- Hiredhands(?)
+			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN2,
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"
+			}
+		},
+		{ -- ?
+			subchunk_id = HD_SUBCHUNKID.SHOP_UNKNOWN3,
+			pathalign = true,
+			roomcodes = {
+				"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb",
+				"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"
+			}
+		}
+	},
+	vault = {
+		{
+			subchunk_id = HD_SUBCHUNKID.VAULT,
+			roomcodes = {
+				"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"
+			}
+		}
+	},
+	altar = {
+		{
+			subchunk_id = HD_SUBCHUNKID.ALTAR,
+			roomcodes = {
+				"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"
+			}
+		}
+	}
+}
+HD_ROOMOBJECT.FEELINGS = {}
+HD_ROOMOBJECT.FEELINGS["SPIDERLAIR"] = {
+	-- coffin_unlockable = {
+		
+	-- },
+	-- coffin_unlockable_vertical = {
+	
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = -1,
+	-- 		-- grabs 5 and upwards from path_drop
+	-- 		roomcodes = {
+	-- 			"",
+	-- 		}
+	-- 	},
+	-- }
+}
+HD_ROOMOBJECT.FEELINGS["SNAKEPIT"] = {
+	genMethod = {
+		prePath = true,
+		rooms = {
+			[HD_SUBCHUNKID.SNAKEPIT_TOP] = { -- grabs 5 and upwards from HD's path_drop roomcodes
+				"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
+				"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
+				"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
+				"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
+				"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
+				"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
+				"11111111112111111112021111112000211112000002112000000022000002200002201111001111"
+			},
+			[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION] = {"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"},
+			[HD_SUBCHUNKID.SNAKEPIT_BOTTOM] = {"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}
+		}
+	}
+}
+-- Spawn Steps:
+	-- 106
+		-- levelw, levelh = get_levelsize()
+		-- structx = math.random(1, levelw)
+		-- spawn 106 at 1, structx
+	-- 107
+		-- _, levelh = get_levelsize()
+		-- struct_midheight = math.random(1, levelh-2)
+		-- for i = 1, struct_midheight, 1 do
+			-- spawn 107 at i, structx
+		-- end
+	-- 108
+		-- spawn 108 at struct_midheight+1, structx
+HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.method = function()
+	-- 106
+	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	structx = math.random(1, levelw)
+	-- spawn 106 at 1, structx
+	levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_TOP, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_TOP], 1, structx)
+
+	-- 107
+	struct_midheight = math.random(1, levelh-2)
+	for i = 2, 1+struct_midheight, 1 do
+		--spawn 107 at i, structx
+		levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION], i, structx)
+	end
+	-- 108
+	-- spawn 108 at structx, struct_midheight+1
+	levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM], 1+struct_midheight+1, structx)
+end
+
+HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
+	genMethod = {
+		prePath = true,
+		rooms = {
+			[HD_SUBCHUNKID.SACRIFICIALPIT_TOP] = {"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"},
+			[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION] = {"11200002111120000211112000021111200002111120000211112000021111200002111120000211"},
+			[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM] = {"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}
+		}
+	}
+}
+-- Notes:
+	-- start from top
+	-- seems to always be top to bottom
+-- Spawn steps:
+	-- 116
+		-- levelw, levelh = get_levelsize()
+		-- structx = math.random(1, levelw)
+		-- spawn 116 at 1, structx
+	-- 117
+		-- _, levelh = get_levelsize()
+		-- struct_midheight = levelh-2
+		-- for i = 1, struct_midheight, 1 do
+			-- spawn 117 at i, structx
+		-- end
+	-- 118
+		-- spawn 118 at structx, struct_midheight+1
+HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod = function()
+	-- 106
+	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	structx = math.random(1, levelw)
+	-- spawn 106 at 1, structx
+	levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_TOP, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP], 1, structx)
+
+	-- 107
+	struct_midheight = levelh-2
+	for i = 1, struct_midheight, 1 do
+		--spawn 107 at i, structx
+		levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION], i, structx)
+	end
+	-- 108
+	-- spawn 108 at struct_midheight+1, structx
+	levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM], struct_midheight+1, structx)
+end
+
+HD_ROOMOBJECT.WORLDS = {}
+HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
+	sideRooms = {
+		"00000000000010111100000000000000011010000050000000000000000000000000001111111111",
+		"110000000040L600000011P000000011L000000011L5000000110000000011000000001111111111",--flipped
+		"00000000110060000L040000000P110000000L110050000L11000000001100000000111111111111",--
+		"11000000110#000000#0111100111111200002112200000022110000001111200002111111111111",--if statement involving < 3 just before this is goto line 26. (hard?)
+		"11111111112000L000021vvvP0vvv11v0vL0v0v10000L000001v=v11v=v111111111111111111111",
+		"111111111120000L00021vvv0Pvvv11v0v0Lv0v100000L00001v=v11v=v111111111111111111111",
+		"11111111110221111220002111120000022220000002222000002111120002211112201111111111",
+		"11111111111112222111112000021111102201111120000211111022011111200002111112222111",
+		"11111111110000000000110000001111222222111111111111012222221200000000201100000011",--flipped
+		"11111111110000000000110000001111222222111111111111212222221002000000001100000011",--
+		"11111111110000000000110000001111222222111111111111112222221112000000211100000011",--
+		"121111112100L2112L0011P1111P1111L2112L1111L1111L1111L1221L1100L0000L001111221111",
+	},
+	pathRooms = {
+		{
+			subchunk_id = HD_SUBCHUNKID.PATH,
+			roomcodes = {
+				"60000600000000000000000000000000000000000050000000000000000000000000001111111111",
+				"60000600000000000000000000000000000000005000050000000000000000000000001111111111",
+				"60000600000000000000000000000000050000000000000000000000000011111111111111111111",
+				"60000600000000000000000600000000000000000000000000000222220000111111001111111111",
+				"11111111112222222222000000000000000000000050000000000000000000000000001111111111",
+				"11111111112111111112022222222000000000000050000000000000000000000000001111111111",
+				"11111111112111111112211111111201111111100111111110022222222000000000001111111111",
+				"1111111111000000000L111111111P000000000L5000050000000000000000000000001111111111",--flipped
+				"1111111111L000000000P111111111L0000000005000050000000000000000000000001111111111",--
+				"000000000000L0000L0000PvvvvP0000L0000L0000PvvvvP0000L1111L0000L1111L001111111111",
+				"00000000000111111110001111110000000000005000050000000000000000000000001111111111",
+				"00000000000000000000000000000000000000000021111200021111112021111111121111111111",
+				"2222222222000000000000000000L00vvvvvvvP00v050000L0vv000000L0v0000000L01111111111",--flipped
+				"222222222200000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111",--
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+			roomcodes = {
+				"00000000000000000000600006000000000000000000000000600006000000000000000000000000",
+				"00000000000000000000600006000000000000000000050000000000000000000000001202111111",
+				"00000000000000000000600006000000000000050000000000000000000000000000001111112021",
+				"00000000000060000000000000000000000000000000000000001112220002100000001110111111",
+				"00000000000060000000000000000000000000000000000000002221110000000001201111110111",
+				"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
+				"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
+				"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
+				"11111111112222222222000000000000000000000000000000000000000000000000001120000211",
+				"11111111112222111111000002211200000002100000000000200000000000000000211120000211",
+				"11111111111111112222211220000001200000000000000000000000000012000000001120000211",
+				"11111111112111111112021111112000211112000002112000000022000002200002201111001111",
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+			roomcodes = {
+				"00000000000000000000000000000000000000000050000000000000000000000000001111111111",
+				"00000000000000000000000000000000000000005000050000000000000000000000001111111111",
+				"00000000000000000000000600000000000000000000000000000111110000111111001111111111",
+				"00000000000111111110001111110000000000005000050000000000000000000000001111111111",
+				"00000000000000000000000000000000000000000021111200021111112021111111121111111111",
+				"10000000011112002111111200211100000000000022222000011111111011111111111111111111",
+				"0000000000000000000000000000L00vvvvvvvP00v050000L0vv000000L0v0000000L01111111111",
+				"000000000000000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111"
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			roomcodes = {
+				"00000000000000000000600006000000000000000000000000600006000000000000000000000000",
+				"00000000000000000000600006000000000000000000050000000000000000000000001202111111",
+				"00000000000000000000600006000000000000050000000000000000000000000000001111112021",
+				"00000000000060000000000000000000000000000000000000001112220002100000001110111111",
+				"00000000000060000000000000000000000000000000000000002221110000000001201111110111",
+				"00000000000000000000600006000000000000000000000000000000000002200002201112002111",
+				"00000000000000220000000000000000200002000112002110011100111012000000211111001111",
+				"00000000000060000000000000000000000000000000000000002022020000100001001111001111",
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			roomcodes = {
+				"60000600000000000000000000000000000000000008000000000000000000000000001111111111",
+				"11111111112222222222000000000000000000000008000000000000000000000000001111111111",
+				"00000000000008000000000000000000L000000000P111111000L111111000L00111111111111111",
+				"0000000000008000000000000000000000000L000111111P000111111L001111100L001111111111",
+				"011111111001111111100vvvvvvvv00vv0000vv0000090000001v====v1001111111101111111111",--flipped
+				"011111111001111111100vvvvvvvv00vv0000vv0000009000001v====v1001111111101111111111",--
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+			roomcodes = {
+				"60000600000000000000000000000000000000000008000000000000000000000000002000000002",
+				"11111111112222222222000000000000000000000008000000000000000000000000002000000002",
+				"00000000000008000000000000000000L000000000P111111000Lvvvv11000L000v1111vvvv0v111",
+				"0000000000008000000000000000000000000L000111111P00011vvvvL00111v000L00111v0vvvv1",
+				"011111111001111111100vvvvvvvv00vv0000vv0000090000001v====v100111v000001111v0vv11",
+				"011111111001111111100vvvvvvvv00vv0000vv0000009000001v====v1000000v111011vv0v1111",
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.EXIT,
+			roomcodes = {
+				"00000000006000060000000000000000000000000008000000000000000000000000001111111111",
+				"00000000000000000000000000000000000000000008000000000000000000000000001111111111",
+				"00000000000010021110001001111000110111129012000000111111111021111111201111111111",
+				"00000000000111200100011110010021111011000000002109011111111102111111121111111111",
+				"60000600000000000000000000000000000000000008000000000000000000000000001111111111",
+				"11111111112222222222000000000000000000000008000000000000000000000000001111111111",
+			}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+			roomcodes = {
+				"00000000006000060000000000000000000000000008000000000000000000000000001111111111",
+				"00000000000000000000000000000000000000000008000000000000000000000000001111111111",
+				"00000000000010021110001001111000110111129012000000111111111021111111201111111111",
+				"00000000000111200100011110010021111011000000002109011111111102111111121111111111",
+			}
+		},
+	},
+	idol = {
+		subchunk_id = HD_SUBCHUNKID.IDOL,
+		roomcodes = {"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}
+	},
+	coffin_unlockable = {
+		{
+			subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+			pathalign = true,
+			roomcodes = {
+				"vvvvvvvvvvv++++++++vvL00000g0vvPvvvvvvvv0L000000000L0:000:0011111111111111111111",
+				"vvvvvvvvvvv++++++++vvg000000LvvvvvvvvvPv00000000L000:000:0L011111111111111111111" -- facing left
+			}
+		},
+	},
+	obstacleBlocks = {
+		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+			"011100020000000",
+			"000001111000000",
+			"000000111100000",
+			"000000000011111",
+			"000002020017177",
+			"000000202071717",
+			"000000020277171",
+			"000002220011100",
+			"000000222001110",
+			"000000022200111",
+			"111002220000000",
+			"011100222000000",
+			"001110022200000",
+			"000000222021112",
+			"000002010077117",
+			"000000010271177",
+			"0010000#0002120",
+			"000001111000000",
+			"000000111100000",
+			"000000020077177",
+			"000000010077777",
+			"111002220000077",
+			"011100222070007",
+			"001110022277000",
+			"000002010077177",
+			"000000010277177",
+		},
+		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+			"022220000022220",
+			"222200000002222",
+			"111002220000000",
+			"011100222000000",
+			"001110022200000",
+			"000000111000000",
+			"000000111002220",
+			"000000222001110",
+			"000000022001111",
+			"000002220011100",
+		},
+		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+			"009000111011111"
+		},
+	},
+}
+HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+	-- obstacleBlocks = {
+	-- 	[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.AIR.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+			
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
+	setRooms = {
+		{
+			-- prePath = false,
+			subchunk_id = 41,
+			placement = {6, 1},
+			roomcodes = { "0000000dd00011111110011vvvvvvw01vwwwwwww01vwwwwwww011cwwwwww00111111110000000000" }
+		},
+		{
+			-- prePath = false,
+			subchunk_id = 42,
+			placement = {6, 2},
+			roomcodes = { "0dd00000000111111100wvvvvvv110wwwwwwwv10wwwwwwwv10wwwwwww11011111111000000000000" }
+		}
+	},
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- altar = {
+	-- 	subchunk_id = HD_SUBCHUNKID.ALTAR,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+	-- obstacleBlocks = {
+	-- 	[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.AIR.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+			
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+	-- obstacleBlocks = {
+	-- 	[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.AIR.tilename] = {
+			
+	-- 	},
+	-- 	[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+			
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
+	setRooms = {
+		{
+			subchunk_id = -1,
+			placement = {3, 2},
+			-- # TODO: alter this roomcode's alter (HAHHHH)
+			roomcodes = { "00000111110000011000000001100000Y00110001111111000000001100#00Y001100A1111111111" }
+		},
+		{
+			subchunk_id = -1,
+			placement = {3, 3},
+			roomcodes = { "111110000000011000000001100Y000001111111000110000000011000000001100Y001111111111" }
+		}
+	},
+	-- sideRooms = {
+
+	-- },
+	-- pathRooms = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.EXIT_NOTOP,
+	-- 		roomcodes = {
+				
+	-- 		}
+	-- 	},
+	-- },
+	-- idol = {
+	-- 	subchunk_id = HD_SUBCHUNKID.IDOL,
+	-- 	roomcodes = {}
+	-- },
+	-- coffin_unlockable = {
+	-- 	{
+	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
+	-- 		roomcodes = {
+
+	-- 		}
+	-- 	},
+	-- },
+}
+HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
+	-- setRooms = {
+	-- 	{
+	-- 		subchunk_id = -1,
+	-- 		placement = {, },
+	-- 		roomcodes = {}
+	-- 	},
+	-- },
+	coffin_unlockable = {
+		-- Spawn steps:
+			-- levelw, _ = get_levelsize()
+			-- structx = 1
+			-- chance = math.random()
+			-- if chance >= 0.5 then structx = levelw end
+			-- spawn 143 at structx, 1
+		{
+			subchunk_id = 143,
+			roomcodes = {
+				"00000100000E110111E001100001100E100001E00110g00110001111110000000000000000000000",
+				"00001000000E111011E001100001100E100001E00110g00110001111110000000000000000000000"
+			}
+		}
+	},
+	obstacleBlocks = {
+		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+			
+		},
+	},
+}
 
 HD_COLLISIONTYPE = {
 	AIR_TILE_1 = 1,
@@ -3229,53 +3354,6 @@ function exit_winstate()
 	end
 end
 
-function exit_reverse()
-	exits = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)
-	entrances = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_ENTRANCE)
-	x, y, l = get_position(exits[1])
-	exit_mov = get_entity(exits[1]):as_movable()
-	nextworld, nextlevel, nexttheme = get_door_target(exit_mov.uid)
-	for i,player in ipairs(players) do
-		teleport_mount(player, x, y)
-	end
-	for i,v in ipairs(exits) do
-		x, y, l = get_position(v)
-		move_entity(v, x+100, y, 0, 0)
-		lock_door_at(x, y)
-	end
-	for i,v in ipairs(entrances) do
-		x, y, l = get_position(v)
-		door(x, y, l, nextworld, nextlevel, nexttheme)
-		unlock_door_at(x, y)
-	end
-end
-
-function test_tileapplier9000()
-	_x, _y, l = 45, 90, LAYER.FRONT -- next to entrance
-	testfloors = {}
-	width = 3
-	height = 4
-	toassign = {}
-	toassign = {
-		uid_offsetpair = {
-			-- {uid = testfloors[1], offset = {1, 1}},
-		},
-		dim = {width, height}
-	}
-	for yi = 0, -(height-1), -1 do -- 0 -> -3
-		for xi = 0, (width-1), 1 do -- 0 -> 2
-			-- testfloors[#testfloors+1] = spawn_entity(ENT_TYPE.FLOOR_GENERIC, _x+(xi-1), _y+(yi-1), l, 0, 0)
-			table.insert(toassign.uid_offsetpair, {uid = spawn_entity(ENT_TYPE.FLOOR_GENERIC, _x+xi, _y-yi, l, 0, 0), offset = {xi, yi}})
-		end
-	end
-	tileapplier9000(toassign)
-	-- testfloor_e = get_entity(testfloors[1])
-	-- testfloor_m = testfloor_e:as_movable()
-	-- animation_frame = testfloor_m.animation_frame
-	-- message(tostring(_x) .. ", " .. tostring(_y) .. ": " .. tostring(animation_frame))
-
-end
-
 function test_bacterium()
 	
 	-- Bacterium Creation
@@ -3302,8 +3380,10 @@ function test_levelsize()
 	message("levelw: " .. tostring(levelw) .. ", levelh: " .. tostring(levelh))
 end
 
-define_tile_code("campfix")
-define_tile_code("generation")
+define_tile_code("hd_shortcuts")
+define_tile_code("hd_tunnelman")
+
+-- define_tile_code("generation")
 
 -- set_pre_tile_code_callback(function(x, y, layer)
 	-- -- generate_chunk("222111", 3, 2, x, y, layer, 0, 0)
@@ -3331,16 +3411,19 @@ define_tile_code("generation")
 	-- return true
 -- end, "generation")
 
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	return 0
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
+
 set_pre_tile_code_callback(function(x, y, layer)
-	tospawn = ENT_TYPE.FLOOR_DOOR_STARTING_EXIT
-	if x == 21 then
-		if y == 84 then
-			tospawn = ENT_TYPE.FLOOR_GENERIC
-		else return true end
-	end
-	spawn(tospawn, x, y, LAYER.FRONT, 0, 0)
+	oncamp_tunnelman_spawn()
 	return true
-end, "campfix")
+end, "hd_tunnelman")
+
+set_post_tile_code_callback(function(x, y, layer)
+	oncamp_shortcuts()
+	return true
+end, "hd_shortcuts")
 
 -- set_pre_tile_code_callback(function(x, y, layer)
 	-- if state.theme == THEME.JUNGLE then
@@ -3426,8 +3509,8 @@ end, "door")
 
 -- ON.CAMP
 set_callback(function()
-	oncamp_movetunnelman()
-	oncamp_shortcuts()
+	-- oncamp_movetunnelman()
+	-- oncamp_shortcuts()
 	
 	
 	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
@@ -3876,9 +3959,9 @@ function onlevel_generation_modification()
 	if state.theme ~= THEME.OLMEC and state.theme ~= THEME.TIAMAT then
 		gen_levelrooms_path()
 	end
-	gen_levelrooms_nonpath(unlock)
+	gen_levelrooms_nonpath(unlock, false)
 
-	
+	gen_levelcode_fill() -- global_levelassembly.modification.levelcode editing
 
 	gen_levelcode_bake() -- spawn tiles in global_levelassembly.modification.levelcode
 end
@@ -4624,15 +4707,11 @@ function onlevel_toastfeeling()
 	end
 end
 
-
-function oncamp_movetunnelman()
-	marlas = get_entities_by_type(ENT_TYPE.MONS_MARLA_TUNNEL)
-	for _, marla_uid in ipairs(marlas) do
-		move_entity(marla_uid, 0, 0, 0, 0)
-	end
-	marla_uid = spawn_entity(ENT_TYPE.MONS_MARLA_TUNNEL, 15, 86, LAYER.FRONT, 0, 0)
+function oncamp_tunnelman_spawn()
+	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, 15, 86, LAYER.FRONT, 0, 0)
 	marla = get_entity(marla_uid)
 	marla.flags = clr_flag(marla.flags, ENT_FLAG.FACING_LEFT)
+	return marla_uid
 end
 
 function oncamp_shortcuts()
@@ -4658,7 +4737,6 @@ function oncamp_shortcuts()
 		TEXTURE.DATA_TEXTURES_FLOOR_TEMPLE_1
 	}
 	
-	
 	-- Placement of first shortcut door in HD: 16.0
 	new_x = 19.0 -- adjusted for S2 camera
 	for i, flagtocheck in ipairs(shortcut_flagstocheck) do
@@ -4666,21 +4744,23 @@ function oncamp_shortcuts()
 		if savegame.shortcuts >= flagtocheck then
 			spawn_door(new_x, 86, LAYER.FRONT, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])
 			-- spawn_entity(ENT_TYPE.FLOOR_DOOR_STARTING_EXIT, new_x, 86, 0, 0)
+
 			door_bg = spawn_entity(ENT_TYPE.BG_DOOR, new_x, 86.31, LAYER.FRONT, 0, 0)
-			door_texture_id = get_entity(door_bg):get_texture()
-			-- door_texture = get_texture_definition(door_texture_id)
-			-- door_id = define_texture(door_texture)
 			get_entity(door_bg):set_texture(shortcut_doortextures[i])
 			get_entity(door_bg).animation_frame = 1
-			-- message(tostring("door_animation_frame: " .. tostring(get_entity(door_bg).animation_frame)))
+			
 			sign = spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, 86-0.5, LAYER.FRONT, 0, 0)
-			-- get_entity(sign).animation_frame = shortcut_signframes[i]
+			sign_animation_frame = get_entity(sign).animation_frame
+			get_entity(sign).animation_frame = sign_animation_frame + (i-1)
 		else
 			spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, 86, LAYER.FRONT, 0, 0)
 		end
 		-- Space between shortcut doors in HD: 4.0
 		new_x = new_x + 3 -- adjusted for S2 camera
-	end	
+	end
+
+	-- fix gap in floor where S2 shortcut would normally spawn
+	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 end
 
 -- OVERHAUL. Keep the dice poster and rotating that. Use a rock for the needle and use in place of animation_frame = 193
@@ -6150,6 +6230,25 @@ function unlocks_load()
 	-- RUN_UNLOCK_AREA gets loaded in an ON.LOAD callback
 end
 
+function path_gen_side()
+	-- world side rooms
+	if (HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
+		HD_ROOMOBJECT.WORLDS[state.theme].sideRooms ~= nil
+ 	) then
+		levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+		for level_hi = 1, levelh, 1 do
+			for level_wi = 1, levelw, 1 do
+				subchunk_id = global_levelassembly.modification.levelrooms[level_hi][level_wi]
+				if subchunk_id == nil then -- apply sideroom
+					levelcode_inject_roomcode(HD_SUBCHUNKID.SIDE, HD_ROOMOBJECT.WORLDS[state.theme].sideRooms, level_hi, level_wi)
+				end
+			end
+		end
+	else
+		message("path_gen_side: No roomcodes available for siderooms;")
+	end
+end
+
 function path_gen_setrooms(setRooms, prePath)
 	prePath = prePath or false
 	for _, setroomcont in ipairs(setRooms) do
@@ -6157,41 +6256,52 @@ function path_gen_setrooms(setRooms, prePath)
 			if setroomcont.placement == nil or setroomcont.subchunk_id == nil or setroomcont.roomcodes == nil then
 				message("setroom params missing! Couldn't spawn.")
 			else
-				hi, wi = setroomcont.placement[1], setroomcont.placement[2]
-				global_levelassembly.modification.levelrooms[hi][wi] = setroomcont.subchunk_id
-	
-				rand_index = math.random(1, #setroomcont.roomcodes)
-				roomcode = setroomcont.roomcodes[rand_index]
-				level_hi_len = hi*8
-				level_wi_len = wi*10
-				i = 1
-				for room_hi = level_hi_len-8, level_hi_len, 1 do
-					for room_wi = level_wi_len-10, level_wi_len, 1 do
-						global_levelassembly.modification.levelcode[room_hi][room_wi] = roomcode:sub(i, i)
-						i = i + 1
-					end
-				end
+				levelcode_inject_roomcode(setroomcont.subchunk_id, setroomcont.roomcodes, setroomcont.placement[1], setroomcont.placement[2])
 			end
 		end
 	end
 end
 
+function levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi)
+	global_levelassembly.modification.levelrooms[_level_hi][_level_wi] = _subchunk_id
+
+	c_y = ((_level_hi*HD_ROOMOBJECT.DIM.h)-HD_ROOMOBJECT.DIM.h)+1
+	c_x = ((_level_wi*HD_ROOMOBJECT.DIM.w)-HD_ROOMOBJECT.DIM.w)+1
+	
+	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
+	-- prinspect(c_y, c_x)
+	
+	levelcode_inject(_roomPool, HD_ROOMOBJECT.DIM.h, HD_ROOMOBJECT.DIM.w, c_y, c_x)
+end
+
+function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x)
+	rand_index = math.random(1, #_chunkPool)
+	chunkcode = _chunkPool[rand_index]
+	i = 1
+	for c_hi = _c_y, (_c_y+_c_dim_h)-1, 1 do
+		for c_wi = _c_x, (_c_x+_c_dim_w)-1, 1 do
+			global_levelassembly.modification.levelcode[c_hi][c_wi] = chunkcode:sub(i, i)
+			i = i + 1
+		end
+	end
+end
+
 function gen_levelrooms_nonpath(unlock, prePath)
-	prePath = prePath or false
 	-- world setrooms
 	if HD_ROOMOBJECT.WORLDS[state.theme].setRooms ~= nil then
 		path_gen_setrooms(HD_ROOMOBJECT.WORLDS[state.theme].setRooms, prePath)
 	end
 
 	-- feeling structures
-	for feeling, feelingContent in ipairs(HD_ROOMOBJECT.FEELINGS) do
+	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 		if feeling_check(feeling) == true then
 			if feelingContent.genMethod ~= nil then
 				if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
 					if feelingContent.genMethod.method == nil then
-						message("feeling genMethod params missing! Couldn't execute spawn method.")
+						message("gen_levelrooms_nonpath: feeling genMethod params missing! Couldn't execute spawn method.")
 					else
-						feelingContent.genContent.method()
+						message("gen_levelrooms_nonpath: Executing feeling spawning method:")
+						feelingContent.genMethod.method()
 					end
 				end
 			end
@@ -6207,22 +6317,62 @@ function gen_levelrooms_nonpath(unlock, prePath)
 	
 	-- # TODO: HD_ROOMOBJECT.GENERIC
 			-- Remember to check THEME specific overrides (vault, kali)
-		-- alter
+		-- altar
 		-- idol
 		-- vault
 		-- side
+	if prePath == false then
+
+		path_gen_side()
+	end
+end
+
+-- Edits to the levelcode
+function gen_levelcode_fill()
+	levelcode_chunks() -- apply chunk tilecodes ()
+end
+ 
+function levelcode_chunks()
+	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
+	c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	for levelcode_yi = 1, c_hi_len, 1 do
+		for levelcode_xi = 1, c_wi_len, 1 do
+			tilename = global_levelassembly.modification.levelcode[levelcode_yi][levelcode_xi]
+
+			if HD_OBSTACLEBLOCK_TILENAME[tilename] ~= nil then
+				chunkCodes = nil
+
+				if (
+					HD_ROOMOBJECT.WORLDS[state.theme].obstacleBlocks ~= nil and
+					HD_ROOMOBJECT.WORLDS[state.theme].obstacleBlocks[tilename] ~= nil
+				) then
+					chunkCodes = HD_ROOMOBJECT.WORLDS[state.theme].obstacleBlocks[tilename]
+				elseif HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes ~= nil then
+					chunkCodes = HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes
+				end
+	
+				if chunkCodes ~= nil then
+					c_dim_h, c_dim_w = HD_OBSTACLEBLOCK_TILENAME[tilename].dim[1], HD_OBSTACLEBLOCK_TILENAME[tilename].dim[2]
+					levelcode_inject(chunkCodes, c_dim_h, c_dim_w, levelcode_yi, levelcode_xi)
+				else
+					message("levelcode_chunks: No chunkcodes available for tilename \"" .. tilename .. "\";")
+				end
+			end
+		end
+	end
 end
 
 function gen_levelcode_bake()
 	_x, _y = locate_cornerpos(1, 1) -- position of the topleft-most tile of the map
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
-	level_hi_len = levelh*8
-	level_wi_len = levelw*10
+	c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
+	c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
 	y = _y
-	for level_hi = 1, level_hi_len, 1 do
+	for level_hi = 1, c_hi_len, 1 do
 		x = _x
-		for level_wi = 1, level_wi_len, 1 do
+		for level_wi = 1, c_wi_len, 1 do
 			generate_tile(global_levelassembly.modification.levelcode[level_hi][level_wi], x, y, LAYER.FRONT)
 			x = x + 1
 		end
@@ -6255,16 +6405,16 @@ function levelcreation_setlevelcode_path(num, wi, hi)
 		for _, roomcont in ipairs(roomPool) do
 			if roomcont.subchunk_id ~= nil and roomcont.subchunk_id == num then
 				rand_index = math.random(1, #roomcont.roomcodes)
-				roomcode = roomcont.roomcodes[rand_index]
+				chunkcode = roomcont.roomcodes[rand_index]
 
-				message("   \'" .. num .. "\'; hi, wi: " .. hi .. ", " .. wi .. "; \"" .. roomcode .. "\";")
+				message("   \'" .. num .. "\'; hi, wi: " .. hi .. ", " .. wi .. "; \"" .. chunkcode .. "\";")
 				
-				level_hi_len = hi*8
-				level_wi_len = wi*10
+				c_hi_len = hi*HD_ROOMOBJECT.DIM.h
+				c_wi_len = wi*HD_ROOMOBJECT.DIM.w
 				i = 1
-				for room_hi = (level_hi_len-8)+1, level_hi_len, 1 do
-					for room_wi = (level_wi_len-10)+1, level_wi_len, 1 do
-						global_levelassembly.modification.levelcode[room_hi][room_wi] = roomcode:sub(i, i)
+				for room_hi = (c_hi_len-HD_ROOMOBJECT.DIM.h)+1, c_hi_len, 1 do
+					for room_wi = (c_wi_len-HD_ROOMOBJECT.DIM.w)+1, c_wi_len, 1 do
+						global_levelassembly.modification.levelcode[room_hi][room_wi] = chunkcode:sub(i, i)
 						i = i + 1
 					end
 				end

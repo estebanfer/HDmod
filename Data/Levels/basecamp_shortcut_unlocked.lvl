@@ -36,8 +36,8 @@
 \?crate_ropes                      R
 \?water                            w
 \?shortcut_station_banner          8
-\?campfix                          f
-
+\?hd_shortcuts                     f
+\?hd_tunnelman                     j
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@
 
 // room COPY
 \!dual
-\ignore
+\!ignore
 =L0bS000s0 XXXXXXXXXX
 =P======00 XXXXXXXXXX
 =L===0l000 XXXXXXXXXX
@@ -120,6 +120,7 @@
 1111111111 XXXXXXXXXX
 
 // room COPY
+\!ignore
 \!dual
 =L0bS000f0 XXXXXXXXXX
 =P======00 XXXXXXXXXX
@@ -128,6 +129,17 @@
 =L00000000 XXXXXXXXXX
 ========== XXXXXXXXXX
 11111111f1 XXXXXXXXXX
+1111111111 XXXXXXXXXX
+
+// room COPY
+\!dual
+=L0bS00000 XXXXXXXXXX
+=P======00 XXXXXXXXXX
+=L===0l000 XXXXXXXXXX
+=L00=000f0 XXXXXXXXXX
+=Lj0000000 XXXXXXXXXX
+========== XXXXXXXXXX
+1111111111 XXXXXXXXXX
 1111111111 XXXXXXXXXX
 
 ////////////////////////////////////////////////////////////////////////////////

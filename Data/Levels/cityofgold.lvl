@@ -1,14 +1,13 @@
-
 \-size                                   4 4        // level size in rooms
 \-back_room_chance                       0          // % chance of a second room (default = 5%)
-\-back_room_interconnection_chance       20         // % chance of a second room interconnection (default = 20%)
-\-back_room_hidden_door_chance           500        // 1/N chance of a hidden door (default = 500)
+\-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
+\-back_room_hidden_door_chance           0          // 1/N chance of a hidden door (default = 500)
 \-back_room_hidden_door_cache_chance     0          // 1/N chance of a hidden door to a cache (default = 1000)
-\-mount_chance                           5000       // 1/N chance of a mount (default = 5000)
+\-mount_chance                           0          // 1/N chance of a mount (default = 5000)
 \-altar_room_chance                      0          // 1/N chance of an altar room (default = 14)
 \-idol_room_chance                       0          // 1/N chance of an idol room (default = 10)
-\-floor_side_spread_chance               10         // 1/N chance of a spreadable floor spreading to its side (default = 10)
-\-floor_bottom_spread_chance             5          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
+\-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
+\-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 
 \?locked_door                      /
 \?stone_floor                      +
@@ -63,7 +62,7 @@
 \%crusher_trap_chance          30
 
 \+crocman               40
-\+leprechaun            80
+\+leprechaun            0
 \+critterlocust         80
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -428,7 +427,7 @@ A=000000=A
 ====00====
 
 ////////////////////////////////////////////////////////////////////////////////
-\.cog_altar_top   //  Top of COG's altar room
+\.cog_altar_top   // Top of COG's altar room
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -443,7 +442,7 @@ A=000000=A
 =000000a0=
 
 ////////////////////////////////////////////////////////////////////////////////
-\.altar   //  Bottom of COG's altar room
+\.altar   // Bottom of COG's altar room
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -458,7 +457,7 @@ A=000000=A
 =0======0=
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player   //  Coffin room holding a dead player (both sides must be open)
+\.coffin_player   // Coffin room holding a dead player (both sides must be open)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -472,7 +471,7 @@ A=000000=A
 ==========
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player_vertical   //  Coffin room holding a dead player (opened on all sides)
+\.coffin_player_vertical   // Coffin room holding a dead player (opened on all sides)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -487,7 +486,7 @@ A=000000=A
 ====00====
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_unlockable   //  Coffin room for unlockable characters (facing right, will flip for other side)
+\.coffin_unlockable   // Coffin room for unlockable characters (facing right, will flip for other side)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room

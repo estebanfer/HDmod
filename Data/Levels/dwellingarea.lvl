@@ -1,11 +1,11 @@
 \-size                                   4 4        // level size in rooms
-\-back_room_chance                       5          // % chance of a second room (default = 5%)
-\-back_room_interconnection_chance       20         // % chance of a second room interconnection (default = 20%)
-\-back_room_hidden_door_chance           500        // 1/N chance of a hidden door (default = 500)
-\-back_room_hidden_door_cache_chance     1000       // 1/N chance of a hidden door to a cache (default = 1000)
+\-back_room_chance                       0          // % chance of a second room (default = 5%)
+\-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
+\-back_room_hidden_door_chance           0          // 1/N chance of a hidden door (default = 500)
+\-back_room_hidden_door_cache_chance     0          // 1/N chance of a hidden door to a cache (default = 1000)
 \-mount_chance                           0          // 1/N chance of a mount (default = 5000)
-\-altar_room_chance                      14         // 1/N chance of an altar room (default = 14)
-\-idol_room_chance                       3          // 1/N chance of an idol room (default = 10)
+\-altar_room_chance                      0          // 1/N chance of an altar room (default = 14)
+\-idol_room_chance                       0          // 1/N chance of an idol room (default = 10)
 \-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
 \-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 \-machine_bigroom_chance                 0          // 1/N chance of spawning a machine big room (default = 0)
@@ -77,6 +77,7 @@
 \+spider                0                            // 80, 60, 60, 40
 \+critterdungbeetle     0
 \+cobra                 0                            // 130, 130, 100, 100
+\+caveman               0                            // COMMENT
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

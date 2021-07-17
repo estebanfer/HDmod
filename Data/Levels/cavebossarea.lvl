@@ -1,101 +1,89 @@
-// ------------------------------
-//  AREA ONE (CAVE BOSS LEVEL 1-4)
-// ------------------------------
+\-size                                   5 5        // level size in rooms
+\-back_room_chance                       0          // % chance of a second room (default = 5%)
+\-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
+\-back_room_hidden_door_chance           0          // 1/N chance of a hidden door (default = 500)
+\-back_room_hidden_door_cache_chance     0          // 1/N chance of a hidden door to a cache (default = 1000)
+\-mount_chance                           0          // 1/N chance of a mount (default = 5000)
+\-altar_room_chance                      0          // 1/N chance of an altar room (default = 14)
+\-idol_room_chance                       0          // 1/N chance of an idol room (default = 10)
+\-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
+\-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 
-\-size 5 5									// level size in rooms
-\-back_room_chance 0						// % chance of a second room (default = 5%)
-\-back_room_interconnection_chance 0		// % chance of a second room interconnection (default = 20%)
-\-back_room_hidden_door_chance 0			// 1/N chance of a hidden door (default = 500)
-\-back_room_hidden_door_cache_chance 0		// 1/N chance of a hidden door to a cache (default = 1000)
-\-mount_chance 5000							// 1/N chance of a mount (default = 5000)
-\-altar_room_chance 0						// 1/N chance of an altar room (default = 14)
-\-idol_room_chance 0						// 1/N chance of an idol room (default = 10)
-\-floor_side_spread_chance 10				// 1/N chance of a spreadable floor spreading to its side (default = 10)
-\-floor_bottom_spread_chance 5				// 1/N chance of a spreadable floor spreading to its bottom (default = 5)
+\?stone_floor                      +
+\?tomb_floor                       G
+\?haunted_corpse                   7
+\?shop_wall%50                     ;
+\?shop_woodwall                    :
+\?die                              %
+\?cavemanshopkeeper                &
+\?sleeping_hiredhand               \
+\?forcefield                       ?
+\?forcefield_top                   '
+\?thief                            J
+\?locked_door                      /
+\?bone_block                       f
+\?lockedchest                      c
+\?scorpion                         s
+\?caveman_asleep%50                n
+\?cookfire                         r
+\?turkey                           u
+\?idol                             I
+\?idol_floor                       i
+\?woodenlog_trap                   T
+\?woodenlog_trap_ceiling           C
+\?yang                             y
+\?pen_floor                        a
+\?pen_locked_door                  N
+\?chunk_ground                     5
+\?chunk_air                        6
+\?chunk_door                       8
+\?empty                            0
+\?floor                            1
+\?floor%50                         2
+\?minewood_floor_noreplace         =
+\?floor_hard                       X
+\?floor_hard%50%floor              Y
+\?adjacent_floor                   Z
+\?ladder                           L
+\?ladder_plat                      P
+\?platform                         p
+\?entrance_shortcut                x
+\?door                             9
+\?door2                            D
+\?door2_secret                     d
+\?spikes                           ^
+\?push_block                       4
+\?treasure                         t
+\?litwalltorch                     O
+\?cavemanboss                      B
+\?vault_wall                       |
+\?coffin                           g
+\?shop_sign                        K
+\?lamp_hang                        l
+\?shop_wall                        .
+\?shop_item                        S
+\?wanted_poster                    W
+\?shopkeeper                       $
+\?ghist_shopkeeper                 #
+\?ghist_door2                      k
+\?autowalltorch                    A
 
-// ------------------------------
-//  TILE CODES
-// ------------------------------
+\%arrowtrap_chance             25
+\%totemtrap_chance             25
+\%pushblock_chance             32
 
-\?chunk_ground				5
-\?chunk_air					6
-\?chunk_door				8 	// Chunk with entrance or exit in it
-	
-\?empty						0
-\?floor						1
-\?floor%50					2	// 50% chance of floor, 50% chance of empty
-\?minewood_floor_noreplace	=
-\?floor_hard				X	// Indestructible ("hard") floor
-\?floor_hard%50%floor		Y	// 50% chance of hard floor, 50% chance of regular floor
-\?adjacent_floor			Z	// Hard floor or empty depending on whether this leads to another second layer room
-\?ladder					L
-\?ladder_plat				P	// Ladder with platform across it
-\?platform					p
-\?entrance_shortcut			x
-\?door						9	// Exit or entrance
-\?door2						D	// Door to other Layer
-\?door2_secret				d	// Door to other Layer, with dirt/push block in front (20% chance for push block if there's a floor tile underneath)
-\?spikes					^
-\?push_block				4
-//\?arrow_trap				A
-	
-\?treasure					t	// Gold (30%), gem (30%), treasure chest (20%), crate (10%), bones/pot (5%), or nothing (5%)
-\?litwalltorch				O
-
-//\?snake					?
-//\?caveman					?
-\?cavemanboss				B
-	
-\?vault_wall				|	// Vault wall
-\?coffin					g	// Character coffin (NPC/Player)
-
-\?shop_sign					K
-\?shop_door					k
-\?lamp_hang					l
-\?shop_wall					.
-\?shop_item					S
-\?wanted_poster				W
-\?shopkeeper				$	// Shopkeeper and items
-
-\?ghist_shopkeeper			#	// Overrides merchant but that's ok
-\?ghist_door2				k	// Overrides shop_door but that's ok
-\?autowalltorch				A
-
-// ------------------------------
-//  LEVEL CHANCES
-// ------------------------------
-
-\%arrowtrap_chance 			25
-\%totemtrap_chance 			25
-\%pushblock_chance 			32
-
-// ------------------------------
-//  MONSTER CHANCES
-// ------------------------------
-
-\+snake					120
-\+bat					60
-\+caveman				90
-\+spider				40
-\+hornedlizard			30
-\+critterdungbeetle		120
-
-// ------------------------------
-//  TEMPLATES
-// ------------------------------
-//
-//  !ignore		Ignore the following template. This is to make building rooms easier.
-//  !flip		Flip the following template to make another. i.e. The following template = two templates.
-//  !onlyflip	Flip the following template (original is ignored)
-//  !dual		The next template contains both a frontal and back room
-//  !rare		The next template is rare (only 5% chance of a rare template being used).
-//  !hard		The next template is hard (only appear in the second two levels of the area).
-//  !liquid		The next template contains liquid (used to limit the number of liquid drops)
+\+snake                 120
+\+bat                   60
+\+caveman               90
+\+spider                40
+\+hornedlizard          30
+\+critterdungbeetle     120
 
 ////////////////////////////////////////////////////////////////////////////////
 \.setroom0-0
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 1111111111
 0000000000
@@ -106,6 +94,7 @@
 0000000000
 1111111111
 
+// room
 1111111111
 6000060000
 0000000000
@@ -115,6 +104,7 @@ f00pppp000
 ff20000200
 fff2002111
 
+// room
 0000011111
 000L060000
 00=P000000
@@ -128,6 +118,7 @@ f2==002111
 \.setroom0-1
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 0000000000
@@ -137,6 +128,7 @@ f2==002111
 0000000000
 1111111111
 
+// room
 1111111111
 6000060000
 0000000000
@@ -146,6 +138,7 @@ f2==002111
 00p2112p00
 1111111111
 
+// room
 \!flip
 1111111111
 2200000002
@@ -156,6 +149,7 @@ f2==002111
 021^^11120
 1111111111
 
+// room
 \!flip
 1111211111
 0002022000
@@ -166,6 +160,7 @@ f2==002111
 12^^^^^^21
 1111111111
 
+// room
 \!flip
 1111221111
 40000000L0
@@ -176,6 +171,7 @@ f2==002111
 00000120L0
 1111111111
 
+// room
 \!flip
 \!dual
 1111221111 XXXX00XXXX
@@ -191,6 +187,7 @@ f2==002111
 \.setroom0-2
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 11======11
 000====000
@@ -201,6 +198,7 @@ f2==002111
 000====000
 1111==1111
 
+// room
 \!flip
 111====111
 000====000
@@ -211,6 +209,7 @@ f2==002111
 0111==1110
 1111111111
 
+// room
 \!flip
 111====111
 0000000000
@@ -221,6 +220,7 @@ f2==002111
 1111==1111
 1111111111
 
+// room
 \!flip
 111====111
 0000000000
@@ -235,6 +235,7 @@ f2==002111
 \.setroom0-3
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 0000000000
@@ -244,6 +245,7 @@ f2==002111
 0000000000
 1111111111
 
+// room
 1111111111
 6000060000
 0000000000
@@ -253,6 +255,7 @@ f2==002111
 00p2112p00
 1111111111
 
+// room
 \!flip
 1111111111
 2200000002
@@ -263,6 +266,7 @@ f2==002111
 021^^11120
 1111111111
 
+// room
 \!flip
 1111211111
 0002022000
@@ -273,6 +277,7 @@ f2==002111
 12^^^^^^21
 1111111111
 
+// room
 \!flip
 1111221111
 40000000L0
@@ -283,6 +288,7 @@ f2==002111
 00000120L0
 1111111111
 
+// room
 \!flip
 \!dual
 1111221111 XXXX00XXXX
@@ -298,6 +304,7 @@ f2==002111
 \.setroom0-4
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 1111111111
 6000060000
@@ -308,6 +315,7 @@ f00pppp000
 ff20000200
 fff2002111
 
+// room
 \!onlyflip
 0000011111
 000L060000
@@ -322,6 +330,7 @@ f2==002111
 \.setroom1-0
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 f===001111
 f000000000
 f000220000
@@ -331,6 +340,7 @@ fff0000000
 11f1111111
 111111f111
 
+// room
 f1=0001111
 ff=0000000
 ff===00000
@@ -340,6 +350,7 @@ ff111f=111
 111f11=111
 111111=111
 
+// room
 \!dual
 \!rare
 f===001111 XXXXXXXXXX
@@ -355,6 +366,7 @@ fff0000000 00000211XX
 \.setroom1-1
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 1111111111
 0000000000
@@ -365,6 +377,7 @@ fff0000000 00000211XX
 1111111111
 1111111111
 
+// room
 0000000000
 0000000000
 0050000000
@@ -374,6 +387,7 @@ fff0000000 00000211XX
 1111111111
 1111111111
 
+// room
 0000000000
 0000000000
 0005000000
@@ -387,6 +401,7 @@ fff0000000 00000211XX
 \.setroom1-2
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 0000000000
@@ -396,6 +411,7 @@ ff100001ff
 fff0LL0fff
 11==PP==11
 
+// room
 11=1111=11
 0000000000
 0000LL0000
@@ -405,6 +421,7 @@ ff=0LL0=ff
 fff0LL0fff
 1===PP===1
 
+// room
 1111111111
 0000000000
 0000000000
@@ -415,9 +432,10 @@ ff00LL00ff
 1==pPPp==1
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player		// Coffin room holding a dead player (both sides must be open)
+\.coffin_player   // Coffin room holding a dead player (both sides must be open)
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 00L0g00L00
@@ -431,6 +449,7 @@ fff0LL0fff
 \.setroom1-3
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 1111111111
 0000000000
@@ -441,6 +460,7 @@ fff0LL0fff
 1111111111
 1111111111
 
+// room
 0000000000
 0000000000
 0050000000
@@ -450,6 +470,7 @@ fff0LL0fff
 1111111111
 1111111111
 
+// room
 0000000000
 0000000000
 0005000000
@@ -463,6 +484,7 @@ fff0LL0fff
 \.setroom1-4
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 f===001111
 f000000000
@@ -473,6 +495,7 @@ fff0000000
 11f1111111
 111111f111
 
+// room
 \!onlyflip
 f1=0001111
 ff=0000000
@@ -483,6 +506,7 @@ ff111f=111
 111f11=111
 111111=111
 
+// room
 \!onlyflip
 \!dual
 \!rare
@@ -499,6 +523,7 @@ fff0000000 00000211XX
 \.setroom2-0
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 =====11111 XX101XXXXX
 =000002211 X000000011
@@ -509,6 +534,7 @@ fff0000000 00000211XX
 1fffL00000 XX11111111
 1111111111 XXXY11YXXX
 
+// room
 \!dual
 =====11111 XX101XXXXX
 =000002211 X000000011
@@ -519,6 +545,7 @@ fff0000000 00000211XX
 1fffL00000 XX11111111
 1111111111 XXXY11YXXX
 
+// room
 \!dual
 =====11111 XX101XXXXX
 =000002211 X000000000
@@ -533,6 +560,7 @@ fff0000000 00000211XX
 \.setroom2-1
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 1111111111 XXXXXXXXXX
 1111111111 111111111X
@@ -543,6 +571,7 @@ fff0000000 00000211XX
 111=ff0000 111100111X
 111======= XXXX00XXXX
 
+// room
 \!dual
 1111111111 XXXXXXXXXX
 1111111111 100000000X
@@ -553,6 +582,7 @@ fff0000000 00000211XX
 111=ff0000 111111120X
 111======= X11000000X
 
+// room
 \!dual
 1111111111 XXXXXXXXXX
 1111111111 0L0000000X
@@ -567,6 +597,7 @@ fff0000000 00000211XX
 \.setroom2-2
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1110LL0111
 0000LL0000
 L000LL000L
@@ -580,6 +611,7 @@ L00000000L
 \.setroom2-3
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXXXXXXXX
@@ -591,6 +623,7 @@ L00000000L
 111=ff0000 111100111X
 111======= XXXX00XXXX
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXXXXXXXX
@@ -602,6 +635,7 @@ L00000000L
 111=ff0000 111111120X
 111======= X11000000X
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXXXXXXXX
@@ -617,6 +651,7 @@ L00000000L
 \.setroom2-4
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 \!dual
 =====11111 XX101XXXXX
@@ -628,6 +663,7 @@ L00000000L
 1fffL00000 XX11111111
 1111111111 XXXY11YXXX
 
+// room
 \!onlyflip
 \!dual
 =====11111 XX101XXXXX
@@ -639,6 +675,7 @@ L00000000L
 1fffL00000 XX11111111
 1111111111 XXXY11YXXX
 
+// room
 \!onlyflip
 \!dual
 =====11111 XX101XXXXX
@@ -654,6 +691,7 @@ L00000000L
 \.setroom3-0
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 1111111111 XXXY11YXXX
 1111111111 XXXY11YXXX
@@ -664,6 +702,7 @@ L00000000L
 1111=00000 1111111111
 1111111100 1111111111
 
+// room
 \!dual
 1111111111 XXXY11YXXX
 11111=1111 XXXY11YXXX
@@ -678,6 +717,7 @@ L00000000L
 \.setroom3-1
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 1111111111 XXXX00XXXX
 1111111111 XXYY00YXXX
@@ -689,9 +729,10 @@ L00000000L
 1111111111 1111111111
 
 ////////////////////////////////////////////////////////////////////////////////
-\.setroom3-2			// Ghist shop
+\.setroom3-2   // Ghist shop
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 1111111111 XXXXXXXXXX
 1111111111 XXXXXXXXXX
@@ -706,6 +747,7 @@ L00000000L
 \.setroom3-3
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXX00XXXX
@@ -721,6 +763,7 @@ L00000000L
 \.setroom3-4
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXY11YXXX
@@ -732,6 +775,7 @@ L00000000L
 1111=00000 1111111111
 1111111100 1111111111
 
+// room
 \!onlyflip
 \!dual
 1111111111 XXXY11YXXX
@@ -747,6 +791,7 @@ L00000000L
 \.setroom4-0
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111100
 0000000L00
 0000000P11
@@ -760,6 +805,7 @@ L00000000L
 \.setroom4-1
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 1100000000
@@ -773,6 +819,7 @@ L00000000L
 \.setroom4-2
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 111=======
 400=000004
@@ -787,6 +834,7 @@ L00000000L
 \.setroom4-3
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 1111111111
 0000000000
 0000000011
@@ -800,6 +848,7 @@ L00000000L
 \.setroom4-4
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 0011111111
 00L0000000
 11P0000000
@@ -810,9 +859,10 @@ L00000000L
 1111111111
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_unlockable		// Coffin room for unlockable characters (facing right, will flip for other side)
+\.coffin_unlockable   // Coffin room for unlockable characters (facing right, will flip for other side)
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 11=====111
 000000=000
 11=0g00000
@@ -826,16 +876,19 @@ L00000000L
 \.chunk_door
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 009000
 0===00
 =====2
 
+// room
 \!flip
 000000
 000020
 090010
 
+// room
 \!flip
 020000
 010900
@@ -845,25 +898,30 @@ L00000000L
 \.chunk_ground
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 00000
 00000
 00000
 
+// room
 \!flip
 01210
 01210
 p111p
 
+// room
 \!flip
 11110
 00000
 00000
 
+// room
 00000
 00000
 11111
 
+// room
 \!hard
 00000
 10001
@@ -873,41 +931,50 @@ p111p
 \.chunk_air
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 00000
 00000
 00000
 
+// room
 22222
 00000
 22222
 
+// room
 \!flip
 11100
 22200
 00000
 
+// room
 \!flip
 11100
 11100
 22200
 
+// room
 01110
 02220
 00000
 
+// room
 01110
 01110
 02220
 
+// room
 \!flip
 22200
 11100
 22200
 
+// room
 02220
 01110
 02220
 
+// room
 12121
 10101
 20202

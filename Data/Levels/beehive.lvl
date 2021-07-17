@@ -1,38 +1,68 @@
-// ------------------------------
-//  BEEHIVE SUBTHEME
-// ------------------------------
 
-// ------------------------------
-//  TILE CODES
-// ------------------------------
+\?ladder                           L
+\?ladder_plat                      P
+\?locked_door                      /
+\?stone_floor                      -
+\?tomb_floor                       G
+\?cursed_pot                       u
+\?litwalltorch                     O
+\?haunted_corpse                   7
+\?bone_block                       f
+\?shop_wall%50                     ;
+\?shop_woodwall                    :
+\?die                              %
+\?merchant                         #
+\?cavemanshopkeeper                &
+\?sleeping_hiredhand               \
+\?forcefield                       ?
+\?forcefield_top                   '
+\?thief                            J
+\?chunk_ground                     5
+\?chunk_air                        6
+\?chunk_door                       8
+\?empty                            0
+\?floor                            1
+\?floor%50                         2
+\?minewood_floor                   =
+\?floor_hard                       X
+\?floor_hard%50%floor              Y
+\?adjacent_floor                   Z
+\?vine                             v
+\?growable_vine                    V
+\?door                             9
+\?door2                            D
+\?spikes                           ^
+\?push_block                       4
+\?bush_block                       b
+\?thorn_vine                       *
+\?jungle_spear_trap                ~
+\?treasure                         t
+\?tree_base                        T
+\?cookfire                         r
+\?key                              s
+\?sister                           i
+\?altar                            x
+\?idol                             I
+\?vault_wall                       |
+\?coffin                           g
+\?shop_sign                        K
+\?shop_door                        k
+\?lamp_hang                        l
+\?shop_wall                        .
+\?shop_item                        S
+\?wanted_poster                    W
+\?shopkeeper                       $
+\?beehive_floor                    c
+\?beehive_floor%50                 z
 
-\?beehive_floor				c
-\?beehive_floor%50			z
-//\?honey_upwards			<
-//\?honey_downwards			>
 
-// ------------------------------
-//  MONSTER CHANCES
-// ------------------------------
-
-\+bee			5
-
-// ------------------------------
-//  TEMPLATES
-// ------------------------------
-//
-//  !ignore		Ignore the following template. This is to make building rooms easier.
-//  !flip		Flip the following template to make another. i.e. The following template = two templates.
-//  !onlyflip	Flip the following template (original is ignored)
-//  !dual		The next template contains both a frontal and back room
-//  !rare		The next template is rare (only 5% chance of a rare template being used).
-//  !hard		The next template is hard (only appear in the second two levels of the area).
-//  !liquid		The next template contains liquid (used to limit the number of liquid drops)
+\+bee                   0                            // 5
 
 ////////////////////////////////////////////////////////////////////////////////
 \.beehive
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 cccc00cccc
 ccz0000zcc
 ccz0000zcc
@@ -42,12 +72,24 @@ ccz0000zcc
 ccz0000zcc
 cccc00cccc
 
+// room COPY
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+
 ////////////////////////////////////////////////////////////////////////////////
 \.beehive_entrance
 ////////////////////////////////////////////////////////////////////////////////
 
-\!flip
+// room
 \!dual
+\!flip
+\!ignore
 cccc00cccc cccc00cccc
 cccz00zccc cc0000zccc
 ccz00000cc ccz000000c
@@ -56,3 +98,14 @@ ccz00000cc ccz000000c
 ccz0000ccc c000000ccc
 cccz00zccc cc00000zcc
 cccc00cccc cccz00zccc
+
+// room COPY
+\!dual
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX
+0000000000 XXXXXXXXXX

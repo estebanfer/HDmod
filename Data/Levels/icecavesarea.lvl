@@ -10,6 +10,8 @@
 \-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 \-background_chance                      6          // 1/N chance of putting a wall background where it fits (default = 1)
 \-ground_background_chance               5          // 1/N chance of putting a ground background where it fits (default = 1)
+\-max_liquid_particles                   4000       // Maximum number of liquid drops that can be created until no more liquid rooms are allowed
+\-flagged_liquid_rooms                   16          // Number of random rooms that will be flagged for being eligible to spawn liquid
 
 \?forcefield                       (
 \?locked_door                      /
@@ -78,12 +80,13 @@
 \?eggplant_child                   b
 
 
-\+ufo                   30
-\+landmine              15
-\+springtrap            15
-\+yeti                  15
-\+critterpenguin        40
-\+critterfirefly        0                            // 60
+\+ufo                   0
+\+landmine              0
+\+springtrap            0
+\+yeti                  0
+\+critterpenguin        0
+\+hd_procedural_mammoth         0
+\+hd_procedural_piranha         0
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

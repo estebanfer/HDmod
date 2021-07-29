@@ -69,15 +69,18 @@
 \?generation                       (
 
 \%arrowtrap_chance             0                            // 35, 35, 25, 25
-\%totemtrap_chance             0                            // 35, 35, 35, 35
 \%pushblock_chance             0                            // 25
 
 \+snake                 0                            // 40, 45, 50, 50
 \+bat                   0                            // 70
 \+spider                0                            // 80, 60, 60, 40
-\+critterdungbeetle     0
 \+cobra                 0                            // 130, 130, 100, 100
 \+caveman               0                            // COMMENT
+\+hd_procedural_powderkeg           100
+\+hd_procedural_critter_rat          0
+\+hd_procedural_scorpion            0
+\+hd_procedural_hangspider          0
+\+hd_procedural_giantspider         0
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

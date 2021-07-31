@@ -1,4 +1,4 @@
-meta.name = "Spelunky 2: HDmod"--HD 2"
+meta.name = "Spelunky 2: HDmod"
 meta.version = "0.0" -- Alpha, if anything.
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
@@ -14,27 +14,34 @@ meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_boss_exits_unlock", "Debug: Unlock boss exits",														false)
 register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-enduced feeling toasts",								false)
-register_option_bool("hd_debug_info_boss", "Debug: Bossfight debug info",															false)
-register_option_bool("hd_debug_info_boulder", "Debug: Boulder debug info",															false)
-register_option_bool("hd_debug_info_feelings", "Debug: Level feelings debug info",													false)
-register_option_bool("hd_debug_info_path", "Debug: Path debug info",																true)
-register_option_bool("hd_debug_info_tongue", "Debug: Wormtongue debug info",														false)
-register_option_bool("hd_debug_info_worldstate", "Debug: Worldstate debug info",													false)
+register_option_bool("hd_debug_info_boss", "Debug: Info - Bossfight",																false)
+register_option_bool("hd_debug_info_boulder", "Debug: Info - Boulder",																false)
+register_option_bool("hd_debug_info_feelings", "Debug: Info - Level Feelings",														false)
+register_option_bool("hd_debug_info_path", "Debug: Info - Path",																	true)
+register_option_bool("hd_debug_info_tongue", "Debug: Info - Wormtongue",															false)
+register_option_bool("hd_debug_info_worldstate", "Debug: Info - Worldstate",														false)
 register_option_bool("hd_debug_scripted_enemies_show", "Debug: Enable visibility of entities used in custom enemy behavior",		false)
 register_option_bool("hd_debug_item_botd_give", "Debug: Start with the Book of the Dead",											true)
-register_option_bool("hd_debug_scripted_levelgen_disable", "Debug: Disable Scripted Level Generation",								false)
-register_option_string("hd_debug_scripted_levelgen_tilecodes_prevent", "Debug: Prevent tilecodes from spawning",					"w3")
+register_option_bool("hd_debug_scripted_levelgen_disable", "Debug: Disable scripted level generation",								false)
+register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
+	"Debug: Blacklist scripted level generation tilecodes",
+	"w3"
+)
 register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)	
-register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD",							false)	-- Defaults to S2
-register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Revert enraging shopkeepers as they did in HD",					false)	-- Defaults to HD
+register_option_bool("hd_og_ankhprice", "OG: Item - Set the Ankh price to a constant $50,000 like it was in HD",					false)	-- Defaults to S2
+register_option_bool("hd_og_boulder_agro_disable", "OG: Traps - Revert enraging shopkeepers as they did in HD",						false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Revert preventing the ghost from splitting",						false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed",										false)	-- Defaults to S2
 register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Revert spawntime from 2:30->3:00 and 2:00->2:30 when cursed.",		false)	-- Defaults to HD
 register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning",														false)	-- Defaults to HD
 
--- # TODO:
-register_option_bool("hd_og_procedural_spawns_disable", "OG: Revert preserving HD's procedural spawn conditions",					false)	-- Defaults to HD
-register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
+-- # TODO: revise from the old system, removing old uses.
+-- Then, rename it to `hd_og_use_s2_spawns`
+-- Reimplement it into `is_valid_*_spawn` methods to change spawns.
+register_option_bool("hd_og_procedural_spawns_disable", "OG: Revert preserving HD's procedural spawning conditions",				false)	-- Defaults to HD
+
+-- # TODO: Influence the velocity of the boulder on every frame.
+-- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
 bool_to_number={ [true]=1, [false]=0 }
 
@@ -183,7 +190,7 @@ HD_FEELING = {
 		message = "My skin is crawling..."
 	},
 	["SNAKEPIT"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
@@ -193,7 +200,7 @@ HD_FEELING = {
 		message = "The dead are restless!"
 	},
 	["TIKIVILLAGE"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.JUNGLE }
 	},
 	["FLOODED"] = {
@@ -271,6 +278,9 @@ HD_SUBCHUNKID.IDOL = 9
 HD_SUBCHUNKID.ALTAR = 10
 
 HD_SUBCHUNKID.COFFIN_UNLOCKABLE = 74
+HD_SUBCHUNKID.COFFIN_UNLOCKABLE_NOTOP = 75
+HD_SUBCHUNKID.COFFIN_UNLOCKABLE_DROP = 76
+HD_SUBCHUNKID.COFFIN_UNLOCKABLE_DROP_NOTOP = 77
 
 HD_SUBCHUNKID.SHOP_REGULAR = 1000
 HD_SUBCHUNKID.SHOP_REGULAR_LEFT = 1001
@@ -313,6 +323,10 @@ HD_SUBCHUNKID.RESTLESS_IDOL = 148
 HD_SUBCHUNKID.SACRIFICIALPIT_TOP = 116
 HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION = 117
 HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM = 118
+
+HD_SUBCHUNKID.VLAD_TOP = 119
+HD_SUBCHUNKID.VLAD_MIDSECTION = 120
+HD_SUBCHUNKID.VLAD_BOTTOM = 121
 
 
 -- KNOWN HD IDs:
@@ -357,7 +371,7 @@ HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM = 118
 --HD_SUBCHUNKID. = 47					-- DaR Castle Entrance
 --HD_SUBCHUNKID. = 48					-- DaR Crystal Idol
 
--- "5", "6", "8", "F", "V", "r"
+-- "5", "6", "8", "F", "V", "("
 HD_OBSTACLEBLOCK = {}
 HD_OBSTACLEBLOCK.GROUND = {
 	tilename = "5",
@@ -399,7 +413,7 @@ HD_OBSTACLEBLOCK.VINE = {
 	}
 }
 HD_OBSTACLEBLOCK.TEMPLE = {
-	tilename = "r",
+	tilename = "(",
 	dim = {3,4},
 	chunkcodes = {
 		{"111100000000"},
@@ -420,8 +434,7 @@ HD_OBSTACLEBLOCK_TILENAME["6"] = HD_OBSTACLEBLOCK.AIR
 HD_OBSTACLEBLOCK_TILENAME["8"] = HD_OBSTACLEBLOCK.DOOR
 HD_OBSTACLEBLOCK_TILENAME["F"] = HD_OBSTACLEBLOCK.PLATFORM
 HD_OBSTACLEBLOCK_TILENAME["V"] = HD_OBSTACLEBLOCK.VINE
-HD_OBSTACLEBLOCK_TILENAME["r"] = HD_OBSTACLEBLOCK.TEMPLE
-
+HD_OBSTACLEBLOCK_TILENAME["("] = HD_OBSTACLEBLOCK.TEMPLE
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -449,7 +462,7 @@ HD_TILENAME = {
 				[THEME.VOLCANA] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
 			},
 		},
-		offset = { 0, -2 },
+		offset = { 0, -2.5 },
 		alternate_offset = {
 			[THEME.CITY_OF_GOLD] = { 0, 0 },
 			[THEME.TEMPLE] = { 0, 0 },
@@ -465,13 +478,13 @@ HD_TILENAME = {
 			-- ICE_CAVES: N/A(?)
 	},
 	["*"] = {
-		-- hd_type = HD_ENT.TRAP_SPIKEBALL
 		entity_types = {
 			default = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
 			alternate = {
 				[THEME.NEO_BABYLON] = {ENT_TYPE.ITEM_PLASMACANNON},
 			},
 		},
+		-- hd_type = HD_ENT.TRAP_SPIKEBALL
 		-- spawn method for plasma cannon should spawn a tile under it, stylized
 		description = "Spikeball",
 	},
@@ -657,13 +670,13 @@ HD_TILENAME = {
 		entity_types = {
 			default = {ENT_TYPE.FLOOR_LADDER},
 		},
-		description = "Ladder",
+		description = "Ladder (Strict)",
 	},
 	["H"] = {
 		entity_types = {
 			default = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		},
-		description = "Ladder Platform",
+		description = "Ladder Platform (Strict)",
 	},
 	["I"] = {
 		offset = { 0.5, 0 },
@@ -688,7 +701,7 @@ HD_TILENAME = {
 				[THEME.VOLCANA] = {ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN},
 			},
 		},
-		description = "Ladder",
+		description = "Ladder", -- sometimes used as Vine or Chain
 	},
 	["M"] = {
 		entity_types = {
@@ -714,16 +727,16 @@ HD_TILENAME = {
 		entity_types = {
 			default = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
 		},
-		description = "Ladder Platform",
+		description = "Ladder Platform (Strict)",
 	},
 	["Q"] = {
 		entity_types = {
-			default = {ENT_TYPE.FLOOR_LADDER},
+			default = {ENT_TYPE.FLOOR_GROWABLE_VINE},
 			alternate = {
-				[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},--GROWABLE_VINE},
-				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},--GROWABLE_VINE},
+				[THEME.JUNGLE] = {ENT_TYPE.FLOOR_GROWABLE_VINE},
+				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_GROWABLE_VINE},
 				[THEME.NEO_BABYLON] = {ENT_TYPE.MONS_ALIENQUEEN},
-				[THEME.VOLCANA] = {ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN},
+				[THEME.VOLCANA] = {ENT_TYPE.FLOOR_GROWABLE_VINE},--FLOOR_CHAINANDBLOCKS_CHAIN},
 			},
 		},
 		-- # TODO: Generate ladder to just above floor.
@@ -739,7 +752,9 @@ HD_TILENAME = {
 		description = "Shop Items",
 	},
 	["T"] = {
-		description = "Tree",
+		entity_types = {
+			default = {ENT_TYPE.FLOOR_TREE_BASE},
+		},
 		-- # TODO: Generation.
 		-- Use the following depreciated methods for a starting point:
 		
@@ -782,6 +797,7 @@ HD_TILENAME = {
 		-- 	end
 		-- end
 
+		description = "Tree",
 	},
 	["U"] = {
 		entity_types = {
@@ -844,9 +860,10 @@ HD_TILENAME = {
 		description = "Shop Floor",
 	},
 	["c"] = {
-		spawnfunction = function(params)
-			set_timeout(create_idol_crystalskull, 10)
-		end,
+		-- spawnfunction = function(params)
+		-- 	set_timeout(create_idol_crystalskull, 10)
+		-- end,
+		
 		offset = { 0.5, 0 },
 		description = "Crystal Skull",
 	},
@@ -979,9 +996,16 @@ HD_TILENAME = {
 		description = "Obstacle-Resistant Terrain",
 	},
 	["r"] = {
-		description = "Temple Obstacle Block", -- old description: "Mines Terrain/Temple Terrain/Pushblock"
-		-- # TODO: figure out what the alternate use for this is and how it spawns
-			-- Used in HD_SUBCHUNKID.RESTLESS_TOMB's roomcode.
+		description = "Terrain/Stone", -- old description: Mines Terrain/Temple Terrain/Pushblock
+		-- Used to be used for Temple Obstacle Block but it lead to conflictions
+		-- From 
+		entity_types = {
+			default = {
+				ENT_TYPE.FLOORSTYLED_STONE,
+				ENT_TYPE.FLOOR_GENERIC,
+				-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
+			},
+		},
 	},
 	["s"] = {
 		embedded_ents = {ENT_TYPE.FLOOR_SPIKES},
@@ -1065,6 +1089,10 @@ HD_TILENAME = {
 		-- one occasion in tutorial it's an arrow trap
 		description = "Tutorial Controls Display",
 	},
+	["("] = {
+		-- Had to create a new tile for Temple's obstacle tile because there were conflictions with "r" in Jungle.
+		description = "Temple Obstacle Block",
+	}
 		-- description = "Unknown",
 }
 
@@ -1644,6 +1672,53 @@ HD_ROOMOBJECT.FEELINGS["SNAKEPIT"] = {
 		}
 	}
 }
+-- -- Why is this not spawning the bottom room??
+-- level_generation_method_structure_vertical(
+-- 	{
+-- 		subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
+-- 		roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
+-- 	},
+-- 	{
+-- 		bottom = {
+-- 			subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM,
+-- 			roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
+-- 		}
+-- 	},
+-- 	{1, 4},
+-- 	0
+-- )
+function level_generation_method_structure_vertical(_structure_top, _structure_parts, _struct_x_pool, _midheight_min)
+	_midheight_min = _midheight_min or 0
+	
+	_, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	
+	structx = _struct_x_pool[math.random(1, #_struct_x_pool)]
+
+	-- spawn top
+	levelcode_inject_roomcode(_structure_top.subchunk_id, _structure_top.roomcodes, 1, structx)
+
+	if _structure_parts ~= nil then
+		midheight = (_midheight_min == 0) and 0 or math.random(_midheight_min, levelh-2)
+		-- if _midheight_min == 0 then
+		-- 	midheight = 0
+		-- else
+		-- 	midheight = math.random(_midheight_min, levelh-2)
+		-- end
+
+		-- spawn middle
+		if _structure_parts.middle ~= nil then
+			
+			for i = 2, 1+midheight, 1 do
+				levelcode_inject_roomcode(_structure_parts.middle.subchunk_id, _structure_parts.middle.roomcodes, i, structx)
+			end
+		end
+		-- spawn bottom
+		if _structure_parts.bottom ~= nil then
+			levelcode_inject_roomcode(_structure_parts.bottom.subchunk_id, _structure_parts.bottom.roomcodes, 1+midheight+1, structx)
+		end
+	end
+end
+
 -- Spawn Steps:
 	-- 106
 		-- levelw, levelh = get_levelsize()
@@ -1658,21 +1733,41 @@ HD_ROOMOBJECT.FEELINGS["SNAKEPIT"] = {
 	-- 108
 		-- spawn 108 at struct_midheight+1, structx
 HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.method = function()
-	-- 106
-	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
-	structx = math.random(1, levelw)
-	-- spawn 106 at 1, structx
-	levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_TOP, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_TOP], 1, structx)
+	-- -- 106
+	-- levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	-- structx = math.random(1, levelw)
+	-- -- spawn 106 at 1, structx
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_TOP, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_TOP], 1, structx)
 
-	-- 107
-	struct_midheight = math.random(1, levelh-2)
-	for i = 2, 1+struct_midheight, 1 do
-		--spawn 107 at i, structx
-		levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION], i, structx)
-	end
-	-- 108
-	-- spawn 108 at structx, struct_midheight+1
-	levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM], 1+struct_midheight+1, structx)
+	-- -- 107
+	-- struct_midheight = math.random(1, levelh-2)
+	-- for i = 2, 1+struct_midheight, 1 do
+	-- 	--spawn 107 at i, structx
+	-- 	levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION], i, structx)
+	-- end
+	-- -- 108
+	-- -- spawn 108 at structx, struct_midheight+1
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.SNAKEPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM], 1+struct_midheight+1, structx)
+
+	level_generation_method_structure_vertical(
+		{
+			subchunk_id = HD_SUBCHUNKID.SNAKEPIT_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_TOP]
+		},
+		{
+			middle = {
+				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION]
+			},
+			bottom = {
+				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].genMethod.rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM]
+			}
+		},
+		{1, 2, 3, 4},
+		1
+	)
+	
 end
 
 
@@ -1785,9 +1880,9 @@ HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
 		prePath = true,
 		rooms = {
 			[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
-				{
-					"++++++++++++000000++++0T0000+++++000++++++++00++++++++00++++++++00++++++++00++++",
-					"++++++++++++000000++++0000T0++++++000+++++++00++++++++00++++++++00++++++++00++++",
+				{-- replaced tilecodes: tree ("T") with door ("9") (and fill the 0 tile underneath it)
+					"++++++++++++000000++++090000++++++00++++++++00++++++++00++++++++00++++++++00++++",
+					"++++++++++++000000++++000090++++++00++++++++00++++++++00++++++++00++++++++00++++",
 				}
 			},
 			[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM] = {{"++++00++++++++00++++++++00++++++++00++++++000000++0+++00+++000++00++000000000000"}}
@@ -1795,12 +1890,27 @@ HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
 	}
 }
 HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.method = function()
-	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
-	structx = (math.random(2) == 2) and 1 or #global_levelassembly.modification.levelrooms
+	-- levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	-- structx = (math.random(2) == 2) and 1 or #global_levelassembly.modification.levelrooms
 
-	levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP, HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP], 1, structx)
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP, HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP], 1, structx)
 
-	levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM, HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM], 2, structx)
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM, HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM], 2, structx)
+
+	level_generation_method_structure_vertical(
+		{
+			subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
+		},
+		{
+			bottom = {
+				subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].genMethod.rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
+			}
+		},
+		{1, 4}
+		-- ,0
+	)
 end
 HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
 	genMethod = {
@@ -1812,6 +1922,7 @@ HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
 		}
 	}
 }
+
 -- Notes:
 	-- start from top
 	-- seems to always be top to bottom
@@ -1829,21 +1940,41 @@ HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
 	-- 118
 		-- spawn 118 at structx, struct_midheight+1
 HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod = function()
-	-- 106
-	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
-	structx = math.random(1, levelw)
-	-- spawn 106 at 1, structx
-	levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_TOP, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP], 1, structx)
+	-- -- 106
+	-- levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	-- structx = math.random(1, levelw)
+	-- -- spawn 106 at 1, structx
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_TOP, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP], 1, structx)
 
-	-- 107
-	struct_midheight = levelh-2
-	for i = 1, struct_midheight, 1 do
-		--spawn 107 at i, structx
-		levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION], i, structx)
-	end
-	-- 108
-	-- spawn 108 at struct_midheight+1, structx
-	levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM], struct_midheight+1, structx)
+	-- -- 107
+	-- struct_midheight = levelh-2
+	-- for i = 1, struct_midheight, 1 do
+	-- 	--spawn 107 at i, structx
+	-- 	levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION], i, structx)
+	-- end
+	-- -- 108
+	-- -- spawn 108 at struct_midheight+1, structx
+	-- levelcode_inject_roomcode(HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM, HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM], struct_midheight+1, structx)
+
+	
+	level_generation_method_structure_vertical(
+		{
+			subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP]
+		},
+		{
+			middle = {
+				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION]
+			},
+			bottom = {
+				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].genMethod.rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM]
+			}
+		},
+		{1, 2, 3, 4},
+		2
+	)
 end
 -- HD_ROOMOBJECT.FEELINGS["RESTLESS"] = {
 -- 	genMethod = {
@@ -1851,19 +1982,43 @@ end
 -- 		rooms = {
 -- 			-- # TODO: replace tilecodes:
 -- 				-- Hell Terrain ("h") with door ("9")
--- 				-- Mines Terrain/Temple Terrain/Pushblock ("r") with tilecodes seen in hd in-game
+-- 				-- Mines Terrain/Temple Terrain/Pushblock ("r" (or "("))) with tilecodes seen in hd in-game
 -- 		}
 -- 	}
 -- }
--- HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
--- 	genMethod = {
--- 		prePath = true,
--- 		rooms = {
--- 			-- # TODO: replace tilecodes:
--- 				-- tree ("T") with door ("9")
--- 		}
--- 	}
--- }
+HD_ROOMOBJECT.FEELINGS["HELL"] = {
+	genMethod = {
+		prePath = true,
+		rooms = {
+			[HD_SUBCHUNKID.VLAD_TOP] = {{"0000hh000000shhhhs000shhhhhhs00hhhU0hhh0shh0000hhshhhh00hhhhhhQ0000Qhhhh000000hh"}},
+			[HD_SUBCHUNKID.VLAD_MIDSECTION] = {{
+				"hh000000hhhh0V0000hhhh000000hhhh000000hhhh000000hhhhh00000hhhhQ0hhhhhhhh0qhhhhhh",
+				"hh000000hhhh0V0000hhhh000000hhhh000000hhhh000000hhhh00000hhhhhhhhh0Qhhhhhhhhq0hh"
+			}},
+			[HD_SUBCHUNKID.VLAD_BOTTOM] = {{"hh0L00L0hhhhhL00Lhhh040L00L040hhhL00Lhhhhh0L00L0hh040ssss040hhshhhhshhhhhhhhhhhh"}},
+		}
+	}
+}
+HD_ROOMOBJECT.FEELINGS["HELL"].genMethod = function()
+	level_generation_method_structure_vertical(
+		{
+			subchunk_id = HD_SUBCHUNKID.VLAD_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS["HELL"].genMethod.rooms[HD_SUBCHUNKID.VLAD_TOP]
+		},
+		{
+			middle = {
+				subchunk_id = HD_SUBCHUNKID.VLAD_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["HELL"].genMethod.rooms[HD_SUBCHUNKID.VLAD_MIDSECTION]
+			},
+			bottom = {
+				subchunk_id = HD_SUBCHUNKID.VLAD_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["HELL"].genMethod.rooms[HD_SUBCHUNKID.VLAD_BOTTOM]
+			}
+		},
+		{1, 2, 3, 4},
+		2
+	)
+end
 
 HD_ROOMOBJECT.WORLDS = {}
 HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
@@ -2240,25 +2395,25 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	-- unlockable coffin spawns at roomy == 11
 	-- # TODO: When placing new roomcodes here, replace "v" tiles with "3"
 	
-	-- setRooms = {
-	-- 	{
-	-- 		-- prePath = false,
-	-- 		subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_LEFTSIDE,
-	-- 		placement = {6, 1},
-	-- 		roomcodes = {
-	-- 			-- "0000000dd00011111110011333333w013wwwwwww013wwwwwww011cwwwwww00111111110000000000"
-	-- 			"0000000dd00011111110011333333w013wwwwwww013wwwwwww011wwwwwww00111111110000000000" -- without crystal skull spawn
-	-- 		}
-	-- 	},
-	-- 	{
-	-- 		-- prePath = false,
-	-- 		subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_RIGHTSIDE,
-	-- 		placement = {6, 2},
-	-- 		roomcodes = {
-	-- 			"0dd00000000111111100w333333110wwwwwww310wwwwwww310wwwwwww11011111111000000000000"
-	-- 		}
-	-- 	}
-	-- },
+	setRooms = {
+		{
+			-- prePath = false,
+			subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_LEFTSIDE,
+			placement = {6, 1},
+			roomcodes = {
+				{"0000000dd00011111110011333333w013wwwwwww013wwwwwww011cwwwwww00111111110000000000"}
+				-- {"0000000dd00011111110011333333w013wwwwwww013wwwwwww011wwwwwww00111111110000000000"} -- without crystal skull spawn
+			}
+		},
+		{
+			-- prePath = false,
+			subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_RIGHTSIDE,
+			placement = {6, 2},
+			roomcodes = {
+				{"0dd00000000111111100w333333110wwwwwww310wwwwwww310wwwwwww11011111111000000000000"}
+			}
+		}
+	},
 	sideRooms = {
 		{"0dd0000dd02d0dddd0d20ddd00ddd02d0dddd0d20ddd00ddd000dddddd0011d0000d111111001111"},
 	},
@@ -2507,6 +2662,8 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
+	-- TODO: Replace all "r" tiles with "("
+
 	-- sideRooms = {
 	-- 	{""},
 	-- },
@@ -3329,19 +3486,6 @@ function onlevel_dangers_init()
 			end
 			table.insert(global_dangers, oldbitey) 
 		end
-		
-		if (options.hd_og_boulder_phys == true and
-			state.theme == THEME.DWELLING and
-			(
-				state.level == 2 or
-				state.level == 3 or
-				state.level == 4
-			)
-		) then		
-			boulder_modified = TableCopy(HD_ENT.BOULDER)
-			-- boulder_modified.?
-			table.insert(global_dangers, boulder_modified)
-		else table.insert(global_dangers, HD_ENT.BOULDER) end
 	end
 end
 
@@ -3748,31 +3892,36 @@ end
 
 -- creates mothership entrance
 function create_door_exit_to_mothership(x, y, l)
-	get_entity(spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_BABYLON_1)
+	-- _door_uid = spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
+	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_BABYLON_1)
+	get_entity(door_bg).animation_frame = 1
+	set_door_target(door_target, 3, 3, THEME.NEO_BABYLON)
 end
 
 -- creates blackmarket entrance
 function create_door_exit_to_blackmarket(x, y, l)
-	DOOR_EXIT_TO_BLACKMARKET_UID = spawn_door(x, y, l, state.world, state.level+1, state.theme)
+	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
+	get_entity(door_bg).animation_frame = 1
+	set_door_target(door_target, state.world, state.level_next, state.theme)
+	DOOR_EXIT_TO_BLACKMARKET_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
 	-- spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
 	set_interval(entrance_blackmarket, 1)
 end
 
 function create_door_exit_to_hauntedcastle(x, y, l)
-	-- # TODO: Haunted Castle Extra Item Spawns;
-	-- Spawn king's tombstone
-		-- Change skin to king
-
-	-- 2 tiles down
-		-- Spawn skeleton
-		-- Spawn Crown
-			-- Reskin ITEM_DIAMOND as gold crown
-			-- (worth $5000 in HD, might as well leave price the same as diamond)
-	
-	-- 4 tiles down
-		-- spawn hidden entrance
-			-- Ask around the discord for a way to make the hidden door jingle go off
-	DOOR_EXIT_TO_HAUNTEDCASTLE_UID = spawn_door(x, y-4, l, state.world, state.level+1, state.theme)
+	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
+	get_entity(door_bg).animation_frame = 1
+	set_door_target(door_target, state.world, state.level_next, state.theme)
+	DOOR_EXIT_TO_HAUNTEDCASTLE_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
 	set_interval(entrance_hauntedcastle, 1)
 end
 
@@ -4159,6 +4308,9 @@ function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 			state.level_next = l_b
 			state.world_next = w_b
 			state.theme_next = t_b
+			if t_b == THEME.BASE_CAMP then
+				state.screen_next = ON.CAMP
+			end
 		end
 	end
 end
@@ -4644,12 +4796,13 @@ set_callback(function(room_gen_ctx)
 			-- #TODO: Add global_procedural_spawns once you implement them
 		end
 
-		level_w, level_h = 4, 4
-		if state.theme == THEME.EGGPLANT_WORLD then
-			level_w, level_h = 2, 12
-		end
-		for y = 0, level_h - 1 do
-		    for x = 0, level_w - 1 do
+		level_w, level_h = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+		-- level_w, level_h = 4, 4
+		-- if state.theme == THEME.EGGPLANT_WORLD then
+		-- 	level_w, level_h = 2, 12
+		-- end
+		for y = 0, level_h - 1, 1 do
+		    for x = 0, level_w - 1, 1 do
 				template_to_set = ROOM_TEMPLATE.SIDE
 				
 				if options.hd_debug_scripted_levelgen_disable == false then
@@ -4659,9 +4812,24 @@ set_callback(function(room_gen_ctx)
 					--]]
 					_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
 					
-					-- path
-					if ((_template_hd >= 1) and (_template_hd <= 8)) then
+					-- normal paths
+					if (
+						(_template_hd >= 1) and (_template_hd <= 8)
+					) then
 						template_to_set = _template_hd
+					-- tikivillage paths
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH then
+						template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP then
+						template_to_set = ROOM_TEMPLATE.PATH_DROP
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP then
+						template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP then
+						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT then
+						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
+						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
 					
 					-- shop
 					elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR) then
@@ -4838,7 +5006,7 @@ set_callback(function()
 	-- onlevel_add_crysknife()
 	-- onlevel_add_botd()
 
-	onlevel_hide_yama()
+	-- onlevel_hide_yama()
 	onlevel_acidbubbles()
 	onlevel_boss_init()
 	onlevel_toastfeeling()
@@ -4994,12 +5162,6 @@ function onloading_levelrules()
 	-- Hell -> Yama
 		-- Build Yama in Tiamat's chamber.
 	changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,THEME.TIAMAT)
-	
-	-- Tutorial/Testing -> Camp
-	-- # TOFIX: state.screen_next = ON.CAMP not working.
-	if HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL and state.theme_next == THEME.BASE_CAMP then
-		state.screen_next = ON.CAMP
-	end
 
 	-- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
 	-- message(format_name)
@@ -5709,20 +5871,33 @@ function onlevel_add_crysknife()
 	end
 end
 
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	-- SORRY, NOTHING
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_YAMA_PLATFORM)
+
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	-- SORRY, NOTHING
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.BG_YAMA_BODY)
+
+set_post_entity_spawn(function(entity)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+	entity.flags = set_flag(entity.flags, ENT_FLAG.TAKE_NO_DAMAGE) -- Unneeded(?)
+	entity.flags = set_flag(entity.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_YAMA)
 -- # TODO: Relocate MONS_YAMA to a better place. Can't move him to back layer, it triggers the slow music :(
 	-- OR: improve hiding him. Could use set_post_entity_spawn.
-function onlevel_hide_yama()
-	if state.theme == THEME.EGGPLANT_WORLD then
-		kill_entity(get_entities_by_type(ENT_TYPE.BG_YAMA_BODY)[1])
-		for i, yama_floor in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_YAMA_PLATFORM)) do
-			kill_entity(yama_floor)
-		end
-		local yama = get_entity(get_entities_by_type(ENT_TYPE.MONS_YAMA)[1]):as_movable()
-		yama.flags = set_flag(yama.flags, ENT_FLAG.INVISIBLE)
-		yama.flags = set_flag(yama.flags, ENT_FLAG.TAKE_NO_DAMAGE) -- Unneeded(?)
-		yama.flags = set_flag(yama.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
-	end
-end
+-- function onlevel_hide_yama()
+-- 	if state.theme == THEME.EGGPLANT_WORLD then
+-- 		kill_entity(get_entities_by_type(ENT_TYPE.BG_YAMA_BODY)[1])
+-- 		for i, yama_floor in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_YAMA_PLATFORM)) do
+-- 			kill_entity(yama_floor)
+-- 		end
+-- 		local yama = get_entity(get_entities_by_type(ENT_TYPE.MONS_YAMA)[1]):as_movable()
+-- 		yama.flags = set_flag(yama.flags, ENT_FLAG.INVISIBLE)
+-- 		yama.flags = set_flag(yama.flags, ENT_FLAG.TAKE_NO_DAMAGE) -- Unneeded(?)
+-- 		yama.flags = set_flag(yama.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
+-- 	end
+-- end
 
 -- # TODO: Once COG generation is done, move into tile spawning
 function onlevel_add_botd()
@@ -7681,14 +7856,14 @@ function levelcode_bake_spawn()
 			_tilechar = global_levelassembly.modification.levelcode[level_hi][level_wi]
 			hd_tiletype, hd_tiletype_post = HD_TILENAME[_tilechar], HD_TILENAME[_tilechar]
 			if hd_tiletype ~= nil then
-				-- if string.find(_tilechar, options.hd_debug_scripted_levelgen_tilecodes_prevent) == false then message("PLOOP FALSE!!") end
-				-- if (
-				-- 	options.hd_debug_scripted_levelgen_tilecodes_prevent == nil or
-				-- 	(
-				-- 		options.hd_debug_scripted_levelgen_tilecodes_prevent ~= nil and
-				-- 		string.find(_tilechar, options.hd_debug_scripted_levelgen_tilecodes_prevent) == false
-				-- 	)
-				-- ) then
+				-- if string.find(_tilechar, options.hd_debug_scripted_levelgen_tilecodes_blacklist) == false then message("PLOOP FALSE!!") end
+				if (
+					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
+					(
+						options.hd_debug_scripted_levelgen_tilecodes_blacklist ~= nil and
+						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
+					)
+				) then
 					l = LAYER.FRONT
 					-- need subchunkid of what room we're in
 					roomx, roomy = locate_roompos_levelassembly(level_wi, level_hi)
@@ -7712,7 +7887,20 @@ function levelcode_bake_spawn()
 							create_door_exit_to_mothership(x, y, l)
 						elseif (_subchunk_id == HD_SUBCHUNKID.RESTLESS_TOMB) then
 							-- Haunted Castle entrance door; Spawn skeleton with crown and hidden castle entrance door
-							create_door_exit_to_hauntedcastle(x, y, l)
+							-- # TODO: Haunted Castle Extra Item Spawns;
+							-- Spawn king's tombstone
+								-- Change skin to king
+
+							-- 2 tiles down
+								-- Spawn skeleton
+								-- Spawn Crown
+									-- Reskin ITEM_DIAMOND as gold crown
+									-- (worth $5000 in HD, might as well leave price the same as diamond)
+							
+							-- 4 tiles down
+								-- spawn hidden entrance
+									-- Ask around the discord for a way to make the hidden door jingle go off
+							create_door_exit_to_hauntedcastle(x, y-4, l)
 						end
 					-- coffins
 					elseif _tilechar == "g" then
@@ -7796,7 +7984,7 @@ function levelcode_bake_spawn()
 					end
 	
 					if hd_tiletype_post.spawnfunction ~= nil then hd_tiletype_post.spawnfunction({x, y, l}) end
-				-- end
+				end
 			end
 
 			x = x + 1

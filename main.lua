@@ -337,15 +337,6 @@ HD_FEELING = {
 			THEME.JUNGLE
 		}
 	},
-	["VAULT"] = {
-		themes = {
-			THEME.DWELLING,
-			THEME.JUNGLE,
-			THEME.ICE_CAVES,
-			THEME.TEMPLE,
-			THEME.VOLCANA
-		}
-	},
 	["SPIDERLAIR"] = {
 		chance = 0,
 		themes = { THEME.DWELLING },
@@ -366,7 +357,7 @@ HD_FEELING = {
 		themes = { THEME.JUNGLE }
 	},
 	["FLOODED"] = {
-		chance = 1,
+		chance = 0,
 		themes = { THEME.JUNGLE },
 		message = "I hear rushing water!"
 	},
@@ -407,6 +398,14 @@ HD_FEELING = {
 		themes = { THEME.VOLCANA },
 		load = 1,
 		message = "A horrible feeling of nausea comes over you!"
+	},
+	["VAULT"] = {
+		themes = {
+			THEME.DWELLING,
+			THEME.JUNGLE,
+			THEME.ICE_CAVES,
+			THEME.TEMPLE
+		}
 	},
 }
 
@@ -476,7 +475,7 @@ HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT = 1037
 
 HD_SUBCHUNKID.FLOODED_EXIT = 1101
 HD_SUBCHUNKID.FLOODED_PATH = 1102
-HD_SUBCHUNKID.FLOODED_PATH_NOTOP = 1103
+HD_SUBCHUNKID.FLOODED_SIDE = 1103
 HD_SUBCHUNKID.FLOODED_OLBITEY = 1104
 HD_SUBCHUNKID.FLOODED_BOTTOM = 1105
 HD_SUBCHUNKID.FLOODED_UNLOCK_LEFTSIDE = 1145
@@ -1612,7 +1611,7 @@ HD_ROOMOBJECT.TUTORIAL[3] = {
 		{
 			subchunk_id = -1,
 			placement = {2, 2},
-			roomcodes = {{"11111110011111110000000u0u00000o00000000v111110000v111110000v111110I001111111AA1"}}
+			roomcodes = {{"11111110011111110000000u0u00000o00000000v111110000v111110000v111110I001111111A01"}}
 		},
 		{
 			subchunk_id = -1,
@@ -1934,6 +1933,7 @@ HD_ROOMOBJECT.FEELINGS["VAULT"] = {
 					HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
 				) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
 			}
+			-- ,feeling_check("FLOODED")
 		)
 	end
 }
@@ -2020,7 +2020,7 @@ HD_ROOMOBJECT.FEELINGS["RESTLESS"] = {
 	prePath = false,
 	rooms = {
 		[HD_SUBCHUNKID.RESTLESS_IDOL] = {
-			{"tttttttttttttttttttttt00c000tt0tt0AA0tt00400000040ttt0tt0ttttt000000tt1111111111"}
+			{"tttttttttttttttttttttt00c000tt0tt0A00tt00400000040ttt0tt0ttttt000000tt1111111111"}
 		},
 		[HD_SUBCHUNKID.RESTLESS_TOMB] = {
 			{
@@ -2145,7 +2145,7 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"] = {
 	prePath = false,
 	rooms = {
 		[HD_SUBCHUNKID.FLOODED_EXIT] = {{"000000000000000900000221111220wwvvvvvvwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}},
-		[HD_SUBCHUNKID.FLOODED_PATH] = {
+		[HD_SUBCHUNKID.FLOODED_SIDE] = {
 			{"000000000000000000000001111000w,,vvvv,,wwwww,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 			{"000000000000000000001200000000vvwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 			{"000000000000000000000000000021wwwwwwwwvvwwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
@@ -2187,12 +2187,12 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"].method = function()
 		
 		-- path
 		if path_to_replace == HD_SUBCHUNKID.PATH or path_to_replace == nil then
-			path_to_replace_with = HD_SUBCHUNKID.FLOODED_PATH
+			path_to_replace_with = HD_SUBCHUNKID.FLOODED_SIDE
 		end
 	
 		-- path_notop
-		if path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
-			path_to_replace_with = HD_SUBCHUNKID.FLOODED_PATH_NOTOP
+		if path_to_replace == HD_SUBCHUNKID.PATH or path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
+			path_to_replace_with = HD_SUBCHUNKID.FLOODED_PATH
 		end
 	
 		-- exit
@@ -2220,9 +2220,19 @@ HD_ROOMOBJECT.FEELINGS["MOAI"] = {
 	}
 }
 HD_ROOMOBJECT.FEELINGS["MOAI"].method = function()
-	-- -- # TODO: Moai generation appears to be: chance of either replace a path or place aside of the path (test in HD if it's always on the middle two layers or not)
-	-- subchunk_id = HD_SUBCHUNKID.MOAI,
-	-- roomcodes = HD_ROOMOBJECT.FEELINGS["MOAI"].rooms[HD_SUBCHUNKID.MOAI]
+	-- # TOFIX: Moai generation appears to be: chance of either replace a path or place aside of the path (test in HD if it's always on the middle two layers or not)
+	level_generation_method_aligned(
+		{
+			left = {
+				subchunk_id = HD_SUBCHUNKID.MOAI,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["MOAI"].rooms[HD_SUBCHUNKID.MOAI]
+			},
+			right = {
+				subchunk_id = HD_SUBCHUNKID.MOAI,
+				roomcodes = HD_ROOMOBJECT.FEELINGS["MOAI"].rooms[HD_SUBCHUNKID.MOAI]
+			}
+		}
+	)
 end
 
 HD_ROOMOBJECT.FEELINGS["UFO"] = {
@@ -2526,7 +2536,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"},
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111AA1111"}}
+		[HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}}
 	},
 	coffin_unlockable = {
 		{
@@ -5108,6 +5118,7 @@ set_callback(function(room_gen_ctx)
 						(_template_hd >= 1) and (_template_hd <= 8)
 					) then
 						template_to_set = _template_hd
+
 					-- tikivillage paths
 					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH then
 						template_to_set = ROOM_TEMPLATE.PATH_NORMAL
@@ -5121,7 +5132,15 @@ set_callback(function(room_gen_ctx)
 						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
 					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
 						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-					
+
+					-- flooded paths
+					elseif _template_hd == HD_SUBCHUNKID.FLOODED_SIDE then
+						template_to_set = ROOM_TEMPLATE.SIDE
+					elseif _template_hd == HD_SUBCHUNKID.FLOODED_PATH_NOTOP then
+						template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+					elseif _template_hd == HD_SUBCHUNKID.FLOODED_EXIT then
+						template_to_set = ROOM_TEMPLATE.EXIT_NOTOP
+
 					-- shop
 					elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR) then
 						template_to_set = ROOM_TEMPLATE.SHOP
@@ -5693,26 +5712,35 @@ function onlevel_generation_modification()
 		levelrooms = levelrooms_setn(levelw, levelh),
 		levelcode = levelcode_setn(levelw, levelh)
 	}
-	unlock = set_run_unlock()
-
-	gen_levelrooms_nonpath(unlock, true)
-	if (
-		(
+	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL) then
+		unlock = set_run_unlock()
+		gen_levelrooms_nonpath(unlock, true)
+		if (
 			(state.theme ~= THEME.OLMEC) and
 			(state.theme ~= THEME.TIAMAT)
-		)
-		and (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
-	) then
-		gen_levelrooms_path()
+		) then
+			gen_levelrooms_path()
+		end
+		gen_levelrooms_nonpath(unlock, false)
+
+		level_generation_method_shops()
+
+		level_generation_method_idol()
+		level_generation_method_altar()
+
+		level_generation_method_side()
+	else
+		-- testing setrooms
+		if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING) and (HD_ROOMOBJECT.TESTING[state.level].setRooms ~= nil)) then
+			level_generation_method_setrooms(HD_ROOMOBJECT.TESTING[state.level].setRooms)
+		end
+	
+		-- tutorial setrooms
+		if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL) and (HD_ROOMOBJECT.TUTORIAL[state.level].setRooms ~= nil)) then
+			level_generation_method_setrooms(HD_ROOMOBJECT.TUTORIAL[state.level].setRooms)
+		end
 	end
-	gen_levelrooms_nonpath(unlock, false)
 
-	-- level_generation_method_shops()
-
-	level_generation_method_idol()
-	level_generation_method_altar()
-
-	level_generation_method_side()
 
 
 	gen_levelcode_fill() -- global_levelassembly.modification.levelcode editing
@@ -6264,13 +6292,15 @@ function onlevel_set_feelings()
 			if feeling_check("HAUNTEDCASTLE") == false then
 				
 				feeling_set_once("RESTLESS", {state.level})
-				-- Tikivillage levels cannot be restless
-				if feeling_check("RESTLESS") == false then
-					feeling_set_once("TIKIVILLAGE", {state.level})
-				end
+				feeling_set_once("FLOODED", {state.level})
+
+				-- tikivillage levels cannot be restless
 				-- tikivillage and flooded cannot happen at the same time
-				if feeling_check("TIKIVILLAGE") == false then
-					feeling_set_once("FLOODED", {state.level})
+				if (
+					feeling_check("RESTLESS") == false and
+					feeling_check("FLOODED") == false
+				) then
+					feeling_set_once("TIKIVILLAGE", {state.level})
 				end
 			end
 			-- # TODO: Set BLACKMARKET_ENTRANCE and BLACKMARKET here
@@ -8036,7 +8066,7 @@ end
 function level_generation_method_aligned(_aligned_room_types)
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
-	spots_aligned = {}
+	spots = {}
 		--{x, y, facing_left}
 
 	-- build a collection of potential spots
@@ -8047,26 +8077,28 @@ function level_generation_method_aligned(_aligned_room_types)
 				if ( -- add right facing if there is a path on the right
 					level_wi+1 <= levelw and
 					(
+						global_levelassembly.modification.levelrooms[level_hi][level_wi+1] ~= nil and
 						global_levelassembly.modification.levelrooms[level_hi][level_wi+1] >= 1 and
 						global_levelassembly.modification.levelrooms[level_hi][level_wi+1] <= 8
 					)
 				) then
-					table.insert(spots_aligned, {x = level_wi, y = level_hi, facing_left = false})
+					table.insert(spots, {x = level_wi, y = level_hi, facing_left = false})
 				elseif (-- add left facing if there is a path on the left
 					level_wi-1 >= 1 and
 					(
+						global_levelassembly.modification.levelrooms[level_hi][level_wi-1] ~= nil and
 						global_levelassembly.modification.levelrooms[level_hi][level_wi-1] >= 1 and
 						global_levelassembly.modification.levelrooms[level_hi][level_wi-1] <= 8
 					)
 				) then
-					table.insert(spots_aligned, {x = level_wi, y = level_hi, facing_left = true})
+					table.insert(spots, {x = level_wi, y = level_hi, facing_left = true})
 				end
 			end
 		end
 	end
 
 	-- pick random place to fill
-	spot = spots[math.random(#spots)]--TableRandomElement(spots)
+	spot = spots[math.random(#spots)]
 
 	levelcode_inject_roomcode(
 		(spot.facing_left and _aligned_room_types.left.subchunk_id or _aligned_room_types.right.subchunk_id),
@@ -8145,19 +8177,17 @@ function level_generation_method_shops()
 		detect_level_non_boss() and
 		detect_level_non_special()
 	) then
-		chance = state.level + ((state.world - 1) * 4)
-		
-		if (math.random(1, chance) <= 2) then
+		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
 			shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
 			shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			if (
-				-- gurenteed regular shop on the second level of the first world
-				detect_same_levelstate(THEME.DWELLING, 2, 1)
-				-- # TODO: Add other shop types
-			) then
-				shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
-				shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			end
+			-- if (
+			-- 	-- gurenteed regular shop on the second level of the first world
+			-- 	detect_same_levelstate(THEME.DWELLING, 2, 1)
+			-- 	-- # TODO: Add other shop types
+			-- ) then
+			-- 	shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
+			-- 	shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
+			-- end
 			level_generation_method_aligned(
 				{
 					left = {
@@ -8238,44 +8268,28 @@ function gen_levelrooms_nonpath(unlock, prePath)
 	if HD_ROOMOBJECT.WORLDS[state.theme].setRooms ~= nil then
 		level_generation_method_setrooms(HD_ROOMOBJECT.WORLDS[state.theme].setRooms, prePath)
 	end
-
-	-- testing setrooms
-	if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING) and (HD_ROOMOBJECT.TESTING[state.level].setRooms ~= nil)) then
-		level_generation_method_setrooms(HD_ROOMOBJECT.TESTING[state.level].setRooms, prePath)
-	end
-
-	-- tutorial setrooms
-	if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL) and (HD_ROOMOBJECT.TUTORIAL[state.level].setRooms ~= nil)) then
-		level_generation_method_setrooms(HD_ROOMOBJECT.TUTORIAL[state.level].setRooms, prePath)
-	end
 	
-	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
-		-- feeling structures
-		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
-			if feeling_check(feeling) == true then
-				if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
-					if feelingContent.method == nil then
-						message("gen_levelrooms_nonpath: feeling method params missing! Couldn't execute spawn method.")
-					else
-						-- message("gen_levelrooms_nonpath: Executing feeling spawning method:")
-						feelingContent.method()
-					end
-				end
-				if feelingContent.setRooms ~= nil then
-					level_generation_method_setrooms(feelingContent.setRooms, prePath)
+	-- feeling structures
+	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
+		if feeling_check(feeling) == true then
+			if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
+				if feelingContent.method == nil then
+					message("gen_levelrooms_nonpath: feeling method params missing! Couldn't execute spawn method.")
+				else
+					-- message("gen_levelrooms_nonpath: Executing feeling spawning method:")
+					feelingContent.method()
 				end
 			end
+			if feelingContent.setRooms ~= nil then
+				level_generation_method_setrooms(feelingContent.setRooms, prePath)
+			end
 		end
-		
-		-- HD_ROOMOBJECT.GENERIC
-			-- altar
-			-- idol
-			-- side
-		if prePath == false then
-			-- # TODO: Character unlocks
-			-- if unlock ~= nil then
-			-- end
-		end
+	end
+
+	if prePath == false then
+		-- # TODO: Character unlocks
+		-- if unlock ~= nil then
+		-- end
 	end
 end
 

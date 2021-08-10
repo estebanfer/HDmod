@@ -152,7 +152,7 @@ function setn(t,n)
 end
 
 -- translate levelrooms coordinates to the tile in the top-left corner in game coordinates
-function locate_cornerpos_real(roomx, roomy)
+function locate_game_corner_position_from_levelrooms_position(roomx, roomy)
 	xmin, ymin, _, _ = get_bounds()
 	tc_x = (roomx-1)*HD_ROOMOBJECT.DIM.w+(xmin+0.5)
 	tc_y = (ymin-0.5) - ((roomy-1)*(HD_ROOMOBJECT.DIM.h))
@@ -168,15 +168,21 @@ end
 -- end
 
 -- translate game coordinates to levelrooms coordinates
-function locate_roompos_real(e_x, e_y)
+function locate_levelrooms_position_from_game_position(e_x, e_y)
 	xmin, ymin, _, _ = get_bounds()
 	roomx = math.ceil((e_x-(xmin+0.5))/HD_ROOMOBJECT.DIM.w)
 	roomy = math.ceil(((ymin-0.5)-e_y)/HD_ROOMOBJECT.DIM.h)
 	return roomx, roomy
 end
 
+-- translate game coordinates to levelcode coordinates
+function locate_levelcode_position_from_game_position(e_x, e_y)
+	_xmin, _ymin, _, _ = get_bounds()
+	return e_x-(_xmin-0.5), (_ymin+0.5)-e_y
+end
+
 -- translate levelcode coordinates to levelrooms coordinates
-function locate_roompos_levelassembly(e_x, e_y)
+function locate_levelrooms_position_from_levelcode_position(e_x, e_y)
 	-- xmin, ymin, xmax, ymax = 1, 1, 4*10, 4*8
 	roomx, roomy = math.ceil(e_x/HD_ROOMOBJECT.DIM.w), math.ceil(e_y/HD_ROOMOBJECT.DIM.h)
 	return roomx, roomy
@@ -621,8 +627,10 @@ HD_TILENAME = {
 		description = "Empty",
 	},
 	["#"] = {
-		entity_types = {
-			default = {ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0) end
+			},
 		},
 		description = "TNT Box",
 	},
@@ -633,20 +641,32 @@ HD_TILENAME = {
 		description = "Roulette Door",
 	},
 	["&"] = { -- 50% chance to spawn # TOTEST probably wrong
-		entity_types = {
-			default = {ENT_TYPE.LOGICAL_WATER_DRAIN, 0},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_WATER_DRAIN, x, y-2.5, l, 0, 0) end,
+				-- function(x, y, l) return 0 end
+			},
 			alternate = {
-				[THEME.CITY_OF_GOLD] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
-				[THEME.TEMPLE] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
-				[THEME.VOLCANA] = {ENT_TYPE.LOGICAL_LAVA_DRAIN, 0},
+				[THEME.CITY_OF_GOLD] = {
+					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y, l, 0, 0) end,
+					-- function(x, y, l) return 0 end
+				},
+				[THEME.TEMPLE] = {
+					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y, l, 0, 0) end,
+					-- function(x, y, l) return 0 end
+				},
+				[THEME.VOLCANA] = {
+					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y, l, 0, 0) end,
+					-- function(x, y, l) return 0 end
+				},
 			},
 		},
-		offset = { 0, -2.5 },
-		alternate_offset = {
-			[THEME.CITY_OF_GOLD] = { 0, 0 },
-			[THEME.TEMPLE] = { 0, 0 },
-			[THEME.VOLCANA] = { 0, 0 },
-		},
+		-- offset = { 0, -2.5 },
+		-- alternate_offset = {
+		-- 	[THEME.CITY_OF_GOLD] = { 0, 0 },
+		-- 	[THEME.TEMPLE] = { 0, 0 },
+		-- 	[THEME.VOLCANA] = { 0, 0 },
+		-- },
 		description = "Waterfall",
 		-- # TODO - Waterfall reskins in ASE:
 			-- DWELLING: N/A
@@ -657,10 +677,14 @@ HD_TILENAME = {
 			-- ICE_CAVES: N/A(?)
 	},
 	["*"] = {
-		entity_types = {
-			default = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
+		bake_spawn = {
+			default = {
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,
+			},
 			alternate = {
-				[THEME.NEO_BABYLON] = {ENT_TYPE.ITEM_PLASMACANNON},
+				[THEME.NEO_BABYLON] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_PLASMACANNON, x, y, l, 0, 0) end,
+				},
 			},
 		},
 		-- hd_type = HD_ENT.TRAP_SPIKEBALL
@@ -668,95 +692,97 @@ HD_TILENAME = {
 		description = "Spikeball",
 	},
 	["+"] = {
-		entity_types = {
-			default = {0},--ENT_TYPE.BG_LEVEL_BACKWALL},
+		bake_spawn = {
+			default = { function(x, y, l) return 0 end },--ENT_TYPE.BG_LEVEL_BACKWALL},
 			alternate = {
-				[THEME.ICE_CAVES] = {ENT_TYPE.FLOORSTYLED_MOTHERSHIP}
+				[THEME.ICE_CAVES] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,
+				},
 			},
 		},
 		description = "Wooden Background",
 	},
 	[","] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOOR_GENERIC,
-				ENT_TYPE.FLOORSTYLED_MINEWOOD
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,
 			},
 		},
 		description = "Terrain/Wood",
 	},
 	["-"] = {
-		entity_types = {
-			default = {ENT_TYPE.ACTIVEFLOOR_THINICE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_THINICE, x, y, l, 0, 0) end,},
 		},
 		description = "Cracking Ice",
 	},
 	["."] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
 		},
 		description = "Unmodified Terrain",
 	},
 	["1"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOORSTYLED_GUTS},
-				[THEME.NEO_BABYLON] = {ENT_TYPE.FLOORSTYLED_MOTHERSHIP},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,},
+				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Terrain",
 	},
 	["2"] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOOR_GENERIC,
-				0
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) return 0 end,
 			},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {
-					ENT_TYPE.FLOORSTYLED_GUTS,
-					ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK,
-					0
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
 				},
 				[THEME.NEO_BABYLON] = {
-					ENT_TYPE.FLOORSTYLED_MOTHERSHIP,
-					0
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
 				},
 			},
 		},
 		description = "Terrain/Empty",
 	},
 	["3"] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOOR_GENERIC,
-				ENT_TYPE.LIQUID_WATER
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_WATER, x, y, l, 0, 0) return ENT_TYPE.LIQUID_WATER end,
 			},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {
-					ENT_TYPE.FLOORSTYLED_GUTS,
-					ENT_TYPE.LIQUID_WATER
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_WATER, x, y, l, 0, 0) return ENT_TYPE.LIQUID_WATER end,
 				},
 				[THEME.TEMPLE] = {
-					ENT_TYPE.FLOOR_GENERIC,
-					ENT_TYPE.LIQUID_LAVA
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,
 				},
 				[THEME.CITY_OF_GOLD] = {
-					ENT_TYPE.FLOOR_GENERIC,
-					ENT_TYPE.LIQUID_LAVA
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,
 				},
 				[THEME.VOLCANA] = {
-					ENT_TYPE.FLOOR_GENERIC,
-					ENT_TYPE.LIQUID_LAVA
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,
 				},
 			},
 		},
 		description = "Terrain/Water",
 	},
 	["4"] = {
-		entity_types = {
-			default = {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,},
 		},
 		description = "Pushblock",
 	},
@@ -767,25 +793,83 @@ HD_TILENAME = {
 		description = "Floating Obstacle Block",
 	},
 	["7"] = {
-		embedded_ents = {
-			ENT_TYPE.FLOOR_SPIKES,
-			0
+		bake_spawn_over = {
+			default = {
+				function(x, y, l)
+					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
+					if #floorsAtOffset > 0 then floorToSpawnOver = floorsAtOffset[1] end
+					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
+					
+					if (
+						floorToSpawnOver ~= nil
+					) then
+						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, x, y)
+					end
+				end,
+				function(x, y, l) return 0 end
+			},
 		},
-		offset_spawnover = {0, -1},
 		description = "Spikes/Empty",
 	},
 	["8"] = {
 		description = "Door with Terrain Block",
 	},
 	["9"] = {
-		description = "Exit/Entrance Door", -- old description: "Door without Platform"
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					-- need subchunkid of what room we're in
+					roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
+					
+					if (
+						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE) or
+						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
+					) then
+						create_door_entrance(x, y, l)
+					elseif (
+						(_subchunk_id == HD_SUBCHUNKID.EXIT) or
+						(_subchunk_id == HD_SUBCHUNKID.EXIT_NOTOP) or
+						(_subchunk_id == HD_SUBCHUNKID.FLOODED_EXIT)
+					) then
+						-- spawn an exit door to the next level. Spawn a shopkeeper if agro.
+						create_door_exit(x, y, l)
+					elseif (_subchunk_id == HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
+						-- # TODO: Mothership entrance door; make a method to spawn the mothership entrance.
+						create_door_exit_to_mothership(x, y, l)
+					elseif (_subchunk_id == HD_SUBCHUNKID.RESTLESS_TOMB) then
+						-- Haunted Castle entrance door; Spawn skeleton with crown and hidden castle entrance door
+						-- # TODO: Haunted Castle Extra Item Spawns;
+						-- Spawn king's tombstone
+							-- Change skin to king
+
+						-- 2 tiles down
+							-- Spawn skeleton
+							-- Spawn Crown
+								-- Reskin ITEM_DIAMOND as gold crown
+								-- (worth $5000 in HD, might as well leave price the same as diamond)
+						
+						-- 4 tiles down
+							-- spawn hidden entrance
+								-- Ask around the discord for a way to make the hidden door jingle go off
+						create_door_exit_to_hauntedcastle(x, y-4, l)
+					end
+				end
+			},
+		},
+		description = "Exit/Entrance/Special Door", -- old description: "Door without Platform"
 	},
 	[":"] = {
-		entity_types = {
-			default = {ENT_TYPE.MONS_SCORPION},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l, 0, 0) end,
+			},
 			alternate = {
-				[THEME.JUNGLE] = {ENT_TYPE.MONS_TIKIMAN},
-				[THEME.NEO_BABYLON] = {ENT_TYPE.MONS_YETI, ENT_TYPE.MONS_CAVEMAN}
+				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l, 0, 0) end,},
+				[THEME.NEO_BABYLON] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0) end,
+				}
 			},
 		},
 		description = "World-specific Enemy Spawn",--"Scorpion from Mines Coffin",
@@ -795,42 +879,54 @@ HD_TILENAME = {
 		description = "Damsel and Idol from Kalipit",
 	},
 	["="] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,},
 		},
 		description = "Wood with Background",
 	},
 	["A"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_IDOL_BLOCK},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0)
+					idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l, 0, 0))
+					idol_block_second.animation_frame = idol_block_second.animation_frame + 1
+				end,
+			},
 		},
-		description = "Mines Idol Platform",
+		description = "Idol Platform", --"Mines Idol Platform",
 	},
 	["B"] = {
-		-- # TODO: Use junglespear trap and remove the trap elements
-			-- remove ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_STONE},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
+					-- # TODO: Use junglespear trap and remove the trap elements
+						-- remove ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER
+				end,
+			},
 		},
 		description = "Jungle/Temple Idol Platform",
 	},
 	["C"] = {
 		-- # TODO: Ceiling Idol Trap
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_STONE},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+			},
 			alternate = {
-				[THEME.TIAMAT] = ENT_TYPE.ITEM_CRATE
+				[THEME.TIAMAT] = function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
 			},
 		},
 		description = "Nonmovable Pushblock", -- also idol trap ceiling blocks
 	},
 	["D"] = {
-		entity_types = {
-			default = {0},
+		bake_spawn = {
+			default = {function(x, y, l) return 0 end},
 			tutorial = {
-				ENT_TYPE.MONS_PET_DOG,
-				ENT_TYPE.MONS_PET_CAT,
-				ENT_TYPE.MONS_PET_HAMSTER
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_DOG, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_CAT, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_HAMSTER, x, y, l, 0, 0) end,
 			},
 		},
 		--#TOTEST: Also used in tutorial level 3 placement {3, 4} as Damsel
@@ -838,14 +934,15 @@ HD_TILENAME = {
 		description = "Door Gate", -- also used in temple idol trap
 	},
 	["E"] = {
-		-- # TODO: figure out what this is and how it spawns
-		entity_types = {
-			tutorial = {ENT_TYPE.ITEM_GOLDBAR},
+		bake_spawn = {
+			tutorial = {
+				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBAR, x, y, l, 0, 0) end,
+			},
 			default = {
-				ENT_TYPE.FLOOR_GENERIC,
-				ENT_TYPE.ITEM_CRATE,
-				ENT_TYPE.ITEM_CHEST,
-				0
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+				function(x, y, l) return 0 end,
 			},
 		},
 		description = "Terrain/Empty/Crate/Chest",
@@ -854,53 +951,78 @@ HD_TILENAME = {
 		description = "Falling Platform Obstacle Block",
 	},
 	["G"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_LADDER},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l, 0, 0) end,
+			},
 		},
 		description = "Ladder (Strict)",
 	},
 	["H"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l, 0, 0) end,
+			},
 		},
 		description = "Ladder Platform (Strict)",
 	},
 	["I"] = {
-		offset = { 0.5, 0 },
+		bake_spawn = {
+			default = {
+				-- # TODO: Reimplement idol spawn method here.
+				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, x+.5, y, l, 0, 0) end,
+			},
+		},
 		description = "Idol", -- sometimes a tikitrap if it's a character unlock
 	},
 	["J"] = {
-		entity_types = {
-			default = {ENT_TYPE.MONS_GIANTFISH},
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_entity(ENT_TYPE.MONS_GIANTFISH, x, y, l, 0, 0) end,
+			},
 		},
 		description = "Ol' Bitey",
 	},
 	["K"] = {
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x, y, l, 0, 0) end,
+			},
+		},
 		description = "Shopkeeper",
 	},
 	["L"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_LADDER},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.JUNGLE] = {ENT_TYPE.FLOOR_VINE},
-				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_VINE},
-				[THEME.NEO_BABYLON] = {ENT_TYPE.ACTIVEFLOOR_SHIELD},
-				[THEME.VOLCANA] = {ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN},
+				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
+				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_SHIELD, x, y, l, 0, 0) end,},
+				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Ladder", -- sometimes used as Vine or Chain
 	},
 	["M"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					embed(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+				end,
+			},
+			alternate = {
+				[THEME.ICE_CAVES] = function(x, y, l)
+					embed(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+				end,
+			}
 		},
-		embedded_ents = {ENT_TYPE.ITEM_MATTOCK},
-		description = "Crust Mattock from Snake Pit",
+		description = "World-Specific Crust Item", --"Crust Mattock from Snake Pit",
 	},
 	["N"] = {
-		-- # TODO: In HD, this may be telling the spawn system to spawn using the chance of a snake against a cobra
-		entity_types = {
-			default = {ENT_TYPE.MONS_SNAKE},
+		bake_spawn = {
+			-- # TODO: In HD this seems to be a chance of either a snake or a cobra
+			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0) end,},
 		},
 		description = "Snake from Snake Pit",
 	},
@@ -911,27 +1033,27 @@ HD_TILENAME = {
 			-- # TODO in ASE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\ICE\icesmallbg.png
 	},
 	["P"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_LADDER_PLATFORM},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l, 0, 0) end,},
 		},
 		description = "Ladder Platform (Strict)",
 	},
 	["Q"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GROWABLE_VINE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.JUNGLE] = {ENT_TYPE.FLOOR_GROWABLE_VINE},
-				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.FLOOR_GROWABLE_VINE},
-				[THEME.NEO_BABYLON] = {ENT_TYPE.MONS_ALIENQUEEN},
-				[THEME.VOLCANA] = {ENT_TYPE.FLOOR_GROWABLE_VINE},--FLOOR_CHAINANDBLOCKS_CHAIN},
+				-- [THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
+				-- [THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
+				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
+				-- # TODO: Replace skin with chain
+				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 			},
 		},
-		-- # TODO: Generate ladder to just above floor.
-		description = "Variable-Length Ladder",
+		description = "Variable-Length Ladder/Vine",
 	},
 	["R"] = {
-		entity_types = {
-			default = {ENT_TYPE.ITEM_RUBY},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l, 0, 0) end,},
 		},
 		description = "Ruby from Snakepit",
 	},
@@ -939,8 +1061,8 @@ HD_TILENAME = {
 		description = "Shop Items",
 	},
 	["T"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_TREE_BASE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l, 0, 0) end,},
 		},
 		-- # TODO: Generation.
 		-- Use the following depreciated methods for a starting point:
@@ -987,8 +1109,8 @@ HD_TILENAME = {
 		description = "Tree",
 	},
 	["U"] = {
-		entity_types = {
-			default = {ENT_TYPE.MONS_VLAD},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VLAD, x, y, l, 0, 0) end,},
 		},
 		description = "Vlad",
 	},
@@ -999,28 +1121,30 @@ HD_TILENAME = {
 		description = "Unknown: Something Shop-Related",
 	},
 	["X"] = {
-		entity_types = {
-			default = {ENT_TYPE.MONS_GIANTSPIDER},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_GIANTSPIDER, x, y, l, 0, 0) end,},
+			alternate = {
+				-- Alien Lord
+				[THEME.ICE_CAVES] = function(x, y, l) return 0 end,
+				[THEME.NEO_BABYLON] = function(x, y, l) return 0 end,
+				-- Horse Head & Ox Face
+				[THEME.TIAMAT] = function(x, y, l) return 0 end,
+			}
 		},
-		-- alternate_hd_types = {
-		-- -- Mothership: Alien Lord
-		-- -- Hell: Horse Head & Ox Face
-		-- },
-		-- offset = { 0.5, 0 },
 		description = "Giant Spider",
 	},
 	["Y"] = {
-		entity_types = {
-			default = {ENT_TYPE.MONS_YETIKING},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_YETIKING, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.TEMPLE] = {ENT_TYPE.MONS_MUMMY},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Yeti King",
 	},
 	["Z"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,},
 		},
 		description = "Beehive Tile with Background",
 	},
@@ -1028,9 +1152,9 @@ HD_TILENAME = {
 		--#TOTEST: Also used in tutorial:
 			-- 2nd level, placement {4,2}.
 			-- 3rd level, placement {1,2}.
-		entity_types = {
-			default = {ENT_TYPE.ITEM_PICKUP_ANKH},
-			tutorial = {ENT_TYPE.ITEM_POT},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l, 0, 0) end,},
+			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l, 0, 0) end,},
 		},
 		description = "Ankh",
 		-- # TODO: ankh spawning/price setting, use depriciated hedjet replacing method:
@@ -1070,43 +1194,48 @@ HD_TILENAME = {
 		-- Add alternative shop floor of FLOOR_GENERIC
 		-- Modify all HD shop roomcodes to accommodate this.
 	["b"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_MINEWOOD},
-		},
-		flags = {
-			[ENT_FLAG.SHOP_FLOOR] = true
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0))
+					entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
+				end,
+			},
 		},
 		description = "Shop Floor",
 	},
 	["c"] = {
-		-- spawnfunction = function(params)
-		-- 	set_timeout(create_idol_crystalskull, 10)
-		-- end,
-		
-		offset = { 0.5, 0 },
+		bake_spawn = {
+			default = {
+				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, x+0.5, y, l, 0, 0) end,
+			}
+		},
 		description = "Crystal Skull",
 	},
 	["d"] = {
 		-- HD may spawn this as wood at times. The solution is to replace that tilecode with "v"
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_JUNGLE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.EGGPLANT_WORLD] = {ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Jungle Terrain",
 	},
 	["e"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_BEEHIVE},
-			tutorial = {ENT_TYPE.ITEM_CRATE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,},
+			tutorial = {
+				function(x, y, l)
+					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0), ENT_TYPE.ITEM_PICKUP_BOMBBAG)
+				end,
+			},
 		},
-		contents = ENT_TYPE.ITEM_PICKUP_BOMBBAG,
 		description = "Beehive Tile",
 	},
 	["f"] = {
-		entity_types = {
-			default = {ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, x, y, l, 0, 0) end,},
 		},
 		description = "Falling Platform",
 	},
@@ -1114,103 +1243,102 @@ HD_TILENAME = {
 		-- spawnfunction = function(params)
 		-- 	create_unlockcoffin(params[1], params[2], params[3])
 		-- end,
-		-- entity_types = {
+		-- bake_spawn = {
 		-- 	default = {ENT_TYPE.ITEM_COFFIN},
 		-- },
 		description = "Coffin",
 	},
 	["h"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_VLAD},
-			tutorial = {ENT_TYPE.ITEM_CRATE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
+			tutorial = {
+				function(x, y, l)
+					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0), ENT_TYPE.ITEM_PICKUP_ROPEPILE)
+				end,
+			},
 		},
-		contents = ENT_TYPE.ITEM_PICKUP_ROPEPILE,
 		description = "Vlad's Castle Brick",--Hell Terrain",
 		--#TODO: in HD it's also the haunted castle altar
 	},
 	["i"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_ICE},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,},
 			alternate = {
-				-- # TODO: Tikivillage Campfire spawn method
-				-- Depreciated:
-					-- function onlevel_decorate_cookfire()
-						-- if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
-							-- -- spawn lavapot at campfire
-							-- campfires = get_entities_by_type(ENT_TYPE.ITEM_COOKFIRE)
-							-- for _, campfire in ipairs(campfires) do
-								-- px, py, pl = get_position(campfire)
-								-- spawn(ENT_TYPE.ITEM_LAVAPOT, px, py, pl, 0, 0)
-							-- end
-						-- end
-					-- end
-				[THEME.JUNGLE] = {ENT_TYPE.ITEM_LAVAPOT}
+				[THEME.JUNGLE] = {
+					function(x, y, l)
+						spawn_entity(ENT_TYPE.ITEM_COOKFIRE, x, y, l, 0, 0)
+						spawn_entity(ENT_TYPE.ITEM_LAVAPOT, x, y, l, 0, 0)
+					end,
+				}
 			},
 		},
 		description = "Ice Block",
 	},
 	["j"] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOOR_ICE,
-				0
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,
+				function(x, y, l) return 0 end,
 			},
 		},
 		description = "Ice Block/Empty", -- Old description: "Ice Block with Caveman".
 	},
 	["k"] = {
-		entity_types = {
-			default = {ENT_TYPE.DECORATION_SHOPSIGN},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					spawn_entity_over(ENT_TYPE.DECORATION_SHOPSIGN, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+				end,
+			},
 		},
-		offset = { 0, 4 },
 		description = "Shop Entrance Sign",
 	},
 	["l"] = {
-		entity_types = {
-			default = {ENT_TYPE.ITEM_LAMP},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l, 0, 0) end,},
 		},
 		description = "Shop Lantern",
 	},
 	["m"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
-			alternate = {
-				[THEME.NEO_BABYLON] = {ENT_TYPE.ACTIVEFLOOR_ELEVATOR},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					-- entity = spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0)
+					entity = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+					entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
+				end,
 			},
-		},
-		flags = {
-			[ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR] = true
+			alternate = {
+				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l, 0, 0) end,},
+			},
 		},
 		description = "Unbreakable Terrain",
 	},
 	["n"] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOOR_GENERIC,
-				ENT_TYPE.MONS_SNAKE,
-				0,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0) end,
+				function(x, y, l) return 0 end,
 			},
 		},
 		description = "Terrain/Empty/Snake",
 	},
 	["o"] = {
-		entity_types = {
-			default = {ENT_TYPE.ITEM_ROCK},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0) end,},
 		},
 		description = "Rock",
 	},
 	["p"] = {
 		-- Not sure about this one. It's only used in the corners of the crystal skull jungle roomcode.
 		-- # TODO: Investigate in HD
-		-- entity_types = {
-		-- 	default = {ENT_TYPE.ITEM_GOLDBAR},
-		-- },
 		description = "Treasure/Damsel",
 	},
 	["q"] = {
 		-- # TODO: Trap Prevention.
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
 		},
 		description = "Obstacle-Resistant Terrain",
 	},
@@ -1218,77 +1346,94 @@ HD_TILENAME = {
 		description = "Terrain/Stone", -- old description: Mines Terrain/Temple Terrain/Pushblock
 		-- Used to be used for Temple Obstacle Block but it lead to conflictions
 		-- From 
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOORSTYLED_STONE,
-				ENT_TYPE.FLOOR_GENERIC,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
 				-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 			},
 		},
 	},
 	["s"] = {
-		embedded_ents = {ENT_TYPE.FLOOR_SPIKES},
-		offset_spawnover = {0, -1},
+		bake_spawn_over = {
+			default = {
+				function(x, y, l)
+					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
+					if #floorsAtOffset > 0 then floorToSpawnOver = floorsAtOffset[1] end
+					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
+					
+					if (
+						floorToSpawnOver ~= nil
+					) then
+						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, x, y)
+					end
+				end,
+			}
+		},
 		description = "Spikes",
 	},
 	["t"] = {
-		entity_types = {
+		bake_spawn = {
 			default = {
-				ENT_TYPE.FLOORSTYLED_STONE
-				-- ENT_TYPE.FLOORSTYLED_TEMPLE,
-				-- ENT_TYPE.FLOOR_JUNGLE
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
 			},
 		},
 		-- # TODO: ????? Investigate in HD.
 		description = "Temple/Castle Terrain",
 	},
 	["u"] = {
-		--#TOTEST: Also used in tutorial:
-			-- 3rd level, placement {1,4}.
-		entity_types = {
-			tutorial = {ENT_TYPE.MONS_BAT},
-			default = {ENT_TYPE.MONS_VAMPIRE},
+		bake_spawn = {
+			tutorial = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_BAT, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_VAMPIRE, x, y, l, 0, 0) end,},
 		},
 		description = "Vampire from Vlad's Tower",
 	},
 	["v"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOORSTYLED_MINEWOOD},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,},
 		},
 		description = "Wood",
 	},
 	["w"] = {
-		entity_types = {
-			default = {ENT_TYPE.LIQUID_WATER},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_WATER, x, y, l, 0, 0) return ENT_TYPE.LIQUID_WATER end,},
 			alternate = {
-				[THEME.TEMPLE] = {ENT_TYPE.LIQUID_LAVA},
-				[THEME.CITY_OF_GOLD] = {ENT_TYPE.LIQUID_LAVA},
-				[THEME.VOLCANA] = {ENT_TYPE.LIQUID_LAVA},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,},
+				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,},
+				[THEME.VOLCANA] = {function(x, y, l) spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, y, l, 0, 0) return ENT_TYPE.LIQUID_LAVA end,},
 			},
 		},
 		description = "Liquid",
 	},
 	["x"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_ALTAR},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y, l, 0, 0)
+					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y, l, 0, 0)
+				end,
+			},
 		},
 		description = "Kali Altar",
 	},
 	["y"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_GENERIC},
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					embed(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+				end
+			},
 		},
-		embedded_ents = {ENT_TYPE.ITEM_RUBY},
 		description = "Crust Ruby in Terrain",
 	},
 	["z"] = {
-		entity_types = {
+		bake_spawn = {
 			tutorial = {
-				ENT_TYPE.ITEM_CHEST,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
 			},
 			default = {
-				ENT_TYPE.FLOORSTYLED_BEEHIVE,
-				0
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,
+				function(x, y, l) return 0 end,
 			},
 			-- -- # TODO: spawn method for turret
 			-- alternate = {
@@ -1299,11 +1444,33 @@ HD_TILENAME = {
 		description = "Beehive Tile/Empty",
 	},
 	["|"] = {
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					for yi = 0, -3, -1 do
+						for xi = 0, 3, 1 do
+							if (yi == -1 and (xi == 1 or xi == 2)) or (yi == -2 and (xi == 1 or xi == 2)) then
+								-- SORRY NOTHING
+							else
+								local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+xi, y+yi, l, 0, 0))
+								entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
+							end
+						end
+					end
+					spawn_entity(ENT_TYPE.ITEM_VAULTCHEST, x+1, y-2, l, 0, 0)
+					local shopkeeper_uid = spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l, 0, 0)
+					local shopkeeper = get_entity(shopkeeper_uid)
+					pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+					shopkeeper.is_patrolling = true
+					shopkeeper.move_state = 9
+				end
+			},
+		},
 		description = "Vault",
 	},
 	["~"] = {
-		entity_types = {
-			default = {ENT_TYPE.FLOOR_SPRING_TRAP},
+		bake_spawn = {
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l, 0, 0) end,},
 		},
 		description = "Bounce Trap",
 	},
@@ -1384,11 +1551,12 @@ HD_ROOMOBJECT.GENERIC = {
 	-- Vault
 	[HD_SUBCHUNKID.VAULT] = {
 		--{"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"}
-		{"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- S2 sync
+		{"11111111111111111111111|00011111100001111110000111111000011111111111111111111111"}
+		-- {"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- S2 sync
 	},
 	-- Altar
 	[HD_SUBCHUNKID.ALTAR] = {
-		{"220000002200000000000000000000000000000000000000000000xx000002211112201111111111"}
+		{"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"}
 		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
 	}
 }
@@ -1911,15 +2079,7 @@ HD_ROOMOBJECT.FEELINGS["HIVE"] = {
 	}
 }
 HD_ROOMOBJECT.FEELINGS["HIVE"].method = function()
-	level_generation_method_nonaligned(
-		{
-			subchunk_id = HD_SUBCHUNKID.VAULT,
-			roomcodes = (
-				HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
-				HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
-			) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
-		}
-	)
+	
 end
 
 HD_ROOMOBJECT.FEELINGS["VAULT"] = {
@@ -2155,7 +2315,7 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"] = {
 			{"600006000000000000000000000000wwwvvvvwwwwwww,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 			{"000022000000021120000221111220www,,,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 		},
-		[HD_SUBCHUNKID.FLOODED_PATH_NOTOP] = {
+		[HD_SUBCHUNKID.FLOODED_PATH] = {
 			{"000000000000000000000001111000w,,vvvv,,wwwww,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 			{"000000000000000000001200000000vvwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 			{"000000000000000000000000000021wwwwwwwwvvwwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
@@ -2930,10 +3090,11 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 			},
 		},
 		[HD_SUBCHUNKID.IDOL] = {{"00000000000000I000000000--00000000000000000000000000000000000000ss00000000110000"}},
-		[HD_SUBCHUNKID.ALTAR] = {{"000000000000000000000000000000000000000000000000000000xx000002211112201111111111"}},
+		[HD_SUBCHUNKID.ALTAR] = {{"000000000000000000000000000000000000000000000000000000x0000002211112201111111111"}},
 		[HD_SUBCHUNKID.VAULT] = {{
 			--"02222222202111111112211|00011221100001122110EE0112211000011221111111120222222220"
-			"02222222202000000002200|00000220000000022000000002200000000220000000020222222220" -- S2 sync
+			"02222222202111111112211|00011221100001122110000112211000011221111111120222222220"
+			-- "02222222202000000002200|00000220000000022000000002200000000220000000020222222220" -- S2 sync
 		}},
 	},
 	-- coffin_unlockable = {
@@ -4145,6 +4306,7 @@ function create_door_entrance(x, y, l)
 	spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	global_levelassembly.entrance = {x = x, y = y}
+	-- state.level_gen.spawn_x, state.level_gen.spawn_y = x, y
 end
 
 function create_door_testing(x, y, l)
@@ -4167,6 +4329,8 @@ function create_door_exit(x, y, l)
 	get_entity(door_bg).animation_frame = 1
 	set_door_target(door_target, state.world_next, state.level_next, state.theme_next)
 	-- spawn_door(x, y, l, state.world_next, state.level_next, state.theme_next)
+
+	-- state.level_gen.exits.door1_x, state.level_gen.exits.door1_y = x, y
 	
 	-- local format_name = F'levelcode_bake_spawn(): Created Exit Door with targets: {state.world_next}, {state.level_next}, {state.theme_next}'
 	-- message(format_name)
@@ -4253,6 +4417,7 @@ function create_crysknife(x, y, layer)
 	spawn(ENT_TYPE.ITEM_POWERPACK, x, y, layer, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
 end
 
+-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
 function create_idol()
 	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
 	if (
@@ -5064,12 +5229,26 @@ end
 
 set_callback(function(room_gen_ctx)
 	if state.screen == ON.LEVEL then
-		-- message("ON.POST_ROOM_GENERATION - ON.LEVEL")
+		message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		init_posttile_onstart()
 		if options.hd_debug_scripted_levelgen_disable == false then
 			init_posttile_door()
 			levelcreation_init()
+
+
+
+			onlevel_generation_execution_phase_one()
+			-- onlevel_generation_execution_phase_two()
+
+
+			onlevel_placement_lockedchest()
+		
+			-- onlevel_replace_powderkegs()
+			-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
+			generation_removeborderfloor()
+
+
 		end
 
 	-- # TODO: Method to handle case-by-case spawn chances.
@@ -5108,11 +5287,20 @@ set_callback(function(room_gen_ctx)
 				
 				if options.hd_debug_scripted_levelgen_disable == false then
 					
+					
 					--[[
 						Sync scripted level generation rooms with S2 generation rooms
 					--]]
 					_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
 					
+					--LevelGenSystem variables
+					-- if (
+					-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE or
+					-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
+					-- ) then
+					-- 	state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
+					-- end
+
 					-- normal paths
 					if (
 						(_template_hd >= 1) and (_template_hd <= 8)
@@ -5183,6 +5371,35 @@ set_callback(function(room_gen_ctx)
 	    end
 	end
 end, ON.POST_ROOM_GENERATION)
+
+-- set_callback(function()
+-- 	message(F'ON.PRE_LEVEL_GENERATION: {state.time_level}')
+
+-- 	-- if state.screen == ON.LEVEL then
+-- 	-- 	if options.hd_debug_scripted_levelgen_disable == false then
+-- 	-- 		onlevel_generation_execution_phase_one()
+-- 	-- 		onlevel_generation_execution_phase_two() -- # TOTEST: ON.POST_LEVEL_GENERATION
+-- 	-- 	end
+-- 	-- end
+-- end, ON.PRE_LEVEL_GENERATION)
+
+-- set_callback(function()
+-- 	message(F'ON.POST_LEVEL_GENERATION: {state.time_level}')
+
+	
+	
+-- 	if state.screen == ON.LEVEL then
+-- 		if options.hd_debug_scripted_levelgen_disable == false then
+-- 			state.level_gen.spawn_x, state.level_gen.spawn_y = global_levelassembly.entrance.x, global_levelassembly.entrance.y
+
+-- 	-- 		onlevel_placement_lockedchest()
+		
+-- 	-- 		-- onlevel_replace_powderkegs()
+-- 	-- 		-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
+-- 	-- 		generation_removeborderfloor()
+-- 		end
+-- 	end
+-- end, ON.POST_LEVEL_GENERATION)
 
 -- ON.CAMP
 set_callback(function()
@@ -5260,15 +5477,9 @@ function levelcreation_init()
 	onlevel_set_feelingToastMessage()
 	-- Method to write override_path setrooms into path and levelcode
 --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
-	-- onlevel_reverse_exits()
 --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
 	-- onlevel_generation_detection()
 	onlevel_generation_modification()
-	onlevel_placement_lockedchest()
-	-- onlevel_generation_execution()
-	generation_removeborderfloor()
-	-- onlevel_replace_powderkegs()
-	-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
 end
 
 
@@ -5743,63 +5954,21 @@ function onlevel_generation_modification()
 
 
 
-	gen_levelcode_fill() -- global_levelassembly.modification.levelcode editing
+	gen_levelcode_fill() -- global_levelassembly.modification.levelcode adjusting (obstacle chunks)
 
-	gen_levelcode_bake() -- spawn tiles in global_levelassembly.modification.levelcode
 end
 
-function onlevel_generation_execution()
-	global_levelassembly.execution = {
-		path = TableCopy(global_levelassembly.detection.path)
-	}
-	-- overwrite .execution.path with .modification.path in the places that it's not nil
-	
--- kinda outdated nonsense:
-	-- roomobject ideas:
-	-- to spawn a coffin in olmec:
-	-- add_coffin
-			-- pick a random number between 
-		-- 1: create the room object
-			-- add to:
-				-- subchunkid (optional): determine what to replace
-				-- levelcoords (optional): level coordinates it can possibly spawn in (top left and top right)
-				-- roomcodes: roomcodes it can possibly spawn
-		-- NOTE: Use these like you use HD_ENT; You don't modify, instead use it to place roomcodes into global_levelassembly.roomcodes
-		-- 2: figure out if global_levelassembly.roomobjects interfere with the path, if so, clean up
-		-- 3: fill in appropriate levelcoord in global_levelassembly.roomobjects
-			-- rooomobjects[4][1] = "1132032323..."
-	
+-- phase one of baking levelcode
+	-- spawning most things
+function onlevel_generation_execution_phase_one()
+	gen_levelcode_bake_spawn() -- spawn tiles in global_levelassembly.modification.levelcode
+end
 
-	-- idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	-- if #idols > 0 and feeling_check("RESTLESS") == true then
-		-- idolx, idoly, idoll = get_position(idols[1])
-		-- roomx, roomy = locate_roompos(idolx, idoly)
-		-- -- cx, cy = remove_room(roomx, roomy, idoll)
-		-- tmp_object = {
-			-- roomcodes = {
-				-- "ttttttttttttttttttttttp0c00ptt0tt0000tt00400000040ttt0tt0tttttp0000ptt1111111111"
-				-- --"++++++++++++++++++++++00I000++0++0++0++00400000040+++0++0+++++000000++11GGGGGG11"
-			-- },
-			-- -- "tttttttttt
-			-- -- tttttttttt
-			-- -- ttp0c00ptt
-			-- -- 0tt0000tt0
-			-- -- 0400000040
-			-- -- ttt0tt0ttt
-			-- -- ttp0000ptt
-			-- -- 1111111111"
-			
-			-- dimensions = { w = 10, h = 8 }
-		-- }
-		
-		-- roomcode = tmp_object.roomcodes[1]
-		-- dimw = tmp_object.dimensions.w
-		-- dimh = tmp_object.dimensions.h
-		-- replace_room(roomcode, dimw, dimh, roomx, roomy, idoll)
-	-- end
-	
-	
-	-- fill uids_toembedin using global_levelassembly.modification.levelcode
+-- phase two of baking levelcode
+	-- spawn_over entities, such as spikes
+	-- possibly water
+function onlevel_generation_execution_phase_two()
+	gen_levelcode_bake_spawn_over()
 end
 
 -- Where can AREA unlocks spawn?
@@ -8337,13 +8506,8 @@ function levelcode_chunks()
 	end
 end
 
-function gen_levelcode_bake()
-	levelcode_bake_spawn()
-	levelcode_bake_spawn_over()
-end
-
-function levelcode_bake_spawn()
-	_x, _y = locate_cornerpos_real(1, 1) -- game coordinates of the topleft-most tile of the level
+function gen_levelcode_bake_spawn()
+	_x, _y = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 	c_hi_len, c_wi_len = levelh*HD_ROOMOBJECT.DIM.h, levelw*HD_ROOMOBJECT.DIM.w
@@ -8352,9 +8516,9 @@ function levelcode_bake_spawn()
 		x = _x
 		for level_wi = 1, c_wi_len, 1 do
 			_tilechar = global_levelassembly.modification.levelcode[level_hi][level_wi]
-			hd_tiletype, hd_tiletype_post = HD_TILENAME[_tilechar], HD_TILENAME[_tilechar]
-			if hd_tiletype ~= nil then
-				-- if string.find(_tilechar, options.hd_debug_scripted_levelgen_tilecodes_blacklist) == false then message("PLOOP FALSE!!") end
+			hd_tiletype = HD_TILENAME[_tilechar]
+			-- hd_tiletype, hd_tiletype_post = HD_TILENAME[_tilechar], HD_TILENAME[_tilechar]
+			if hd_tiletype ~= nil and hd_tiletype.bake_spawn ~= nil then
 				if (
 					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
 					(
@@ -8362,127 +8526,41 @@ function levelcode_bake_spawn()
 						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
 					)
 				) then
-					l = LAYER.FRONT
-					-- need subchunkid of what room we're in
-					roomx, roomy = locate_roompos_levelassembly(level_wi, level_hi)
-					_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
-					
-					-- doors
-					if _tilechar == "9" then
-						if (
-							(_subchunk_id == HD_SUBCHUNKID.ENTRANCE) or
-							(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
-						) then
-							create_door_entrance(x, y, l)
-						elseif (
-							(_subchunk_id == HD_SUBCHUNKID.EXIT) or
-							(_subchunk_id == HD_SUBCHUNKID.EXIT_NOTOP) or
-							(_subchunk_id == HD_SUBCHUNKID.FLOODED_EXIT)
-						) then
-							-- spawn an exit door to the next level. Spawn a shopkeeper if agro.
-							create_door_exit(x, y, l)
-						elseif (_subchunk_id == HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
-							-- # TODO: Mothership entrance door; make a method to spawn the mothership entrance.
-							create_door_exit_to_mothership(x, y, l)
-						elseif (_subchunk_id == HD_SUBCHUNKID.RESTLESS_TOMB) then
-							-- Haunted Castle entrance door; Spawn skeleton with crown and hidden castle entrance door
-							-- # TODO: Haunted Castle Extra Item Spawns;
-							-- Spawn king's tombstone
-								-- Change skin to king
-
-							-- 2 tiles down
-								-- Spawn skeleton
-								-- Spawn Crown
-									-- Reskin ITEM_DIAMOND as gold crown
-									-- (worth $5000 in HD, might as well leave price the same as diamond)
-							
-							-- 4 tiles down
-								-- spawn hidden entrance
-									-- Ask around the discord for a way to make the hidden door jingle go off
-							create_door_exit_to_hauntedcastle(x, y-4, l)
-						end
-					-- coffins
-					elseif _tilechar == "g" then
-						if (
-							-- (_subchunk_id == HD_SUBCHUNKID.) or
-							(_subchunk_id == HD_SUBCHUNKID.COFFIN_UNLOCKABLE)
-						) then
-							-- # TODO: Creating unlock coffins
-							
-						-- elseif (
-						-- 	(_subchunk_id == HD_SUBCHUNKID.) or
-						-- 	(_subchunk_id == HD_SUBCHUNKID.)
-						-- ) then
-						-- 	-- # TODO: Creating player coffins
-							
-						end
+					entity_type_pool = {}
+					entity_type = 0
+					if hd_tiletype.bake_spawn.default ~= nil then
+						entity_type_pool = hd_tiletype.bake_spawn.default
+					end
+					if (
+						hd_tiletype.bake_spawn.alternate ~= nil and
+						hd_tiletype.bake_spawn.alternate[state.theme] ~= nil
+					) then
+						entity_type_pool = hd_tiletype.bake_spawn.alternate[state.theme]
+					elseif (
+						hd_tiletype.bake_spawn.tutorial ~= nil and
+						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+					) then
+						entity_type_pool = hd_tiletype.bake_spawn.tutorial
 					end
 					
-					with_offset_x, with_offset_y = 0, 0
-					if hd_tiletype_post.alternate_offset ~= nil and hd_tiletype_post.alternate_offset[state.theme] ~= nil then
-						with_offset_x, with_offset_y = hd_tiletype_post.alternate_offset[1], hd_tiletype_post.alternate_offset[2]
-					elseif hd_tiletype_post.offset ~= nil then
-						with_offset_x, with_offset_y = hd_tiletype_post.offset[1], hd_tiletype_post.offset[2]
+					if #entity_type_pool > 0 then
+						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
-					with_offset_x, with_offset_y = with_offset_x + x, with_offset_y + y
-	
-					spawned_uid = 0
-	
-					-- HD_ENT and ENT_TYPE spawning
-					if hd_tiletype.entity_types ~= nil then
-						if hd_tiletype.entity_types.default ~= nil then
-							entity_type_pool = hd_tiletype.entity_types.default
-							entity_type = 0
-							if (
-								hd_tiletype.entity_types.alternate ~= nil and
-								hd_tiletype.entity_types.alternate[state.theme] ~= nil
-							) then
-								entity_type_pool = hd_tiletype.entity_types.alternate[state.theme]
-							elseif (
-								hd_tiletype.entity_types.tutorial ~= nil and
-								HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
-							) then
-								entity_type_pool = hd_tiletype.entity_types.tutorial
-							end
-							
-							if #entity_type_pool == 1 then
-								entity_type = entity_type_pool[1]
-							elseif #entity_type_pool > 1 then
-								entity_type = TableRandomElement(entity_type_pool)
-							end
-							entType_is_liquid = (
-								entity_type == ENT_TYPE.LIQUID_WATER or
-								entity_type == ENT_TYPE.LIQUID_COARSE_WATER or
-								entity_type == ENT_TYPE.LIQUID_IMPOSTOR_LAKE or
-								entity_type == ENT_TYPE.LIQUID_LAVA or
-								entity_type == ENT_TYPE.LIQUID_STAGNANT_LAVA
-							)
-							if entity_type == 0 then
-								hd_tiletype_post = HD_TILENAME["0"]
-							else
-								if entity_type == ENT_TYPE.FLOOR_GENERIC then hd_tiletype_post = HD_TILENAME["1"]
-								elseif entType_is_liquid then hd_tiletype_post = HD_TILENAME["w"]
-								-- If it doesn't have a matching HD_TILENAME, return the original one.
-								end
-								
-								spawned_uid = entType_is_liquid and spawn_liquid(entity_type, with_offset_x, with_offset_y, l, 0, 0) or spawn(entity_type, with_offset_x, with_offset_y, l, 0, 0)
-							end
-						end
-					elseif hd_tiletype_post.hd_type ~= nil then -- may be outdated since we could use .spawnfunction with `create_` methods
-						danger_spawn(hd_tiletype_post.hd_type, x, y, l, false)
-					end
-	
-					entType_is_container = (
-						entity_type == ENT_TYPE.ITEM_POT or
-						entity_type == ENT_TYPE.ITEM_CRATE or
-						entity_type == ENT_TYPE.ITEM_COFFIN
-					)
-	
-					if hd_tiletype_post.contents ~= nil and entType_is_container and spawned_uid ~= 0 then
-						set_contents(spawned_uid, hd_tiletype_post.contents)
-					end
-	
-					if hd_tiletype_post.spawnfunction ~= nil then hd_tiletype_post.spawnfunction({x, y, l}) end
+					-- entType_is_liquid = (
+					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
+					-- 	entity_type == ENT_TYPE.LIQUID_COARSE_WATER or
+					-- 	entity_type == ENT_TYPE.LIQUID_IMPOSTOR_LAKE or
+					-- 	entity_type == ENT_TYPE.LIQUID_LAVA or
+					-- 	entity_type == ENT_TYPE.LIQUID_STAGNANT_LAVA
+					-- )
+					-- if entity_type == 0 then
+					-- 	hd_tiletype_post = HD_TILENAME["0"]
+					-- else
+					-- 	if entity_type == ENT_TYPE.FLOOR_GENERIC then hd_tiletype_post = HD_TILENAME["1"]
+					-- 	elseif entType_is_liquid then hd_tiletype_post = HD_TILENAME["w"]
+					-- 	end
+						
+					-- end
 				end
 			end
 
@@ -8492,8 +8570,8 @@ function levelcode_bake_spawn()
 	end
 end
 
-function levelcode_bake_spawn_over()
-	_x, _y = locate_cornerpos_real(1, 1) -- position of the topleft-most tile of the map
+function gen_levelcode_bake_spawn_over()
+	_x, _y = locate_game_corner_position_from_levelrooms_position(1, 1) -- position of the topleft-most tile of the map
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 	c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
@@ -8502,29 +8580,35 @@ function levelcode_bake_spawn_over()
 	for level_hi = 1, c_hi_len, 1 do
 		x = _x
 		for level_wi = 1, c_wi_len, 1 do
-			tilecode = global_levelassembly.modification.levelcode[level_hi][level_wi]
-			if (
-				HD_TILENAME[tilecode] ~= nil and
-				HD_TILENAME[tilecode].embedded_ents ~= nil
-			) then
-				offsetx, offsety = 0, 0
-				floorToSpawnOver = nil
-				if HD_TILENAME[tilecode].offset_spawnover ~= nil then
-					offsetx, offsety = HD_TILENAME[tilecode].offset_spawnover[1], HD_TILENAME[tilecode].offset_spawnover[2]
-				end
-				floorsAtOffset = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, LAYER.FRONT, 0.5)
-				if #floorsAtOffset > 0 then floorToSpawnOver = floorsAtOffset[1] end
-				-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
-				entToEmbed = HD_TILENAME[tilecode].embedded_ents[math.random(1, #HD_TILENAME[tilecode].embedded_ents)]
-				
+			_tilechar = global_levelassembly.modification.levelcode[level_hi][level_wi]
+			hd_tiletype = HD_TILENAME[_tilechar]
+			if hd_tiletype ~= nil and hd_tiletype.bake_spawn_over ~= nil then
 				if (
-					entToEmbed ~= 0 and
-					floorToSpawnOver ~= nil
+					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
+					(
+						options.hd_debug_scripted_levelgen_tilecodes_blacklist ~= nil and
+						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
+					)
 				) then
-					if HD_TILENAME[tilecode].offset_spawnover ~= nil then
-						spawn_entity_over(entToEmbed, floorToSpawnOver, offsetx*(-1), offsety*(-1))
-					else
-						embed(entToEmbed, floorToSpawnOver)
+					entity_type_pool = {}
+					entity_type = 0
+					if hd_tiletype.bake_spawn_over.default ~= nil then
+						entity_type_pool = hd_tiletype.bake_spawn_over.default
+					end
+					if (
+						hd_tiletype.bake_spawn_over.alternate ~= nil and
+						hd_tiletype.bake_spawn_over.alternate[state.theme] ~= nil
+					) then
+						entity_type_pool = hd_tiletype.bake_spawn_over.alternate[state.theme]
+					elseif (
+						hd_tiletype.bake_spawn_over.tutorial ~= nil and
+						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+					) then
+						entity_type_pool = hd_tiletype.bake_spawn_over.tutorial
+					end
+					
+					if #entity_type_pool > 0 then
+						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 				end
 			end

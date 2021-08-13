@@ -72,18 +72,18 @@
 \%jungle_spear_trap_chance     0
 \%beehive_chance               0                            // 1/n chance of trying to spawn a beehive
 
-\+bat                   0               // 100, 500, 1000, 1000                          // 100, 500, 1000, 1000
-\+caveman               0               // 60, 80, 80, 60
-\+tikiman               0               // 60, 60, 40, 30
-\+mantrap               0
+\+bat                   0               //                           // 100, 500, 1000, 1000
+\+caveman               0               // 60, 40, 40, 30
+\+tikiman               0               // 120, 50, 50, 40
+\+mantrap               0               // 70, 60, 60, 50
 \+monkey                0
-\+hd_procedural_critter_frog         0
-\+hd_procedural_frog         0
-\+hd_procedural_firefrog         0
-\+hd_procedural_giantfrog         0
+\+hd_procedural_critter_frog    0       // 30
+\+hd_procedural_frog            0       // 40, 20, 20, 20
+\+hd_procedural_firefrog        0       // 120
+\+hd_procedural_giantfrog       0
 \+hd_procedural_piranha         0
-\+hd_procedural_snail         0
-\+hd_procedural_tikitrap         0
+\+hd_procedural_snail           0       // 240, 70, 70, 50
+\+hd_procedural_tikitrap        0
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

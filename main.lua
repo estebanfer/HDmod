@@ -27,13 +27,14 @@ register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
 	"Debug: Blacklist scripted level generation tilecodes",
 	"w3"
 )
-register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)	
+register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)
 register_option_bool("hd_og_ankhprice", "OG: Item - Set the Ankh price to a constant $50,000 like it was in HD",					false)	-- Defaults to S2
 register_option_bool("hd_og_boulder_agro_disable", "OG: Traps - Revert enraging shopkeepers as they did in HD",						false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Revert preventing the ghost from splitting",						false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed",										false)	-- Defaults to S2
 register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Revert spawntime from 2:30->3:00 and 2:00->2:30 when cursed.",		false)	-- Defaults to HD
 register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning",														false)	-- Defaults to HD
+register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD",									true)	-- Defaults to HD
 
 -- # TODO: revise from the old system, removing old uses.
 -- Then, rename it to `hd_og_use_s2_spawns`
@@ -803,7 +804,7 @@ HD_TILENAME = {
 					if (
 						floorToSpawnOver ~= nil
 					) then
-						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, x, y)
+						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, 0, 1)
 					end
 				end,
 				function(x, y, l) return 0 end
@@ -1007,7 +1008,7 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					embed(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					embed(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
 				end,
 			},
 			alternate = {
@@ -1027,10 +1028,26 @@ HD_TILENAME = {
 		description = "Snake from Snake Pit",
 	},
 	["O"] = {
-		description = "Moai Head",
-		-- # TODO: Generation.
+		-- # TODO: Moai ankh respawn mechanics
 		-- # TODO: Blocks/foreground reskins
 			-- # TODO in ASE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\ICE\icesmallbg.png
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					for yi = 0, -3, -1 do
+						for xi = 0, 2, 1 do
+							if (yi ~= 0 and xi == 1) then
+								-- SORRY NOTHING
+							else
+								spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x+xi, y+yi, l, 0, 0)
+							end
+						end
+					end
+					create_door_exit(x+1, y-3, l)
+				end,
+			},
+		},
+		description = "Moai Head",
 	},
 	["P"] = {
 		bake_spawn = {
@@ -1062,49 +1079,57 @@ HD_TILENAME = {
 	},
 	["T"] = {
 		bake_spawn = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l, 0, 0) end,},
+			default = {
+				function(x, y, l)
+					if options.hd_og_tree_spawn == true then
+						spawn_tree(x, y, l)
+					else
+						spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l, 0, 0)
+						-- # TODO: HD-style tree spawning method
+						-- Use the following depreciated methods for a starting point:
+						
+						-- function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
+						-- 	if p_uid == 0 then return 0 end
+						-- 	p_x, p_y, p_l = get_position(p_uid)
+						-- 	branches = get_entities_at(e_type, 0, p_x+side, p_y, p_l, radius)
+						-- 	branch_uid = 0
+						-- 	if #branches == 0 then
+						-- 		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
+						-- 	else
+						-- 		branch_uid = branches[1]
+						-- 	end
+						-- 	-- flip if you just created it and it's a 0x100 and it's on the left or if it's 0x200 and on the right.
+						-- 	branch_e = get_entity(branch_uid)
+						-- 	if branch_e ~= nil then
+						-- 		-- flipped = test_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
+						-- 		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then
+						-- 			flip_entity(branch_uid)
+						-- 		elseif (branch_e.type.search_flags == 0x200 and right == true) then
+						-- 			branch_e.flags = set_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
+						-- 		end
+						-- 	end
+						-- 	return branch_uid
+						-- end
+						-- function onlevel_decorate_trees()
+						-- 	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
+						-- 		-- add branches to tops of trees, add leaf decorations
+						-- 		treetops = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
+						-- 		for _, treetop in ipairs(treetops) do
+						-- 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
+						-- 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
+						-- 			if feeling_check("RESTLESS") == false then
+						-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
+						-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
+						-- 			-- else
+						-- 				-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
+						-- 			end
+						-- 		end
+						-- 	end
+						-- end
+					end
+				end,
+			},
 		},
-		-- # TODO: Generation.
-		-- Use the following depreciated methods for a starting point:
-		
-		-- function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
-		-- 	if p_uid == 0 then return 0 end
-		-- 	p_x, p_y, p_l = get_position(p_uid)
-		-- 	branches = get_entities_at(e_type, 0, p_x+side, p_y, p_l, radius)
-		-- 	branch_uid = 0
-		-- 	if #branches == 0 then
-		-- 		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
-		-- 	else
-		-- 		branch_uid = branches[1]
-		-- 	end
-		-- 	-- flip if you just created it and it's a 0x100 and it's on the left or if it's 0x200 and on the right.
-		-- 	branch_e = get_entity(branch_uid)
-		-- 	if branch_e ~= nil then
-		-- 		-- flipped = test_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
-		-- 		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then
-		-- 			flip_entity(branch_uid)
-		-- 		elseif (branch_e.type.search_flags == 0x200 and right == true) then
-		-- 			branch_e.flags = set_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
-		-- 		end
-		-- 	end
-		-- 	return branch_uid
-		-- end
-		-- function onlevel_decorate_trees()
-		-- 	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
-		-- 		-- add branches to tops of trees, add leaf decorations
-		-- 		treetops = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
-		-- 		for _, treetop in ipairs(treetops) do
-		-- 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
-		-- 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
-		-- 			if feeling_check("RESTLESS") == false then
-		-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
-		-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
-		-- 			-- else
-		-- 				-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
-		-- 			end
-		-- 		end
-		-- 	end
-		-- end
 
 		description = "Tree",
 	},
@@ -1304,7 +1329,7 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					-- entity = spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0)
-					entity = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
 					entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
 				end,
 			},
@@ -1365,7 +1390,7 @@ HD_TILENAME = {
 					if (
 						floorToSpawnOver ~= nil
 					) then
-						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, x, y)
+						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, 0, 1)
 					end
 				end,
 			}
@@ -2369,7 +2394,7 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"].method = function()
 end
 
 HD_ROOMOBJECT.FEELINGS["MOAI"] = {
-	prePath = true, -- # TOTEST: Is spawning the moai head first a good idea?
+	prePath = false, -- # TOTEST: Is spawning the moai head first a good idea?
 	rooms = {
 		[HD_SUBCHUNKID.MOAI] = {
 			{
@@ -2429,7 +2454,7 @@ HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
 	prePath = true,
 	rooms = {
 		[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
-			{-- replaced tilecodes: tree ("T") with door ("9") (and fill the 0 tile underneath it)
+			{
 				"++++++++++++000000++++090000++++++00++++++++00++++++++00++++++++00++++++++00++++",
 				"++++++++++++000000++++000090++++++00++++++++00++++++++00++++++++00++++++++00++++",
 			}
@@ -2685,7 +2710,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		[HD_SUBCHUNKID.EXIT] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
-			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"},
+			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
@@ -2693,7 +2718,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		[HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
-			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"},
+			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 		},
 		[HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}}
@@ -5239,7 +5264,7 @@ set_callback(function(room_gen_ctx)
 
 
 			onlevel_generation_execution_phase_one()
-			-- onlevel_generation_execution_phase_two()
+			onlevel_generation_execution_phase_two()
 
 
 			onlevel_placement_lockedchest()
@@ -5505,7 +5530,6 @@ set_callback(function()
 -- --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
 	-- onlevel_generation_detection()
 	-- onlevel_generation_modification()
-	-- onlevel_generation_execution()
 	-- generation_removeborderfloor()
 	-- -- onlevel_replace_powderkegs()
 	-- -- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
@@ -8343,6 +8367,7 @@ end
 function level_generation_method_shops()
 	if (
 		detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
+		state.theme ~= THEME.VOLCANA and
 		detect_level_non_boss() and
 		detect_level_non_special()
 	) then

@@ -235,7 +235,7 @@ acid_tick = ACID_POISONTIME
 tongue_tick = TONGUE_ACCEPTTIME
 idoltrap_timeout = 0
 idoltrap_blocks = {}
-OLMEC_ID = nil
+OLMEC_UID = nil
 TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
 TONGUE_STATE = nil
 TONGUE_STATECOMPLETE = false
@@ -245,7 +245,7 @@ OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 OLMEC_STATE = 0
 BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_X = 0
-HELL_Y = 87
+HELL_Y = 86
 BOOKOFDEAD_TIC_LIMIT = 5
 BOOKOFDEAD_RANGE = 14
 bookofdead_tick = 0
@@ -355,7 +355,7 @@ HD_FEELING = {
 		message = "I hear snakes... I hate snakes!"
 	},
 	["RESTLESS"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.JUNGLE },
 		message = "The dead are restless!"
 	},
@@ -510,6 +510,8 @@ HD_SUBCHUNKID.SACRIFICIALPIT_TOP = 116
 HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION = 117
 HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM = 118
 
+HD_SUBCHUNKID.OLMEC_GROUND = 401
+
 HD_SUBCHUNKID.VLAD_TOP = 119
 HD_SUBCHUNKID.VLAD_MIDSECTION = 120
 HD_SUBCHUNKID.VLAD_BOTTOM = 121
@@ -631,6 +633,17 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0) end
+			},
+			alternate = {
+				[THEME.CITY_OF_GOLD] = function(x, y, l)
+					if not options.hd_debug_item_botd_give then
+						bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
+						book_ = get_entity(bookofdead_pickup_id):as_movable()
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+						texture_def.texture_path = "res/items_botd.png"
+						book_:set_texture(define_texture(texture_def))
+					end
+				end
 			},
 		},
 		description = "TNT Box",
@@ -849,7 +862,13 @@ HD_TILENAME = {
 							-- Spawn Crown
 								-- Reskin ITEM_DIAMOND as gold crown
 								-- (worth $5000 in HD, might as well leave price the same as diamond)
-						
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x, y-2, l, 0, 0)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x, y-2, l, 0, 0)
+						local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+						texture_def.texture_path = "res/items_dar_crown.png"
+						dar_crown:set_texture(define_texture(texture_def))
+
 						-- 4 tiles down
 							-- spawn hidden entrance
 								-- Ask around the discord for a way to make the hidden door jingle go off
@@ -1232,7 +1251,20 @@ HD_TILENAME = {
 	["c"] = {
 		bake_spawn = {
 			default = {
-				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, x+0.5, y, l, 0, 0) end,
+				function(x, y, l)
+					local entity = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, x+0.5, y, l, 0, 0))
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+					texture_def.texture_path = "res/items_dar_idol.png"
+					entity:set_texture(define_texture(texture_def))
+				end,
+			},
+			alternate = {
+				[THEME.EGGPLANT_WORLD] = function(x, y, l)
+					if (math.random(2) == 2) then
+						x = x + 10
+					end
+					create_crysknife(x, y, l)
+				end,
 			}
 		},
 		description = "Crystal Skull",
@@ -1328,8 +1360,7 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					-- entity = spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0)
-					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0))--_GENERIC, x, y, l, 0, 0))
 					entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
 				end,
 			},
@@ -2216,6 +2247,9 @@ HD_ROOMOBJECT.FEELINGS["RESTLESS"] = {
 	},
 }
 HD_ROOMOBJECT.FEELINGS["RESTLESS"].method = function()
+	state.level_flags = set_flag(state.level_flags, 8)
+	-- TODO: spawn particles for TOMB_FOG or the ghost fog
+
 	level_generation_method_nonaligned(
 		{
 			subchunk_id = HD_SUBCHUNKID.RESTLESS_TOMB,
@@ -2947,6 +2981,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
+	level_dim = {w = 2, h = 12},
 	-- unlockable coffin spawns at roomy == 11
 	-- # TODO: When placing new roomcodes here, replace "v" tiles with "3"
 	
@@ -2971,7 +3006,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	},
 	rooms = {
 		[HD_SUBCHUNKID.SIDE] = {
-			{"0dd0000dd02d0dddd0d20ddd00ddd02d0dddd0d20ddd00ddd000dddddd0011d0000d111111001111"},
+			{"000000000000000000000001002000000000000000020020001s000000s111ssssss111111111111"},
 		},
 		[HD_SUBCHUNKID.PATH] = {
 			{"000000000000000000000002001000000000000000020020001s000000s111ssssss111111111111"},
@@ -3181,6 +3216,7 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_NOTOP] = {
 	"00000000000000000000000000000005000000000000000000000000000001111120001122220000"}
 }
 -- # TODO: Ice caves sometimes injects these codes into the level. Investigate how.
+-- Make a "method" field for worlds to allow this
 _ = {"000000000021------1221wwwwww1221vwwwwv1201vwwwwv10011vvvv11002111111200022222200"}
 -- single room of water
 -- subchunkid 68
@@ -3192,7 +3228,7 @@ _ = {"000000000021------1221wwwwww1221vwwwwv1221vwwwwv1221vwwwwv1221vwwwwv1221vw
 -- subchunkid 69 *NICE*
 _ = {"21vwwwwv1221vwwwwv1221vwwwwv1221vwwwwv1201vwwwwv10011vvvv11002111111200022222200"}
 -- bottom room of water
--- subchunkid 70 *NICE*
+-- subchunkid 70
 
 
 
@@ -3403,37 +3439,30 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	-- },
 }
 HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
-	-- setRooms = {
-	-- 	-- 1
-	-- 	{
-	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-	-- 		placement = {1, 1},
-	-- 		roomcodes = {{""},}
-	-- 	},
-	-- 	{
-	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-	-- 		placement = {1, 2},
-	-- 		roomcodes = {{""},}
-	-- 	},
-	-- 	{
-	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-	-- 		placement = {1, 3},
-	-- 		roomcodes = {{""},}
-	-- 	},
-	-- 	{
-	-- 		subchunk_id = HD_SUBCHUNKID.PATH,
-	-- 		placement = {1, 4},
-	-- 		roomcodes = {{""},}
-	-- 	},
-
-	-- },
+	level_dim = {w = 4, h = 2},
+	rooms = {
+		[HD_SUBCHUNKID.SIDE] = {
+			{"60000000000000000000000000000000000000000000000000600000000000000000000000000000"},
+			{"00000600000000000000000000000000000000000000000000600000000000000000000000000000"},
+			{"60000000000000000000000000000000000000000000000000000006000000000000000000000000"},
+			{"60000600000000000000000000000000000000000000000000000000000000000000000000000000"},
+			{"00000000000000000000000000000000000000000000000000600006000000000000000000000000"},
+			{"00000000000000000000000000000000600000000000000000000000000000000000000000000000"},
+		},
+		[HD_SUBCHUNKID.OLMEC_GROUND] = {
+			{"11111111111111111111111111111111111111111111111111111111111111111111111111111111"},
+			{"11111111111222111111122211111111111111111111111111111111111111111111111111111111"},
+			{"11111111111111111111111111111111122221111112222111111111111111111111111111111111"},
+			{"11111111111111112221111111222111111111111111111111111111111111111111111111111111"},
+			{"11111111111111111111111111111111111111111111111111122211111112221111111111111111"},
+			{"11111111111111111111111111111111111111111111111111111111222111111122211111111111"},
+		},
+	},
 	-- coffin_unlockable = {
 	-- 	-- Spawn steps:
 	-- 		-- levelw, _ = get_levelsize()
-	-- 		-- structx = 1
-	-- 		-- if (math.random(2) == 2) then structx = levelw end
-	-- 		-- spawn 143 at 1, structx
-	-- 	{
+	-- 		-- structx = math.random(levelw)
+	-- 		-- spawn 74 at 1, structx
 	-- 		subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCKABLE,
 	-- 		roomcodes = {
 	-- 			{
@@ -3442,7 +3471,6 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 	-- 			}
 	-- 		}
 	-- 	}
-	-- },
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"0EEE02111202220"},
@@ -4093,7 +4121,7 @@ function init_onlevel()
 	IDOLTRAP_TRIGGER = false
 	
 	
-	OLMEC_ID = nil
+	OLMEC_UID = nil
 	BOSS_STATE = nil
 	TONGUE_STATE = nil
 	TONGUE_STATECOMPLETE = false
@@ -4438,6 +4466,18 @@ function create_ghost()
 	end
 end
 
+-- # TODO: Revise to a new pickup. 
+	-- IDEAS:
+		-- Replace with actual crysknife
+			-- Upgrade player whip damage?
+			-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
+			-- Can't make player whip invisible, apparently, so that might be hard to do
+		-- Permanent firewhip
+		-- Just spawn a powerpack
+			-- It's the spiritual successor to the crysknife, so its a fitting replacement
+			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, so allowing them to break with firewhip would play into HDs feature of being able to kill them.
+			-- In HD a good way of dispatching bacterium was with bombs, but they moved fast and went up walls so it was hard to time correctly.
+				-- So the powerpack would naturally balance things out by making bombs more effective against them.
 function create_crysknife(x, y, layer)
 	spawn(ENT_TYPE.ITEM_POWERPACK, x, y, layer, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
 end
@@ -5023,7 +5063,7 @@ set_post_tile_code_callback(function(x, y, layer)
 			kill_entity(door_ents_uid)
 		end
 
-		-- message("post-door: " .. tostring(state.time_level))
+		message("post-door: " .. tostring(state.time_level))
 		-- if state.screen == 12 then
 		-- end
 	else
@@ -5269,8 +5309,6 @@ set_callback(function(room_gen_ctx)
 
 			onlevel_placement_lockedchest()
 		
-			-- onlevel_replace_powderkegs()
-			-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
 			generation_removeborderfloor()
 
 
@@ -5302,96 +5340,104 @@ set_callback(function(room_gen_ctx)
 		end
 
 		level_w, level_h = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
-		-- level_w, level_h = 4, 4
-		-- if state.theme == THEME.EGGPLANT_WORLD then
-		-- 	level_w, level_h = 2, 12
-		-- end
 		for y = 0, level_h - 1, 1 do
 		    for x = 0, level_w - 1, 1 do
-				template_to_set = ROOM_TEMPLATE.SIDE
-				
+				local template_to_set = ROOM_TEMPLATE.SIDE
+				local room_template_here = get_room_template(x, y, 0)
+
 				if options.hd_debug_scripted_levelgen_disable == false then
-					
-					
-					--[[
-						Sync scripted level generation rooms with S2 generation rooms
-					--]]
-					_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
-					
-					--LevelGenSystem variables
-					-- if (
-					-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE or
-					-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
-					-- ) then
-					-- 	state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
-					-- end
-
-					-- normal paths
 					if (
-						(_template_hd >= 1) and (_template_hd <= 8)
+						state.theme == THEME.OLMEC
+						-- or state.theme == THEME.TIAMAT
 					) then
-						template_to_set = _template_hd
-
-					-- tikivillage paths
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH then
-						template_to_set = ROOM_TEMPLATE.PATH_NORMAL
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP then
-						template_to_set = ROOM_TEMPLATE.PATH_DROP
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP then
-						template_to_set = ROOM_TEMPLATE.PATH_NOTOP
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP then
-						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT then
-						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-					elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
-						template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-
-					-- flooded paths
-					elseif _template_hd == HD_SUBCHUNKID.FLOODED_SIDE then
-						template_to_set = ROOM_TEMPLATE.SIDE
-					elseif _template_hd == HD_SUBCHUNKID.FLOODED_PATH_NOTOP then
-						template_to_set = ROOM_TEMPLATE.PATH_NOTOP
-					elseif _template_hd == HD_SUBCHUNKID.FLOODED_EXIT then
-						template_to_set = ROOM_TEMPLATE.EXIT_NOTOP
-
-					-- shop
-					elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR) then
-						template_to_set = ROOM_TEMPLATE.SHOP
-					-- shop left
-					elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR_LEFT) then
-						template_to_set = ROOM_TEMPLATE.SHOP_LEFT
-					-- prize wheel
-					elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE) then
-						template_to_set = ROOM_TEMPLATE.DICESHOP
-					-- prize wheel left
-					elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE_LEFT) then
-						template_to_set = ROOM_TEMPLATE.DICESHOP_LEFT
+						if (x == 0 and y == 3) then
+							template_to_set = ROOM_TEMPLATE.ENTRANCE
+						elseif (x == 3 and y == 3) then
+							template_to_set = ROOM_TEMPLATE.EXIT
+						else
+							-- template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+							template_to_set = room_template_here
+						end
+					else
+						--[[
+							Sync scripted level generation rooms with S2 generation rooms
+						--]]
+						_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
 						
-					-- vault
-					elseif (_template_hd == HD_SUBCHUNKID.VAULT) then
-						template_to_set = ROOM_TEMPLATE.VAULT
-					
-					-- altar
-					elseif (_template_hd == HD_SUBCHUNKID.ALTAR) then
-						template_to_set = ROOM_TEMPLATE.ALTAR
-					
-					-- idol
-					elseif (_template_hd == HD_SUBCHUNKID.IDOL) then
-						template_to_set = ROOM_TEMPLATE.IDOL
+						--LevelGenSystem variables
+						-- if (
+						-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE or
+						-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
+						-- ) then
+						-- 	state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
+						-- end
+	
+						-- normal paths
+						if (
+							(_template_hd >= 1) and (_template_hd <= 8)
+						) then
+							template_to_set = _template_hd
+	
+						-- tikivillage paths
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH then
+							template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+	
+						-- flooded paths
+						elseif _template_hd == HD_SUBCHUNKID.FLOODED_SIDE then
+							template_to_set = ROOM_TEMPLATE.SIDE
+						elseif _template_hd == HD_SUBCHUNKID.FLOODED_PATH_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+						elseif _template_hd == HD_SUBCHUNKID.FLOODED_EXIT then
+							template_to_set = ROOM_TEMPLATE.EXIT_NOTOP
+	
+						-- shop
+						elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR) then
+							template_to_set = ROOM_TEMPLATE.SHOP
+						-- shop left
+						elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR_LEFT) then
+							template_to_set = ROOM_TEMPLATE.SHOP_LEFT
+						-- prize wheel
+						elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE) then
+							template_to_set = ROOM_TEMPLATE.DICESHOP
+						-- prize wheel left
+						elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE_LEFT) then
+							template_to_set = ROOM_TEMPLATE.DICESHOP_LEFT
+							
+						-- vault
+						elseif (_template_hd == HD_SUBCHUNKID.VAULT) then
+							template_to_set = ROOM_TEMPLATE.VAULT
 						
-
+						-- altar
+						elseif (_template_hd == HD_SUBCHUNKID.ALTAR) then
+							template_to_set = ROOM_TEMPLATE.ALTAR
+						
+						-- idol
+						elseif (_template_hd == HD_SUBCHUNKID.IDOL) then
+							template_to_set = ROOM_TEMPLATE.IDOL
+							
+	
+						end
 					end
-					room_gen_ctx:set_room_template(x, y, 0, template_to_set)
 				else
 					-- Set everything that's not the entrance to a side room
-					local room_template_here = get_room_template(x, y, 0)
 					if (
-						(room_template_here ~= ROOM_TEMPLATE.ENTRANCE) and
-						(room_template_here ~= ROOM_TEMPLATE.ENTRANCE_DROP)
+						(room_template_here == ROOM_TEMPLATE.ENTRANCE) or
+						(room_template_here == ROOM_TEMPLATE.ENTRANCE_DROP)
 					) then
-						room_gen_ctx:set_room_template(x, y, 0, template_to_set)
+						template_to_set = room_template_here
 					end
 				end
+				room_gen_ctx:set_room_template(x, y, 0, template_to_set)
 	        end
 	    end
 	end
@@ -5418,9 +5464,6 @@ end, ON.POST_ROOM_GENERATION)
 -- 			state.level_gen.spawn_x, state.level_gen.spawn_y = global_levelassembly.entrance.x, global_levelassembly.entrance.y
 
 -- 	-- 		onlevel_placement_lockedchest()
-		
--- 	-- 		-- onlevel_replace_powderkegs()
--- 	-- 		-- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
 -- 	-- 		generation_removeborderfloor()
 -- 		end
 -- 	end
@@ -5515,7 +5558,10 @@ set_callback(function()
 
 	-- TEMPORARY: move players and things they have to entrance point
 	
-	if options.hd_debug_scripted_levelgen_disable == false then
+	if (
+		options.hd_debug_scripted_levelgen_disable == false and
+		detect_level_non_boss()
+	) then
 		for i = 1, #players, 1 do
 			move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
 		end
@@ -5531,8 +5577,6 @@ set_callback(function()
 	-- onlevel_generation_detection()
 	-- onlevel_generation_modification()
 	-- generation_removeborderfloor()
-	-- -- onlevel_replace_powderkegs()
-	-- -- onlevel_generation_pushblocks() -- PLACE AFTER onlevel_generation
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 	onlevel_dangers_init()
@@ -5547,7 +5591,6 @@ set_callback(function()
 	
 	-- # TODO: Replace onlevel_add_* methods with tilecode spawning.
 	-- onlevel_add_crysknife()
-	-- onlevel_add_botd()
 
 	onlevel_hide_yama()
 	onlevel_acidbubbles()
@@ -5940,8 +5983,8 @@ end
 -- Script-based roomcode and chunk generation
 function onlevel_generation_modification()
 	levelw, levelh = 4, 4
-	if state.theme == THEME.EGGPLANT_WORLD then
-		levelw, levelh = 2, 12
+	if HD_ROOMOBJECT.WORLDS[state.theme].level_dim ~= nil then
+		levelw, levelh = HD_ROOMOBJECT.WORLDS[state.theme].level_dim.w, HD_ROOMOBJECT.WORLDS[state.theme].level_dim.h
 	end
 	global_levelassembly.modification = {
 		levelrooms = levelrooms_setn(levelw, levelh),
@@ -5950,10 +5993,7 @@ function onlevel_generation_modification()
 	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL) then
 		unlock = set_run_unlock()
 		gen_levelrooms_nonpath(unlock, true)
-		if (
-			(state.theme ~= THEME.OLMEC) and
-			(state.theme ~= THEME.TIAMAT)
-		) then
+		if (detect_level_non_boss()) then
 			gen_levelrooms_path()
 		end
 		gen_levelrooms_nonpath(unlock, false)
@@ -6332,25 +6372,6 @@ function onlevel_acidbubbles()
 	end
 end
 
--- # TODO: Outdated. Revise to HD_ROOMOBJECT.WORM setroom location and make a new pickup that gives permanent firewhip. 
-	-- IDEAS:
-		-- Replace with actual crysknife and upgrade player damage.
-			-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
-			-- Can't make player whip invisible, apparently, so that might be hard to do.
-		-- Use powerpack
-			-- It's the spiritual successor to the crysknife, so its a fitting replacement
-			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, but now I can even make them break with the powerpack if I also use bush blocks
-			-- In my experience in HD, a good way of dispatching bacterium was with bombs, but it was hard to time correctly. So the powerpack would make bombs even more effective
-function onlevel_add_crysknife()
-	if state.theme == THEME.EGGPLANT_WORLD then
-		x = 17
-		y = 77
-		if (math.random(2) == 2) then
-			x = x - 10
-		end
-		create_crysknife(x, y, LAYER.FRONT)
-	end
-end
 
 -- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 -- 	-- SORRY, NOTHING
@@ -6380,23 +6401,12 @@ function onlevel_hide_yama()
 	end
 end
 
--- # TODO: Once COG generation is done, move into tile spawning
-function onlevel_add_botd()
-	if state.theme == THEME.CITY_OF_GOLD then
-		if not options.hd_debug_item_botd_give then
-			bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, 6, 99.05, LAYER.FRONT, 0, 0)
-			book_ = get_entity(bookofdead_pickup_id):as_movable()
-			book_.animation_frame = 205
-		end
-	end
-end
-
 function onlevel_boss_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
 		cutscene_move_olmec_pre()
 		cutscene_move_cavemen()
-		create_door_ending(41, 99, LAYER.FRONT)
+		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
 
 		HELL_X = math.random(4,41)
 		create_door_exit_to_hell(HELL_X, HELL_Y, LAYER.FRONT)
@@ -6406,13 +6416,13 @@ end
 function cutscene_move_olmec_pre()
 	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
-		OLMEC_ID = olmecs[1]
-		move_entity(OLMEC_ID, 24.500, 100.500, 0, 0)
+		OLMEC_UID = olmecs[1]
+		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
 	end
 end
 
 function cutscene_move_olmec_post()
-	move_entity(OLMEC_ID, 22.500, 99.500, 0, 0)--24.500, 100.500, 0, 0)
+	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
 end
 
 function cutscene_move_cavemen()
@@ -6425,26 +6435,9 @@ function cutscene_move_cavemen()
 	-- **consider problems for skipping the cutscene
 	cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
 	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 99.05, 0, 0)
+		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
 	end
 end
-
--- # TODO: Revise replacing powderkegs into onlevel_generation. Also, note that the mines has a small chance of spawning powderkegs.
--- function onlevel_replace_powderkegs()
--- if state.theme == THEME.VOLCANA then
--- -- replace powderkegs with pushblocks, move_entity(powderkeg, 0, 0, 0, 0)
-	-- end
--- end
-
--- function onlevel_generation_pushblocks()
-	-- if state.theme == THEME.OLMEC then
-		-- Pushblock generation. Have a random small chance to replace all FLOORSTYLED_STONE/FLOOR_GENERIC blocks with a ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK.
-		-- Exceptions include not having a FLOORSTYLED_STONE/FLOOR_GENERIC block under it and being at the y coordinate of 98.
-		-- get_entities_by_type({ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOORSTYLED_STONE})
-		-- Probably best to pick a number between 5 and 20, and then choose that amount of random blocks out of the array.
-		-- The problem is, there's going to be a lot of visible broken terrain as a result.
-	-- end
--- end
 
 -- Set level feelings (not to be confused with `feeling_set`)
 function onlevel_set_feelings()
@@ -6631,9 +6624,11 @@ function oncamp_shortcuts()
 			get_entity(door_bg):set_texture(shortcut_doortextures[i])
 			get_entity(door_bg).animation_frame = 1
 			
-			sign = spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, 86-0.5, LAYER.FRONT, 0, 0)
-			sign_animation_frame = get_entity(sign).animation_frame
-			get_entity(sign).animation_frame = sign_animation_frame + (i-1)
+			sign = get_entity(spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, 86-0.5, LAYER.FRONT, 0, 0))
+			local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_1)
+			texture_def.texture_path = "res/deco_basecamp_shortcut_signs.png"
+			sign:set_texture(define_texture(texture_def))
+			sign.animation_frame = sign.animation_frame + (i-1)
 		else
 			spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, 86, LAYER.FRONT, 0, 0)
 		end
@@ -7403,7 +7398,7 @@ function onframe_olmec_cutscene() -- **Move to set_interval() that you can close
 			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
 			-- kill the blocks olmec would normally smash.
 			for b = 1, 4, 1 do
-				local blocks = get_entities_at(ENT_TYPE.FLOORSTYLED_STONE, 0, 21+b, 98, LAYER.FRONT, 0.5)
+				local blocks = get_entities_at(ENT_TYPE.FLOORSTYLED_STONE, 0, 21+b, 97, LAYER.FRONT, 0.5)--98, LAYER.FRONT, 0.5)
 				if #blocks > 0 then
 					kill_entity(blocks[1])
 				end
@@ -7417,7 +7412,7 @@ end
 
 function onframe_boss()
 	if state.theme == THEME.OLMEC then
-		if OLMEC_ID then
+		if OLMEC_UID then
 			if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then
 				onframe_olmec_cutscene()
 			elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then
@@ -7429,9 +7424,9 @@ function onframe_boss()
 end
 
 function onframe_olmec_behavior()
-	olmec = get_entity(OLMEC_ID)
+	olmec = get_entity(OLMEC_UID)
 	if olmec ~= nil then
-		olmec = get_entity(OLMEC_ID):as_olmec()
+		olmec = get_entity(OLMEC_UID):as_olmec()
 		-- Ground Pound behavior:
 			-- # TODO: Shift OLMEC down enough blocks to match S2's OLMEC. Currently the spelunker is crushed between Olmec and the ceiling.
 			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
@@ -7440,7 +7435,7 @@ function onframe_olmec_behavior()
 		-- Enemy Spawning: Detect when olmec is about to smash down
 		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
-			x, y, l = get_position(OLMEC_ID)
+			x, y, l = get_position(OLMEC_UID)
 			-- random chance (maybe 20%?) each time olmec groundpounds, shoots 3 out in random directions upwards.
 			-- if math.random() >= 0.5 then
 				-- # TODO: Currently fires twice. Idea: Use a timeout variable to check time to refire.
@@ -7696,7 +7691,7 @@ end
 
 function onframe_boss_wincheck()
 	if BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-		olmec = get_entity(OLMEC_ID):as_olmec()
+		olmec = get_entity(OLMEC_UID):as_olmec()
 		if olmec ~= nil then
 			if olmec.attack_phase == 3 then
 				-- # TOTEST: set win sound to HD's win jingle
@@ -7711,13 +7706,13 @@ end
 
 function onguiframe_ui_info_boss()
 	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if state.theme == THEME.OLMEC and OLMEC_ID ~= nil then
-			olmec = get_entity(OLMEC_ID)
+		if state.theme == THEME.OLMEC and OLMEC_UID ~= nil then
+			olmec = get_entity(OLMEC_UID)
 			text_x = -0.95
 			text_y = -0.50
 			white = rgba(255, 255, 255, 255)
 			if olmec ~= nil then
-				olmec = get_entity(OLMEC_ID):as_olmec()
+				olmec = get_entity(OLMEC_UID):as_olmec()
 				
 				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 				olmec_attack_state = "UNKNOWN"

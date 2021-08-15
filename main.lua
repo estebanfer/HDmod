@@ -3530,9 +3530,11 @@ HD_BEHAVIOR = {
 			-- monster = get_entity():as_chasingmonster
 			-- monster.chased_target_uid = 0
 	OLMEC_SHOT = {
-		velocityx = nil,
-		velocityy = nil,
-		velocity_settimer = 25
+		velocity_set = {
+			velocityx = nil,
+			velocityy = nil,
+			timer = 25
+		}
 	},
 	-- CRITTER_FROG = {
 		-- jump_timeout = 70
@@ -3543,9 +3545,9 @@ HD_BEHAVIOR = {
 			-- # TODO: replace with Imp
 				-- Avoid using for agro distance since imps without lavapots immediately agro on the player regardless of distance
 				-- set_timeout() to remove all lavapots from imps in onlevel_remove_mounts()
-			-- if killed immediately, bat_uid still exists.
+			-- if killed immediately, imp_uid still exists.
 			-- # TOTEST: see if abilities can still be killed by the camera flash
-			bat_uid = nil,--agro = { bat_uid = nil },
+			imp_uid = nil,--agro = { imp_uid = nil },
 			-- idle = { mosquito_uid = nil }
 		-- },
 		agro = false -- upon agro, enable bat ability
@@ -3609,14 +3611,6 @@ HD_BEHAVIOR = {
 		-- # TODO:
 			-- blood_content
 			-- draw_depth
-	-- onlevel_dangers_replace
-		-- Supported Variables:
-			-- tospawn
-				-- if set, determines the ENT_TYPE to spawn.
-			-- toreplace
-				-- if set, determines the ENT_TYPE to replace inside onlevel_dangers_replace.
-			-- entitydb
-				-- If set, determines the ENT_TYPE to apply EntityDB modifications to
 	-- danger_applydb
 		-- Supported Variables:
 			-- dim = { w, h }
@@ -3665,7 +3659,7 @@ HD_ENT.ITEM_IDOL = {
 HD_ENT.ITEM_CRYSTALSKULL = {
 	tospawn = ENT_TYPE.ITEM_MADAMETUSK_IDOL
 }
-ITEM_PICKUP_SPRINGSHOES = {
+HD_ENT.ITEM_PICKUP_SPRINGSHOES = {
 	tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
 }
 HD_ENT.ITEM_FREEZERAY = {
@@ -3676,27 +3670,23 @@ HD_ENT.ITEM_SAPPHIRE = {
 }
 HD_ENT.FROG = {
 	tospawn = ENT_TYPE.MONS_FROG,
-	toreplace = ENT_TYPE.MONS_WITCHDOCTOR,--MOSQUITO,
 	dangertype = HD_DANGERTYPE.ENEMY
 }
 HD_ENT.FIREFROG = {
 	tospawn = ENT_TYPE.MONS_FIREFROG,
-	-- toreplace = ENT_TYPE.MONS_MOSQUITO,
 	dangertype = HD_DANGERTYPE.ENEMY
 }
 HD_ENT.SNAIL = {
 	tospawn = ENT_TYPE.MONS_HERMITCRAB,
-	toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	health_db = 1,
-	leaves_corpse_behind = false,-- removecorpse = true,
+	leaves_corpse_behind = false,
 	removeinventory = HD_REMOVEINVENTORY.SNAIL,
 }
 HD_ENT.PIRANHA = {
 	tospawn = ENT_TYPE.MONS_TADPOLE,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
-	-- entitydb = ENT_TYPE.MONS_TADPOLE,
 	-- sprint_factor = -1,
 	-- max_speed = -1,
 	-- acceleration = -1,
@@ -3706,18 +3696,16 @@ HD_ENT.WORMBABY = {
 	tospawn = ENT_TYPE.MONS_MOLE,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	health_db = 1,
-	leaves_corpse_behind = false,-- removecorpse = true
+	leaves_corpse_behind = false,
 }
 HD_ENT.EGGSAC = {
 	tospawn = ENT_TYPE.ITEM_EGGSAC,
-	toreplace = ENT_TYPE.MONS_JUMPDOG,
 	dangertype = HD_DANGERTYPE.FLOORTRAP,
 	collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
 	replaceoffspring = HD_REPLACE.EGGSAC
 }
 HD_ENT.TRAP_TIKI = {
 	tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
-	toreplace = ENT_TYPE.ITEM_SNAP_TRAP,
 	entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
 	dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
 	collisiontype = HD_COLLISIONTYPE.FLOORTRAP_TALL,
@@ -3732,31 +3720,26 @@ HD_ENT.CRITTER_RAT = {
 }
 HD_ENT.CRITTER_FROG = { -- # TODO: critter jump/idle behavior
 	tospawn = ENT_TYPE.MONS_CRITTERLOCUST,
-	toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
 	dangertype = HD_DANGERTYPE.CRITTER,
 	-- # TODO: Make jumping script, adjust movement EntityDB properties
 	-- behavior = HD_BEHAVIOR.CRITTER_FROG,
 }
 HD_ENT.SPIDER = {
 	tospawn = ENT_TYPE.MONS_SPIDER,
-	toreplace = ENT_TYPE.MONS_SPIDER,
 	dangertype = HD_DANGERTYPE.ENEMY
 }
 HD_ENT.HANGSPIDER = {
 	tospawn = ENT_TYPE.MONS_HANGSPIDER,
-	-- toreplace = ENT_TYPE.MONS_SPIDER,
 	dangertype = HD_DANGERTYPE.ENEMY
 }
 HD_ENT.GIANTSPIDER = {
 	tospawn = ENT_TYPE.MONS_GIANTSPIDER,
-	-- toreplace = ENT_TYPE.MONS_SPIDER,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
 	offset_spawn = {0.5, 0}
 }
 HD_ENT.SCORPIONFLY = {
 	tospawn = ENT_TYPE.MONS_SCORPION,
-	toreplace = ENT_TYPE.MONS_CATMUMMY,--SPIDER,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	behavior = HD_BEHAVIOR.SCORPIONFLY,
 	color = { 0.902, 0.176, 0.176 },
@@ -3841,15 +3824,19 @@ HD_ENT.SCORPIONFLY = {
 
 -- For HD_ENTs that include references to other HD_ENTs:
 
--- # TODO: Replace with regular frog
-	-- Use a giant fly for tospawn
-	-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
-		-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
-			-- once taken damage, remove abilities. If all abilities are removed, make caveman visible
-
--- GIANTFROG = { -- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
+-- # TODO: Test/Implement Giant Frog.
+	-- Creation
+		-- Use a regular frog for the behavior
+		-- Use a giant fly for the base
+				-- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
+		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
+			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
+				-- GreenKnight: once taken damage, remove abilities. If all abilities are removed, make caveman visible
+	-- Behavior:
+		-- On move_state == 6 (jump), run a random chance to spit out a frog instead. velocityx = 0 and velocityy = 0.
+		-- When it's within a short distance of the player and when d_mov.standing_on_uid ~= -1 and when not facing the player, flip_entity()
+-- GIANTFROG = {
 	-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-	-- toreplace = ENT_TYPE.MONS_GIANTFLY,
 	-- dangertype = HD_DANGERTYPE.ENEMY,
 	-- health = 8,
 	-- entitydb = ENT_TYPE.MONS_GIANTFLY,
@@ -3867,7 +3854,6 @@ HD_ENT.SCORPIONFLY = {
 HD_ENT.OLDBITEY = {
 	tospawn = ENT_TYPE.MONS_GIANTFISH,
 	dangertype = HD_DANGERTYPE.ENEMY,
-	entitydb = ENT_TYPE.MONS_GIANTFISH,
 	collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
 	itemdrop = {
 		item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
@@ -4086,23 +4072,6 @@ function init_onlevel()
 	-- bookofdead_tick_min = BOOKOFDEAD_TIC_LIMIT
 	bookofdead_frames_index = 1
 
-end
-
--- DANGER MODIFICATIONS - INITIALIZATION
--- # TODO: Replace these with lists that get applied to specific entities within the level.
-	-- For example: Detect on.frame for moles. If said mole's uid doesn't already exist in the removecorpse list, add it. Elseif it is dead, kill it, then then remove its uid from the list.
--- initialize per-level enemy databases
-function onlevel_dangers_init()
-	if LEVEL_DANGERS[state.theme] then
-		global_dangers = map(LEVEL_DANGERS[state.theme].dangers, function(danger) return danger.entity end)
-		if feeling_check("FLOODED") == true then
-			oldbitey = TableCopy(HD_ENT.OLDBITEY)
-			if feeling_check("RESTLESS") == true then
-				oldbitey.itemdrop.item = {HD_ENT.ITEM_CRYSTALSKULL}
-			end
-			table.insert(global_dangers, oldbitey) 
-		end
-	end
 end
 
 function bubbles()
@@ -5596,9 +5565,6 @@ set_callback(function()
 	end
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
-	onlevel_dangers_init()
-	-- onlevel_dangers_setonce()
-	set_timeout(onlevel_dangers_replace, 3)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
 	onlevel_remove_cursedpot()
 	-- onlevel_prizewheel()
@@ -5778,103 +5744,6 @@ function onloading_applyquestflags()
 	}
 	for i = 1, #flags_failsafe, 1 do
 		if test_flag(state.quest_flags, flags_failsafe[i]) == false then state.quest_flags = set_flag(state.quest_flags, flags_failsafe[i]) end
-	end
-end
-
--- Entities that spawn with methods that are only set once
-function onlevel_dangers_setonce()
-	-- loop through all dangers in global_dangers, setting enemy specifics
-	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
-		for i = 1, #global_dangers, 1 do
-			hd_type = global_dangers[i]
-			
-			-- if hd_type.liquidspawn ~= nil then
-			-- 	if hd_type.liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
-			-- 		enttype_replace_danger(
-			-- 			{
-			-- 				ENT_TYPE.MONS_MOSQUITO,
-			-- 				ENT_TYPE.MONS_WITCHDOCTOR,
-			-- 				ENT_TYPE.MONS_CAVEMAN,
-			-- 				ENT_TYPE.MONS_TIKIMAN,
-			-- 				ENT_TYPE.MONS_MANTRAP,
-			-- 				ENT_TYPE.MONS_MONKEY,
-			-- 				ENT_TYPE.ITEM_SNAP_TRAP
-			-- 			},
-			-- 			HD_ENT.PIRANHA,
-			-- 			true,
-			-- 			0, 0
-			-- 		)
-			-- 	end
-			-- end
-		end
-	end
-end
-
--- DANGER MODIFICATIONS - ON.LEVEL
--- Find everything in the level within the given parameters, apply enemy modifications within parameters.
-function onlevel_dangers_replace()
-	if LEVEL_DANGERS[state.theme] then
-		hd_types_toreplace = TableCopy(global_dangers)
-		
-		n = #hd_types_toreplace
-		for i, danger in ipairs(hd_types_toreplace) do
-			if danger.toreplace == nil then hd_types_toreplace[i] = nil end
-		end
-		hd_types_toreplace = CompactList(hd_types_toreplace, n)
-		affected = get_entities_by_type(map(hd_types_toreplace, function(hd_type) return hd_type.toreplace end))
-		giant_enemy = false
-		-- message("#hd_types_toreplace: " .. tostring(#hd_types_toreplace))
-		-- message("#affected: " .. tostring(#affected))
-
-		for _,ent_uid in ipairs(affected) do
-			e_ent = get_entity(ent_uid)
-			if e_ent ~= nil then
-				-- ex, ey, el = get_position(ent_uid)
-				e_type = e_ent.type.id--e_ent:as_container().type.id
-				
-				
-				variation = nil
-				for i = 1, #LEVEL_DANGERS[state.theme].dangers, 1 do
-					if (
-						LEVEL_DANGERS[state.theme].dangers[i].entity ~= nil and
-						LEVEL_DANGERS[state.theme].dangers[i].entity.toreplace ~= nil and
-						LEVEL_DANGERS[state.theme].dangers[i].entity.toreplace == e_type and
-						(
-							LEVEL_DANGERS[state.theme].dangers[i].variation ~= nil and
-							LEVEL_DANGERS[state.theme].dangers[i].variation.entities ~= nil and
-							LEVEL_DANGERS[state.theme].dangers[i].variation.chances ~= nil and
-							#LEVEL_DANGERS[state.theme].dangers[i].variation.entities == 2 and
-							#LEVEL_DANGERS[state.theme].dangers[i].variation.chances == 2
-						)
-					) then
-						variation = LEVEL_DANGERS[state.theme].dangers[i].variation
-					end
-				end
-				-- # TODO: Replace dangers.variation with HD_ENT property, including chance.
-					-- Frogs can replace mosquitos by having 100% chance. ie, if it was 99%, 1% chance not to spawn.
-				-- Make a table consisting of: [ENT_TYPE] = {uid, uid, etc...}
-					-- For each ENT_TYPE, split uids evenly amongst `replacements.danger`
-					-- Then run each replacement's chance to spawn, replacing it if successful, removing it if unsuccessful.
-				replacements = {}
-				for _, danger in ipairs(hd_types_toreplace) do
-					if danger.toreplace == e_type then replacements[#replacements+1] = danger end
-				end
-				-- map replacement and their chances here
-				if #replacements > 0 then --for _, replacement in ipairs(replacements) do
-					hd_ent_tolog = replacements[1]-- replacement
-					if variation ~= nil then
-						chance = math.random()
-						if (chance >= variation.chances[2] and giant_enemy == false) then
-							giant_enemy = true
-							hd_ent_tolog = variation.entities[2]
-						elseif (chance < variation.chances[2] and chance >= variation.chances[1]) then
-							hd_ent_tolog = variation.entities[1]
-						end
-					end
-					danger_replace(ent_uid, hd_ent_tolog, true, 0, 0)
-				end
-			end
-		end
 	end
 end
 
@@ -6968,34 +6837,11 @@ end
 
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
 -- Used to be part of onlevel_dangers_replace().
-function enttype_replace_danger(enttypes, hd_type, check_submerged, _vx, _vy)
-	check_submerged = check_submerged or false
+function enttype_replace_danger(enttypes, hd_type, _vx, _vy)
 	
 	dangers_uids = get_entities_by_type(enttypes)
 	for _, danger_uid in ipairs(dangers_uids) do
-		
-		d_mov = get_entity(danger_uid):as_movable()
-		d_submerged = test_flag(d_mov.more_flags, 11)
-		if (
-			check_submerged == false or
-			(check_submerged == true and d_submerged == true)
-		) then
-		
-			
-			-- d_mov = get_entity(danger_uid):as_movable()
-			-- d_type = get_entity(uid):as_container().type.id
-			-- uid_to_track = danger_uid
-			
-			-- if d_type ~= hd_type.toreplace
-				-- x, y, l = get_position(danger_uid)
-				-- vx = _vx or d_mov.velocityx
-				-- vy = _vy or d_mov.velocityy
-				-- uid_to_track = spawn(hd_type.tospawn, x, y, l, vx, vy)
-				-- move_entity(danger_uid, 0, 0, 0, 0)
-			-- end
-			
-			danger_replace(danger_uid, hd_type, false, _vx, _vy)
-		end
+		danger_replace(danger_uid, hd_type, false, _vx, _vy)
 	end
 end
 
@@ -7013,16 +6859,6 @@ function onframe_manage_dangers()
 		if danger_mov == nil then
 			killbool = true
 		elseif danger_mov ~= nil then
-			
-			if danger_mov.move_state == 6 then
-				-- On move_state jump, run a random chance to spit out a frog instead. velocityx = 0 and velocityy = 0.
-				-- When it's within agro distance (find this value by drawing the recorded distance between you and the frog) and when d_mov.standing_on_uid ~= -1 and when not facing the player, flip_entity()
-				if danger.hd_type == HD_ENT.GIANTFROG then
-					behavior_giantfrog(danger.uid)
-				end
-			end
-		
-		
 			danger_mov = get_entity(danger.uid):as_movable()
 			danger.x, danger.y, danger.l = get_position(danger.uid)
 			if danger.behavior ~= nil then
@@ -7057,30 +6893,30 @@ function onframe_manage_dangers()
 						-- for _, ability_uid in ipairs(danger.behavior.abilities) do
 							-- message("#danger.behavior.abilities: " .. tostring(#danger.behavior.abilities))
 							-- if danger.behavior.abilities.agro ~= nil then
-								if danger.behavior.bat_uid ~= nil then--behavior.abilities.bat_uid ~= nil then
+								if danger.behavior.imp_uid ~= nil then--behavior.abilities.imp_uid ~= nil then
 									if danger_mov.health == 1 then
 										-- **If SCORPIONFLY is killed, kill all abilities
 											-- **Move this into its own method
 										-- kill all abilities
 										-- for _, behavior_tokill in ipairs(danger.behavior.abilities) do
 											-- if #behavior_tokill > 0 and behavior_tokill[1] ~= nil then
-												move_entity(danger.behavior.bat_uid, 0, 0, 0, 0)--move_entity(behavior_tokill[1], 0, 0, 0, 0)
-												danger.behavior.bat_uid = nil--behavior_tokill[1] = nil
+												move_entity(danger.behavior.imp_uid, 0, 0, 0, 0)--move_entity(behavior_tokill[1], 0, 0, 0, 0)
+												danger.behavior.imp_uid = nil--behavior_tokill[1] = nil
 											-- end
 										-- end
 									else
 										-- permanent agro
 										-- **SCORPIONFLY -> Adopt S2's Monkey agro distance.
-											-- change the if statement below so it's detecting if the BAT is agro'd, not the scorpion.
+											-- change the if statement below so it's detecting if the IMP is agro'd, not the scorpion.
 										-- **Use chased_target instead.
 											-- get_entity():as_chasingmonster chased_target_uid
 										if danger_mov.move_state == 5 and danger.behavior.agro == false then danger.behavior.agro = true end
 										-- if no idle ability, toggle between agro and default
 										-- if danger.behavior.abilities.idle == nil then
 											behavior_toggle(
-												danger.behavior.bat_uid,--behavior.abilities.agro[1],
+												danger.behavior.imp_uid,--behavior.abilities.agro[1],
 												danger.uid,
-												TableConcat({danger.uid}, {danger.behavior.bat_uid}),--map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
+												TableConcat({danger.uid}, {danger.behavior.imp_uid}),--map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
 												danger.behavior.agro
 											)
 										-- end
@@ -7089,7 +6925,7 @@ function onframe_manage_dangers()
 							-- end
 							-- if it has an idle behavior and agro == false then set it as agro
 							-- if danger.behavior.abilities.idle ~= nil then
-								-- -- WARNING: Not taking into account if abilities.agro.bat_uid is nil.
+								-- -- WARNING: This doesn't consider the scenario of abilities.agro.imp_uid being nil.
 								-- -- However, this shouldn't be an issue, as neither is going to be nil when the other is not.
 								-- if danger.behavior.abilities.idle[1] ~= nil then
 									-- behavior_toggle(
@@ -7104,38 +6940,33 @@ function onframe_manage_dangers()
 						
 					-- end
 				-- end
-				if danger.behavior.velocity_settimer ~= nil and danger.behavior.velocity_settimer > 0 then
-					danger.behavior.velocity_settimer = danger.behavior.velocity_settimer - 1
-				else
-					if danger.behavior.velocityx ~= nil then
-						danger_mov.velocityx = danger.behavior.velocityx
+				if danger.behavior.velocity_set ~= nil then
+					if danger.behavior.velocity_set.timer > 0 then
+						danger.behavior.velocity_set.timer = danger.behavior.velocity_set.timer - 1
+					else
+						if danger.behavior.velocity_set.velocityx ~= nil then
+							danger_mov.velocityx = danger.behavior.velocity_set.velocityx
+						end
+						if danger.behavior.velocity_set.velocityy ~= nil then
+							danger_mov.velocityy = danger.behavior.velocity_set.velocityy
+						end
+						-- message("Olmec behavior 'YEET' velocityx: " .. tostring(danger_mov.velocityx))
+						danger.behavior.velocity_set = nil
 					end
-					if danger.behavior.velocityy ~= nil then
-						danger_mov.velocityx = danger.behavior.velocityx
-					end
-					-- message("YEET: " .. tostring(danger_mov.velocityx))
-					danger.behavior.velocity_settimer = nil
 				end
 			end
 
 			if (
-				-- (
-					danger.hd_type.kill_on_standing ~= nil and
-					(
-						danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING and
-						danger_mov.standing_on_uid ~= -1
-					) or
-					(
-						danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING_OUTOFWATER and
-						danger_mov.standing_on_uid ~= -1 and
-						test_flag(danger_mov.more_flags, 11) == false
-					)
-				-- ) or
-				-- (
-				-- 	danger.hd_type.removecorpse ~= nil and
-				-- 	danger.hd_type.removecorpse == true and
-				-- 	test_flag(danger_mov.flags, ENT_FLAG.DEAD) == true
-				-- )
+				danger.hd_type.kill_on_standing ~= nil and
+				(
+					danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING and
+					danger_mov.standing_on_uid ~= -1
+				) or
+				(
+					danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING_OUTOFWATER and
+					danger_mov.standing_on_uid ~= -1 and
+					test_flag(danger_mov.more_flags, 11) == false
+				)
 			) then
 				killbool = true
 			end
@@ -7144,8 +6975,8 @@ function onframe_manage_dangers()
 			-- if there's no script-enduced death and we're left with a nil response to uid, track entity coordinates with HD_BEHAVIOR and upon a nil response set killbool in the danger_mov == nil statement. That should allow spawning the item here.
 			-- This should also alow for removing all enemy behaviors.
 			if danger.behavior ~= nil then
-				if danger.behavior.bat_uid ~= nil then
-					move_entity(danger.behavior.bat_uid, 0, 0, 0, 0)
+				if danger.behavior.imp_uid ~= nil then
+					move_entity(danger.behavior.imp_uid, 0, 0, 0, 0)
 				end
 			end
 			if danger.hd_type.itemdrop ~= nil then -- if dead and has possible item drops
@@ -7356,12 +7187,12 @@ function create_hd_behavior(behavior)
 				-- The solution is probably assigning ability parameters by setting the variable to -1
 					-- (which I CAN do in this situation considering it's a uid field)
 				-- ACTUALLYYYYYYYYYYYY The solution is probably using string indexes(I'm probably butchuring the terminology)
-					-- For instance; "for string, value in pairs(decorated_behavior.abilities) do if string == "bat_uid" then message("BAT!!") end end"
+					-- For instance; "for string, value in pairs(decorated_behavior.abilities) do if string == "imp_uid" then message("IMP!!") end end"
 				
-				-- if behavior.abilities.agro.bat_uid ~= nil then
+				-- if behavior.abilities.agro.imp_uid ~= nil then
 					
-					decorated_behavior.bat_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)--decorated_behavior.abilities.agro.bat_uid = spawn(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
-					applyflags_to_uid(decorated_behavior.bat_uid, {{ 1, 6, 25 }})
+					decorated_behavior.imp_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)--decorated_behavior.abilities.agro.imp_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)
+					applyflags_to_uid(decorated_behavior.imp_uid, {{ 1, 6, 25 }})
 				
 				-- end
 				-- if behavior.abilities.idle.mosquito_uid ~= nil then
@@ -7382,8 +7213,8 @@ function create_hd_behavior(behavior)
 				xvel = math.random(7, 30)/100
 				yvel = math.random(5, 10)/100
 				if math.random() >= 0.5 then xvel = -1*xvel end
-				decorated_behavior.velocityx = xvel
-				decorated_behavior.velocityy = yvel
+				decorated_behavior.velocity_set.velocityx = xvel
+				decorated_behavior.velocity_set.velocityy = yvel
 			end
 		-- end
 	end
@@ -7434,7 +7265,7 @@ function danger_applydb(uid, hd_type)
 	end
 	if hd_type.replaceoffspring ~= nil then
 		if hd_type.replaceoffspring == HD_REPLACE.EGGSAC then
-			set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, false, 0, 0) end, 1)
+			set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, 0, 0) end, 1)
 		end
 	end
 	

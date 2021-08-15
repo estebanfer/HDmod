@@ -21,25 +21,25 @@ register_option_bool("hd_debug_info_path", "Debug: Info - Path",																
 register_option_bool("hd_debug_info_tongue", "Debug: Info - Wormtongue",															false)
 register_option_bool("hd_debug_info_worldstate", "Debug: Info - Worldstate",														false)
 register_option_bool("hd_debug_scripted_enemies_show", "Debug: Enable visibility of entities used in custom enemy behavior",		false)
-register_option_bool("hd_debug_item_botd_give", "Debug: Start with the Book of the Dead",											true)
+register_option_bool("hd_debug_item_botd_give", "Debug: Start with item - Book of the Dead",											true)
 register_option_bool("hd_debug_scripted_levelgen_disable", "Debug: Disable scripted level generation",								false)
 register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
 	"Debug: Blacklist scripted level generation tilecodes",
 	"w3"
 )
 register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)
-register_option_bool("hd_og_ankhprice", "OG: Item - Set the Ankh price to a constant $50,000 like it was in HD",					false)	-- Defaults to S2
-register_option_bool("hd_og_boulder_agro_disable", "OG: Traps - Revert enraging shopkeepers as they did in HD",						false)	-- Defaults to HD
-register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Revert preventing the ghost from splitting",						false)	-- Defaults to HD
+register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD",							false)	-- Defaults to S2
+register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers",										false)	-- Defaults to HD
+register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Allow the ghost to split",											false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed",										false)	-- Defaults to S2
-register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Revert spawntime from 2:30->3:00 and 2:00->2:30 when cursed.",		false)	-- Defaults to HD
+register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Use S2 spawntimes: 2:30->3:00 and 2:00->2:30 when cursed.",			false)	-- Defaults to HD
 register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning",														false)	-- Defaults to HD
-register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD",									true)	-- Defaults to HD
+register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD",									false)	-- Defaults to HD
 
 -- # TODO: revise from the old system, removing old uses.
 -- Then, rename it to `hd_og_use_s2_spawns`
 -- Reimplement it into `is_valid_*_spawn` methods to change spawns.
-register_option_bool("hd_og_procedural_spawns_disable", "OG: Revert preserving HD's procedural spawning conditions",				false)	-- Defaults to HD
+register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of HD procedural spawning conditions",				false)	-- Defaults to HD
 
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
@@ -934,10 +934,8 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					local block_uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
+					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)--ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
 					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
-					-- # TODO: Use junglespear trap and remove the trap elements
-						-- remove ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER
 				end,
 			},
 		},
@@ -947,13 +945,16 @@ HD_TILENAME = {
 		-- # TODO: Ceiling Idol Trap
 		bake_spawn = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+				function(x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
+					-- # TODO: Set initial ceiling idol trap blocks texture to pushblock
+				end,
 			},
 			alternate = {
 				[THEME.TIAMAT] = function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
 			},
 		},
-		description = "Nonmovable Pushblock", -- also idol trap ceiling blocks
+		description = "Ceiling Idol Trap",--"Nonmovable Pushblock", -- also idol trap ceiling blocks
 	},
 	["D"] = {
 		bake_spawn = {
@@ -1134,11 +1135,7 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					if options.hd_og_tree_spawn == true then
-						spawn_tree(x, y, l)
-					else
-						spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l, 0, 0)
-					end
+					spawn_tree(x, y, l)
 				end,
 			},
 		},
@@ -3635,7 +3632,7 @@ HD_BEHAVIOR = {
 			-- flag_nogravity
 			-- flag_passes_through_objects
 				-- sets flag if true, clears if false
-	-- create_danger
+	-- create_hd_type
 		-- Supported Variables:
 			-- dangertype
 				-- Determines multiple factors required for certain dangers, such as spawn_entity_over().
@@ -3690,7 +3687,6 @@ HD_ENT.FIREFROG = {
 HD_ENT.SNAIL = {
 	tospawn = ENT_TYPE.MONS_HERMITCRAB,
 	toreplace = ENT_TYPE.MONS_MOSQUITO,--WITCHDOCTOR,
-	entitydb = ENT_TYPE.MONS_HERMITCRAB,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	health_db = 1,
 	leaves_corpse_behind = false,-- removecorpse = true,
@@ -3708,7 +3704,6 @@ HD_ENT.PIRANHA = {
 }
 HD_ENT.WORMBABY = {
 	tospawn = ENT_TYPE.MONS_MOLE,
-	entitydb = ENT_TYPE.MONS_MOLE,
 	dangertype = HD_DANGERTYPE.ENEMY,
 	health_db = 1,
 	leaves_corpse_behind = false,-- removecorpse = true
@@ -3730,8 +3725,8 @@ HD_ENT.TRAP_TIKI = {
 	-- # TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
 }
 HD_ENT.CRITTER_RAT = {
+	tospawn = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
 	dangertype = HD_DANGERTYPE.CRITTER,
-	entitydb = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
 	max_speed = 0.05,
 	acceleration = 0.05
 }
@@ -3739,7 +3734,6 @@ HD_ENT.CRITTER_FROG = { -- # TODO: critter jump/idle behavior
 	tospawn = ENT_TYPE.MONS_CRITTERLOCUST,
 	toreplace = ENT_TYPE.MONS_CRITTERBUTTERFLY,
 	dangertype = HD_DANGERTYPE.CRITTER,
-	entitydb = ENT_TYPE.MONS_CRITTERCRAB
 	-- # TODO: Make jumping script, adjust movement EntityDB properties
 	-- behavior = HD_BEHAVIOR.CRITTER_FROG,
 }
@@ -3760,10 +3754,6 @@ HD_ENT.GIANTSPIDER = {
 	collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
 	offset_spawn = {0.5, 0}
 }
-HD_ENT.BOULDER = {
-	dangertype = HD_DANGERTYPE.ENEMY,--HD_DANGERTYPE.FLOORTRAP,
-	entitydb = ENT_TYPE.ACTIVEFLOOR_BOULDER
-}
 HD_ENT.SCORPIONFLY = {
 	tospawn = ENT_TYPE.MONS_SCORPION,
 	toreplace = ENT_TYPE.MONS_CATMUMMY,--SPIDER,
@@ -3778,7 +3768,6 @@ HD_ENT.SCORPIONFLY = {
 -- DEVIL = {
 	-- tospawn = ENT_TYPE.MONS_OCTOPUS,
 	-- toreplace = ?,
-	-- entitydb = ENT_TYPE.MONS_OCTOPUS,
 	-- dangertype = HD_DANGERTYPE.ENEMY,
 	-- sprint_factor = 7.0
 	-- max_speed = 7.0
@@ -3851,38 +3840,7 @@ HD_ENT.SCORPIONFLY = {
 	-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
 
 -- For HD_ENTs that include references to other HD_ENTs:
-HD_ENT.GIANTFROG = {
-	tospawn = ENT_TYPE.MONS_OCTOPUS,
-	-- toreplace = ENT_TYPE.MONS_OCTOPUS,
-	entitydb = ENT_TYPE.MONS_OCTOPUS,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	collisiontype = HD_COLLISIONTYPE.GIANT_FROG,
-	-- GIANTSPIDER = 6, -- ?????????
-	health_db = 8,
-	sprint_factor = 0,
-	max_speed = 0.01,
-	jump = 0.2,
-	dim = {2.5, 2.5},
-	offset_spawn = {0.5, 0},
-	leaves_corpse_behind = false,--removecorpse = true,
-	hitbox = {
-		0.64,
-		0.8
-	},
-	flags = {
-		-- [ENT_FLAG.STUNNABLE] = false,
-		{},
-		{12}
-	},
-	itemdrop = {
-		item = {HD_ENT.ITEM_PICKUP_SPRINGSHOES},--ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-		chance = 0.15 -- 15% (1/6.7)
-	},
-	treasuredrop = {
-		item = {HD_ENT.ITEM_SAPPHIRE},
-		chance = 0.50
-	}
-}
+
 -- # TODO: Replace with regular frog
 	-- Use a giant fly for tospawn
 	-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
@@ -4000,6 +3958,12 @@ LEVEL_DANGERS = {
 			},
 			{
 				entity = HD_ENT.CRITTER_RAT
+			},
+			{
+				entity = HD_ENT.SNAIL
+			},
+			{
+				entity = HD_ENT.WORMBABY
 			}
 		}
 	},
@@ -4698,7 +4662,7 @@ function conflictdetection_floortrap(hdctype, x, y, l)
 end
 
 -- returns: optimal offset for conflicts
-function conflictdetection(hdctype, x, y, l)
+function conflictdetection(hd_type, x, y, l)
 	offset = { 0, 0 }
 	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
 	-- HD_COLLISIONTYPE = {
@@ -4719,20 +4683,20 @@ function conflictdetection(hdctype, x, y, l)
 		)
 	) then
 		if (
-			hdctype == HD_COLLISIONTYPE.FLOORTRAP or
-			hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
+			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
 		) then
-			conflict = conflictdetection_floortrap(hdctype, x, y, l)
+			conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
 			if conflict == true then
 				offset = nil
 			else
 				offset = { 0, 0 }
 			end
 		elseif (
-			hdctype == HD_COLLISIONTYPE.GIANT_FROG or
-			hdctype == HD_COLLISIONTYPE.GIANT_SPIDER
+			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_FROG or
+			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_SPIDER
 		) then
-			side = conflictdetection_giant(hdctype, x, y, l)
+			side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
 			if side > 0 then
 				offset = nil
 			else
@@ -4757,14 +4721,23 @@ function remove_borderfloor()
 end
 
 function remove_entitytype_inventory(entity_type, inventory_entities)
-	items = get_entities_by_type(inventory_entities)
-	for r, inventoryitem in ipairs(items) do
-		local mount = get_entity(inventoryitem):topmost()
-		if mount ~= -1 and mount:as_container().type.id == entity_type then
-			move_entity(inventoryitem, -r, 0, 0, 0)
-			-- message("Should be hermitcrab: ".. mount.uid)
+	-- items = get_entities_by_type(inventory_entities)
+	-- for r, inventoryitem in ipairs(items) do
+	-- 	local mount = get_entity(inventoryitem):topmost()
+	-- 	if mount ~= -1 and mount:as_container().type.id == entity_type then
+	-- 		move_entity(inventoryitem, -r, 0, 0, 0)
+	-- 		-- message("Should be hermitcrab: ".. mount.uid)
+	-- 	end
+	-- end
+	for r, _uid in ipairs(get_entities_by_type(entity_type)) do
+		for _, inventoryitem in ipairs(inventory_entities) do
+			local items = entity_get_items_by(_uid, inventoryitem, 0)
+			for _, _to_remove in ipairs(items) do
+				move_entity(_to_remove, -r, 0, 0, 0)
+			end
 		end
 	end
+	
 end
 
 -- removes all types of an entity from any player that has it.
@@ -4903,25 +4876,77 @@ end
 -- 	end
 -- end
 
-function test_bacterium()
+function testroom_level_1()
+	--[[
+		Coordinates of each floor:
+		Top:	x = 13..32,	y = 112
+		Middle:	x = 13..32,	y = 109
+		Bottom:	x = 5..40,	y = 101
+	--]]
+	create_hd_type(HD_ENT.SCORPIONFLY, 24, 108, LAYER.FRONT, false, 0, 0)
+	create_hd_type(HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
+	create_hd_type(HD_ENT.SNAIL, 24, 110, LAYER.FRONT, false, 0, 0)
+	create_hd_type(HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
+	create_hd_type(HD_ENT.EGGSAC, 28, 110, LAYER.FRONT, false, 0, 0)
+end
+
+function testroom_level_2()
 	
+end
+
+function onlevel_testroom()
+	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING then
+		if state.level == 1 then
+			testroom_level_1()
+		elseif state.level == 2 then
+			testroom_level_2()
+		end
+	end
+end
+
+function test_bacterium()
 	-- Bacterium Creation
 		-- FLOOR_THORN_VINE:
 			-- flags = clr_flag(flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- indestructable (maybe need to clear this? Not sure yet)
 			-- flags = clr_flag(flags, ENT_FLAG.SOLID) -- solid wall
 			-- visible
 			-- allow hurting player
-			-- disable collisions
 			-- allow bombs to destroy them.
 		-- ACTIVEFLOOR_BUSHBLOCK:
 			-- invisible
-			-- disable collisions
+			-- flags = clr_flag(flags, ENT_FLAG.SOLID) -- solid wall
 			-- allow taking damage (unless it's already enabled by default)
 		-- ITEM_ROCK:
-			-- disable physics
+			-- disable ai and physics
 				-- re-enable once detached from surface
 	-- Challenge: Let rock attatch to surface, move it on frame.
 
+	-- Bacterium Behavior
+		-- Bacterium Movement Script
+		-- **Behavior is handled in onframe_manage_dangers()
+		-- Class requirements:
+		-- - Destination {float, float}
+		-- - Angle int
+		-- - Entity uid:
+		-- - stun timeout (May be possible to track with the entity)
+		-- # TODO: Bacterium Movement Script
+		-- Detect whether it is owned by a wall and if the wall exists, and if not, attempt to adopt a wall within all
+		-- 4 sides of it. If that fails, enable physics if not already.
+		-- If it is owned by a wall, detect 
+		-- PROTOTYPING:
+		-- if {x, y} == destination, then:
+		--   if "block to immediate right", then:
+		--     if "block to immediate front", then:
+		--       rotate -90d;
+		--     end
+		--     own block to immediate right;
+		--   else:
+		--     rotate 90d;
+		--   end
+		--   destination = {x, y} of immediate front
+		-- go towards the destination;
+		-- end
+		-- **Get to the point where you can store a single bacterium in an array, get placed on a wall and toast the angle it's chosen to face.
 end
 
 define_tile_code("hd_shortcuts")
@@ -5056,14 +5081,59 @@ end, "door")
 	START PROCEDURAL SPAWN DEF
 --]]
 
+--[[
+	-- Notes:
+		-- kays:
+			-- "I believe it's a 1/N chance that any possible place for that enemy to spawn, it spawns. so in your example, for level 2 about 1/20 of the possible tiles for that enemy to spawn will actually spawn it"
+	
+		-- Dr.BaconSlices (regarding the S2 screenshot with all dwelling enemies set to max spawn rates):
+			--[[
+				"Yup, all it does is roll that chance on any viable tile. There are a couple more quirks, or so I've heard,
+				like enemies spawning with more air around them rather than in enclosed areas, whereas treasure is
+				more likely to be in cramped places. And of course, it checks for viable tiles instead of any tile,
+				so it won't place things inside of floors or other solids, within a liquid it isn't supposed to be in, etc.
+				There's also stuff like bats generating along celiengs instead of the ground,
+				but I don't think I need to explain that haha"
+				"Oh yeah, I forgot to mention that. The priority is determined based on the list,
+				which you can see here with 50 million bats but 0 spiders. I'm assuming both of
+				their chances are set to 1,1,1,1 but you're still only seeing bats, and that's
+				because they're generating in all of the places that spiders are able to."
+			--]]
+	-- Spawn requirements:
+		-- Traps
+			-- Notes:
+				-- replaces FLOOR_* and FLOORSTYLED_* (so platforms count as spaces)
+				-- don't spawn in place of gold/rocks/pots
+			-- Arrow Trap:
+				-- Notes:
+					-- are the only damaging entity to spawn in the entrance 
+				-- viable tiles:
+					-- if there are two blocks and two spaces, mark the inside block for replacement, unless the trigger hitbox would touch the entrance door
+				-- while spawning:
+					-- don't spawn if it would result in its back touching another arrow trap
+				
+			-- Tiki Traps:
+				-- Notes:
+					-- Spawn after arrow traps
+					-- are the only damaging entity to spawn in the entrance 
+				-- viable space to place:
+					-- Require a block on both sides of the block it's standing on
+					-- Require a 3x2 space above the spawn
+				-- viable tile to replace:
+					-- 
+				-- while spawning:
+					-- don't spawn if it would result in its sides touching another tiki trap 
+						-- HD doesn't check for this
+--]]
+
 -- Make a global table where you set `HD_ENT` as the index so you can access each definition on the fly
 local global_procedural_spawns = {}
 
 -- powderkeg / pushblock
-local function create_powderkeg(x, y, l) spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0) end
-local function create_pushblock(x, y, l) spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end
+local function create_powderkeg(x, y, l) spawn_entity(HD_ENT.POWDERKEG.tospawn, x, y, l, 0, 0) end
+local function create_pushblock(x, y, l) spawn_entity(HD_ENT.PUSHBLOCK.tospawn, x, y, l, 0, 0) end
+-- # TODO: Revise. Replaces floor with spawn where it has floor to the left, right and under.
 local function is_valid_pushblock_spawn(x, y, l)
-    -- # TODO: Revise. Replaces floor with spawn where it has floor to the left, right and under
 	-- Only spawn where the powderkeg has floor left or right of it
     local not_entity_here = get_grid_entity_at(x, y, l) == -1
     if not_entity_here then
@@ -5107,6 +5177,7 @@ global_procedural_spawns[HD_ENT.HANGSPIDER] = define_procedural_spawn("hd_proced
 local function create_giantspider(x, y, l) end
 local function is_valid_giantspider_spawn(x, y, l)
     -- # TODO: Implement.
+		-- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
     return false
 end
 global_procedural_spawns[HD_ENT.GIANTSPIDER] = define_procedural_spawn("hd_procedural_giantspider", create_giantspider, is_valid_giantspider_spawn)
@@ -5165,6 +5236,7 @@ end
 local function create_giantfrog(x, y, l) end
 local function is_valid_giantfrog_spawn(x, y, l)
     -- # TODO: Implement.
+		-- try to spawn on 2-block surfaces.
     return false
 end
 --global_procedural_spawns[HD_ENT.GIANTFROG] = define_procedural_spawn("hd_procedural_giantfrog", create_giantfrog, is_valid_giantfrog_spawn)
@@ -5264,13 +5336,8 @@ set_callback(function(room_gen_ctx)
 			init_posttile_door()
 			levelcreation_init()
 
-
-
 			onlevel_generation_execution_phase_one()
 			onlevel_generation_execution_phase_two()
-
-
-			onlevel_placement_lockedchest()
 		
 			generation_removeborderfloor()
 
@@ -5426,7 +5493,6 @@ end, ON.POST_ROOM_GENERATION)
 -- 		if options.hd_debug_scripted_levelgen_disable == false then
 -- 			state.level_gen.spawn_x, state.level_gen.spawn_y = global_levelassembly.entrance.x, global_levelassembly.entrance.y
 
--- 	-- 		onlevel_placement_lockedchest()
 -- 	-- 		generation_removeborderfloor()
 -- 		end
 -- 	end
@@ -5509,7 +5575,6 @@ function levelcreation_init()
 	-- Method to write override_path setrooms into path and levelcode
 --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
-	-- onlevel_generation_detection()
 	onlevel_generation_modification()
 end
 
@@ -5532,11 +5597,10 @@ set_callback(function()
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 	onlevel_dangers_init()
-	onlevel_dangers_modifications()
-	onlevel_dangers_setonce()
+	-- onlevel_dangers_setonce()
 	set_timeout(onlevel_dangers_replace, 3)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
-	onlevel_remove_cursedpot() -- PLACE AFTER onlevel_placement_lockedchest()
+	onlevel_remove_cursedpot()
 	-- onlevel_prizewheel()
 	onlevel_remove_mounts()
 
@@ -5545,13 +5609,14 @@ set_callback(function()
 	onlevel_decorate_trees()
 	onlevel_remove_boulderstatue()
 
+	onlevel_testroom()
+
 	onlevel_boss_init()
 	onlevel_toastfeeling()
 end, ON.LEVEL)
 
 set_callback(function()
 	onframe_manage_dangers()
-	onframe_bacterium()
 	onframe_ghosts()
 	onframe_manage_inventory()
 	onframe_prizewheel()
@@ -5722,137 +5787,28 @@ function onlevel_dangers_setonce()
 	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
 		for i = 1, #global_dangers, 1 do
 			hd_type = global_dangers[i]
-			if hd_type.removeinventory ~= nil then
-				if hd_type.removeinventory == HD_REMOVEINVENTORY.SNAIL then
-					set_timeout(function()
-						hd_type = HD_ENT.SNAIL
-						remove_entitytype_inventory(
-							hd_type.removeinventory.inventory_ownertype,
-							hd_type.removeinventory.inventory_entities
-						)
-					end, 5)
-				elseif hd_type.removeinventory == HD_REMOVEINVENTORY.SCORPIONFLY then
-					set_timeout(function()
-						hd_type = HD_ENT.SCORPIONFLY
-						remove_entitytype_inventory(
-							hd_type.removeinventory.inventory_ownertype,
-							hd_type.removeinventory.inventory_entities
-						)
-					end, 5)
-				end
-			end
-			if hd_type.replaceoffspring ~= nil then
-				if hd_type.replaceoffspring == HD_REPLACE.EGGSAC then
-					set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, false, 0, 0) end, 1)
-				end
-			end
-			if hd_type.liquidspawn ~= nil then
-				if hd_type.liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
-					enttype_replace_danger(
-						{
-							ENT_TYPE.MONS_MOSQUITO,
-							ENT_TYPE.MONS_WITCHDOCTOR,
-							ENT_TYPE.MONS_CAVEMAN,
-							ENT_TYPE.MONS_TIKIMAN,
-							ENT_TYPE.MONS_MANTRAP,
-							ENT_TYPE.MONS_MONKEY,
-							ENT_TYPE.ITEM_SNAP_TRAP
-						},
-						HD_ENT.PIRANHA,
-						true,
-						0, 0
-					)
-				end
-			end
+			
+			-- if hd_type.liquidspawn ~= nil then
+			-- 	if hd_type.liquidspawn == HD_LIQUIDSPAWN.PIRANHA then
+			-- 		enttype_replace_danger(
+			-- 			{
+			-- 				ENT_TYPE.MONS_MOSQUITO,
+			-- 				ENT_TYPE.MONS_WITCHDOCTOR,
+			-- 				ENT_TYPE.MONS_CAVEMAN,
+			-- 				ENT_TYPE.MONS_TIKIMAN,
+			-- 				ENT_TYPE.MONS_MANTRAP,
+			-- 				ENT_TYPE.MONS_MONKEY,
+			-- 				ENT_TYPE.ITEM_SNAP_TRAP
+			-- 			},
+			-- 			HD_ENT.PIRANHA,
+			-- 			true,
+			-- 			0, 0
+			-- 		)
+			-- 	end
+			-- end
 		end
 	end
 end
--- DANGER DB MODIFICATIONS
--- Modifications that use methods that are only needed to be applied once.
--- This includes:
-	-- EntityDB properties
-function onlevel_dangers_modifications()
-	-- loop through all dangers in global_dangers, setting enemy specific
-	if LEVEL_DANGERS[state.theme] and #global_dangers > 0 then
-		for i = 1, #global_dangers, 1 do
-			if global_dangers[i].entitydb ~= nil and global_dangers[i].entitydb ~= 0 then
-				s = spawn(global_dangers[i].entitydb, 0, 0, LAYER.FRONT, 0, 0)
-				s_mov = get_entity(s):as_movable()
-				
-				if global_dangers[i].health_db ~= nil and global_dangers[i].health_db > 0 then
-					s_mov.type.life = global_dangers[i].health_db
-				end
-				if global_dangers[i].sprint_factor ~= nil and global_dangers[i].sprint_factor >= 0 then
-					s_mov.type.sprint_factor = global_dangers[i].sprint_factor
-				end
-				if global_dangers[i].max_speed ~= nil and global_dangers[i].max_speed >= 0 then
-					s_mov.type.max_speed = global_dangers[i].max_speed
-				end
-				if global_dangers[i].jump ~= nil and global_dangers[i].jump >= 0 then
-					s_mov.type.jump = global_dangers[i].jump
-				end
-				if global_dangers[i].dim_db ~= nil and #global_dangers[i].dim_db == 2 then
-					s_mov.type.width = global_dangers[i].dim[1]
-					s_mov.type.height = global_dangers[i].dim[2]
-				end
-				if global_dangers[i].damage ~= nil and global_dangers[i].damage >= 0 then
-					s_mov.type.damage = global_dangers[i].damage
-				end
-				if global_dangers[i].acceleration ~= nil and global_dangers[i].acceleration >= 0 then
-					s_mov.type.acceleration = global_dangers[i].acceleration
-				end
-				if global_dangers[i].friction ~= nil and global_dangers[i].friction >= 0 then
-					s_mov.type.friction = global_dangers[i].friction
-				end
-				if global_dangers[i].weight ~= nil and global_dangers[i].weight >= 0 then
-					s_mov.type.weight = global_dangers[i].weight
-				end
-				if global_dangers[i].elasticity ~= nil and global_dangers[i].elasticity >= 0 then
-					s_mov.type.elasticity = global_dangers[i].elasticity
-				end
-				if global_dangers[i].leaves_corpse_behind ~= nil then
-					s_mov.type.leaves_corpse_behind = global_dangers[i].leaves_corpse_behind
-				end
-				
-				apply_entity_db(s)
-			end
-		end
-	end
-end
-
--- # TODO: Replace with a manual enemy spawning system.
-	-- Notes:
-		-- kays:
-			-- "I believe it's a 1/N chance that any possible place for that enemy to spawn, it spawns. so in your example, for level 2 about 1/20 of the possible tiles for that enemy to spawn will actually spawn it"
-	
-		-- Dr.BaconSlices:
-			-- "Yup, all it does is roll that chance on any viable tile. There are a couple more quirks, or so I've heard, like enemies spawning with more air around them rather than in enclosed areas, whereas treasure is more likely to be in cramped places. And of course, it checks for viable tiles instead of any tile, so it won't place things inside of floors or other solids, within a liquid it isn't supposed to be in, etc. There's also stuff like bats generating along celiengs instead of the ground, but I don't think I need to explain that haha"
-			-- "Oh yeah, I forgot to mention that. The priority is determined based on the list, which you can see here with 50 million bats but 0 spiders. I'm assuming both of their chances are set to 1,1,1,1 but you're still only seeing bats, and that's because they're generating in all of the places that spiders are able to."
-	-- Spawn requirements:
-		-- Traps
-			-- Notes:
-				-- replaces FLOOR_* and FLOORSTYLED_* (so platforms count as spaces)
-				-- don't spawn in place of gold/rocks/pots
-			-- Arrow Trap:
-				-- Notes:
-					-- are the only damaging entity to spawn in the entrance 
-				-- viable tiles:
-					-- if there are two blocks and two spaces, mark the inside block for replacement, unless the trigger hitbox would touch the entrance door
-				-- while spawning:
-					-- don't spawn if it would result in its back touching another arrow trap
-				
-			-- Tiki Traps:
-				-- Notes:
-					-- Spawn after arrow traps
-					-- are the only damaging entity to spawn in the entrance 
-				-- viable space to place:
-					-- Require a block on both sides of the block it's standing on
-					-- Require a 3x2 space above the spawn
-				-- viable tile to replace:
-					-- 
-				-- while spawning:
-					-- don't spawn if it would result in its sides touching another tiki trap 
-						-- HD doesn't check for this
 
 -- DANGER MODIFICATIONS - ON.LEVEL
 -- Find everything in the level within the given parameters, apply enemy modifications within parameters.
@@ -5920,14 +5876,6 @@ function onlevel_dangers_replace()
 			end
 		end
 	end
-end
-
-function onlevel_generation_detection()
-	-- level_init()
-	global_levelassembly.detection = {
-		-- path = TableCopy(LEVEL_PATH)
-		-- levelcode = 
-	}
 end
 
 -- CHUNK GENERATION - ON.LEVEL
@@ -6266,7 +6214,7 @@ end
 -- # TODO: Revise into HD_TILENAME["T"] and improve.
 -- Use the following methods for a starting point:
 
--- HD-style tree spawning method
+-- HD-style tree decorating methods
 function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	if p_uid == 0 then return 0 end
 	p_x, p_y, p_l = get_position(p_uid)
@@ -6274,6 +6222,10 @@ function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	branch_uid = 0
 	if #branches == 0 then
 		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
+		if e_type == ENT_TYPE.DECORATION_TREE then
+			branch_e = get_entity(branch_uid)
+			branch_e.animation_frame = 87+12*math.random(2)
+		end
 	else
 		branch_uid = branches[1]
 	end
@@ -6281,25 +6233,53 @@ function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	branch_e = get_entity(branch_uid)
 	if branch_e ~= nil then
 		-- flipped = test_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
-		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then
+		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then -- to flip branches
 			flip_entity(branch_uid)
-		elseif (branch_e.type.search_flags == 0x200 and right == true) then
+		elseif (branch_e.type.search_flags == 0x200 and right == false) then -- to flip decorations
 			branch_e.flags = set_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
 		end
 	end
 	return branch_uid
 end
 function onlevel_decorate_trees()
-	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
+	if (
+		(state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE) and
+		options.hd_og_tree_spawn == false
+	) then
+		-- remove tree vines
+		treeParts = get_entities_by_type(ENT_TYPE.FLOOR_TREE_BRANCH)
+		for _, treebranch in ipairs(treeParts) do
+			if entity_has_item_type(treebranch, ENT_TYPE.DECORATION_TREE_VINE_TOP) then
+				treeVineTop = entity_get_items_by(treebranch, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1]
+				_x, _y, _l = get_position(treeVineTop)
+				
+				-- don't kill it if it's the top
+				if (
+					#get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, _x-1, _y-1, _l, 1) == 0 and
+					#get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, _x+1, _y-1, _l, 1) == 0
+				) then
+					kill_entity(treeVineTop)
+				end
+				
+				kill_entity(get_entities_at(ENT_TYPE.FLOOR_VINE, 0, _x, _y-2, _l, 1)[1])
+				kill_entity(entity_get_items_by(treebranch, ENT_TYPE.DECORATION_TREE_VINE, 0)[1])
+			end
+		end
+		treeParts = get_entities_by_type(ENT_TYPE.FLOOR_VINE_TREE_TOP)
+		for _, treeVineTop in ipairs(treeParts) do
+			kill_entity(treeVineTop)
+		end
 		-- add branches to tops of trees, add leaf decorations
-		treetops = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
-		for _, treetop in ipairs(treetops) do
+		treeParts = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
+		for _, treetop in ipairs(treeParts) do
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
 			if feeling_check("RESTLESS") == false then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
-			-- else
+			else
+				decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_left, 0.03, 0.47, 0.5, false)
+				decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_right, -0.03, 0.47, 0.5, true)
 				-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
 			end
 		end
@@ -6307,12 +6287,21 @@ function onlevel_decorate_trees()
 end
 
 
+-- Use junglespear traps for idol trap blocks and other blocks that shouldn't have post-destruction decorations
+set_post_entity_spawn(function(_entity)
+	_spikes = entity_get_items_by(_entity.uid, ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER, 0)
+	for _, _spike in ipairs(_spikes) do
+		kill_entity(_spike)
+	end
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP)
+
+
 -- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	-- SORRY, NOTHING
+-- 	-- SORRY NOTHING
 -- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_YAMA_PLATFORM)
 
 -- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	-- SORRY, NOTHING
+-- 	-- SORRY NOTHING
 -- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.BG_YAMA_BODY)
 
 -- set_post_entity_spawn(function(entity)
@@ -6398,8 +6387,8 @@ function onlevel_set_feelings()
 		--]]
 		if state.theme == THEME.DWELLING then
 			-- placing chest and key on levels 2..4
-			if state.level ~= 1 then
-				feeling_set_once("UDJAT", {state.level})
+			if state.level == 1 then
+				feeling_set_once("UDJAT", {2, 3, 4})
 			end
 
 			feeling_set_once("SPIDERLAIR", {state.level})
@@ -6669,6 +6658,12 @@ function onframe_idoltrap()
 				-- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
 				if options.hd_og_boulder_agro_disable == false then
 					boulder = get_entity(BOULDER_UID):as_movable()
+					
+					-- set texture
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
+					texture_def.texture_path = "res/deco_ice_boulder.png"
+					boulder:set_texture(define_texture(texture_def))
+
 					for i, player in ipairs(players) do
 						boulder.last_owner_uid = player.uid
 					end
@@ -7167,7 +7162,7 @@ function onframe_manage_dangers()
 						if itemdrop == HD_ENT.ITEM_CRYSTALSKULL then
 							create_ghost()
 						end
-						danger_spawn(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)--spawn(itemdrop, etc)
+						create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)--spawn(itemdrop, etc)
 					end
 				end
 			end
@@ -7182,7 +7177,7 @@ function onframe_manage_dangers()
 						)
 					) then
 						itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
-						danger_spawn(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
+						create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
 					end
 				end
 			end
@@ -7250,23 +7245,6 @@ function behavior_set_facing(behavior_uid, master_uid)
 	end
 end
 
-function behavior_giantfrog(target_uid)
-	message("SPEET!")
-	ink = get_entities_by_type(ENT_TYPE.ITEM_INKSPIT)
-	replaced = false
-	for _, spit in ipairs(ink) do
-		if replaced == false then
-			spit_mov = get_entity(spit):as_movable()
-			if spit_mov.last_owner_uid == target_uid then
-				sx, sy, sl = get_position(spit)
-				spawn(ENT_TYPE.MONS_FROG, sx, sy, sl, spit_mov.velocityx, spit_mov.velocityy)
-				replaced = true
-			end
-		end
-		kill_entity(spit)
-	end
-end
-
 function onframe_ghosts()
 	ghost_uids = get_entities_by_type({
 		ENT_TYPE.MONS_GHOST
@@ -7290,52 +7268,6 @@ function onframe_ghosts()
 		if (options.hd_og_ghost_nosplit_disable == false) then ghost.split_timer = 0 end
 		
 		DANGER_GHOST_UIDS[#DANGER_GHOST_UIDS+1] = ghosttoset_uid
-	end
-end
-
-function onframe_bacterium()
-	if state.theme == THEME.EGGPLANT_WORLD then
-		
-		-- Bacterium Creation
-			-- FLOOR_THORN_VINE:
-				-- flags = clr_flag(flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- indestructable (maybe need to clear this? Not sure yet)
-				-- flags = clr_flag(flags, ENT_FLAG.SOLID) -- solid wall
-				-- visible
-				-- allow hurting player
-				-- allow bombs to destroy them.
-			-- ACTIVEFLOOR_BUSHBLOCK:
-				-- invisible
-				-- flags = clr_flag(flags, ENT_FLAG.SOLID) -- solid wall
-				-- allow taking damage (unless it's already enabled by default)
-			-- ITEM_ROCK:
-				-- disable ai and physics
-					-- re-enable once detached from surface
-		
-		-- Bacterium Movement Script
-		-- **Move to onframe_manage_dangers
-		-- Class requirements:
-		-- - Destination {float, float}
-		-- - Angle int
-		-- - Entity uid:
-		-- - stun timeout (May be possible to track with the entity)
-		-- # TODO: Bacterium Movement Script
-		-- Detect whether it is owned by a wall and if the wall exists, and if not, attempt to adopt a wall within all
-		-- 4 sides of it. If that fails, enable physics if not already.
-		-- If it is owned by a wall, detect 
-		-- PROTOTYPING:
-		-- if {x, y} == destination, then:
-		--   if "block to immediate right", then:
-		--     if "block to immediate front", then:
-		--       rotate -90d;
-		--     end
-		--     own block to immediate right;
-		--   else:
-		--     rotate 90d;
-		--   end
-		--   destination = {x, y} of immediate front
-		-- go towards the destination;
-		-- end
-		-- **Get to the point where you can store a single bacterium in an array, get placed on a wall and toast the angle it's chosen to face.
 	end
 end
 
@@ -7401,7 +7333,7 @@ function onframe_olmec_behavior()
 end
 
 function olmec_attack(x, y, l)
-	danger_spawn(HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+	create_hd_type(HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
 end
 
 function danger_track(uid_to_track, x, y, l, hd_type)
@@ -7409,12 +7341,12 @@ function danger_track(uid_to_track, x, y, l, hd_type)
 		["uid"] = uid_to_track,
 		["x"] = x, ["y"] = y, ["l"] = l,
 		["hd_type"] = hd_type,
-		["behavior"] = create_behavior(hd_type.behavior)
+		["behavior"] = create_hd_behavior(hd_type.behavior)
 	}
 	danger_tracker[#danger_tracker+1] = danger_object
 end
 
-function create_behavior(behavior)
+function create_hd_behavior(behavior)
 	decorated_behavior = {}
 	if behavior ~= nil then
 		decorated_behavior = TableCopy(behavior)
@@ -7459,7 +7391,7 @@ function create_behavior(behavior)
 end
 
 -- velocity defaults to 0
-function create_danger(hd_type, x, y, l, _vx, _vy)
+function create_hd_type_notrack(hd_type, x, y, l, _vx, _vy)
 	vx = _vx or 0
 	vy = _vy or 0
 	uid = -1
@@ -7471,15 +7403,6 @@ function create_danger(hd_type, x, y, l, _vx, _vy)
 				s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
 			end
 		end
-		-- **Modify to accommodate the following enemies:
-			-- The Mines:
-				-- Miniboss enemy: Giant spider
-				-- If there's a wall to the right, don't spawn. (maybe 2 walls down, too?)
-			-- The Jungle:
-				-- Miniboss enemy: Giant frog
-				-- If there's a wall to the right, don't spawn. (For the future when we don't replace mosquitos (or any enemy at all), try to spawn on 2-block surfaces.
-		-- **Move conflict detection into its own category.
-		-- **Add an HD_ENT property that takes an enum to set collision detection.
 	else
 		uid = spawn(hd_type.tospawn, x, y, l, vx, vy)
 	end
@@ -7490,10 +7413,36 @@ function danger_applydb(uid, hd_type)
 	s_mov = get_entity(uid):as_movable()
 	x, y, l = get_position(uid)
 	
+	if hd_type.removeinventory ~= nil then
+		if hd_type.removeinventory == HD_REMOVEINVENTORY.SNAIL then
+			set_timeout(function()
+				hd_type = HD_ENT.SNAIL
+				remove_entitytype_inventory(
+					hd_type.removeinventory.inventory_ownertype,
+					hd_type.removeinventory.inventory_entities
+				)
+			end, 5)
+		elseif hd_type.removeinventory == HD_REMOVEINVENTORY.SCORPIONFLY then
+			set_timeout(function()
+				hd_type = HD_ENT.SCORPIONFLY
+				remove_entitytype_inventory(
+					hd_type.removeinventory.inventory_ownertype,
+					hd_type.removeinventory.inventory_entities
+				)
+			end, 5)
+		end
+	end
+	if hd_type.replaceoffspring ~= nil then
+		if hd_type.replaceoffspring == HD_REPLACE.EGGSAC then
+			set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, false, 0, 0) end, 1)
+		end
+	end
+	
 	if hd_type == HD_ENT.HANGSPIDER then
 		spawn(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0) -- move into HD_ENT properties
 		spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0) -- tikitraps can use this
 	end
+
 	if hd_type.color ~= nil and #hd_type.color == 3 then
 		s_mov.color.r = hd_type.color[1]
 		s_mov.color.g = hd_type.color[2]
@@ -7514,6 +7463,51 @@ function danger_applydb(uid, hd_type)
 	if hd_type.flags ~= nil then
 		applyflags_to_uid(uid, hd_type.flags)
 	end
+
+	-- DANGER DB MODIFICATIONS
+	-- Modifications that use methods that are only needed to be applied once
+	-- This includes:
+		-- EntityDB properties
+	if hd_type.entitydb ~= nil then
+		uid = spawn_entity(hd_type.entitydb, 0, 0, LAYER.FRONT, 0, 0)
+		s_mov = get_entity(uid)
+	end
+	if hd_type.health_db ~= nil and hd_type.health_db > 0 then
+		s_mov.type.life = hd_type.health_db
+	end
+	if hd_type.sprint_factor ~= nil and hd_type.sprint_factor >= 0 then
+		s_mov.type.sprint_factor = hd_type.sprint_factor
+	end
+	if hd_type.max_speed ~= nil and hd_type.max_speed >= 0 then
+		s_mov.type.max_speed = hd_type.max_speed
+	end
+	if hd_type.jump ~= nil and hd_type.jump >= 0 then
+		s_mov.type.jump = hd_type.jump
+	end
+	if hd_type.dim_db ~= nil and #hd_type.dim_db == 2 then
+		s_mov.type.width = hd_type.dim[1]
+		s_mov.type.height = hd_type.dim[2]
+	end
+	if hd_type.damage ~= nil and hd_type.damage >= 0 then
+		s_mov.type.damage = hd_type.damage
+	end
+	if hd_type.acceleration ~= nil and hd_type.acceleration >= 0 then
+		s_mov.type.acceleration = hd_type.acceleration
+	end
+	if hd_type.friction ~= nil and hd_type.friction >= 0 then
+		s_mov.type.friction = hd_type.friction
+	end
+	if hd_type.weight ~= nil and hd_type.weight >= 0 then
+		s_mov.type.weight = hd_type.weight
+	end
+	if hd_type.elasticity ~= nil and hd_type.elasticity >= 0 then
+		s_mov.type.elasticity = hd_type.elasticity
+	end
+	if hd_type.leaves_corpse_behind ~= nil then
+		s_mov.type.leaves_corpse_behind = hd_type.leaves_corpse_behind
+	end
+	
+	apply_entity_db(uid)
 end
 
 -- velocity defaults to uid's
@@ -7527,7 +7521,7 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 	
 	d_type = get_entity(uid_to_track).type.id
 	
-	offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
+	offset_collision = conflictdetection(hd_type, x, y, l)
 	if collision_detection == true and offset_collision == nil then
 		offset_collision = nil
 		uid_to_track = -1
@@ -7541,7 +7535,7 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 			if hd_type.offset_spawn ~= nil then
 				offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
 			end
-			uid_to_track = create_danger(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, vx, vy)
+			uid_to_track = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, vx, vy)
 			
 			move_entity(uid, 0, 0, 0, 0)
 		else -- don't replace, apply velocities to and track what you normally would replace
@@ -7557,18 +7551,18 @@ function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 	end
 end
 
--- velocity defaults to 0 (by extension of `create_danger()`)
-function danger_spawn(hd_type, x, y, l, collision_detection, _vx, _vy)
+-- velocity defaults to 0 (by extension of `create_hd_type_notrack()`)
+function create_hd_type(hd_type, x, y, l, collision_detection, _vx, _vy)
 	offset_collision = { 0, 0 }
 	if collision_detection == true then
-		offset_collision = conflictdetection(hd_type.collisiontype, x, y, l)
+		offset_collision = conflictdetection(hd_type, x, y, l)
 	end
 	if offset_collision ~= nil then
 		offset_spawn_x, offset_spawn_y = 0, 0
 		if hd_type.offset_spawn ~= nil then
 			offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
 		end
-		uid = create_danger(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
+		uid = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
 		if uid ~= -1 then
 			danger_applydb(uid, hd_type)
 			danger_track(uid, x, y, l, hd_type)

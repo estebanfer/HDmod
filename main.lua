@@ -344,13 +344,18 @@ HD_FEELING = {
 			THEME.JUNGLE
 		}
 	},
+	["UDJAT"] = {
+		themes = {
+			THEME.DWELLING
+		}
+	},
 	["SPIDERLAIR"] = {
 		chance = 0,
 		themes = { THEME.DWELLING },
 		message = "My skin is crawling..."
 	},
 	["SNAKEPIT"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
@@ -360,7 +365,7 @@ HD_FEELING = {
 		message = "The dead are restless!"
 	},
 	["TIKIVILLAGE"] = {
-		chance = 0,
+		chance = 1,
 		themes = { THEME.JUNGLE }
 	},
 	["FLOODED"] = {
@@ -743,6 +748,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,},
+				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Terrain",
@@ -761,6 +767,10 @@ HD_TILENAME = {
 				},
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
+				},
+				[THEME.OLMEC] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
 					function(x, y, l) return 0 end,
 				},
 			},
@@ -862,8 +872,8 @@ HD_TILENAME = {
 							-- Spawn Crown
 								-- Reskin ITEM_DIAMOND as gold crown
 								-- (worth $5000 in HD, might as well leave price the same as diamond)
-						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x, y-2, l, 0, 0)
-						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x, y-2, l, 0, 0)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l, 0, 0)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l, 0, 0)
 						local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 						texture_def.texture_path = "res/items_dar_crown.png"
@@ -908,9 +918,13 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0)
+					idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0))
 					idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l, 0, 0))
-					idol_block_second.animation_frame = idol_block_second.animation_frame + 1
+					if state.theme ~= THEME.VOLCANA then
+						idol_block_first:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						idol_block_second:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						idol_block_second.animation_frame = idol_block_second.animation_frame + 1
+					end
 				end,
 			},
 		},
@@ -920,7 +934,8 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
+					local block_uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
+					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
 					-- # TODO: Use junglespear trap and remove the trap elements
 						-- remove ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER
 				end,
@@ -964,6 +979,14 @@ HD_TILENAME = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
 				function(x, y, l) return 0 end,
 			},
+			alternate = {
+				[THEME.OLMEC] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
+				}
+			},
 		},
 		description = "Terrain/Empty/Crate/Chest",
 	},
@@ -987,10 +1010,21 @@ HD_TILENAME = {
 		description = "Ladder Platform (Strict)",
 	},
 	["I"] = {
+		bake_spawn_over = {
+			default = {
+				function(x, y, l)
+					-- Idol trap variants
+					if state.theme == THEME.DWELLING then
+						spawn(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0)
+					-- elseif state.theme == THEME.TEMPLE then
+						-- -- ACTIVEFLOOR_CRUSHING_ELEVATOR flipped upsidedown for idol trap?? --Probably doesn't work
+					end
+				end,
+			},
+		},
 		bake_spawn = {
 			default = {
-				-- # TODO: Reimplement idol spawn method here.
-				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, x+.5, y, l, 0, 0) end,
+				function(x, y, l) create_idol(x, y, l) end,
 			},
 		},
 		description = "Idol", -- sometimes a tikitrap if it's a character unlock
@@ -1104,47 +1138,6 @@ HD_TILENAME = {
 						spawn_tree(x, y, l)
 					else
 						spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l, 0, 0)
-						-- # TODO: HD-style tree spawning method
-						-- Use the following depreciated methods for a starting point:
-						
-						-- function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
-						-- 	if p_uid == 0 then return 0 end
-						-- 	p_x, p_y, p_l = get_position(p_uid)
-						-- 	branches = get_entities_at(e_type, 0, p_x+side, p_y, p_l, radius)
-						-- 	branch_uid = 0
-						-- 	if #branches == 0 then
-						-- 		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
-						-- 	else
-						-- 		branch_uid = branches[1]
-						-- 	end
-						-- 	-- flip if you just created it and it's a 0x100 and it's on the left or if it's 0x200 and on the right.
-						-- 	branch_e = get_entity(branch_uid)
-						-- 	if branch_e ~= nil then
-						-- 		-- flipped = test_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
-						-- 		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then
-						-- 			flip_entity(branch_uid)
-						-- 		elseif (branch_e.type.search_flags == 0x200 and right == true) then
-						-- 			branch_e.flags = set_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
-						-- 		end
-						-- 	end
-						-- 	return branch_uid
-						-- end
-						-- function onlevel_decorate_trees()
-						-- 	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
-						-- 		-- add branches to tops of trees, add leaf decorations
-						-- 		treetops = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
-						-- 		for _, treetop in ipairs(treetops) do
-						-- 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
-						-- 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
-						-- 			if feeling_check("RESTLESS") == false then
-						-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
-						-- 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
-						-- 			-- else
-						-- 				-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
-						-- 			end
-						-- 		end
-						-- 	end
-						-- end
 					end
 				end,
 			},
@@ -1251,12 +1244,7 @@ HD_TILENAME = {
 	["c"] = {
 		bake_spawn = {
 			default = {
-				function(x, y, l)
-					local entity = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, x+0.5, y, l, 0, 0))
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-					texture_def.texture_path = "res/items_dar_idol.png"
-					entity:set_texture(define_texture(texture_def))
-				end,
+				function(x, y, l) create_idol_crystalskull(x, y, l) end,
 			},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = function(x, y, l)
@@ -2660,7 +2648,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"222222222200000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111"
 			},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[HD_SUBCHUNKID.PATH_DROP] = { -- commented out parts are potential left-overs from the flooded mines level feeling
 			{"00000000000000000000600006000000000000000000000000600006000000000000000000000000"},
 			{
 				"00000000000000000000600006000000000000000000050000000000000000000000001202111111",--if (*(char *)(*(int *)(param_3 + 0x1715c) + 0x4405f4) == '\0')
@@ -2699,7 +2687,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"000000000000000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111"
 			},
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = { -- commented out parts are potential left-overs from the flooded mines level feeling
 			{"00000000000000000000600006000000000000000000000000600006000000000000000000000000"},
 			{
 				"00000000000000000000600006000000000000000000050000000000000000000000001202111111",--if (*(char *)(*(int *)(param_3 + 0x1715c) + 0x4405f4) == '\0')
@@ -2744,7 +2732,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		[HD_SUBCHUNKID.EXIT] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
-			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
+			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
@@ -2752,7 +2740,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		[HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
-			{"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
+			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this tile for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 		},
 		[HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}}
@@ -4097,7 +4085,6 @@ end
 function init_onlevel()
 	wheel_items = {}
 	idoltrap_blocks = {}
-	-- global_levelassembly = nil
 	danger_tracker = {}
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	IDOL_X = nil
@@ -4342,6 +4329,7 @@ function create_door_ending(x, y, l)
 	-- # TOTEST: Test if the compass works for this. If not, use the method Mr Auto suggested (attatching the compass arrow entity to it)
 	DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	set_door_target(DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock == false then
 		lock_door_at(x, y)
 	end
@@ -4377,6 +4365,7 @@ end
 
 function create_door_exit(x, y, l)
 	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	spawn_entity_over(ENT_TYPE.FX_COMPASS, door_target, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
@@ -4390,7 +4379,7 @@ function create_door_exit(x, y, l)
 	if state.shoppie_aggro_next > 0 then
 		local shopkeeper = get_entity(spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x, y, l, 0, 0))
 		shopkeeper.is_patrolling = true
-		-- shopkeeper.room_index(get_room_index(x, y))
+		-- shopkeeper.room_index(get_room_index(x, y)) -- fix this. Room index of shopkeeper value isn't in the same format as the value that get_rom_index outputs.
 	end
 end
 
@@ -4482,42 +4471,23 @@ function create_crysknife(x, y, layer)
 	spawn(ENT_TYPE.ITEM_POWERPACK, x, y, layer, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
 end
 
--- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-function create_idol()
-	local idols = get_entities_by_type(ENT_TYPE.ITEM_IDOL)
-	if (
-		#idols > 0 and
-		feeling_check("RESTLESS") == false -- Instead, set `IDOL_UID` for the crystal skull during the scripted roomcode generation process
-	) then
-		IDOL_UID = idols[1]
-		IDOL_X, IDOL_Y, idol_l = get_position(IDOL_UID)
-		
-		-- Idol trap variants
-		if state.theme == THEME.DWELLING then
-			spawn(ENT_TYPE.BG_BOULDER_STATUE, IDOL_X, IDOL_Y+2.5, idol_l, 0, 0)
-		elseif state.theme == THEME.JUNGLE then
-			for j = 1, 6, 1 do
-				local blocks = get_entities_at(0, MASK.FLOOR, (math.floor(IDOL_X)-3)+j, math.floor(IDOL_Y), LAYER.FRONT, 1)
-				idoltrap_blocks[j] = blocks[1]
-			end
-		elseif state.theme == THEME.ICE_CAVES then
-			boulderbackgrounds = get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)
-			if #boulderbackgrounds > 0 then
-				kill_entity(boulderbackgrounds[1])
-			end
-		-- elseif state.theme == THEME.TEMPLE then
-			-- -- ACTIVEFLOOR_CRUSHING_ELEVATOR flipped upsidedown for idol trap?? --Probably doesn't work
-		end
+function create_idol(x, y, l)
+	IDOL_X, IDOL_Y = x+0.5, y
+	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+	if state.theme == THEME.ICE_CAVES then
+		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
+		get_entity(IDOL_UID).trap_triggered = true
 	end
 end
 
-function create_idol_crystalskull()
-	idols = get_entities_by_type(ENT_TYPE.ITEM_MADAMETUSK_IDOL)
-	if #idols > 0 then
-		IDOL_UID = idols[1]
-		x, y, _ = get_position(idols[1])
-		IDOL_X, IDOL_Y = x, y
-	end
+function create_idol_crystalskull(x, y, l)
+	IDOL_X, IDOL_Y = x+0.5, y
+	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+
+	local entity = get_entity(IDOL_UID)
+	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+	texture_def.texture_path = "res/items_dar_idol.png"
+	entity:set_texture(define_texture(texture_def))
 end
 
 function create_wormtongue(x, y, l)
@@ -4575,13 +4545,6 @@ function create_wormtongue(x, y, l)
 		message("No STICKYTRAP_BALL found, no tongue generated.")
 		kill_entity(stickytrap_uid)
 		TONGUE_STATE = TONGUE_SEQUENCE.GONE
-	end
-end
-
-function idol_disturbance()
-	if IDOL_UID ~= nil then
-		x, y, l = get_position(IDOL_UID)
-		return (x ~= IDOL_X or y ~= IDOL_Y)
 	end
 end
 
@@ -5566,17 +5529,6 @@ set_callback(function()
 			move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
 		end
 	end
-
-	-- unlocks_load()
-	-- onlevel_levelrules()
-	-- onlevel_detection_feeling()
-	-- onlevel_set_feelingToastMessage()
--- --ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
-	-- onlevel_reverse_exits()
--- --ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
-	-- onlevel_generation_detection()
-	-- onlevel_generation_modification()
-	-- generation_removeborderfloor()
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 	onlevel_dangers_init()
@@ -5586,14 +5538,13 @@ set_callback(function()
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
 	onlevel_remove_cursedpot() -- PLACE AFTER onlevel_placement_lockedchest()
 	-- onlevel_prizewheel()
-	-- onlevel_idoltrap()
 	onlevel_remove_mounts()
-	
-	-- # TODO: Replace onlevel_add_* methods with tilecode spawning.
-	-- onlevel_add_crysknife()
 
 	onlevel_hide_yama()
 	onlevel_acidbubbles()
+	onlevel_decorate_trees()
+	onlevel_remove_boulderstatue()
+
 	onlevel_boss_init()
 	onlevel_toastfeeling()
 end, ON.LEVEL)
@@ -6161,72 +6112,6 @@ function onlevel_levelrules()
 	-- changestate_onlevel_fake(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
 end
 
--- # TODO: Outdate generation_removeborderfloor()
-
--- Reverse Level Handling
--- For cases where the entrance and exit need to be swapped
--- function onlevel_reverse_exits()
--- 	if state.theme == THEME.EGGPLANT_WORLD then
--- 		set_timeout(exit_reverse, 15)
--- 	end
--- end
-
-
--- # TODO: Improve with:
--- Multi-use method to spawn something on the level only once
--- placing chest and key on levels 2..4
--- make sure you set the "udjat eye spawned" flag on.start
-function onlevel_placement_lockedchest()
-	if test_flag(state.quest_flags, 17) == true then -- Udjat eye spawned
-		lockedchest_uids = get_entities_by_type(ENT_TYPE.ITEM_LOCKEDCHEST)
-		-- udjat_level = (#lockedchest_uids > 0)
-		if (
-			state.theme == THEME.DWELLING and
-			(
-				state.level == 2 or
-				state.level == 3
-				-- or state.level == 4
-			-- # TODO: Extend availability of udjat chest to level 4.
-			) and
-			#lockedchest_uids > 0--udjat_level == true
-		) then
-			random_uid = -1
-			random_index = math.random(1, #lockedchest_uids)
-			for i, lockedchest_loop_uid in ipairs(lockedchest_uids) do
-				if random_index == i then
-					random_uid = lockedchest_loop_uid
-				else
-					kill_entity(lockedchest_loop_uid, 0, 0, 0, 0)
-				end
-			end
-			if random_uid ~= -1 then
-				lockedchest_uid = random_uid
-				lockedchest_mov = get_entity(lockedchest_uid):as_movable()
-				_, chest_y, _ = get_position(lockedchest_uid)
-				-- use surface_x to center
-				surface_x, surface_y, _ = get_position(lockedchest_mov.standing_on_uid)
-				move_entity(lockedchest_uid, surface_x, chest_y, 0, 0)
-				
-				-- swap cursed pot and chest locations
-				cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-				if #cursedpot_uids > 0 then 
-					cursedpot_uid = cursedpot_uids[1]
-					
-					pot_x, pot_y, pot_l = get_position(cursedpot_uid) -- initial pot coordinates
-					
-					-- use surface_x to center
-					move_entity(cursedpot_uid, surface_x, chest_y, 0, 0)
-					
-					move_entity(lockedchest_uid, pot_x, pot_y, 0, 0) -- move chest to initial pot coordinates
-				end
-			else
-				message("onlevel_placement_lockedchest(): No Chest. (random_uid could not be set)")
-			end
-		-- else message("Couldn't find locked chest.")
-		end
-	end
-end
-
 function generation_removeborderfloor()
 	-- if feeling_check("FLOODED") == true then
 	-- 	remove_borderfloor()
@@ -6314,10 +6199,6 @@ function onlevel_prizewheel()
 	-- message("atm uid: " .. atm_mov.uid)
 end
 
-function onlevel_idoltrap()
-	create_idol()
-end
-
 function onlevel_remove_mounts()
 	mounts = get_entities_by_type({
 		ENT_TYPE.MOUNT_TURKEY
@@ -6369,6 +6250,59 @@ end
 function onlevel_acidbubbles()
 	if state.theme == THEME.EGGPLANT_WORLD then
 		set_interval(bubbles, 35) -- 15)
+	end
+end
+
+
+function onlevel_remove_boulderstatue()
+	if state.theme == THEME.ICE_CAVES then
+		boulderbackgrounds = get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)
+		if #boulderbackgrounds > 0 then
+			kill_entity(boulderbackgrounds[1])
+		end
+	end
+end
+
+-- # TODO: Revise into HD_TILENAME["T"] and improve.
+-- Use the following methods for a starting point:
+
+-- HD-style tree spawning method
+function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
+	if p_uid == 0 then return 0 end
+	p_x, p_y, p_l = get_position(p_uid)
+	branches = get_entities_at(e_type, 0, p_x+side, p_y, p_l, radius)
+	branch_uid = 0
+	if #branches == 0 then
+		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
+	else
+		branch_uid = branches[1]
+	end
+	-- flip if you just created it and it's a 0x100 and it's on the left or if it's 0x200 and on the right.
+	branch_e = get_entity(branch_uid)
+	if branch_e ~= nil then
+		-- flipped = test_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
+		if (#branches == 0 and branch_e.type.search_flags == 0x100 and side == -1) then
+			flip_entity(branch_uid)
+		elseif (branch_e.type.search_flags == 0x200 and right == true) then
+			branch_e.flags = set_flag(branch_e.flags, ENT_FLAG.FACING_LEFT)
+		end
+	end
+	return branch_uid
+end
+function onlevel_decorate_trees()
+	if state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE then
+		-- add branches to tops of trees, add leaf decorations
+		treetops = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
+		for _, treetop in ipairs(treetops) do
+			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
+			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
+			if feeling_check("RESTLESS") == false then
+				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
+				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
+			-- else
+				-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
+			end
+		end
 	end
 end
 
@@ -6463,6 +6397,11 @@ function onlevel_set_feelings()
 			Mines
 		--]]
 		if state.theme == THEME.DWELLING then
+			-- placing chest and key on levels 2..4
+			if state.level ~= 1 then
+				feeling_set_once("UDJAT", {state.level})
+			end
+
 			feeling_set_once("SPIDERLAIR", {state.level})
 
 			-- spiderlair and snakepit cannot happen at the same time
@@ -6640,7 +6579,7 @@ function oncamp_shortcuts()
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 end
 
--- OVERHAUL. Keep the dice poster and rotating that. Use a rock for the needle and use in place of animation_frame = 193
+-- # TODO: Overhaul Prizewheel. Keep the dice poster and rotating that. Use a rock for the needle and use in place of animation_frame = 193
 function onframe_prizewheel()
 	-- Prize Wheel
 	-- Purchase Detection/Handling
@@ -6681,6 +6620,15 @@ function onframe_prizewheel()
 	end
 end
 
+function idol_disturbance()
+	if IDOL_UID ~= nil then
+		x, y, l = get_position(IDOL_UID)
+		_entity = get_entity(IDOL_UID)
+		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
+
+	end
+end
+
 function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
@@ -6688,9 +6636,9 @@ function onframe_idoltrap()
 		if feeling_check("RESTLESS") == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
-			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, idol_l, 0, 0)
+			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
 		elseif state.theme == THEME.JUNGLE then
-			-- break the 6 blocks under it in a row, starting with the outside 2 going in
+			-- Break the 6 blocks under it in a row, starting with the outside 2 going in
 			if #idoltrap_blocks > 0 then
 				kill_entity(idoltrap_blocks[1])
 				kill_entity(idoltrap_blocks[6])
@@ -6703,20 +6651,22 @@ function onframe_idoltrap()
 					kill_entity(idoltrap_blocks[4])
 				end, idoltrap_timeout*2)
 			end
-		elseif state.theme == THEME.ICE_CAVES then
-			set_timeout(function()
-				boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
-				if #boulder_spawners > 0 then
-					kill_entity(boulder_spawners[1])
-				end
-			end, 3)
+		elseif state.theme == THEME.TEMPLE then
+			-- Normal temple trap
+			-- Break all 4 blocks under it at once
+			for i = 1, #idoltrap_blocks, 1 do
+				kill_entity(idoltrap_blocks[i])
+			end
+
+			-- Kali pit temple trap
+			-- # TODO: Sliding door and lowering ceiling trap
 		end
 	elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
-		if BOULDER_UID == nil then
+		if BOULDER_UID == nil then -- boulder ownership
 			boulders = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_BOULDER)
 			if #boulders > 0 then
 				BOULDER_UID = boulders[1]
-				-- # TODO: Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
+				-- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
 				if options.hd_og_boulder_agro_disable == false then
 					boulder = get_entity(BOULDER_UID):as_movable()
 					for i, player in ipairs(players) do
@@ -6724,7 +6674,7 @@ function onframe_idoltrap()
 					end
 				end
 			end
-		else
+		else -- boulder crush prevention
 			boulder = get_entity(BOULDER_UID)
 			if boulder ~= nil then
 				boulder = get_entity(BOULDER_UID):as_movable()
@@ -7698,7 +7648,11 @@ function onframe_boss_wincheck()
 				local sound = get_sound(VANILLA_SOUND.UI_SECRET)
 				if sound ~= nil then sound:play() end
 				BOSS_STATE = BOSS_SEQUENCE.DEAD
-				unlock_door_at(41, 99)
+				local _olmec_door = get_entity(DOOR_ENDGAME_OLMEC_UID)
+				_olmec_door.flags = set_flag(_olmec_door.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
+				_x, _y, _ = get_position(DOOR_ENDGAME_OLMEC_UID)
+				-- unlock_door_at(41, 99)
+				unlock_door_at(_x, _y)
 			end
 		end
 	end

@@ -273,6 +273,14 @@ UI_BOTD_PLACEMENT_H = 0.12
 UI_BOTD_PLACEMENT_X = 0.2
 UI_BOTD_PLACEMENT_Y = 0.93
 
+HD_THEMEORDER = {
+	THEME.DWELLING,
+	THEME.JUNGLE,
+	THEME.ICE_CAVES,
+	THEME.TEMPLE,
+	THEME.VOLCANA
+}
+
 RUN_UNLOCK_AREA_CHANCE = 1
 RUN_UNLOCK_AREA = {} -- used to be `RUN_UNLOCK_AREA[THEME.DWELLING] = false` but that doesn't save into json well...
 RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.DWELLING, unlocked = false }
@@ -640,15 +648,17 @@ HD_TILENAME = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0) end
 			},
 			alternate = {
-				[THEME.CITY_OF_GOLD] = function(x, y, l)
-					if not options.hd_debug_item_botd_give then
-						bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
-						book_ = get_entity(bookofdead_pickup_id):as_movable()
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-						texture_def.texture_path = "res/items_botd.png"
-						book_:set_texture(define_texture(texture_def))
+				[THEME.CITY_OF_GOLD] = {
+					function(x, y, l)
+						if not options.hd_debug_item_botd_give then
+							bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
+							book_ = get_entity(bookofdead_pickup_id):as_movable()
+							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+							texture_def.texture_path = "res/items_botd.png"
+							book_:set_texture(define_texture(texture_def))
+						end
 					end
-				end
+				}
 			},
 		},
 		description = "TNT Box",
@@ -702,7 +712,7 @@ HD_TILENAME = {
 			},
 			alternate = {
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_PLASMACANNON, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PLASMACANNON, x, y, l, 0, 0) end,
 				},
 			},
 		},
@@ -951,7 +961,7 @@ HD_TILENAME = {
 				end,
 			},
 			alternate = {
-				[THEME.TIAMAT] = function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+				[THEME.TIAMAT] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end},
 			},
 		},
 		description = "Ceiling Idol Trap",--"Nonmovable Pushblock", -- also idol trap ceiling blocks
@@ -1052,7 +1062,14 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
 				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
-				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_SHIELD, x, y, l, 0, 0) end,},
+
+				-- # TOFIX: Crashes when attempting to spawn in ON.POST_ROOM_GENERATION
+				[THEME.NEO_BABYLON] = {
+					function(x, y, l)
+						-- spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_SHIELD, x, y, l, 0, 0)
+						return 0
+					end,
+				},
 				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
 			},
 		},
@@ -1066,9 +1083,11 @@ HD_TILENAME = {
 				end,
 			},
 			alternate = {
-				[THEME.ICE_CAVES] = function(x, y, l)
-					embed(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
-				end,
+				[THEME.ICE_CAVES] = {
+					function(x, y, l)
+						embed(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					end
+				},
 			}
 		},
 		description = "World-Specific Crust Item", --"Crust Mattock from Snake Pit",
@@ -1159,10 +1178,10 @@ HD_TILENAME = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_GIANTSPIDER, x, y, l, 0, 0) end,},
 			alternate = {
 				-- Alien Lord
-				[THEME.ICE_CAVES] = function(x, y, l) return 0 end,
-				[THEME.NEO_BABYLON] = function(x, y, l) return 0 end,
+				[THEME.ICE_CAVES] = {function(x, y, l) return 0 end},
+				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end},
 				-- Horse Head & Ox Face
-				[THEME.TIAMAT] = function(x, y, l) return 0 end,
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
 			}
 		},
 		description = "Giant Spider",
@@ -1244,12 +1263,14 @@ HD_TILENAME = {
 				function(x, y, l) create_idol_crystalskull(x, y, l) end,
 			},
 			alternate = {
-				[THEME.EGGPLANT_WORLD] = function(x, y, l)
-					if (math.random(2) == 2) then
-						x = x + 10
+				[THEME.EGGPLANT_WORLD] = {
+					function(x, y, l)
+						if (math.random(2) == 2) then
+							x = x + 10
+						end
+						create_crysknife(x, y, l)
 					end
-					create_crysknife(x, y, l)
-				end,
+				},
 			}
 		},
 		description = "Crystal Skull",
@@ -1282,12 +1303,13 @@ HD_TILENAME = {
 		description = "Falling Platform",
 	},
 	["g"] = {
-		-- spawnfunction = function(params)
-		-- 	create_unlockcoffin(params[1], params[2], params[3])
-		-- end,
-		-- bake_spawn = {
-		-- 	default = {ENT_TYPE.ITEM_COFFIN},
-		-- },
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					create_unlockcoffin(x, y, l)
+				end
+			},
+		},
 		description = "Coffin",
 	},
 	["h"] = {
@@ -1346,11 +1368,17 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0))--_GENERIC, x, y, l, 0, 0))
-					entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
+					-- entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
 				end,
 			},
 			alternate = {
-				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l, 0, 0) end,},
+				-- # TOFIX: Crashes when attempting to spawn in ON.POST_ROOM_GENERATION
+				[THEME.NEO_BABYLON] = {
+					function(x, y, l)
+						-- spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l, 0, 0)
+						return 0
+					end,
+				},
 			},
 		},
 		description = "Unbreakable Terrain",
@@ -1476,10 +1504,10 @@ HD_TILENAME = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,
 				function(x, y, l) return 0 end,
 			},
-			-- -- # TODO: spawn method for turret
-			-- alternate = {
-			-- 	[THEME.NEO_BABYLON] = {}
-			-- },
+			-- # TODO: spawn method for turret
+			alternate = {
+				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end,}
+			},
 		},
 		-- # TODO: Temple has bg pillar as an alternative
 		description = "Beehive Tile/Empty",
@@ -4110,12 +4138,12 @@ end
 -- end
 
 -- # TODO: determining character unlock for coffin creation
--- function create_unlockcoffin(x, y, l)
--- 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
--- 	-- 193 + unlock_num = ENT_TYPE.CHAR_*
--- 	set_contents(coffin_uid, 193 + HD_UNLOCKS[unlock_name].unlock_id)
--- 	return coffin_uid
--- end
+function create_unlockcoffin(x, y, l)
+	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
+	-- 193 + unlock_num = ENT_TYPE.CHAR_*
+	-- set_contents(coffin_uid, 193 + HD_UNLOCKS[RUN_UNLOCK].unlock_id)
+	return coffin_uid
+end
 
 -- test if gold/gems automatically get placed into scripted tile generation or not
 -- function gen_embedtreasures(uids_toembedin)
@@ -4188,7 +4216,8 @@ function create_door_exit(x, y, l)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
-	set_door_target(door_target, state.world_next, state.level_next, state.theme_next)
+	local _w, _l, _t = hd_exit_levelhandling()
+	set_door_target(door_target, _w, _l, _t)
 	-- spawn_door(x, y, l, state.world_next, state.level_next, state.theme_next)
 
 	-- state.level_gen.exits.door1_x, state.level_gen.exits.door1_y = x, y
@@ -4240,7 +4269,8 @@ function create_door_exit_to_blackmarket(x, y, l)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
 	get_entity(door_bg).animation_frame = 1
-	set_door_target(door_target, state.world, state.level_next, state.theme)
+	local _w, _l, _t = hd_exit_levelhandling()
+	set_door_target(door_target, _w, _l, _t)
 	DOOR_EXIT_TO_BLACKMARKET_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
 	-- spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
 	set_interval(entrance_blackmarket, 1)
@@ -4252,7 +4282,8 @@ function create_door_exit_to_hauntedcastle(x, y, l)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
 	get_entity(door_bg).animation_frame = 1
-	set_door_target(door_target, state.world, state.level_next, state.theme)
+	local _w, _l, _t = hd_exit_levelhandling()
+	set_door_target(door_target, _w, _l, _t)
 	DOOR_EXIT_TO_HAUNTEDCASTLE_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
 	set_interval(entrance_hauntedcastle, 1)
 end
@@ -4286,8 +4317,8 @@ end
 			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, so allowing them to break with firewhip would play into HDs feature of being able to kill them.
 			-- In HD a good way of dispatching bacterium was with bombs, but they moved fast and went up walls so it was hard to time correctly.
 				-- So the powerpack would naturally balance things out by making bombs more effective against them.
-function create_crysknife(x, y, layer)
-	spawn(ENT_TYPE.ITEM_POWERPACK, x, y, layer, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
+function create_crysknife(x, y, l)
+	spawn_entity(ENT_TYPE.ITEM_POWERPACK, x, y, l, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
 end
 
 function create_idol(x, y, l)
@@ -4567,12 +4598,13 @@ function decorate_floor(e_uid, offsetx, offsety)--e_type, --e_theme, orientation
 end
 
 function remove_borderfloor()
-	for yi = 90, 88, -1 do
-		for xi = 3, 42, 1 do
-			local blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
-			kill_entity(blocks[1])
-		end
-	end
+	xmin, ymin, xmax, ymax = get_bounds()
+	-- for yi = 90, 88, -1 do
+	-- 	for xi = 3, 42, 1 do
+	-- 		local blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
+	-- 		kill_entity(blocks[1])
+	-- 	end
+	-- end
 end
 
 function remove_entitytype_inventory(entity_type, inventory_entities)
@@ -4622,6 +4654,9 @@ end
 
 function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 	if detect_same_levelstate(t_a, l_a, w_a) == true then
+		-- if t_b == THEME.BASE_CAMP then
+		-- 	state.screen_next = ON.CAMP
+		-- end
 		if test_flag(state.quest_flags, 1) == false then
 			state.level_next = l_b
 			state.world_next = w_b
@@ -4629,6 +4664,9 @@ function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 			if t_b == THEME.BASE_CAMP then
 				state.screen_next = ON.CAMP
 			end
+			-- if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL then
+			-- 	state.screen_next = ON.LEVEL
+			-- end
 		end
 	end
 end
@@ -5509,6 +5547,32 @@ function onstart_init_methods()
 	set_olmec_phase_y_level(2, 8.0)
 end
 
+function hd_exit_levelhandling()
+	-- local next_world, next_level, next_theme = state.world or 1, state.level or 1, state.theme or THEME.DWELLING
+	local next_world, next_level, next_theme = state.world, state.level, state.theme
+
+	if state.level < 4 then
+		
+		next_level = state.level + 1
+
+		if state.theme == THEME.EGGPLANT_WORLD then
+			next_level = 4
+		elseif state.level == 3 then
+			if state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
+				next_theme = THEME.OLMEC
+			elseif state.theme == THEME.VOLCANA then
+				next_theme = THEME.TIAMAT
+			end
+		end
+	else
+		next_world = state.world + 1
+		next_level = 1
+	end
+	next_theme = HD_THEMEORDER[next_world]
+
+	return next_world, next_level, next_theme
+end
+
 -- LEVEL HANDLING
 function onloading_levelrules()
 	
@@ -5518,7 +5582,10 @@ function onloading_levelrules()
 	
 	-- Tutorial 1-3 -> Camp
 	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL) then
+		changestate_onloading_targets(1,1,THEME.DWELLING,1,2,THEME.DWELLING)
+		changestate_onloading_targets(1,2,THEME.DWELLING,1,3,THEME.DWELLING)
 		changestate_onloading_targets(1,3,THEME.DWELLING,1,1,THEME.BASE_CAMP)
+		return
 	end
 	
 	--[[
@@ -5527,98 +5594,100 @@ function onloading_levelrules()
 	
 	-- Testing 1-2 -> Camp
 	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING) then
+		changestate_onloading_targets(1,1,state.theme,1,2,state.theme)
 		changestate_onloading_targets(1,2,state.theme,1,1,THEME.BASE_CAMP)
+		return
 	end
 
-	--[[
-		Mines
-	--]]
+	-- --[[
+	-- 	Mines
+	-- --]]
 
-	-- Mines 1-1..3
-    changestate_onloading_targets(1,1,THEME.DWELLING,1,2,THEME.DWELLING)
-    changestate_onloading_targets(1,2,THEME.DWELLING,1,3,THEME.DWELLING)
+	-- -- Mines 1-1..3
+    -- changestate_onloading_targets(1,1,THEME.DWELLING,1,2,THEME.DWELLING)
+    -- changestate_onloading_targets(1,2,THEME.DWELLING,1,3,THEME.DWELLING)
 	
-	-- Mines 1-3 -> Mines 1-5(Fake 1-4)
-    changestate_onloading_targets(1,3,THEME.DWELLING,1,5,THEME.DWELLING)
+	-- -- Mines 1-3 -> Mines 1-5(Fake 1-4)
+    -- changestate_onloading_targets(1,3,THEME.DWELLING,1,5,THEME.DWELLING)
 
-    -- Mines -> Jungle
+    -- -- Mines -> Jungle
     changestate_onloading_targets(1,4,THEME.DWELLING,2,1,THEME.JUNGLE)
 
-	--[[
-		Jungle
-	--]]
+	-- --[[
+	-- 	Jungle
+	-- --]]
 
-	-- Jungle 2-1..4
-    changestate_onloading_targets(2,1,THEME.JUNGLE,2,2,THEME.JUNGLE)
-    changestate_onloading_targets(2,2,THEME.JUNGLE,2,3,THEME.JUNGLE)
-    changestate_onloading_targets(2,3,THEME.JUNGLE,2,4,THEME.JUNGLE)
+	-- -- Jungle 2-1..4
+    -- changestate_onloading_targets(2,1,THEME.JUNGLE,2,2,THEME.JUNGLE)
+    -- changestate_onloading_targets(2,2,THEME.JUNGLE,2,3,THEME.JUNGLE)
+    -- changestate_onloading_targets(2,3,THEME.JUNGLE,2,4,THEME.JUNGLE)
 
-    -- Jungle -> Ice Caves
-    changestate_onloading_targets(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)
+    -- -- Jungle -> Ice Caves
+    -- changestate_onloading_targets(2,4,THEME.JUNGLE,3,1,THEME.ICE_CAVES)
 
-	--[[
-		Worm
-	--]]
+	-- --[[
+	-- 	Worm
+	-- --]]
 
-	-- Worm(Jungle) 2-2 -> Jungle 2-4
-	-- # TOTEST: Re-adjust level loading (remove changestate_onloading_targets() where scripted levelgen entrance doors take over)
-	changestate_onloading_targets(2,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
+	-- -- Worm(Jungle) 2-2 -> Jungle 2-4
+	-- -- # TOTEST: Re-adjust level loading (remove changestate_onloading_targets() where scripted levelgen entrance doors take over)
+	-- changestate_onloading_targets(2,2,THEME.EGGPLANT_WORLD,2,4,THEME.JUNGLE)
 	
-	-- Worm(Ice Caves) 3-2 -> Ice Caves 3-4
-	changestate_onloading_targets(3,2,THEME.EGGPLANT_WORLD,3,4,THEME.ICE_CAVES)
+	-- -- Worm(Ice Caves) 3-2 -> Ice Caves 3-4
+	-- changestate_onloading_targets(3,2,THEME.EGGPLANT_WORLD,3,4,THEME.ICE_CAVES)
 
     
-	--[[
-		Ice Caves
-	--]]
-		-- # TOTEST: Test if there are differences for room generation chances for levels higher than 3-1 or 3-4.
+	-- --[[
+	-- 	Ice Caves
+	-- --]]
+	-- 	-- # TOTEST: Test if there are differences for room generation chances for levels higher than 3-1 or 3-4.
 		
-	-- Ice Caves 3-1..4
-    changestate_onloading_targets(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
-    changestate_onloading_targets(3,2,THEME.ICE_CAVES,3,3,THEME.ICE_CAVES)
-    changestate_onloading_targets(3,3,THEME.ICE_CAVES,3,4,THEME.ICE_CAVES)
+	-- -- Ice Caves 3-1..4
+    -- changestate_onloading_targets(3,1,THEME.ICE_CAVES,3,2,THEME.ICE_CAVES)
+    -- changestate_onloading_targets(3,2,THEME.ICE_CAVES,3,3,THEME.ICE_CAVES)
+    -- changestate_onloading_targets(3,3,THEME.ICE_CAVES,3,4,THEME.ICE_CAVES)
 	
-    -- Ice Caves -> Temple
-    changestate_onloading_targets(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
+    -- -- Ice Caves -> Temple
+    -- changestate_onloading_targets(3,4,THEME.ICE_CAVES,4,1,THEME.TEMPLE)
 
-	--[[
-		Mothership
-	--]]
+	-- --[[
+	-- 	Mothership
+	-- --]]
 	
-	-- Mothership(3-3) -> Ice Caves(3-4)
-    changestate_onloading_targets(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
+	-- -- Mothership(3-3) -> Ice Caves(3-4)
+    -- changestate_onloading_targets(3,3,THEME.NEO_BABYLON,3,4,THEME.ICE_CAVES)
 	
-	--[[
-		Temple
-	--]]
+	-- --[[
+	-- 	Temple
+	-- --]]
 	
-	-- Temple 4-1..3
-    changestate_onloading_targets(4,1,THEME.TEMPLE,4,2,THEME.TEMPLE)
-    changestate_onloading_targets(4,2,THEME.TEMPLE,4,3,THEME.TEMPLE)
+	-- -- Temple 4-1..3
+    -- changestate_onloading_targets(4,1,THEME.TEMPLE,4,2,THEME.TEMPLE)
+    -- changestate_onloading_targets(4,2,THEME.TEMPLE,4,3,THEME.TEMPLE)
 
-    -- Temple -> Olmec
-    changestate_onloading_targets(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
+    -- -- Temple -> Olmec
+    -- changestate_onloading_targets(4,3,THEME.TEMPLE,4,4,THEME.OLMEC)
 	
-	--[[
-		City Of Gold
-	--]]
+	-- --[[
+	-- 	City Of Gold
+	-- --]]
 
-    -- COG(4-3) -> Olmec
-    changestate_onloading_targets(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
+    -- -- COG(4-3) -> Olmec
+    -- changestate_onloading_targets(4,3,THEME.CITY_OF_GOLD,4,4,THEME.OLMEC)
 	
-	--[[
-		Hell
-	--]]
+	-- --[[
+	-- 	Hell
+	-- --]]
 
-    changestate_onloading_targets(5,1,THEME.VOLCANA,5,2,THEME.VOLCANA)
-    changestate_onloading_targets(5,2,THEME.VOLCANA,5,3,THEME.VOLCANA)
+    -- changestate_onloading_targets(5,1,THEME.VOLCANA,5,2,THEME.VOLCANA)
+    -- changestate_onloading_targets(5,2,THEME.VOLCANA,5,3,THEME.VOLCANA)
 
-	-- Hell -> Yama
-		-- Build Yama in Tiamat's chamber.
-	changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,THEME.TIAMAT)
+	-- -- Hell -> Yama
+	-- 	-- Build Yama in Tiamat's chamber.
+	-- changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,THEME.TIAMAT)
 
-	-- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
-	-- message(format_name)
+	-- -- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
+	-- -- message(format_name)
 end
 
 -- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
@@ -8375,8 +8444,8 @@ end
 			-- 7,8 = 5,6
 		-- used for mothership level
 function gen_levelrooms_path()
-	spread = false
-	reverse_path = (state.theme == THEME.NEOBABYLON)
+	-- spread = false
+	reverse_path = (state.theme == THEME.NEO_BABYLON)
 
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	message("levelw, levelh: " .. tostring(levelw) .. ", " .. tostring(levelh))
@@ -8406,8 +8475,8 @@ function gen_levelrooms_path()
 				(
 					-- num == 2 and
 					detect_sideblocked_under(global_levelassembly.modification.levelrooms, wi, hi)
-				) or
-				spread == true
+				)
+				-- or spread == true
 			) then
 				pathid = HD_SUBCHUNKID.PATH
 			end

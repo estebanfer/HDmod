@@ -4776,11 +4776,75 @@ function testroom_level_1()
 		Middle:	x = 13..32,	y = 109
 		Bottom:	x = 5..40,	y = 101
 	--]]
+
+	--[[
+		Hi fenesd,
+		Thanks for offering to help with this.
+		The door below the rope at the camp will take you to the testing area.
+	--]]
+
+	--[[
+		Here's the behavior inheritance feature, as examplified by the scorpionfly.
+
+			- ****Here I'm using an imp instead of the bat for the agro behavior because bats make noise. I adjusted the
+				script that removes hermitcrab items to support removing the imp's lavapot but that's not working for
+				some reason. For now, just pause and use MOUSE 3 to move the lavapot out of the way to see it in action.
+
+			- There are some HD enemies that weren't recreated in the sequal but had some of their behaviors
+				used for new ones. Take the scorpion fly: In HD, an idle and pre-agro scorpionfly behaves like
+				a mosquito. When agrod, it targets the player, heading toward them like a bat/imp. When it takes
+				a point of damage, health is taken from it, it looses its wings and behaves like a scorpion.
+				We can create a scorpionfly by "duct-taping" these enemies together and toggling the physics, AI,
+				and visibility of each one at the appropriate times.
+
+				Since there are several HD enemies that could be recreated this way, we should make a system for it.
+				Maybe we could provide fields like "agro" and "idle" to assign uids to, and the way they are handled
+				is through methods you can assign to run on each frame. That way we can reduce duplicate code.
+
+				Another thing I'll point out is that the imp is invisible and the scorpion is colored red. Ideally we
+				should be toggling the visibility of these enemies and reskin them with their HD frames (or at least in
+				situations where they are using the same animations). The mosquito's idle state animation uses the same
+				frames that the scorpion fly did; So does the imp for agro and the scorpion for all of its animations.
+				res/monsters01_scorpionfly.png
+				res/monstersbasic01_scorpionfly.png
+
+				There are more enemy textures I've prepared to get some ideas across. They'll probably see a lot of
+				changes so feel free to change them. The .ase files are in src/.
+	--]]
 	create_hd_type(HD_ENT.SCORPIONFLY, 24, 108, LAYER.FRONT, false, 0, 0)
+	
+	--[[
+		- now that I look back on it a lot of stuff like these HD_ENT fields:
+			
+				dangertype = HD_DANGERTYPE.FLOORTRAP,
+				collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
+			
+			are just overcomplicating things so it might be better to just remove and start over with some things.
+			Dangertype isn't used for anything so that can be removed, but some things like the collisiontype
+			field might be useful in `is_valid_*_spawn` methods.
+			Both the tikitrap and hangspider need to use spawn_entity_over for their creation, so maybe make an
+			HD_ENT field for a method interacting with a passed-in uid.
+	--]]
 	create_hd_type(HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
-	create_hd_type(HD_ENT.SNAIL, 24, 110, LAYER.FRONT, false, 0, 0)
 	create_hd_type(HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
+
+
+	--[[
+		- These last two are examples of enemies that require common flags, fields, and methods.
+			In HD, the snail has 1 hp and doesn't leave a corpse. So what was needed was to remove the hermetcrab's
+			backitem, set its health, and disable its corpse. The eggsac is a similar story: we're replacing the
+			S2 maggots with wormbabies, which also have one health and no corpse.
+	--]]
+	create_hd_type(HD_ENT.SNAIL, 24, 110, LAYER.FRONT, false, 0, 0)
 	create_hd_type(HD_ENT.EGGSAC, 28, 110, LAYER.FRONT, false, 0, 0)
+
+	--[[
+		- I've set up a bunch of procedural spawn methods to fill (find them where `global_procedural_spawns`
+			is defined).
+	--]]
+
+	-- thank you for coming to my ted talk, good luck :derekapproves:
+	-- thanks for your help!
 end
 
 function testroom_level_2()
@@ -5019,7 +5083,7 @@ end, "door")
 						-- HD doesn't check for this
 --]]
 
--- Make a global table where you set `HD_ENT` as the index so you can access each definition on the fly
+-- Make a global table where you set `HD_ENT` as the index so you can access each definition on the fly (for enabling stuff like DAR spawn chances)
 local global_procedural_spawns = {}
 
 -- powderkeg / pushblock
@@ -7225,8 +7289,8 @@ function danger_applydb(uid, hd_type)
 	end
 	
 	if hd_type == HD_ENT.HANGSPIDER then
-		spawn(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0) -- move into HD_ENT properties
-		spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0) -- tikitraps can use this
+		spawn(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0)
+		spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0)
 	end
 
 	if hd_type.color ~= nil and #hd_type.color == 3 then

@@ -4190,14 +4190,14 @@ function create_door_entrance(x, y, l)
 end
 
 function create_door_testing(x, y, l)
-	DOOR_TESTING_UID = spawn_door(x, y, l, THEME.TIDE_POOL, 1, 1)
+	DOOR_TESTING_UID = spawn_door(x, y, l, 1, 1, THEME.TIDE_POOL)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
+	get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
 	get_entity(door_bg).animation_frame = 1
 end
 
 function create_door_tutorial(x, y, l)
-	DOOR_TUTORIAL_UID = spawn_door(x, y, l, THEME.DWELLING, 1, 1)
+	DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 end

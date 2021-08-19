@@ -203,12 +203,9 @@ DANGER_GHOST_UIDS = {}
 GHOST_TIME = 10800
 GHOST_VELOCITY = 0.7
 IDOLTRAP_TRIGGER = false
-WHEEL_SPINNING = false
-WHEEL_SPINTIME = 700 -- For reference, HD's was 10-11 seconds
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
-wheel_items = {}
 global_dangers = {}
 global_feelings = nil
 global_levelassembly = nil
@@ -229,8 +226,6 @@ BOULDER_CRUSHPREVENTION_VELOCITY = 0.16
 BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
 BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-wheel_speed = 0
-wheel_tick = WHEEL_SPINTIME
 acid_tick = ACID_POISONTIME
 tongue_tick = TONGUE_ACCEPTTIME
 idoltrap_timeout = 0
@@ -3947,7 +3942,6 @@ function init_posttile_onstart()
 end
 
 function init_onlevel()
-	wheel_items = {}
 	idoltrap_blocks = {}
 	danger_tracker = {}
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
@@ -3979,8 +3973,6 @@ function init_onlevel()
 	OLMEC_STATE = 0
 	
 	bookofdead_tick = 0
-	wheel_speed = 0
-	wheel_tick = WHEEL_SPINTIME
 	acid_tick = ACID_POISONTIME
 	tongue_tick = TONGUE_ACCEPTTIME
 	-- bookofdead_tick_min = BOOKOFDEAD_TIC_LIMIT
@@ -5555,7 +5547,6 @@ set_callback(function()
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
 	onlevel_remove_cursedpot()
-	-- onlevel_prizewheel()
 	onlevel_remove_mounts()
 
 	onlevel_hide_yama()
@@ -5573,7 +5564,6 @@ set_callback(function()
 	onframe_manage_dangers()
 	onframe_ghosts()
 	onframe_manage_inventory()
-	onframe_prizewheel()
 	onframe_idoltrap()
 	onframe_tonguetimeout()
 	onframe_acidpoison()
@@ -5588,7 +5578,6 @@ set_callback(function()
 	onguiframe_ui_info_feelings()		--
 	onguiframe_ui_info_path()			--
 	onguiframe_ui_info_worldstate()		--
-	onguiframe_env_animate_prizewheel()
 end, ON.GUIFRAME)
 
 
@@ -5969,70 +5958,6 @@ function onlevel_remove_cursedpot()
 			move_entity(cursedpot_uid, void_x, void_y+1, 0, 0)
 		end
 	end
-end
-
-function onlevel_prizewheel()
-	local atms = get_entities_by_type(ENT_TYPE.ITEM_DICE_BET)
-	local diceposters = get_entities_by_type(ENT_TYPE.BG_SHOP_DICEPOSTER)
-	if #atms > 0 and #diceposters > 0 then
-		kill_entity(get_entities_by_type(ENT_TYPE.BG_SHOP_DICEPOSTER)[1])
-		for i, atm in ipairs(atms) do
-			local atm_mov = get_entity(atms[i]):as_movable()
-			local atm_facing = test_flag(atm_mov.flags, ENT_FLAG.FACING_LEFT)
-			local atm_x, atm_y, atm_l = get_position(atm_mov.uid)
-			local wheel_x_raw = atm_x
-			local wheel_y_raw = atm_y+1.5
-			
-			local facing_dist = 1
-			if atm_facing == false then facing_dist = -1 end
-			wheel_x_raw = wheel_x_raw + 1 * facing_dist
-			
-			-- # TODO: Replace the function of `wheel_content` to keep track of the location on the board
-			-- Rotate DICEPOSTER for new wheel
-			local wheel_content = {
-									255,	-- present
-									14,		-- money
-									23,		-- skull
-									15,		-- bigmoney
-									23,		-- skull
-									14,		-- money
-									23,		-- skull
-									14,		-- money
-									23,		-- skull
-									}
-			for item_ind = 1, 9, 1 do
-				local angle = ((360/9)*item_ind-(360/18))
-				local item_coord = rotate(wheel_x_raw, wheel_y_raw, wheel_x_raw, wheel_y_raw+1, angle)
-				wheel_items[item_ind] = spawn(ENT_TYPE.ITEM_ROCK, item_coord[1], item_coord[2], atm_l, 0, 0)
-				local _item = get_entity(wheel_items[item_ind]):as_movable()
-				_item.flags = set_flag(_item.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
-				_item.angle = -angle
-				_item.animation_frame = wheel_content[item_ind]
-				_item.width = 0.7
-				_item.height = 0.7
-			end
-		end
-		local dice = get_entities_by_type(ENT_TYPE.ITEM_DIE)
-		for j, die in ipairs(dice) do
-			local die_mov = get_entity(dice[j]):as_movable()
-			die_mov.flags = clr_flag(die_mov.flags, ENT_FLAG.PICKUPABLE)
-			die_mov.flags = clr_flag(die_mov.flags, ENT_FLAG.THROWABLE_OR_KNOCKBACKABLE)
-			die_mov.flags = set_flag(die_mov.flags, ENT_FLAG.INVISIBLE)
-			local con = get_entity(dice[j]):as_container()
-			con.inside = 3
-		end
-	end
-		
-	-- LOCATE DICE
-	-- local die1 = get_entity(dice[1]):as_movable()
-	-- local die2 = get_entity(dice[2]):as_movable()
-	-- message("uid1 = " .. die1.uid .. ", uid2 = " .. die2.uid)
-
-	-- local con1 = get_entity(dice[1]):as_container()
-	-- local con2 = get_entity(dice[2]):as_container()
-	-- message("con1 = " .. tostring(con1.inside) .. ", con2 = " .. tostring(con1.inside))
-	-- local atm_mov = get_entity(atms[1]):as_movable()
-	-- message("atm uid: " .. atm_mov.uid)
 end
 
 function onlevel_remove_mounts()
@@ -6454,47 +6379,6 @@ function oncamp_shortcuts()
 
 	-- fix gap in floor where S2 shortcut would normally spawn
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
-end
-
--- # TODO: Overhaul Prizewheel. Keep the dice poster and rotating that. Use a rock for the needle and use in place of animation_frame = 193
-function onframe_prizewheel()
-	-- Prize Wheel
-	-- Purchase Detection/Handling
-	if #wheel_items > 0 then
-	local atm = get_entities_by_type(ENT_TYPE.ITEM_DICE_BET)[1]
-	local atm_mov = get_entity(atm):as_movable()
-	local atm_facing = test_flag(atm_mov.flags, ENT_FLAG.FACING_LEFT)
-	local atm_prompt = test_flag(atm_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-	local atm_x, atm_y, atm_l = get_position(atm_mov.uid)
-	local wheel_x_raw = atm_x
-	local wheel_y_raw = atm_y+1.5
-	local facing_dist = 1
-	if atm_facing == false then facing_dist = -1 end
-	wheel_x_raw = wheel_x_raw + 1 * facing_dist
-
-	if atm_prompt == false then
-		if WHEEL_SPINNING == false then
-			WHEEL_SPINNING = true
-			wheel_tick = 0
-		end
-
-		if wheel_tick < WHEEL_SPINTIME then
-			for i, item in ipairs(wheel_items) do
-				local item_x, item_y, item_l = get_position(wheel_items[i])
-				local item_e = get_entity(wheel_items[i]):as_movable()
-				wheel_speed = 50 * 1.3^(-0.025*wheel_tick)
-				local item_coord = rotate(wheel_x_raw, wheel_y_raw, item_x, item_y, wheel_speed)
-				move_entity(wheel_items[i], item_coord[1], item_coord[2], 0, 0)
-				item_e.angle = -1 * wheel_speed
-			end
-			wheel_tick = wheel_tick + 1
-			else
-				atm_mov.flags = set_flag(atm_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-				wheel_tick = WHEEL_SPINTIME
-				WHEEL_SPINNING = false
-			end
-		end
-	end
 end
 
 function idol_disturbance()
@@ -7735,34 +7619,6 @@ function onguiframe_ui_info_path()
 				text_x_space = text_x_space+0.04
 			end
 			text_y_space = text_y_space-0.04
-		end
-	end
-end
-
--- Prize Wheel
--- # TODO: Once using diceposter texture, remove this.
-function onguiframe_env_animate_prizewheel()
-	if (state.pause == 0 and state.screen == 12 and #players > 0) then
-		local atms = get_entities_by_type(ENT_TYPE.ITEM_DICE_BET)
-		if #atms > 0 then
-			for i, atm in ipairs(atms) do
-				local atm_mov = get_entity(atms[i]):as_movable()
-				local atm_facing = test_flag(atm_mov.flags, ENT_FLAG.FACING_LEFT)
-				local atm_x, atm_y, atm_l = get_position(atm_mov.uid)
-				local wheel_x_raw = atm_x
-				local wheel_y_raw = atm_y+1.5
-				
-				local facing_dist = 1
-				if atm_facing == false then facing_dist = -1 end
-				
-				wheel_x_raw = wheel_x_raw + 1 * facing_dist
-				
-				local wheel_x, wheel_y = screen_position(wheel_x_raw, wheel_y_raw)
-				-- draw_text(wheel_x, wheel_y, 0, tostring(wheel_speed), rgba(234, 234, 234, 255))
-				draw_circle(wheel_x, wheel_y, screen_distance(1.3), 8, rgba(102, 108, 82, 255))
-				draw_circle_filled(wheel_x, wheel_y, screen_distance(1.3), rgba(153, 196, 19, 70))
-				draw_circle_filled(wheel_x, wheel_y, screen_distance(0.1), rgba(255, 59, 89, 255))
-			end
 		end
 	end
 end

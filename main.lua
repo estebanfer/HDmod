@@ -4190,14 +4190,14 @@ function create_door_entrance(x, y, l)
 end
 
 function create_door_testing(x, y, l)
-	DOOR_TESTING_UID = spawn_door(x, y, l, THEME.TIDE_POOL, 1, 1)
+	DOOR_TESTING_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)--THEME.TIDE_POOL)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
+	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_3)
 	get_entity(door_bg).animation_frame = 1
 end
 
 function create_door_tutorial(x, y, l)
-	DOOR_TUTORIAL_UID = spawn_door(x, y, l, THEME.DWELLING, 1, 1)
+	DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 end
@@ -5518,7 +5518,7 @@ end, ON.TRANSITION)
 function levelcreation_init()
 	init_onlevel()
 	unlocks_load()
-	onlevel_levelrules()
+	-- onlevel_levelrules()
 	onlevel_set_feelings()
 	onlevel_set_feelingToastMessage()
 	-- Method to write override_path setrooms into path and levelcode
@@ -5532,6 +5532,7 @@ set_callback(function()
 	message(F'ON.LEVEL: {state.time_level}')--"ON.LEVEL: " .. tostring(state.time_level))
 -- --ONLEVEL_PRIORITY: 1 - Set level constants (ie, init_onlevel(), levelrules)
 	-- init_onlevel()
+	set_timeout(onlevel_levelrules, 20)
 
 	-- TEMPORARY: move players and things they have to entrance point
 	
@@ -5611,7 +5612,10 @@ function hd_exit_levelhandling()
 		if state.theme == THEME.EGGPLANT_WORLD then
 			next_level = 4
 		elseif state.level == 3 then
-			if state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
+			-- fake 1-4
+			if state.theme == THEME.DWELLING then
+				next_level = 5
+			elseif state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
 				next_theme = THEME.OLMEC
 			elseif state.theme == THEME.VOLCANA then
 				next_theme = THEME.TIAMAT

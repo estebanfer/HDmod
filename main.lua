@@ -5518,7 +5518,7 @@ end, ON.TRANSITION)
 function levelcreation_init()
 	init_onlevel()
 	unlocks_load()
-	onlevel_levelrules()
+	-- onlevel_levelrules()
 	onlevel_set_feelings()
 	onlevel_set_feelingToastMessage()
 	-- Method to write override_path setrooms into path and levelcode
@@ -5532,6 +5532,7 @@ set_callback(function()
 	message(F'ON.LEVEL: {state.time_level}')--"ON.LEVEL: " .. tostring(state.time_level))
 -- --ONLEVEL_PRIORITY: 1 - Set level constants (ie, init_onlevel(), levelrules)
 	-- init_onlevel()
+	set_timeout(onlevel_levelrules, 20)
 
 	-- TEMPORARY: move players and things they have to entrance point
 	
@@ -5611,7 +5612,10 @@ function hd_exit_levelhandling()
 		if state.theme == THEME.EGGPLANT_WORLD then
 			next_level = 4
 		elseif state.level == 3 then
-			if state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
+			-- fake 1-4
+			if state.theme == THEME.DWELLING then
+				next_level = 5
+			elseif state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
 				next_theme = THEME.OLMEC
 			elseif state.theme == THEME.VOLCANA then
 				next_theme = THEME.TIAMAT

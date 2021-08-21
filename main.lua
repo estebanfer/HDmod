@@ -251,8 +251,8 @@ bookofdead_squash = (1/bookofdead_frames) --options.hd_ui_botd_e_squash
 PREFIRSTLEVEL_NUM = 40
 TONGUE_UID = nil
 TONGUE_BG_UID = nil
-DOOR_EXIT_TO_HAUNTEDCASTLE_UID = nil
-DOOR_EXIT_TO_BLACKMARKET_UID = nil
+DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
+DOOR_EXIT_TO_BLACKMARKET_POS = nil
 DOOR_ENDGAME_OLMEC_UID = nil
 DOOR_TESTING_UID = nil
 DOOR_TUTORIAL_UID = nil
@@ -867,26 +867,24 @@ HD_TILENAME = {
 						-- # TODO: Mothership entrance door; make a method to spawn the mothership entrance.
 						create_door_exit_to_mothership(x, y, l)
 					elseif (_subchunk_id == HD_SUBCHUNKID.RESTLESS_TOMB) then
-						-- Haunted Castle entrance door; Spawn skeleton with crown and hidden castle entrance door
-						-- # TODO: Haunted Castle Extra Item Spawns;
 						-- Spawn king's tombstone
-							-- Change skin to king
-
+						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+						texture_def.texture_path = "res/floormisc_tombstone_king.png"
+						get_entity(block_uid):set_texture(define_texture(texture_def))
+						
 						-- 2 tiles down
-							-- Spawn skeleton
-							-- Spawn Crown
-								-- Reskin ITEM_DIAMOND as gold crown
-								-- (worth $5000 in HD, might as well leave price the same as diamond)
+						-- Spawn skeleton
 						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l, 0, 0)
 						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l, 0, 0)
+						-- Spawn Crown
 						local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 						texture_def.texture_path = "res/items_dar_crown.png"
 						dar_crown:set_texture(define_texture(texture_def))
 
 						-- 4 tiles down
-							-- spawn hidden entrance
-								-- Ask around the discord for a way to make the hidden door jingle go off
+						-- Spawn hidden entrance
 						create_door_exit_to_hauntedcastle(x, y-4, l)
 					end
 				end
@@ -939,7 +937,10 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)--ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0)
+					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+					texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
+					get_entity(block_uid):set_texture(define_texture(texture_def))
 					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
 				end,
 			},
@@ -1371,6 +1372,15 @@ HD_TILENAME = {
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l)
 						-- spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l, 0, 0)
+						-- need subchunkid of what room we're in
+						roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+						_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
+						
+						if (
+							(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
+						) then
+							spawn_entity(ENT_TYPE.FLOOR_DOOR_PLATFORM, x, y-1, l, 0, 0)
+						end
 						return 0
 					end,
 				},
@@ -2149,16 +2159,20 @@ end
 HD_ROOMOBJECT.FEELINGS["VAULT"] = {
 	prePath = false,
 	method = function()
-		level_generation_method_nonaligned(
-			{
-				subchunk_id = HD_SUBCHUNKID.VAULT,
-				roomcodes = (
-					HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
-					HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
-				) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
-			}
-			-- ,feeling_check("FLOODED")
-		)
+		if (
+			detect_level_non_special()
+		) then
+			level_generation_method_nonaligned(
+				{
+					subchunk_id = HD_SUBCHUNKID.VAULT,
+					roomcodes = (
+						HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
+						HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
+					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
+				}
+				-- ,feeling_check("FLOODED")
+			)
+		end
 	end
 }
 
@@ -3958,8 +3972,8 @@ function init_onlevel()
 	BOULDER_DEBUG_PLAYERTOUCH = false
 	TONGUE_UID = nil
 	TONGUE_BG_UID = nil
-	DOOR_EXIT_TO_HAUNTEDCASTLE_UID = nil
-	DOOR_EXIT_TO_BLACKMARKET_UID = nil
+	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
+	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 	DOOR_ENDGAME_OLMEC_UID = nil
 
 	DANGER_GHOST_UIDS = {}
@@ -4256,27 +4270,20 @@ end
 
 -- creates blackmarket entrance
 function create_door_exit_to_blackmarket(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
 	get_entity(door_bg).animation_frame = 1
-	local _w, _l, _t = hd_exit_levelhandling()
-	set_door_target(door_target, _w, _l, _t)
-	DOOR_EXIT_TO_BLACKMARKET_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
-	-- spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
+	DOOR_EXIT_TO_BLACKMARKET_POS = {x = x, y = y}
 	set_interval(entrance_blackmarket, 1)
 end
 
 function create_door_exit_to_hauntedcastle(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
 	get_entity(door_bg).animation_frame = 1
-	local _w, _l, _t = hd_exit_levelhandling()
-	set_door_target(door_target, _w, _l, _t)
-	DOOR_EXIT_TO_HAUNTEDCASTLE_UID = door_target--spawn_door(x, y, l, state.world, state.level+1, state.theme)
+	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = {x = x, y = y}
 	set_interval(entrance_hauntedcastle, 1)
 end
 
@@ -4590,13 +4597,13 @@ function decorate_floor(e_uid, offsetx, offsety)--e_type, --e_theme, orientation
 end
 
 function remove_borderfloor()
-	xmin, ymin, xmax, ymax = get_bounds()
-	-- for yi = 90, 88, -1 do
-	-- 	for xi = 3, 42, 1 do
-	-- 		local blocks = get_entities_at(ENT_TYPE.FLOOR_BORDERTILE, 0, xi, yi, LAYER.FRONT, 0.3)
-	-- 		kill_entity(blocks[1])
-	-- 	end
-	-- end
+	local xmin, _, xmax, ymax = get_bounds()
+	for yi = ymax-0.5, (ymax-0.5)-2, -1 do
+		for xi = xmin+0.5, xmax-0.5, 1 do
+			local blocks = get_entities_at(0, MASK.FLOOR, xi, yi, LAYER.FRONT, 0.3)
+			kill_entity(blocks[1])
+		end
+	end
 end
 
 function remove_entitytype_inventory(entity_type, inventory_entities)
@@ -4682,27 +4689,51 @@ function changestate_samelevel_applyquestflags(w_a, l_a, t_a, flags_set, flags_c
 	end
 end
 
-function entrance_force_feeling(_feeling, _entrance_uid)
-	door_entrance_ent = get_entity(_entrance_uid)
-	if door_entrance_ent ~= nil then
-		for i = 1, #players, 1 do
-			if (
-				door_entrance_ent:overlaps_with(get_entity(players[i].uid)) == true and
-				players[i].state == CHAR_STATE.ENTERING
-			) then
-				feeling_set_once(_feeling, {state.level+1})
-				break;
+function entrance_force_feeling(_feeling_to_force)
+	local x, y = nil, nil
+	if _feeling_to_force == "BLACKMARKET" and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
+		x, y = DOOR_EXIT_TO_BLACKMARKET_POS.x, DOOR_EXIT_TO_BLACKMARKET_POS.y
+	elseif _feeling_to_force == "HAUNTEDCASTLE" and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
+		x, y = DOOR_EXIT_TO_HAUNTEDCASTLE_POS.x, DOOR_EXIT_TO_HAUNTEDCASTLE_POS.y
+	end
+
+	if x ~= nil and y ~= nil then
+		local door_exits_here = get_entities_at(0, ENT_TYPE.FLOOR_DOOR_EXIT, x, y, LAYER.FRONT, 0.5)
+		local door_spawned =  #door_exits_here ~= 0
+		local door_exit_ent = door_spawned == true and get_entity(door_exits_here[1]) or nil
+		local floor_removed = #get_entities_at(0, MASK.FLOOR, x, y, LAYER.FRONT, 0.5) == 0
+
+		if floor_removed == true and door_spawned == false then
+			local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, LAYER.FRONT, 0, 0)
+			local _w, _l, _t = hd_exit_levelhandling()
+			set_door_target(door_target, _w, _l, _t)
+
+			local sound = get_sound(VANILLA_SOUND.UI_SECRET)
+			if sound ~= nil then sound:play() end
+
+			local door_spawned = true -- for those who can frame-perfect :spelunkoid:
+			local door_exit_ent = get_entity(door_target)
+		end
+		if door_spawned == true then
+			for i = 1, #players, 1 do
+				if (
+					door_exit_ent:overlaps_with(get_entity(players[i].uid)) == true and
+					players[i].state == CHAR_STATE.ENTERING
+				) then
+					feeling_set_once(_feeling_to_force, {state.level+1})
+					break;
+				end
 			end
 		end
 	end
 end
 
 function entrance_blackmarket()
-	entrance_force_feeling("BLACKMARKET", DOOR_EXIT_TO_BLACKMARKET_UID)
+	entrance_force_feeling("BLACKMARKET")
 end
 
 function entrance_hauntedcastle()
-	entrance_force_feeling("HAUNTEDCASTLE", DOOR_EXIT_TO_HAUNTEDCASTLE_UID)
+	entrance_force_feeling("HAUNTEDCASTLE")
 end
 
 -- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
@@ -4993,16 +5024,14 @@ set_post_tile_code_callback(function(x, y, layer)
 			-- ))
 		-- end
 		
-		-- TEMPORARY: Remove S2 door.
+		-- TEMPORARY: Remove floor to avoid telefragging the player.
 		
-		door_ents_uids = get_entities_at(0, 0, x, y, layer, 1)
+		door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
 		for _, door_ents_uid in ipairs(door_ents_uids) do
 			kill_entity(door_ents_uid)
 		end
 
-		message("post-door: " .. tostring(state.time_level))
-		-- if state.screen == 12 then
-		-- end
+		-- message("post-door: " .. tostring(state.time_level))
 	else
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x, y+1, layer, 0, 0)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+1, y+1, layer, 0, 0)
@@ -5288,7 +5317,7 @@ set_callback(function(room_gen_ctx)
 			onlevel_generation_execution_phase_one()
 			onlevel_generation_execution_phase_two()
 		
-			generation_removeborderfloor()
+			-- generation_removeborderfloor()
 
 
 		end
@@ -5553,6 +5582,7 @@ set_callback(function()
 	onlevel_hide_yama()
 	onlevel_acidbubbles()
 	onlevel_decorate_trees()
+	onlevel_removeborderfloor()
 	onlevel_remove_boulderstatue()
 
 	onlevel_testroom()
@@ -5941,7 +5971,7 @@ function onlevel_levelrules()
 	-- changestate_onlevel_fake(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
 end
 
-function generation_removeborderfloor()
+function onlevel_removeborderfloor()
 	-- if feeling_check("FLOODED") == true then
 	-- 	remove_borderfloor()
 	-- end
@@ -6112,6 +6142,47 @@ set_post_entity_spawn(function(_entity)
 	end
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP)
 
+-- prevent tilecode entrance door entities from spawning
+function remove_entrance_door_entity(_entity)
+	if
+		state.screen == ON.LEVEL
+		and
+		options.hd_debug_scripted_levelgen_disable == false
+	then
+		kill_entity(_entity.uid)
+	end
+end
+set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.BG_DOOR)
+set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.FLOOR_DOOR_ENTRANCE)
+set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_DOOR)
+set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_PLATFORM_SPAWNER)
+
+
+-- # TODO: Fix the following method. For some godforsaken reason it won't move the player.
+
+-- -- move players and things they have to scripted entrance point
+-- function move_entrance_door_entity(_entity)
+-- 	_x, _y, _l = get_position(_entity.uid)
+-- 	local _offset_x, _offset_y = _x-state.level_gen.spawn_x, _y-state.level_gen.spawn_y
+-- 	if (
+-- 		state.screen == ON.LEVEL and
+-- 		options.hd_debug_scripted_levelgen_disable == false and
+-- 		detect_level_non_boss()
+-- 	) then
+-- 		-- move_entity(_entity.uid, global_levelassembly.entrance.x+_offset_x, global_levelassembly.entrance.y+_offset_y, 0, 0)
+-- 		move_entity(_entity.uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
+-- 		message("moved to: " .. global_levelassembly.entrance.x .. ", " .. global_levelassembly.entrance.y)
+-- 	end
+-- 	-- message("_offset_x, _offset_y: " .. _offset_x .. ", " .. _offset_y)
+-- end
+-- set_post_entity_spawn(move_entrance_door_entity,
+-- SPAWN_TYPE.ANY,
+-- -- SPAWN_TYPE.LEVEL_GEN,
+-- -- SPAWN_TYPE.LEVEL_GEN_GENERAL,
+-- -- SPAWN_TYPE.LEVEL_GEN_PROCEDURAL,
+-- -- SPAWN_TYPE.LEVEL_GEN_TILE_CODE,
+-- -- SPAWN_TYPE.SYSTEMIC,
+-- MASK.PLAYER)
 
 -- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 -- 	-- SORRY NOTHING
@@ -6190,13 +6261,10 @@ function onlevel_set_feelings()
 			Game-wide Feelings
 		--]]
 		-- Vaults
-		if (
-			detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
-			state.theme ~= THEME.VOLCANA and
-			detect_level_non_boss() and
-			detect_level_non_special()
-		) then
-			feeling_set_once("VAULT", {state.level})
+		if state.theme ~= THEME.VOLCANA then
+			feeling_set_once("VAULT", detect_same_levelstate(THEME.DWELLING, 1, 1) == false and {2, 3, 4} or {1, 2, 3, 4})
+		elseif state.theme == THEME.TEMPLE then
+			feeling_set_once("VAULT", {1, 2, 3})
 		end
 		
 		--[[
@@ -6204,7 +6272,7 @@ function onlevel_set_feelings()
 		--]]
 		if state.theme == THEME.DWELLING then
 			-- placing chest and key on levels 2..4
-			if state.level == 1 then
+			if state.level == 2 then
 				feeling_set_once("UDJAT", {2, 3, 4})
 			end
 
@@ -6219,6 +6287,11 @@ function onlevel_set_feelings()
 			Jungle
 		--]]
 		if state.theme == THEME.JUNGLE then
+
+			if state.level == 1 then
+				feeling_set_once("BLACKMARKET_ENTRANCE", {1, 2, 3})
+			end
+
 			-- Haunted Castle cannot have level feelings
 			if feeling_check("HAUNTEDCASTLE") == false then
 				
@@ -6234,7 +6307,6 @@ function onlevel_set_feelings()
 					feeling_set_once("TIKIVILLAGE", {state.level})
 				end
 			end
-			-- # TODO: Set BLACKMARKET_ENTRANCE and BLACKMARKET here
 		end
 		--[[
 			Ice Caves
@@ -6265,7 +6337,13 @@ function onlevel_set_feelings()
 				state.level ~= 4
 			) then
 				feeling_set_once("YETIKINGDOM", {1,2,3})
-			else
+			end
+			
+			-- # TODO: Verify exactly when UFO is allowed to spawn
+			if (
+				feeling_check("YETIKINGDOM") == false and
+				state.level ~= 4
+			) then
 				feeling_set_once("UFO", {state.level})
 			end
 		end

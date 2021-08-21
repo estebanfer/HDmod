@@ -3256,15 +3256,26 @@ _ = {"21vwwwwv1221vwwwwv1221vwwwwv1221vwwwwv1201vwwwwv10011vvvv11002111111200022
 
 
 HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
-	-- chunkRules = {
-	-- 	rooms = {
-	-- 		[HD_SUBCHUNKID.SIDE] = function()
-	-- 			-- # TODO
-	-- 			-- if (?) 3; else 1 or 2;
-	-- 			-- hardcoded chance: 1/11 to force 4
-	-- 		end,
-	-- 	},
-	-- },
+	chunkRules = {
+		rooms = {
+			[HD_SUBCHUNKID.SIDE] = function()
+				if CHUNKRULE_MOTHERSHIP_ALIENLORD_1 == false then
+					chunkPool_rand_index = 3
+					CHUNKRULE_MOTHERSHIP_ALIENLORD_1 = true
+				elseif CHUNKRULE_MOTHERSHIP_ALIENLORD_2 == false then
+					chunkPool_rand_index = 3
+					CHUNKRULE_MOTHERSHIP_ALIENLORD_2 = true
+				else
+					chunkPool_rand_index = math.random(2)
+				end
+				
+				if math.random(10) == 1 then 
+					chunkPool_rand_index = 4
+				end
+				return chunkPool_rand_index
+			end,
+		},
+	},
 	rooms = {
 		[HD_SUBCHUNKID.SIDE] = {
 			{"50000500000000000000000000000011111111115000050000000000000000000000001111111111"},
@@ -3979,6 +3990,8 @@ function init_onlevel()
 	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
+	CHUNKRULE_MOTHERSHIP_ALIENLORD_1 = false
+	CHUNKRULE_MOTHERSHIP_ALIENLORD_2 = false
 	
 	OLMEC_UID = nil
 	BOSS_STATE = nil

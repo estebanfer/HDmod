@@ -1,10 +1,7 @@
 meta.name = "Spelunky 2: HDmod"
-meta.version = "0.0" -- Alpha, if anything.
+meta.version = "0.0" -- Alpha
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
-
--- uncomment to allow loading unlocks.txt
--- meta.unsafe = true
 
 -- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
 -- register_option_float("hd_ui_botd_b_h", "UI: botd height", 0.12, 0.0, 99.0)
@@ -28,6 +25,7 @@ register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
 	"w3"
 )
 register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)
+register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to temple instead of stone",							false)	-- Defaults to HD
 register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD",							false)	-- Defaults to S2
 register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers",										false)	-- Defaults to HD
 register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Allow the ghost to split",											false)	-- Defaults to HD
@@ -755,8 +753,22 @@ HD_TILENAME = {
 		description = "Cracking Ice",
 	},
 	["."] = {
+		-- S2 doesn't like spawning ANY floor in these places for some reason, so we're going to use S2 gen for this
 		bake_spawn = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
+			default = {
+				function(x, y, l)
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
+				end,
+			},
+			alternate = {
+				[THEME.TEMPLE] = {
+					function(x, y, l)
+						local entity = get_entity(spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0))
+						entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
+					end,
+				}
+			}
 		},
 		description = "Unmodified Terrain",
 	},
@@ -767,7 +779,7 @@ HD_TILENAME = {
 				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,},
 				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,},
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_TEMPLE, x, y, l, 0, 0) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,},
 			},
 		},
@@ -794,7 +806,7 @@ HD_TILENAME = {
 					function(x, y, l) return 0 end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_TEMPLE, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.CITY_OF_GOLD] = {
@@ -933,6 +945,14 @@ HD_TILENAME = {
 		description = "World-specific Enemy Spawn",--"Scorpion from Mines Coffin",
 	},
 	[";"] = {
+		bake_spawn = {
+			default = {
+				function(x, y, l)
+					spawn_grid_entity(325+math.random(3), x, y, l, 0, 0)
+					create_idol(x+1, y, l)
+				end,
+			},
+		},
 		-- # TODO: Damsel and Idol Kalipit
 		description = "Damsel and Idol from Kalipit",
 	},
@@ -956,8 +976,8 @@ HD_TILENAME = {
 					if state.theme ~= THEME.VOLCANA then
 						idol_block_first:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
 						idol_block_second:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-						idol_block_second.animation_frame = idol_block_second.animation_frame + 1
 					end
+					idol_block_second.animation_frame = idol_block_second.animation_frame + 1
 				end,
 			},
 		},
@@ -1011,25 +1031,42 @@ HD_TILENAME = {
 				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBAR, x, y, l, 0, 0) end,
 			},
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
-				function(x, y, l) return 0 end,
+				function(x, y, l)
+					if math.random(10) == 1 then
+						spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0)
+					elseif math.random(5) == 1 then
+						spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0)
+					elseif math.random(2) == 2 then
+						tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
+						if state.theme == THEME.OLMEC then
+							tile_to_spawn = ENT_TYPE.FLOORSTYLED_STONE
+						elseif state.theme == THEME.TEMPLE then
+							tile_to_spawn = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE)
+						end
+						spawn_grid_entity(tile_to_spawn, x, y, l, 0, 0)
+					else
+						return 0
+					end
+				end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+				-- function(x, y, l) return 0 end,
 			},
-			alternate = {
-				[THEME.OLMEC] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
-					function(x, y, l) return 0 end,
-				},
-				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_TEMPLE, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
-					function(x, y, l) return 0 end,
-				},
-			},
+			-- alternate = {
+			-- 	[THEME.OLMEC] = {
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) return 0 end,
+			-- 	},
+			-- 	[THEME.TEMPLE] = {
+			-- 		function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) return 0 end,
+			-- 	},
+			-- },
 		},
 		description = "Terrain/Empty/Crate/Chest",
 	},
@@ -1067,7 +1104,7 @@ HD_TILENAME = {
 		},
 		bake_spawn = {
 			default = {
-				function(x, y, l) create_idol(x, y, l) end,
+				function(x, y, l) create_idol(x+0.5, y, l) end,
 			},
 		},
 		description = "Idol", -- sometimes a tikitrap if it's a character unlock
@@ -1212,7 +1249,7 @@ HD_TILENAME = {
 		description = "Vines Obstacle Block",
 	},
 	["W"] = {
-		description = "Unknown: Something Shop-Related",
+		description = "Wanted Poster",--"Unknown: Something Shop-Related",
 	},
 	["X"] = {
 		bake_spawn = {
@@ -1302,7 +1339,7 @@ HD_TILENAME = {
 	["c"] = {
 		bake_spawn = {
 			default = {
-				function(x, y, l) create_idol_crystalskull(x, y, l) end,
+				function(x, y, l) create_idol_crystalskull(x+0.5, y, l) end,
 			},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {
@@ -1416,11 +1453,34 @@ HD_TILENAME = {
 		},
 		description = "Ice Block/Empty", -- Old description: "Ice Block with Caveman".
 	},
-	["k"] = {
+	["k"] = { -- Sign creation currently done in S2 gen
 		bake_spawn = {
 			default = {
 				function(x, y, l)
-					spawn_entity_over(ENT_TYPE.DECORATION_SHOPSIGN, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0)
+
+					-- #TOTEST: Scripted gen shopsign spawning: For some reason this is really unstable and breaks generation 1/4 of the time.
+					-- Steps:
+						-- 1.) Uncomment the following code back in
+						-- 2.) Uncomment ROOMOBJECT.GENERIC roomcode definitions back in
+						-- 3.) Toggle the relevant ignore flag in the Modlunky level editor for the regular shop and gambling shop roomcodes
+
+					
+					-- -- need subchunkid of what room we're in
+					-- roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					-- _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
+						
+					-- spawn_entity(ENT_TYPE.DECORATION_SHOPSIGN,
+					-- (
+					-- 	x+(
+					-- 		(
+					-- 			_subchunk_id == HD_SUBCHUNKID.SHOP_REGULAR_LEFT or
+					-- 			_subchunk_id == HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+					-- 		)
+					-- 		and -0.5 or 0.5
+					-- 	)
+					-- ), y+2.5, l, 0, 0)
+					-- -- # TODO: Spawn shop icon
 				end,
 			},
 		},
@@ -1487,7 +1547,7 @@ HD_TILENAME = {
 		bake_spawn = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_TEMPLE, x, y, l, 0, 0) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,},
 				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
 			},
@@ -1535,6 +1595,16 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
 			},
+			alternate = {
+				[THEME.TEMPLE] = {
+					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
+				},
+				[THEME.CITY_OF_GOLD] = {
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,
+					function(x, y, l) return 0 end,
+				},
+			}
 		},
 		-- # TODO: ????? Investigate in HD.
 		description = "Temple/Castle Terrain",
@@ -1584,7 +1654,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.TEMPLE] = {
 					function(x, y, l)
-						embed(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_TEMPLE, x, y, l, 0, 0))
+						embed(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0))
 					end
 				}
 			}
@@ -1677,46 +1747,54 @@ HD_ROOMOBJECT.GENERIC = {
 	
 	-- Regular
 	[HD_SUBCHUNKID.SHOP_REGULAR] = {
-		--{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb"}
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		--{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb"} -- original
+		-- {"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..00000000bbbbbbbbbb"} -- S2 sync
+		{"111111111111110011111100220000110l000200000000W00000000000k00000000000bbbbbbbbbb"} -- S2 sync without sign block
+		-- {"111111111111110011111100220001110l000200000000W00000000000k00000000000bbbbbbbbbb"} -- S2 sync
 	},
 	[HD_SUBCHUNKID.SHOP_REGULAR_LEFT] = {
-		--{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"}
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		--{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"} -- original
+		-- {"11111111111111..11111...22..11..2000l.110.W0000...0k00000...00000000..bbbbbbbbbb"} -- S2 sync
+		{"111111111111110011110000220011002000l01100W00000000k000000000000000000bbbbbbbbbb"} -- S2 sync without sign block
+		-- {"111111111111110011111000220011002000l01100W00000000k000000000000000000bbbbbbbbbb"} -- S2 sync
 	},
 	-- Prize Wheel
 	[HD_SUBCHUNKID.SHOP_PRIZE] = {
-		--{"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb"}
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		--{"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb"} -- original
+		-- {"11111111111111..1111....22...1.0l00002....0000W0.0.0000000k0.000000000bb0bbbbbbb"} -- S2 sync
+		{"11111111111111001111000022000000l0000200000000W00000000000k00000000000bb0bbbbbbb"} -- S2 sync without sign block
+		-- {"11111111111111001111000022000100l0000200000000W00000000000k00000000000bb0bbbbbbb"} -- S2 sync
 	},
 	[HD_SUBCHUNKID.SHOP_PRIZE_LEFT] = {
-		--{"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"}
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		--{"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"} -- original
+		-- {"11111111111111..11111...22......20000l0.0.W00000..0k0000000.000000000.bbbbbbb0bb"} -- S2 sync
+		{"1111111111111100111100002200000020000l0000W00000000k000000000000000000bbbbbbb0bb"} -- S2 sync without sign block
+		-- {"1111111111111100111110002200000020000l0000W00000000k000000000000000000bbbbbbb0bb"} -- S2 sync
 	},
 	-- Damzel
 	[HD_SUBCHUNKID.SHOP_BROTHEL] = {
-		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb"}
+		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb"} -- original
 	},
 	[HD_SUBCHUNKID.SHOP_BROTHEL_LEFT] = {
-		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"}
+		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"} -- original
 	},
 	-- Hiredhands(?)
 	[HD_SUBCHUNKID.SHOP_UNKNOWN1] = {
-		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb"}
+		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb"} -- original
 	},
 	[HD_SUBCHUNKID.SHOP_UNKNOWN1_LEFT] = {
-		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"}
+		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"} -- original
 	},
 	-- Hiredhands(?)
 	[HD_SUBCHUNKID.SHOP_UNKNOWN2] = {
-		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb"}
+		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb"} -- original
 	},
 	[HD_SUBCHUNKID.SHOP_UNKNOWN2_LEFT] = {
-		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"}
+		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"} -- original
 	},
 	-- Vault
 	[HD_SUBCHUNKID.VAULT] = {
-		--{"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"}
+		--{"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"} -- original
 		{"11111111111111111111111|00011111100001111110000111111000011111111111111111111111"}
 		-- {"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- S2 sync
 	},
@@ -3011,7 +3089,7 @@ HD_ROOMOBJECT.FEELINGS["VLAD"].method = function()
 				roomcodes = HD_ROOMOBJECT.FEELINGS["VLAD"].rooms[HD_SUBCHUNKID.VLAD_BOTTOM]
 			}
 		},
-		{1, 2, 3, 4},
+		{1, 4},
 		2
 	)
 end
@@ -3932,10 +4010,15 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = TableConcat({
 	{"11111111112000000002110122101111000000111101221011200000000220012210021100000011"},
 	{"11111111110002112000110011001111102201111100110011020111102000021120001111111111"},
 	{"1111111111000000000011011110111101111011100111100111wwwwww1111wwwwww111111111111"},
-	{"11ttttt0111111111011110ttttt11110111111111ttttt011111111101111Ettttt111111111111"},
-	{"1111111111110ttttE11110111111111ttttt0111111111011110ttttt1111011111111100000011"},
+	{
+		"11ttttt0111111111011110ttttt11110111111111ttttt011111111101111Ettttt111111111111" -- original
+		-- "11222220111111111011110222221111011111111122222011111111101111E22222111111111111" -- guess
+	},
+	{
+		"1111111111110ttttE11110111111111ttttt0111111111011110ttttt1111011111111100000011" -- original
+		-- "11111111111102222E11110111111111222220111111111011110222221111011111111100000011" -- guess
+	},
 	{"111111111111111111111111EE1111110111101111E1111E111111EE111111111111111111111111"},
-	-- don't use for COG
 	{"1000000001000000000010000000011000000001100000000100T0000T000dddddddd01111111111"},
 	{"10000000010021111200100000000110000000011111001111111200211111120021111111001111"},
 }, TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]))
@@ -3971,20 +4054,23 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = TableConcat({
-			{"11111000001111100000111110000011111000001111150000111110000011111000001111111111"},
-			{"00000111110000011111000001111100000111115000011111000001111100000111111111111111"},
-			{"11000000001110000000211100000011111000002211110000111111100022211111001111111111"},
-			{"00000000110000000111000000111200000111110000111122000111111100111112221111111111"},
-			{"11111111110000000000111111100011111100001111100000111100000011100000001100000011"},
-			{"11111111110000000000000111111100001111110000011111000000111100000001111100000011"},
-			{"11111111112000000002110122101111000000111101221011200000000220012210021100000011"},
-			{"11111111110002112000110011001111102201111100110011020111102000021120001111111111"},
-			{"1111111111000000000011011110111101111011100111100111wwwwww1111wwwwww111111111111"},
-			{"11ttttt0111111111011110ttttt11110111111111ttttt011111111101111Ettttt111111111111"},
-			{"1111111111110ttttE11110111111111ttttt0111111111011110ttttt1111011111111100000011"},
-			{"111111111111111111111111EE1111110111101111E1111E111111EE111111111111111111111111"},
-		}, TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH])),
+		[HD_SUBCHUNKID.SIDE] = TableConcat(
+			{
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][1],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][2],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][3],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][4],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][5],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][6],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][7],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][8],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][9],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][10],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][11],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][12]
+			},
+			TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH])
+		),
 		[HD_SUBCHUNKID.PATH] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]),
 		[HD_SUBCHUNKID.PATH_NOTOP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_NOTOP]),
 		[HD_SUBCHUNKID.PATH_DROP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP]),
@@ -5068,7 +5154,7 @@ function create_crysknife(x, y, l)
 end
 
 function create_idol(x, y, l)
-	IDOL_X, IDOL_Y = x+0.5, y
+	IDOL_X, IDOL_Y = x, y
 	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
 	if state.theme == THEME.ICE_CAVES then
 		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
@@ -5077,7 +5163,7 @@ function create_idol(x, y, l)
 end
 
 function create_idol_crystalskull(x, y, l)
-	IDOL_X, IDOL_Y = x+0.5, y
+	IDOL_X, IDOL_Y = x, y
 	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
 
 	local entity = get_entity(IDOL_UID)
@@ -5701,6 +5787,18 @@ set_post_tile_code_callback(function(x, y, layer)
 	return true
 end, "hd_door_testing")
 
+set_pre_tile_code_callback(function(x, y, layer)
+	local type_to_use = ENT_TYPE.FLOOR_GENERIC
+
+	if state.theme == THEME.TEMPLE then
+		type_to_use = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE)
+	end
+
+	local entity = get_entity(spawn_grid_entity(type_to_use, x, y, layer, 0, 0))
+	entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
+
+	return true
+end, "shop_wall")
 
 -- set_pre_tile_code_callback(function(x, y, layer)
 	-- if state.theme == THEME.JUNGLE then
@@ -8829,7 +8927,7 @@ function level_generation_method_idol()
 		detect_level_non_boss() and
 		detect_level_non_special()
 	) then
-		chance = 1 --(???)
+		chance = 1
 		
 		if (math.random(1, chance) == 1) then
 			level_generation_method_nonaligned(

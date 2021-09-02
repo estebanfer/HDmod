@@ -274,6 +274,108 @@ HD_THEMEORDER = {
 	THEME.VOLCANA
 }
 
+
+MESSAGE_FEELING = nil
+
+FEELING_ID = {}
+FEELING_ID.UDJAT = 1
+FEELING_ID.SPIDERLAIR = 2
+FEELING_ID.SNAKEPIT = 3
+FEELING_ID.RESTLESS = 4
+FEELING_ID.HIVE = 5
+FEELING_ID.TIKIVILLAGE = 6
+FEELING_ID.FLOODED = 7
+FEELING_ID.BLACKMARKET_ENTRANCE = 8
+FEELING_ID.BLACKMARKET = 9
+FEELING_ID.HAUNTEDCASTLE = 10
+FEELING_ID.YETIKINGDOM = 11
+FEELING_ID.UFO = 12
+FEELING_ID.MOAI = 13
+FEELING_ID.MOTHERSHIP_ENTRANCE = 14
+FEELING_ID.SACRIFICIALPIT = 15
+FEELING_ID.VLAD = 16
+FEELING_ID.VAULT = 17
+
+HD_FEELING_DEFAULTS = {
+	[FEELING_ID.HIVE] = {
+		chance = 0,
+		themes = { THEME.JUNGLE }
+	},
+	[FEELING_ID.UDJAT] = {
+		themes = { THEME.DWELLING }
+	},
+	[FEELING_ID.SPIDERLAIR] = {
+		chance = 0,
+		themes = { THEME.DWELLING },
+		message = "My skin is crawling..."
+	},
+	[FEELING_ID.SNAKEPIT] = {
+		chance = 1,
+		themes = { THEME.DWELLING },
+		message = "I hear snakes... I hate snakes!"
+	},
+	[FEELING_ID.RESTLESS] = {
+		chance = 1,
+		themes = { THEME.JUNGLE },
+		message = "The dead are restless!"
+	},
+	[FEELING_ID.TIKIVILLAGE] = {
+		chance = 1,
+		themes = { THEME.JUNGLE }
+	},
+	[FEELING_ID.FLOODED] = {
+		chance = 0,
+		themes = { THEME.JUNGLE },
+		message = "I hear rushing water!"
+	},
+	[FEELING_ID.BLACKMARKET_ENTRANCE] = {
+		themes = { THEME.JUNGLE }
+	},
+	[FEELING_ID.BLACKMARKET] = {
+		themes = { THEME.JUNGLE },
+		message = "Welcome to the Black Market!"
+	},
+	[FEELING_ID.HAUNTEDCASTLE] = {
+		themes = { THEME.JUNGLE },
+		message = "A wolf howls in the distance..."
+	},
+	[FEELING_ID.YETIKINGDOM] = {
+		chance = 0,
+		themes = { THEME.ICE_CAVES },
+		message = "It smells like wet fur in here."
+	},
+	[FEELING_ID.UFO] = {
+		chance = 0,
+		themes = { THEME.ICE_CAVES },
+		message = "I sense a psychic presence here!"
+	},
+	[FEELING_ID.MOAI] = {
+		themes = { THEME.ICE_CAVES }
+	},
+	[FEELING_ID.MOTHERSHIP_ENTRANCE] = {
+		themes = { THEME.ICE_CAVES },
+		message = "It feels like the fourth of July..."
+	},
+	[FEELING_ID.SACRIFICIALPIT] = {
+		chance = 1,
+		themes = { THEME.TEMPLE },
+		message = "You hear prayers to Kali!"
+	},
+	[FEELING_ID.VLAD] = {
+		themes = { THEME.VOLCANA },
+		load = 1,
+		message = "A horrible feeling of nausea comes over you!"
+	},
+	[FEELING_ID.VAULT] = {
+		themes = {
+			THEME.DWELLING,
+			THEME.JUNGLE,
+			THEME.ICE_CAVES,
+			THEME.TEMPLE
+		}
+	},
+}
+
 RUN_UNLOCK_AREA_CHANCE = 1
 RUN_UNLOCK_AREA = {} -- used to be `RUN_UNLOCK_AREA[THEME.DWELLING] = false` but that doesn't save into json well...
 RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.DWELLING, unlocked = false }
@@ -303,13 +405,13 @@ HD_UNLOCKS.WORM = {
 	unlocked = false
 }				
 HD_UNLOCKS.SPIDERLAIR = {
-	feeling = "SPIDERLAIR",
+	feeling = FEELING_ID.SPIDERLAIR,
 	unlock_id = 13, unlocked = false }								--ENT_TYPE.CHAR_VALERIE_CRUMP
 HD_UNLOCKS.YETIKINGDOM = {
-	feeling = "YETIKINGDOM",
+	feeling = FEELING_ID.YETIKINGDOM,
 	unlock_id = 15, unlocked = false }								--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
 HD_UNLOCKS.HAUNTEDCASTLE = {
-	feeling = "HAUNTEDCASTLE",
+	feeling = FEELING_ID.HAUNTEDCASTLE,
 	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
 HD_UNLOCKS.YAMA = {
 	win = 2,
@@ -320,13 +422,13 @@ HD_UNLOCKS.OLMEC_CHAMBER = {
 	unlock_theme = THEME.OLMEC,
 	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
 HD_UNLOCKS.TIKIVILLAGE = { -- RESIDENT TIK-EVIL: VILLAGE
-	feeling = "TIKIVILLAGE",
+	feeling = FEELING_ID.TIKIVILLAGE,
 	unlock_id = 11, unlocked = false }								--ENT_TYPE.CHAR_OTAKU
 HD_UNLOCKS.BLACKMARKET = {
-	feeling = "BLACKMARKET",
+	feeling = FEELING_ID.BLACKMARKET,
 	unlock_id = 04, unlocked = false }								--ENT_TYPE.CHAR_ROFFY_D_SLOTH
 HD_UNLOCKS.FLOODED = {
-	feeling = "FLOODED",
+	feeling = FEELING_ID.FLOODED,
 	unlock_id = 10, unlocked = false }								--ENT_TYPE.CHAR_MANFRED_TUNNEL
 HD_UNLOCKS.MOTHERSHIP = {
 	unlock_theme = THEME.NEO_BABYLON,
@@ -334,89 +436,6 @@ HD_UNLOCKS.MOTHERSHIP = {
 HD_UNLOCKS.COG = {
 	unlock_theme = THEME.CITY_OF_GOLD,
 	unlock_id = 14, unlocked = false }								--ENT_TYPE.CHAR_AU
-
-
-MESSAGE_FEELING = nil
-
-HD_FEELING = {
-	["HIVE"] = {
-		chance = 0,
-		themes = { THEME.JUNGLE }
-	},
-	["UDJAT"] = {
-		themes = { THEME.DWELLING }
-	},
-	["SPIDERLAIR"] = {
-		chance = 0,
-		themes = { THEME.DWELLING },
-		message = "My skin is crawling..."
-	},
-	["SNAKEPIT"] = {
-		chance = 1,
-		themes = { THEME.DWELLING },
-		message = "I hear snakes... I hate snakes!"
-	},
-	["RESTLESS"] = {
-		chance = 1,
-		themes = { THEME.JUNGLE },
-		message = "The dead are restless!"
-	},
-	["TIKIVILLAGE"] = {
-		chance = 1,
-		themes = { THEME.JUNGLE }
-	},
-	["FLOODED"] = {
-		chance = 0,
-		themes = { THEME.JUNGLE },
-		message = "I hear rushing water!"
-	},
-	["BLACKMARKET_ENTRANCE"] = {
-		themes = { THEME.JUNGLE }
-	},
-	["BLACKMARKET"] = {
-		themes = { THEME.JUNGLE },
-		message = "Welcome to the Black Market!"
-	},
-	["HAUNTEDCASTLE"] = {
-		themes = { THEME.JUNGLE },
-		message = "A wolf howls in the distance..."
-	},
-	["YETIKINGDOM"] = {
-		chance = 0,
-		themes = { THEME.ICE_CAVES },
-		message = "It smells like wet fur in here."
-	},
-	["UFO"] = {
-		chance = 0,
-		themes = { THEME.ICE_CAVES },
-		message = "I sense a psychic presence here!"
-	},
-	["MOAI"] = {
-		themes = { THEME.ICE_CAVES }
-	},
-	["MOTHERSHIPENTRANCE"] = {
-		themes = { THEME.ICE_CAVES },
-		message = "It feels like the fourth of July..."
-	},
-	["SACRIFICIALPIT"] = {
-		chance = 1,
-		themes = { THEME.TEMPLE },
-		message = "You hear prayers to Kali!"
-	},
-	["VLAD"] = {
-		themes = { THEME.VOLCANA },
-		load = 1,
-		message = "A horrible feeling of nausea comes over you!"
-	},
-	["VAULT"] = {
-		themes = {
-			THEME.DWELLING,
-			THEME.JUNGLE,
-			THEME.ICE_CAVES,
-			THEME.TEMPLE
-		}
-	},
-}
 
 
 -- # TODO: Player Coffins
@@ -2272,7 +2291,7 @@ HD_ROOMOBJECT.TESTING[2] = {
 	}
 }
 HD_ROOMOBJECT.FEELINGS = {}
-HD_ROOMOBJECT.FEELINGS["HIVE"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.HIVE] = {
 	prePath = false,
 	rooms = {
 		-- This is an absolute abomination of a naming scheme, but that's for future-me to resolve.
@@ -2322,11 +2341,11 @@ HD_ROOMOBJECT.FEELINGS["HIVE"] = {
 		-- -- there's 33 total room types, good god. In S2 there are TWO.
 	}
 }
-HD_ROOMOBJECT.FEELINGS["HIVE"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.HIVE].method = function()
 	
 end
 
-HD_ROOMOBJECT.FEELINGS["VAULT"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.VAULT] = {
 	prePath = false,
 	method = function()
 		if (
@@ -2340,7 +2359,7 @@ HD_ROOMOBJECT.FEELINGS["VAULT"] = {
 						HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
 					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
 				}
-				-- ,feeling_check("FLOODED")
+				-- ,feeling_check(FEELING_ID.FLOODED)
 			)
 		end
 	end
@@ -2350,7 +2369,7 @@ HD_ROOMOBJECT.FEELINGS["VAULT"] = {
 -- Spiders, spinner spiders, and webs appear much more frequently.
 -- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
 -- Move pots into the void
-HD_ROOMOBJECT.FEELINGS["SPIDERLAIR"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR] = {
 
 	-- coffin_unlockable = {
 		
@@ -2364,7 +2383,7 @@ HD_ROOMOBJECT.FEELINGS["SPIDERLAIR"] = {
 	-- 	},
 	-- }
 }
-HD_ROOMOBJECT.FEELINGS["SNAKEPIT"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT] = {
 	prePath = true,
 	rooms = {
 		[HD_SUBCHUNKID.SNAKEPIT_TOP] = { -- grabs 4 and upwards from HD's path_drop roomcodes
@@ -2402,20 +2421,20 @@ HD_ROOMOBJECT.FEELINGS["SNAKEPIT"] = {
 		-- end
 	-- 108
 		-- spawn 108 at struct_midheight+1, structx
-HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.SNAKEPIT_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].rooms[HD_SUBCHUNKID.SNAKEPIT_TOP]
+			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_TOP]
 		},
 		{
 			middle = {
 				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION]
 			},
 			bottom = {
 				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM]
 			}
 		},
 		{1, 2, 3, 4},
@@ -2424,7 +2443,7 @@ HD_ROOMOBJECT.FEELINGS["SNAKEPIT"].method = function()
 	
 end
 
-HD_ROOMOBJECT.FEELINGS["RESTLESS"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS] = {
 	prePath = false,
 	rooms = {
 		[HD_SUBCHUNKID.RESTLESS_IDOL] = {
@@ -2438,20 +2457,20 @@ HD_ROOMOBJECT.FEELINGS["RESTLESS"] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS["RESTLESS"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].method = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 
 	level_generation_method_nonaligned(
 		{
 			subchunk_id = HD_SUBCHUNKID.RESTLESS_TOMB,
-			roomcodes = HD_ROOMOBJECT.FEELINGS["RESTLESS"].rooms[HD_SUBCHUNKID.RESTLESS_TOMB]
+			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_TOMB]
 		}
 	)
 end
 
 -- # TODO: Replace haunted castle roomcode altar tilecodes with new tilecode (or re-used) for torches
-HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
@@ -2656,7 +2675,7 @@ HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].method = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	
@@ -2732,7 +2751,7 @@ HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"].method = function()
 		end
 
 		global_levelassembly.modification.levelrooms[hi][wi] = pathid
-		levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"].rooms[pathid], hi, wi)
+		levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
 
 		if assigned_exit == false then -- preserve final coordinates for bugtesting purposes
 			wi, hi = (wi+ind_off_x), (hi+ind_off_y)
@@ -2755,14 +2774,14 @@ HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"].method = function()
 				else
 					pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE
 				end
-				levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS["HAUNTEDCASTLE"].rooms[pathid], hi, wi)
+				levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
 			end
 		end
 	end
 
 end
 
-HD_ROOMOBJECT.FEELINGS["TIKIVILLAGE"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE] = {
 	prePath = false,
 	rooms = {
 		-- Replaced all "d" tiles with "v"
@@ -2803,7 +2822,7 @@ HD_ROOMOBJECT.FEELINGS["TIKIVILLAGE"] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS["TIKIVILLAGE"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	levelh_start, levelh_end = 2, levelh-1
 	for room_y = levelh_start, levelh_end, 1 do
@@ -2854,7 +2873,7 @@ HD_ROOMOBJECT.FEELINGS["TIKIVILLAGE"].method = function()
 			end
 		
 			if path_to_replace_with ~= -1 then
-				levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS["TIKIVILLAGE"].rooms[path_to_replace_with], room_y, room_x)
+				levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], room_y, room_x)
 			end
 		end
 	end
@@ -2864,7 +2883,7 @@ end
 
 
 
-HD_ROOMOBJECT.FEELINGS["FLOODED"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.FLOODED] = {
 	prePath = false,
 	rooms = {
 		[HD_SUBCHUNKID.FLOODED_EXIT] = {{"000000000000000900000221111220wwvvvvvvwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}},
@@ -2901,7 +2920,7 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"] = {
 		},
 	}
 }
-HD_ROOMOBJECT.FEELINGS["FLOODED"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.FLOODED].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	-- exit row
 	for room_x = 1, levelw, 1 do
@@ -2924,14 +2943,14 @@ HD_ROOMOBJECT.FEELINGS["FLOODED"].method = function()
 		end
 	
 		if path_to_replace_with ~= -1 then
-			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS["FLOODED"].rooms[path_to_replace_with], levelh, room_x)
+			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.FLOODED].rooms[path_to_replace_with], levelh, room_x)
 		end
 	end
 
 	-- # TODO: the rest of flooded cavern when we are allowed to change roomsize.
 end
 
-HD_ROOMOBJECT.FEELINGS["MOAI"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI] = {
 	prePath = false, -- # TOTEST: Is spawning the moai head first a good idea?
 	rooms = {
 		[HD_SUBCHUNKID.MOAI] = {
@@ -2942,23 +2961,23 @@ HD_ROOMOBJECT.FEELINGS["MOAI"] = {
 		}
 	}
 }
-HD_ROOMOBJECT.FEELINGS["MOAI"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].method = function()
 	-- # TOFIX: Moai generation appears to be: chance of either replace a path or place aside of the path (test in HD if it's always on the middle two layers or not)
 	level_generation_method_aligned(
 		{
 			left = {
 				subchunk_id = HD_SUBCHUNKID.MOAI,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["MOAI"].rooms[HD_SUBCHUNKID.MOAI]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].rooms[HD_SUBCHUNKID.MOAI]
 			},
 			right = {
 				subchunk_id = HD_SUBCHUNKID.MOAI,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["MOAI"].rooms[HD_SUBCHUNKID.MOAI]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].rooms[HD_SUBCHUNKID.MOAI]
 			}
 		}
 	)
 end
 
-HD_ROOMOBJECT.FEELINGS["UFO"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO] = {
 	prePath = false,
 	rooms = {
 		[HD_SUBCHUNKID.UFO_LEFTSIDE] = {
@@ -2972,23 +2991,23 @@ HD_ROOMOBJECT.FEELINGS["UFO"] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS["UFO"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].method = function()
 	-- -- # TODO: UFO spawn method
 	-- _ =	{
 	-- 	subchunk_id = HD_SUBCHUNKID.UFO_,
-	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS["UFO"].rooms[HD_SUBCHUNKID.UFO_LEFTSIDE]
+	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_LEFTSIDE]
 	-- }
 	-- _ =	{
 	-- 	subchunk_id = HD_SUBCHUNKID.UFO_,
-	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS["UFO"].rooms[HD_SUBCHUNKID.UFO_MIDDLE]
+	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_MIDDLE]
 	-- }
 	-- _ =	{
 	-- 	subchunk_id = HD_SUBCHUNKID.UFO_,
-	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS["UFO"].rooms[HD_SUBCHUNKID.UFO_RIGHTSIDE]
+	-- 	roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_RIGHTSIDE]
 	-- }
 end
 
-HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE] = {
 	prePath = true,
 	rooms = {
 		[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
@@ -3000,23 +3019,23 @@ HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"] = {
 		[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM] = {{"++++00++++++++00++++++++00++++++++00++++++000000++0+++00+++000++00++000000000000"}}
 	}
 }
-HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
+			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
 		},
 		{
 			bottom = {
 				subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["MOTHERSHIPENTRANCE"].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
 			}
 		},
 		{1, 4}
 		-- ,0
 	)
 end
-HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT] = {
 	prePath = true,
 	rooms = {
 		[HD_SUBCHUNKID.SACRIFICIALPIT_TOP] = {{"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"}},
@@ -3041,20 +3060,20 @@ HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"] = {
 		-- end
 	-- 118
 		-- spawn 118 at structx, struct_midheight+1
-HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP]
+			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP]
 		},
 		{
 			middle = {
 				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION]
 			},
 			bottom = {
 				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM]
 			}
 		},
 		{1, 2, 3, 4},
@@ -3062,7 +3081,7 @@ HD_ROOMOBJECT.FEELINGS["SACRIFICIALPIT"].method = function()
 	)
 end
 
-HD_ROOMOBJECT.FEELINGS["VLAD"] = {
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD] = {
 	prePath = true,
 	rooms = {
 		[HD_SUBCHUNKID.VLAD_TOP] = {{"0000hh000000shhhhs000shhhhhhs00hhhU0hhh0shh0000hhshhhh00hhhhhhQ0000Qhhhh000000hh"}},
@@ -3073,20 +3092,20 @@ HD_ROOMOBJECT.FEELINGS["VLAD"] = {
 		[HD_SUBCHUNKID.VLAD_BOTTOM] = {{"hh0L00L0hhhhhL00Lhhh040L00L040hhhL00Lhhhhh0L00L0hh040ssss040hhshhhhshhhhhhhhhhhh"}},
 	}
 }
-HD_ROOMOBJECT.FEELINGS["VLAD"].method = function()
+HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.VLAD_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS["VLAD"].rooms[HD_SUBCHUNKID.VLAD_TOP]
+			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_TOP]
 		},
 		{
 			middle = {
 				subchunk_id = HD_SUBCHUNKID.VLAD_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["VLAD"].rooms[HD_SUBCHUNKID.VLAD_MIDSECTION]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_MIDSECTION]
 			},
 			bottom = {
 				subchunk_id = HD_SUBCHUNKID.VLAD_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS["VLAD"].rooms[HD_SUBCHUNKID.VLAD_BOTTOM]
+				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_BOTTOM]
 			}
 		},
 		{1, 4},
@@ -4775,7 +4794,7 @@ end
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
-		global_feelings = TableCopy(HD_FEELING)
+		global_feelings = TableCopy(HD_FEELING_DEFAULTS)
 		-- other stuff
 	end
 end
@@ -5024,7 +5043,7 @@ end
 function create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feeling_check("HAUNTEDCASTLE") == true then
+	if feeling_check(FEELING_ID.HAUNTEDCASTLE) == true then
 		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -5518,9 +5537,9 @@ end
 
 function entrance_force_feeling(_feeling_to_force)
 	local x, y = nil, nil
-	if _feeling_to_force == "BLACKMARKET" and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
+	if _feeling_to_force == FEELING_ID.BLACKMARKET and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
 		x, y = DOOR_EXIT_TO_BLACKMARKET_POS.x, DOOR_EXIT_TO_BLACKMARKET_POS.y
-	elseif _feeling_to_force == "HAUNTEDCASTLE" and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
+	elseif _feeling_to_force == FEELING_ID.HAUNTEDCASTLE and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
 		x, y = DOOR_EXIT_TO_HAUNTEDCASTLE_POS.x, DOOR_EXIT_TO_HAUNTEDCASTLE_POS.y
 	end
 
@@ -5556,11 +5575,11 @@ function entrance_force_feeling(_feeling_to_force)
 end
 
 function entrance_blackmarket()
-	entrance_force_feeling("BLACKMARKET")
+	entrance_force_feeling(FEELING_ID.BLACKMARKET)
 end
 
 function entrance_hauntedcastle()
-	entrance_force_feeling("HAUNTEDCASTLE")
+	entrance_force_feeling(FEELING_ID.HAUNTEDCASTLE)
 end
 
 -- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
@@ -6166,7 +6185,7 @@ set_callback(function(room_gen_ctx)
 		-- Forcing volcana not to spawn powderkegs
 		
 		-- -- set restless spawn chances
-		-- if feeling_check("RESTLESS") then
+		-- if feeling_check(FEELING_ID.RESTLESS) then
 		-- 	room_gen_ctx:set_procedural_spawn_chance(global_procedural_spawns[HD_ENT.JIANGSHI], 20)
 		-- end
 
@@ -6349,7 +6368,7 @@ end, ON.LOGO)
 set_callback(function()
 	onstart_init_options()
 	onstart_init_methods()
-	-- global_feelings = TableCopy(HD_FEELING)
+	-- global_feelings = TableCopy(HD_FEELING_DEFAULTS)
 	
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
@@ -6650,8 +6669,8 @@ function onlevel_generation_modification()
 		gen_levelrooms_nonpath(unlock, true)
 		if (
 			detect_level_non_boss() and
-			feeling_check("HAUNTEDCASTLE") == false and
-			feeling_check("BLACKMARKET") == false
+			feeling_check(FEELING_ID.HAUNTEDCASTLE) == false and
+			feeling_check(FEELING_ID.BLACKMARKET) == false
 		) then
 			gen_levelrooms_path()
 		end
@@ -6821,7 +6840,7 @@ function onlevel_levelrules()
 end
 
 function onlevel_removeborderfloor()
-	-- if feeling_check("FLOODED") == true then
+	-- if feeling_check(FEELING_ID.FLOODED) == true then
 	-- 	remove_borderfloor()
 	-- end
 	-- if Mothership level
@@ -6971,8 +6990,8 @@ function onlevel_decorate_trees()
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
 			if (
-				feeling_check("RESTLESS") == false and
-				feeling_check("HAUNTEDCASTLE") == false
+				feeling_check(FEELING_ID.RESTLESS) == false and
+				feeling_check(FEELING_ID.HAUNTEDCASTLE) == false
 			) then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
@@ -7114,9 +7133,9 @@ function onlevel_set_feelings()
 		--]]
 		-- Vaults
 		if state.theme ~= THEME.VOLCANA then
-			feeling_set_once("VAULT", detect_same_levelstate(THEME.DWELLING, 1, 1) == false and {2, 3, 4} or {1, 2, 3, 4})
+			feeling_set_once(FEELING_ID.VAULT, detect_same_levelstate(THEME.DWELLING, 1, 1) == false and {2, 3, 4} or {1, 2, 3, 4})
 		elseif state.theme == THEME.TEMPLE then
-			feeling_set_once("VAULT", {1, 2, 3})
+			feeling_set_once(FEELING_ID.VAULT, {1, 2, 3})
 		end
 		
 		--[[
@@ -7125,14 +7144,14 @@ function onlevel_set_feelings()
 		if state.theme == THEME.DWELLING then
 			-- placing chest and key on levels 2..4
 			if state.level == 2 then
-				feeling_set_once("UDJAT", {2, 3, 4})
+				feeling_set_once(FEELING_ID.UDJAT, {2, 3, 4})
 			end
 
-			feeling_set_once("SPIDERLAIR", {state.level})
+			feeling_set_once(FEELING_ID.SPIDERLAIR, {state.level})
 
 			-- spiderlair and snakepit cannot happen at the same time
-			if feeling_check("SPIDERLAIR") == false then
-				feeling_set_once("SNAKEPIT", {state.level})
+			if feeling_check(FEELING_ID.SPIDERLAIR) == false then
+				feeling_set_once(FEELING_ID.SNAKEPIT, {state.level})
 			end
 		end
 		--[[
@@ -7141,22 +7160,22 @@ function onlevel_set_feelings()
 		if state.theme == THEME.JUNGLE then
 
 			if state.level == 1 then
-				feeling_set_once("BLACKMARKET_ENTRANCE", {1, 2, 3})
+				feeling_set_once(FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
 			end
 
 			-- Haunted Castle cannot have level feelings
-			if feeling_check("HAUNTEDCASTLE") == false then
+			if feeling_check(FEELING_ID.HAUNTEDCASTLE) == false then
 				
-				feeling_set_once("RESTLESS", {state.level})
-				feeling_set_once("FLOODED", {state.level})
+				feeling_set_once(FEELING_ID.RESTLESS, {state.level})
+				feeling_set_once(FEELING_ID.FLOODED, {state.level})
 
 				-- tikivillage levels cannot be restless
 				-- tikivillage and flooded cannot happen at the same time
 				if (
-					feeling_check("RESTLESS") == false and
-					feeling_check("FLOODED") == false
+					feeling_check(FEELING_ID.RESTLESS) == false and
+					feeling_check(FEELING_ID.FLOODED) == false
 				) then
-					feeling_set_once("TIKIVILLAGE", {state.level})
+					feeling_set_once(FEELING_ID.TIKIVILLAGE, {state.level})
 				end
 			end
 		end
@@ -7168,15 +7187,15 @@ function onlevel_set_feelings()
 			-- # TODO: Exception for MOAI spawn:
 				-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
 			if state.level == 2 then
-				feeling_set_once("MOAI", {2, 3})
+				feeling_set_once(FEELING_ID.MOAI, {2, 3})
 			end
 			
 			if state.level == 4 then
-				if global_feelings["MOTHERSHIPENTRANCE"].load == nil then
-					feeling_set_once("MOTHERSHIPENTRANCE", {state.level})
+				if global_feelings[FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
+					feeling_set_once(FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
 				else
-					global_feelings["MOTHERSHIPENTRANCE"].load = nil
-					feeling_set_once("YETIKINGDOM", {state.level})
+					global_feelings[FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
+					feeling_set_once(FEELING_ID.YETIKINGDOM, {state.level})
 				end
 				-- This level feeling only, and always, occurs on level 3-4.
 					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
@@ -7185,25 +7204,25 @@ function onlevel_set_feelings()
 			end
 			
 			if (
-				feeling_check("MOAI") == false and
+				feeling_check(FEELING_ID.MOAI) == false and
 				state.level ~= 4
 			) then
-				feeling_set_once("YETIKINGDOM", {state.level})
+				feeling_set_once(FEELING_ID.YETIKINGDOM, {state.level})
 			end
 			
 			-- # TODO: Verify exactly when UFO is allowed to spawn
 			if (
-				feeling_check("YETIKINGDOM") == false and
+				feeling_check(FEELING_ID.YETIKINGDOM) == false and
 				state.level ~= 4
 			) then
-				feeling_set_once("UFO", {state.level})
+				feeling_set_once(FEELING_ID.UFO, {state.level})
 			end
 		end
 		--[[
 			Temple
 		--]]
 		if state.theme == THEME.TEMPLE then
-			feeling_set_once("SACRIFICIALPIT", {state.level})
+			feeling_set_once(FEELING_ID.SACRIFICIALPIT, {state.level})
 		end
 		
 		-- Currently hardcoded but keeping this here just in case
@@ -7211,7 +7230,7 @@ function onlevel_set_feelings()
 			Hell
 		--]]
 		-- if state.theme == THEME.VOLCANA and state.level == 1 then
-			-- feeling_set("VLAD", {state.level})
+			-- feeling_set(FEELING_ID.VLAD, {state.level})
 		-- end
 	end
 end
@@ -7243,7 +7262,7 @@ function onlevel_set_feelingToastMessage()
 	for feelingname, feeling in pairs(loadchecks) do
 		-- Message Overrides may happen here:
 		-- For example:
-			-- if feelingname == "FLOODED" and feeling_check("RESTLESS") == true then break end
+			-- if feelingname == FEELING_ID.FLOODED and feeling_check(FEELING_ID.RESTLESS) == true then break end
 		MESSAGE_FEELING = feeling.message
 	end
 end
@@ -7328,7 +7347,7 @@ function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
 		IDOLTRAP_TRIGGER = true
-		if feeling_check("RESTLESS") == true then
+		if feeling_check(FEELING_ID.RESTLESS) == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
 			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
@@ -8894,8 +8913,8 @@ function detect_level_non_special()
 		state.theme ~= THEME.EGGPLANT_WORLD and
 		state.theme ~= THEME.NEO_BABYLON and
 		state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check("HAUNTEDCASTLE") == false and
-		feeling_check("BLACKMARKET") == false
+		feeling_check(FEELING_ID.HAUNTEDCASTLE) == false and
+		feeling_check(FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -8923,7 +8942,7 @@ function level_generation_method_altar()
 end
 function level_generation_method_idol()
 	if (
-		feeling_check("SACRIFICIALPIT") == false and
+		feeling_check(FEELING_ID.SACRIFICIALPIT) == false and
 		detect_level_non_boss() and
 		detect_level_non_special()
 	) then
@@ -8932,8 +8951,8 @@ function level_generation_method_idol()
 		if (math.random(1, chance) == 1) then
 			level_generation_method_nonaligned(
 				{
-					subchunk_id = feeling_check("RESTLESS") and HD_SUBCHUNKID.RESTLESS_IDOL or HD_SUBCHUNKID.IDOL,
-					roomcodes = feeling_check("RESTLESS") and HD_ROOMOBJECT.FEELINGS["RESTLESS"].rooms[HD_SUBCHUNKID.RESTLESS_IDOL] or (
+					subchunk_id = feeling_check(FEELING_ID.RESTLESS) and HD_SUBCHUNKID.RESTLESS_IDOL or HD_SUBCHUNKID.IDOL,
+					roomcodes = feeling_check(FEELING_ID.RESTLESS) and HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_IDOL] or (
 						(
 							HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
 							HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.IDOL] ~= nil
@@ -9612,7 +9631,7 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					-- if feeling_check("BLACKMARKET_ENTRANCE") == true
+					-- if feeling_check(FEELING_ID.BLACKMARKET_ENTRANCE) == true
 				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
 					-- Will need at least:
 						-- 

@@ -525,7 +525,7 @@ HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP = 302
 HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP = 128
 HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM = 129
 
-HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE = 555
+HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE = 355
 
 HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN = 2001
 
@@ -557,6 +557,20 @@ HD_SUBCHUNKID.VLAD_TOP = 119
 HD_SUBCHUNKID.VLAD_MIDSECTION = 120
 HD_SUBCHUNKID.VLAD_BOTTOM = 121
 
+HD_SUBCHUNKID.YAMA_EXIT = 500
+HD_SUBCHUNKID.YAMA_ENTRANCE = 501
+HD_SUBCHUNKID.YAMA_TOP = 502
+HD_SUBCHUNKID.YAMA_LEFTSIDE = 503
+HD_SUBCHUNKID.YAMA_RIGHTSIDE = 504
+HD_SUBCHUNKID.YAMA_SETROOM_1_2 = 505
+HD_SUBCHUNKID.YAMA_SETROOM_1_3 = 506
+HD_SUBCHUNKID.YAMA_SETROOM_2_2 = 507
+HD_SUBCHUNKID.YAMA_SETROOM_2_3 = 508
+HD_SUBCHUNKID.YAMA_SETROOM_3_2 = 509
+HD_SUBCHUNKID.YAMA_SETROOM_3_3 = 510
+HD_SUBCHUNKID.YAMA_SETROOM_4_1 = 511
+HD_SUBCHUNKID.YAMA_SETROOM_4_3 = 512
+HD_SUBCHUNKID.YAMA_SETROOM_4_4 = 513
 
 -- KNOWN HD IDs:
 --HD_SUBCHUNKID. = 6					-- Upper part of snake pit
@@ -910,7 +924,8 @@ HD_TILENAME = {
 					
 					if (
 						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE) or
-						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
+						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP) or
+						(_subchunk_id == HD_SUBCHUNKID.YAMA_ENTRANCE)
 					) then
 						create_door_entrance(x, y, l)
 					elseif (
@@ -945,6 +960,8 @@ HD_TILENAME = {
 						-- 4 tiles down
 						-- Spawn hidden entrance
 						create_door_exit_to_hauntedcastle(x, y-4, l)
+					elseif (_subchunk_id == HD_SUBCHUNKID.YAMA_EXIT) then
+						create_door_ending(x, y, l)
 					end
 				end
 			},
@@ -1141,11 +1158,17 @@ HD_TILENAME = {
 					end
 				end,
 			},
+			alternate = {
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
+			}
 		},
 		bake_spawn = {
 			default = {
 				function(x, y, l) create_idol(x+0.5, y, l) end,
 			},
+			alternate = {
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
+			}
 		},
 		description = "Idol", -- sometimes a tikitrap if it's a character unlock
 	},
@@ -1166,6 +1189,16 @@ HD_TILENAME = {
 		description = "Shopkeeper",
 	},
 	["L"] = {
+		bake_spawn_over = {
+			alternate = {
+				[THEME.VOLCANA] = {
+					function(x, y, l) create_ceiling_chain(x, y, l) end,
+				},
+				[THEME.TIAMAT] = {
+					function(x, y, l) create_ceiling_chain(x, y, l) end,
+				},
+			}
+		},
 		bake_spawn = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l, 0, 0) end,},
 			alternate = {
@@ -1179,7 +1212,8 @@ HD_TILENAME = {
 						return 0
 					end,
 				},
-				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
+				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
 			},
 		},
 		description = "Ladder", -- sometimes used as Vine or Chain
@@ -1259,14 +1293,20 @@ HD_TILENAME = {
 		description = "Ladder Platform (Strict)",
 	},
 	["Q"] = {
+		bake_spawn_over = {
+			alternate = {
+				[THEME.VOLCANA] = {function(x, y, l) create_ceiling_chain_growable(x, y, l) end},
+				[THEME.TIAMAT] = {function(x, y, l) create_ceiling_chain_growable(x, y, l) end},
+			}
+		},
 		bake_spawn = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 			alternate = {
 				-- [THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 				-- [THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
-				-- # TODO: Replace skin with chain
-				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
+				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
 			},
 		},
 		description = "Variable-Length Ladder/Vine",
@@ -1326,6 +1366,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end},
 			},
 		},
 		description = "Yeti King",
@@ -1606,6 +1647,7 @@ HD_TILENAME = {
 				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_TEMPLE or ENT_TYPE.FLOORSTYLED_STONE), x, y, l, 0, 0) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,},
 				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
+				[THEME.TIAMAT] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
 			},
 		},
 		description = "Obstacle-Resistant Terrain",
@@ -1726,10 +1768,10 @@ HD_TILENAME = {
 				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,
 				function(x, y, l) return 0 end,
 			},
-			-- # TODO: spawn method for turret
 			alternate = {
-				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end,},
-				[THEME.CITY_OF_GOLD] = {function(x, y, l) return 0 end,}
+				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end,}, -- # TODO: spawn method for turret
+				[THEME.CITY_OF_GOLD] = {function(x, y, l) return 0 end,},
+				[THEME.TIAMAT] = {function(x, y, l) return 0 end,} -- bg columns
 			},
 		},
 		-- # TODO: Temple has bg pillar as an alternative
@@ -4595,11 +4637,6 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
 			end
 		end
 	end
-
-	--[[
-		Place BOTD setrooms(?)
-	--]]
-
 end
 
 HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
@@ -4874,6 +4911,157 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 	},
 }
 
+HD_ROOMOBJECT.WORLDS[THEME.TIAMAT] = {
+	rooms = {
+		[HD_SUBCHUNKID.YAMA_LEFTSIDE] = {
+			{"0000000000000070000000021207000000Q00120070000000021000000000Q000212000000000000"},
+			{"00000000000000070000007021200002100Q00000000000070000000001202120000Q00000000000"},
+			{"00000070000700001200010000L0000Q0020L000000000L000007000L020001200L0000000000000"},
+			{"00070000000021000070000L000010000L0200Q0000L000000020L000700000L0021000000000000"},
+			{"0000000000200000070000000001000010000L0000Q0020L001000000L0020007000000000100000"},
+			{"00000000000070000002001000000000L000010000L0200Q0000L000000700000700010000010000"},
+		},
+		[HD_SUBCHUNKID.YAMA_RIGHTSIDE] = {
+			{"0000000000000070000000021207000000Q00120070000000021000000000Q000212000000000000"},
+			{"00000000000000070000007021200002100Q00000000000070000000001202120000Q00000000000"},
+			{"00000070000700001200010000L0000Q0020L000000000L000007000L020001200L0000000000000"},
+			{"00070000000021000070000L000010000L0200Q0000L000000020L000700000L0021000000000000"},
+			{"0000000000200000070000000001000010000L0000Q0020L001000000L0020007000000000100000"},
+			{"00000000000070000002001000000000L000010000L0200Q0000L000000700000700010000010000"},
+		},
+	}
+}
+HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].setRooms = {
+	-- 1
+	{
+		prePath = true,
+		subchunk_id = HD_SUBCHUNKID.YAMA_TOP,
+		placement = {1, 1},
+		-- roomcodes = {{"0000Q000L000000000L0CCC00000L0hhhh00h0L0hhhh00h000hhhh00h000hhhh00h0000000000000"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_1_2,
+		placement = {1, 2},
+		-- roomcodes = {{"0L00L0L0000L00L0L0000L00L000000000L000000000L000000000000Y0000000000000000000000"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_1_3,
+		placement = {1, 3},
+		-- roomcodes = {{"000L0L00L0000L0L00L000000L00L000000L000000000L0000000000000000000000000000000000"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_TOP,
+		placement = {1, 4},
+		-- roomcodes = {{"0L000Q00000L000000000L00000CCC0L0h00hhhh000h00hhhh000h00hhhh000h00hhhh0000000000"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	
+	-- 2
+	{
+		prePath = true,
+		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
+		placement = {2, 1},
+		-- roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_2_2,
+		placement = {2, 2},
+		-- roomcodes = {{"0000000000000000000000000000000000000000000000Ihhh0000000hyy000000Ihyy0000000hyy"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_2_3,
+		placement = {2, 3},
+		-- roomcodes = {{"0000000000000000000000000000000000000000hhhI000000yyh0000000yyhI000000yyh0000000"}}
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
+		placement = {2, 4},
+		-- roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+
+	-- 3
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
+		placement = {3, 1},
+		-- roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_3_2,
+		placement = {3, 2},
+		-- roomcodes = {
+		-- 	{
+		-- 		"000000Ihyy0000200hyy000000Ihyy0000000hyy002000Ihyy0000000hyy000000Ihyy000200hhyy",
+		-- 		"000000Ihyy0000100hyy000020Ihyy0100000hyy020000Ihyy0000100hyy000020Ihyy000000hhyy"
+		-- 	}
+		-- }
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_3_3,
+		placement = {3, 3},
+		-- roomcodes = {
+		-- 	{
+		-- 	  "yyhI000000yyh0020000yyhI000000yyh0000000yyhI000200yyh0000000yyhI000000yyhh020000",
+		-- 	  "yyhI000000yyh0010000yyhI020000yyh0000010yyhI000020yyh0010000yyhI020000yyhh000000"
+		-- 	}
+		-- }
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
+		placement = {3, 4},
+		-- roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+
+	-- 4
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_1,
+		placement = {4, 1},
+		roomcodes = {{"00000000000000000000000000000000000X00000&00qqq000000qqqqqqq00000000000000000000"}}
+		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_ENTRANCE,
+		placement = {4, 2},
+		roomcodes = {{"000000000000000000000000000000000000000000000z0009qqqqqqqqqq00000000000000000000"}}
+		-- roomcodes = {{"000000000000000000000000000000000000000000000z0009qqqqqqqqqq00000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_3,
+		placement = {4, 3},
+		roomcodes = {{"00000000000000000000000000000000000000000000000000qqqqqqqqqq00000000000000000000"}}
+		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+	{
+		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_4,
+		placement = {4, 4},
+		roomcodes = {{"0000000000000000000000000000000000X00000000qqq00&0qqqqqqq00000000000000000000000"}}
+		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+	},
+}
+
+HD_ROOMOBJECT.WORLDS[THEME.TIAMAT].method = function()
+	levelw, _ = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	
+	exit_on_left = (math.random(2) == 2)
+	structx = (exit_on_left == true) and 1 or levelw
+
+	levelcode_inject_roomcode(HD_SUBCHUNKID.YAMA_EXIT,
+	{
+		exit_on_left == true and {"0000Q000L000000000L009000000L0hhhh00h0L0hhhh00h000hhhh00h000hhhh00h0000000000000"}
+		or {"0L000Q00000L000000000L000000900L0h00hhhh000h00hhhh000h00hhhh000h00hhhh0000000000"}
+	},
+	1, structx)
+end
 
 HD_COLLISIONTYPE = {
 	AIR_TILE_1 = 1,
@@ -5532,6 +5720,37 @@ end
 -- 	end
 -- end
 
+function create_ceiling_chain(x, y, l)
+	local ent_to_spawn_over = nil
+	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
+	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
+	
+	if (
+		ent_to_spawn_over ~= nil
+	) then
+		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
+	end
+end
+
+function create_ceiling_chain_growable(x, y, l)
+	local ent_to_spawn_over = nil
+	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
+	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
+	
+	local yi = y
+	while true do
+		if (
+			ent_to_spawn_over ~= nil
+		) then
+			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
+			yi = yi - 1
+			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)
+			floors_at_offset = TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
+			if #floors_at_offset > 0 then break end
+		else break end
+	end
+end
+
 function create_embedded(ent_toembedin, entity_type)
 	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
 		local entity_db = get_type(entity_type)
@@ -6131,6 +6350,7 @@ function exit_olmec()
 			(y > 95)
 		) then
 			state.win_state = 1
+			-- state.theme = THEME.TIAMAT
 			break
 		else
 			state.win_state = 0
@@ -6357,6 +6577,22 @@ set_pre_tile_code_callback(function(x, y, layer)
 	return true
 end, "shop_wall")
 
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l, 0, 0)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)
+
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l, 0, 0)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD_TOP)
+
+set_post_entity_spawn(function(entity)
+	entity:fix_decorations(true, true)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)
+
+set_post_entity_spawn(function(entity)
+	entity:fix_decorations(true, true)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD_TOP)
+
 -- set_pre_tile_code_callback(function(x, y, layer)
 	-- if state.theme == THEME.JUNGLE then
 		-- if detect_s2market() == true and layer == LAYER.FRONT and y < 88 then
@@ -6422,9 +6658,11 @@ set_post_tile_code_callback(function(x, y, layer)
 		
 		-- TEMPORARY: Remove floor to avoid telefragging the player.
 		
-		door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
-		for _, door_ents_uid in ipairs(door_ents_uids) do
-			kill_entity(door_ents_uid)
+		if detect_level_non_boss() == true then
+			door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
+			for _, door_ents_uid in ipairs(door_ents_uids) do
+				kill_entity(door_ents_uid)
+			end
 		end
 
 		-- message("post-door: " .. tostring(state.time_level))
@@ -6435,6 +6673,7 @@ set_post_tile_code_callback(function(x, y, layer)
 
 		spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, layer, 0, 0)
 
+		
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x, y-1, layer, 0, 0)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+1, y-1, layer, 0, 0)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+2, y-1, layer, 0, 0)
@@ -6703,7 +6942,7 @@ end
 
 set_callback(function(room_gen_ctx)
 	if state.screen == ON.LEVEL then
-		message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
+		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		init_posttile_onstart()
 		if options.hd_debug_scripted_levelgen_disable == false then
@@ -6712,10 +6951,16 @@ set_callback(function(room_gen_ctx)
 
 			onlevel_generation_execution_phase_one()
 			onlevel_generation_execution_phase_two()
+
+		end
 		
-			-- generation_removeborderfloor()
-
-
+		-- prevent dark levels
+		if (
+			HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+			or HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING
+			or state.theme == THEME.VOLCANA
+		) then
+			state.level_flags = clr_flag(state.level_flags, 18)
 		end
 
 	-- # TODO: Method to handle case-by-case spawn chances.
@@ -6750,9 +6995,11 @@ set_callback(function(room_gen_ctx)
 				local room_template_here = get_room_template(x, y, 0)
 
 				if options.hd_debug_scripted_levelgen_disable == false then
+
+					_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
+
 					if (
 						state.theme == THEME.OLMEC
-						-- or state.theme == THEME.TIAMAT
 					) then
 						if (x == 0 and y == 3) then
 							template_to_set = ROOM_TEMPLATE.ENTRANCE
@@ -6762,11 +7009,21 @@ set_callback(function(room_gen_ctx)
 							-- template_to_set = ROOM_TEMPLATE.PATH_NORMAL
 							template_to_set = room_template_here
 						end
+					elseif (
+						state.theme == THEME.TIAMAT
+					) then
+						if (_template_hd == HD_SUBCHUNKID.YAMA_ENTRANCE) then
+							template_to_set = ROOM_TEMPLATE.ENTRANCE
+						elseif (_template_hd == HD_SUBCHUNKID.YAMA_EXIT) then
+							template_to_set = ROOM_TEMPLATE.EXIT
+						else
+						-- 	-- template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+							template_to_set = room_template_here
+						end
 					else
 						--[[
 							Sync scripted level generation rooms with S2 generation rooms
 						--]]
-						_template_hd = global_levelassembly.modification.levelrooms[y+1][x+1]
 						
 						--LevelGenSystem variables
 						-- if (
@@ -6969,7 +7226,7 @@ set_callback(function()
 	
 	if (
 		options.hd_debug_scripted_levelgen_disable == false and
-		detect_level_non_boss()
+		state.theme ~= THEME.OLMEC-- detect_level_non_boss()
 	) then
 		for i = 1, #players, 1 do
 			move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)

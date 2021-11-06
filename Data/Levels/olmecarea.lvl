@@ -57,9 +57,11 @@
 \?olmec                            C
 \?ankh                             K
 \?pillar                           I
-\?stagnant_lava                    w
+\?coarse_lava                      w
 \?entrance                         !
 
+
+\+hd_procedural_pushblock        24
 
 
 ////////////////////////////////////////////////////////////////////////////////

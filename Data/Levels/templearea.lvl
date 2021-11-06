@@ -76,14 +76,8 @@
 \+cobra                 0                            // 60, 60, 60, 40
 \+crocman               0                            //80, 80, 60, 40
 \+critterlocust         0
-\+hd_procedural_caveman         0
-\+hd_procedural_hawkman         0
-\+hd_procedural_scorpionfly         0
-\+hd_procedural_scorpion         0
-\+hd_procedural_crushtrap         0
-\+hd_procedural_tikitrap         0
-\+hd_procedural_arrowtrap         0
-\+hd_procedural_pushblock         0
+
+\+hd_procedural_pushblock        24
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

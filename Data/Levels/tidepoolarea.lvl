@@ -85,44 +85,68 @@
 //  MONSTER CHANCES
 // ------------------------------
 
-\+hd_procedural_powderkeg           0
-\+hd_procedural_critter_rat          0
-\+hd_procedural_scorpion            0
-\+hd_procedural_hangspider          0
-\+hd_procedural_giantspider         0
-
-\+hd_procedural_critter_frog         0
-\+hd_procedural_frog         0
+\+hd_procedural_landmine         0
+\+hd_procedural_bouncetrap       0
+\+hd_procedural_caveman          0
+\+hd_procedural_scorpion         0
+\+hd_procedural_cobra            0
+\+hd_procedural_snake            0
+\+hd_procedural_mantrap          0
+\+hd_procedural_tikiman          0
+\+hd_procedural_snail            0
 \+hd_procedural_firefrog         0
-\+hd_procedural_giantfrog         0
-\+hd_procedural_piranha         0
-\+hd_procedural_snail         0
-\+hd_procedural_tikitrap         0
-
-\+hd_procedural_mammoth         0
-
-\+hd_procedural_bacterium         0
-\+hd_procedural_eggsac         0
-\+hd_procedural_skeleton         0
-
-\+hd_procedural_bat         0
-\+hd_procedural_monkey         0
-\+hd_procedural_caveman         0
-\+hd_procedural_mantrap         0
-
-\+hd_procedural_yeti         0
-\+hd_procedural_ufo         0
-
-\+hd_procedural_hawkman         0
-\+hd_procedural_scorpionfly         0
-\+hd_procedural_crushtrap         0
-\+hd_procedural_arrowtrap         0
-
+\+hd_procedural_frog             0
+\+hd_procedural_yeti             0
+\+hd_procedural_hawkman          0
+\+hd_procedural_crocman          0
+\+hd_procedural_scorpionfly      0
+\+hd_procedural_critter_rat      0
+\+hd_procedural_critter_frog     0
+\+hd_procedural_critter_maggot   0
+\+hd_procedural_critter_penguin  0
+\+hd_procedural_critter_locust   0
 \+hd_procedural_jiangshi         0
-\+hd_procedural_vampire         0
-\+hd_procedural_devil         0
-\+hd_procedural_spikeball         0
+\+hd_procedural_devil            0
+\+hd_procedural_hcastle_greenknight      0
+\+hd_procedural_alientank        0
 
+\+hd_procedural_critter_fish     0
+\+hd_procedural_piranha          0
+
+\+hd_procedural_monkey           0
+
+\+hd_procedural_hangspider       0
+\+hd_procedural_bat              0
+\+hd_procedural_spider           0
+\+hd_procedural_vampire          0
+\+hd_procedural_imp              0
+\+hd_procedural_scarab           0
+\+hd_procedural_mshiplight       0
+\+hd_procedural_dark_lantern          0
+\+hd_procedural_ufo_turret           0
+\+hd_procedural_mshipentrance_turret           0
+\+hd_procedural_webnest          0
+
+\+hd_procedural_pushblock        0
+\+hd_procedural_powderkeg        0
+\+hd_procedural_spikeball        0
+\+hd_procedural_arrowtrap        0
+\+hd_procedural_tikitrap         0
+\+hd_procedural_crushtrap        0
+\+hd_procedural_tombstone        0
+
+\+hd_procedural_giantfrog        0
+\+hd_procedural_mammoth          0
+
+\+hd_procedural_giantspider      0
+
+\+hd_procedural_hive_bee         0
+
+\+hd_procedural_ufo              0
+
+\+hd_procedural_bacterium        0
+
+\+hd_procedural_eggsac           0
 
 // ------------------------------
 //  TEMPLATES

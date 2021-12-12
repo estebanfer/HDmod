@@ -1,16 +1,15 @@
-
 \-size                                   4 4        // level size in rooms
 \-back_room_chance                       0          // % chance of a second room (default = 5%)
-\-back_room_interconnection_chance       0         // % chance of a second room interconnection (default = 20%)
-\-back_room_hidden_door_chance           0        // 1/N chance of a hidden door (default = 500)
-\-back_room_hidden_door_cache_chance     0       // 1/N chance of a hidden door to a cache (default = 1000)
+\-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
+\-back_room_hidden_door_chance           0          // 1/N chance of a hidden door (default = 500)
+\-back_room_hidden_door_cache_chance     0          // 1/N chance of a hidden door to a cache (default = 1000)
 \-mount_chance                           0          // 1/N chance of a mount (default = 5000)
-\-altar_room_chance                      0         // 1/N chance of an altar room (default = 14)
+\-altar_room_chance                      0          // 1/N chance of an altar room (default = 14)
 \-idol_room_chance                       0          // 1/N chance of an idol room (default = 10)
 \-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
 \-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 \-max_liquid_particles                   4000       // Maximum number of liquid drops that can be created until no more liquid rooms are allowed
-\-flagged_liquid_rooms                   16          // Number of random rooms that will be flagged for being eligible to spawn liquid
+\-flagged_liquid_rooms                   16         // Number of random rooms that will be flagged for being eligible to spawn liquid
 \-machine_bigroom_chance                 0          // 1/N chance of spawning a machine big room (default = 0)
 \-machine_wideroom_chance                0          // 1/N chance of spawning a machine wide room (default = 0)
 \-machine_tallroom_chance                0          // 1/N chance of spawning a machine tall room (default = 0)
@@ -76,16 +75,25 @@
 
 \%spike_ball_chance            0
 \%chain_blocks_chance          0
-\%pushblock_chance             0                           // Used both for powder kegs and push blocks
+\%pushblock_chance             0                            // Used both for powder kegs and push blocks
 \%leprechaun_chance            0                            // 1/n chance that a Leprechaun will spawn
 
 \+bat                   0
 \+imp                   0
-\+hd_procedural_jiangshi         0
-\+hd_procedural_vampire         0
-\+hd_procedural_devil         0
-\+hd_procedural_tikitrap         0
-\+hd_procedural_spikeball         0
+\+hd_procedural_bat 0
+\+hd_procedural_imp 0
+\+hd_procedural_jiangshi 0
+\+hd_procedural_vampire 0
+\+hd_procedural_devil   0
+\+hd_procedural_tikitrap 0
+\+hd_procedural_spikeball 0
+\+hd_procedural_yama_bat 0
+\+hd_procedural_yama_imp 0
+\+hd_procedural_yama_jiangshi 0
+\+hd_procedural_yama_vampire 0
+\+hd_procedural_yama_devil   0
+\+hd_procedural_yama_spikeball 0
+\+firebug               0                            // Still not preventing firebugs from spawning, odd
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -214,7 +222,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.idol   //  Idol room
+\.idol   // Idol room
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -228,7 +236,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player   //  Coffin room holding a dead player (both sides must be open)
+\.coffin_player   // Coffin room holding a dead player (both sides must be open)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -266,7 +274,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player_vertical   //  Coffin room holding a dead player (opened on all sides)
+\.coffin_player_vertical   // Coffin room holding a dead player (opened on all sides)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -291,7 +299,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_unlockable   //  Coffin room for unlockable characters (facing right, will flip for other side)
+\.coffin_unlockable   // Coffin room for unlockable characters (facing right, will flip for other side)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room

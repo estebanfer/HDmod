@@ -1,107 +1,84 @@
-// ------------------------------
-//  AREA SIX (BABYLON)
-// ------------------------------
+\-size                                   4 6        // level size in rooms
+\-back_room_chance                       0          // % chance of a second room (default = 5%)
+\-back_room_interconnection_chance       0          // % chance of a second room interconnection (default = 20%)
+\-back_room_hidden_door_chance           0          // 1/N chance of a hidden door (default = 500)
+\-back_room_hidden_door_cache_chance     0          // 1/N chance of a hidden door to a cache (default = 1000)
+\-mount_chance                           0          // 1/N chance of a mount (default = 5000)
+\-altar_room_chance                      0          // 1/N chance of an altar room (default = 14)
+\-idol_room_chance                       0          // 1/N chance of an idol room (default = 10)
+\-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
+\-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
+\-max_liquid_particles                   2000       // Maximum number of liquid drops that can be created until no more liquid rooms are allowed
+\-flagged_liquid_rooms                   6          // Number of random rooms that will be flagged for being eligible to spawn liquid
+\-machine_bigroom_chance                 0          // 1/N chance of spawning a machine big room (default = 0)
+\-machine_wideroom_chance                0          // 1/N chance of spawning a machine wide room (default = 0)
+\-machine_tallroom_chance                0          // 1/N chance of spawning a machine tall room (default = 0)
+\-machine_rewardroom_chance              0          // 1/N chance of spawning a machine reward room (default = 0)
+\-background_chance                      0          // COMMENT
+\-ground_background_chance               0          // COMMENT
 
-\-size 4 6									// level size in rooms
-\-back_room_chance 0						// % chance of a second room (default = 5%)
-\-back_room_interconnection_chance 0		// % chance of a second room interconnection (default = 20%)
-\-back_room_hidden_door_chance 0			// 1/N chance of a hidden door (default = 500)
-\-back_room_hidden_door_cache_chance 0	// 1/N chance of a hidden door to a cache (default = 1000)
-\-mount_chance 0							// 1/N chance of a mount (default = 5000)
-\-altar_room_chance 0						// 1/N chance of an altar room (default = 14)
-\-idol_room_chance 0						// 1/N chance of an idol room (default = 10)
-\-floor_side_spread_chance 0				// 1/N chance of a spreadable floor spreading to its side (default = 10)
-\-floor_bottom_spread_chance 0				// 1/N chance of a spreadable floor spreading to its bottom (default = 5)
-\-max_liquid_particles 2000					// Maximum number of liquid drops that can be created until no more liquid rooms are allowed
-\-flagged_liquid_rooms 6					// Number of random rooms that will be flagged for being eligible to spawn liquid
-\-machine_bigroom_chance 0					// 1/N chance of spawning a machine big room (default = 0)
-\-machine_wideroom_chance 0					// 1/N chance of spawning a machine wide room (default = 0)
-\-machine_tallroom_chance 0					// 1/N chance of spawning a machine tall room (default = 0)
-\-machine_rewardroom_chance 0				// 1/N chance of spawning a machine reward room (default = 0)
+\?locked_door                      /
+\?stone_floor                      +
+\?tomb_floor                       G
+\?cursed_pot                       u
+\?haunted_corpse                   7
+\?bone_block                       f
+\?shop_wall%50                     ;
+\?shop_woodwall                    :
+\?die                              %
+\?merchant                         #
+\?cavemanshopkeeper                &
+\?sleeping_hiredhand               \
+\?forcefield                       (
+\?chunk_ground                     5
+\?chunk_air                        6
+\?chunk_door                       8
+\?empty                            0
+\?floor                            1
+\?floor%50                         2
+\?babylon_floor                    =
+\?babylon_floor%50%floor           -
+\?floor_hard                       X
+\?floor_hard%50%floor              Y
+\?adjacent_floor                   Z
+\?ladder                           L
+\?ladder_plat                      P
+\?door                             9
+\?door2                            D
+\?push_block                       4
+\?laser_trap                       ^
+\?spark_trap                       A
+\?timed_forcefield                 )
+\?forcefield_top                   '
+\?elevator                         V
+\?zoo_exhibit                      z
+\?treasure                         t
+\?litwalltorch                     O
+\?mushroom_base                    T
+\?lamassu                          U
+\?altar                            x
+\?idol                             I
+\?idol_floor                       i
+\?vault_wall                       |
+\?coffin                           g
+\?shop_sign                        K
+\?shop_door                        k
+\?lamp_hang                        l
+\?shop_wall                        .
+\?shop_item                        S
+\?wanted_poster                    W
+\?shopkeeper                       $
+\?thief                            J
+\?lava                             w
+\?lava%50%floor                    a
 
-// ------------------------------
-//  TILE CODES
-// ------------------------------
+\%lasertrap_chance             0                            // 35, 35, 25, 25
+\%sparktrap_chance             0                            // 35, 35, 25, 25
 
-\?chunk_ground				5
-\?chunk_air					6
-\?chunk_door				8 	// Chunk with entrance or exit in it
-	
-\?empty						0
-\?floor						1
-\?floor%50					2	// 50% chance of floor, 50% chance of empty
-\?babylon_floor				=
-\?babylon_floor%50%floor	-
-\?floor_hard				X	// Indestructible ("hard") floor
-\?floor_hard%50%floor		Y	// 50% chance of hard floor, 50% chance of regular floor
-\?adjacent_floor			Z	// Hard floor or empty depending on whether this leads to another second layer room
-\?ladder					L
-\?ladder_plat				P	// Ladder with platform across it
-\?door						9	// Exit or entrance
-\?door2						D	// Door to other Layer
-\?push_block				4
-\?laser_trap				^
-\?spark_trap				A
-\?forcefield				(
-\?timed_forcefield			)
-\?forcefield_top			'
-\?elevator					V
-\?zoo_exhibit				z
-
-\?treasure					t	// Gold (30%), gem (30%), treasure chest (20%), crate (10%), bones/pot (5%), or nothing (5%)
-\?litwalltorch				O
-\?mushroom_base				T
-
-\?lamassu					U
-//\?olmite					?
-//\?empty_mech				?
-
-\?altar						x	// Each side of the altar
-\?idol						I	// Idol statue
-\?idol_floor				i	// Idol block
-\?vault_wall				|	// Vault wall
-\?coffin					g	// Character coffin (NPC/Player)
-	
-\?shop_sign					K
-\?shop_door					k
-\?lamp_hang					l
-\?shop_wall					.
-\?shop_item					S
-\?wanted_poster				W
-\?shopkeeper				$	// Shopkeeper and items
-
-\?thief						J
-
-\?lava						w
-\?lava%50%floor				a	// 50% chance of lava, %50 chance of floor
-
-// ------------------------------
-//  LEVEL CHANCES
-// ------------------------------
-
-\%lasertrap_chance 			0 //35, 35, 25, 25
-\%sparktrap_chance 			0 //35, 35, 25, 25
-
-// ------------------------------
-//  MONSTER CHANCES
-// ------------------------------
-
-\+ufo				0
-\+hd_procedural_alientank  0
-\+hd_procedural_light  0
+\+ufo                   0
+\+hd_procedural_alientank 0
+\+hd_procedural_light   0
 \+hd_procedural_turret  0
-
-// ------------------------------
-//  TEMPLATES
-// ------------------------------
-//
-//  !ignore		Ignore the following template. This is to make building rooms easier.
-//  !flip		Flip the following template to make another. i.e. The following template = two templates.
-//  !onlyflip	Flip the following template (original is ignored)
-//  !dual		The next template contains both a frontal and back room
-//  !rare		The next template is rare (only 5% chance of a rare template being used).
-//  !hard		The next template is hard (only appear in the second two levels of the area).
-//  !liquid		The next template contains liquid (used to limit the number of liquid drops)
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -230,7 +207,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.idol				// Idol room
+\.idol   // Idol room
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -244,7 +221,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player		// Coffin room holding a dead player (both sides must be open)
+\.coffin_player   // Coffin room holding a dead player (both sides must be open)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -258,7 +235,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_player_vertical	// Coffin room holding a dead player (opened on all sides)
+\.coffin_player_vertical   // Coffin room holding a dead player (opened on all sides)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -272,7 +249,7 @@
 0000000000
 
 ////////////////////////////////////////////////////////////////////////////////
-\.coffin_unlockable		// Coffin room for unlockable characters (facing right, will flip for other side)
+\.coffin_unlockable   // Coffin room for unlockable characters (facing right, will flip for other side)
 ////////////////////////////////////////////////////////////////////////////////
 
 // room
@@ -289,6 +266,7 @@
 \.machine_bigroom_path
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 \!dual
 11111111111111111111 11111111111111111111
@@ -308,6 +286,7 @@
 10000000000000000001 10000000000000000001
 11111111111111111111 11111111111111111111
 
+// room
 \!flip
 =0000='=0000======00
 =0000=0=000000000=0=
@@ -330,6 +309,7 @@
 \.machine_bigroom_side
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 11111111111111111111
 10000000000000000001
@@ -348,6 +328,7 @@
 10000000000000000001
 11111111111111111111
 
+// room
 \!flip
 =0000='===========0=
 =0000=0=00000000000=
@@ -370,6 +351,7 @@
 \.machine_tallroom_path
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 \!dual
 1111111111 1111111111
@@ -389,6 +371,7 @@
 0000000000 0000000000
 1111111111 1111111111
 
+// room
 \!ignore
 1111111111
 0000000000
@@ -407,6 +390,7 @@
 0000000000
 1111111111
 
+// room
 =00000000=
 =00=00=00=
 ==0====0==
@@ -428,6 +412,7 @@
 \.machine_tallroom_side
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!ignore
 \!dual
 1111111111 1111111111
@@ -447,6 +432,7 @@
 0000000000 0000000000
 1111111111 1111111111
 
+// room
 =00000000=
 =00=00=00=
 ==0====0==
@@ -464,6 +450,7 @@
 00=(00(=00
 =V==VV==V=
 
+// room
 \!liquid
 =00000000=
 =00=00=00=
@@ -486,6 +473,7 @@
 \.quest_thief2
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!dual
 0000000000 1111=111=1
 0000000000 1200000===
@@ -500,16 +488,19 @@
 \.chunk_door
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 \!flip
 009000
 0====0
 ======
 
+// room
 \!flip
 000000
 0000=0
 0900=0
 
+// room
 \!flip
 0=0000
 0=0900
@@ -519,38 +510,46 @@
 \.chunk_ground
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 00000
 00000
 00000
 
+// room
 \!ignore
 =====
 =0000
 00000
 
+// room
 \!flip
 =V===
 =0000
 00000
 
+// room
 00000
 00=00
 00=00
 
+// room
 00=00
 00=00
 00000
 
+// room
 \!flip
 00000
 =0000
 =0000
 
+// room
 \!flip
 00000
 0=00=
 0=00=
 
+// room
 00000
 =====
 =====
@@ -559,47 +558,57 @@
 \.chunk_air
 ////////////////////////////////////////////////////////////////////////////////
 
+// room
 00000
 00000
 00000
 
+// room
 \!flip
 =0000
 =0000
 =====
 
+// room
 \!flip
 =====
 =0000
 =0000
 
+// room
 \!flip
 ===00
 ===00
 ===00
 
+// room
 \!flip
 ==000
 ==000
 ==000
 
+// room
 \!flip
 =0000
 =0000
 =0000
 
+// room
 0===0
 0===0
 00000
 
+// room
 =000=
 =000=
 =====
 
+// room
 =====
 =000=
 =000=
 
+// room
 \!flip
 =====
 =000=

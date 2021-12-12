@@ -76,9 +76,8 @@
 \+spider                0                            // 80, 60, 60, 40
 \+cobra                 0                            // 130, 130, 100, 100
 \+caveman               0                            // COMMENT
-
-\+hd_procedural_pushblock        32
-\+hd_procedural_powderkeg        17, 16, 15, 14
+\+hd_procedural_pushblock 32
+\+hd_procedural_powderkeg 17, 16, 15, 14
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -272,7 +271,7 @@
 1111111111
 
 // new room
-(000000000
+0000000000
 0000000000
 0000000000
 0000000000

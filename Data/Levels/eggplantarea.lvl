@@ -9,7 +9,7 @@
 \-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
 \-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 \-max_liquid_particles                   6000       // Maximum number of liquid drops that can be created until no more liquid rooms are allowed
-\-flagged_liquid_rooms                   24          // Number of random rooms that will be flagged for being eligible to spawn liquid
+\-flagged_liquid_rooms                   24         // Number of random rooms that will be flagged for being eligible to spawn liquid
 
 \?ladder                           L
 \?ladder_plat                      P
@@ -71,21 +71,19 @@
 \?regenerating_block%50            <
 \?regenerating_block%50%guts_floor >
 
-\+hd_procedural_bacterium         0
-\+hd_procedural_eggsac         0
-\+hd_procedural_skeleton         0
 
-\+hd_procedural_bat         0
-\+hd_procedural_monkey         0
-\+hd_procedural_caveman         0
-\+hd_procedural_frog         0
-\+hd_procedural_firefrog         0
-\+hd_procedural_mantrap         0
-\+hd_procedural_snail         0
-
-\+hd_procedural_yeti         0
-\+hd_procedural_ufo         0
-
+\+hd_procedural_bacterium 0
+\+hd_procedural_eggsac  0
+\+hd_procedural_skeleton 0
+\+hd_procedural_bat     0
+\+hd_procedural_monkey  0
+\+hd_procedural_caveman 0
+\+hd_procedural_frog    0
+\+hd_procedural_firefrog 0
+\+hd_procedural_mantrap 0
+\+hd_procedural_snail   0
+\+hd_procedural_yeti    0
+\+hd_procedural_ufo     0
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -97,7 +95,7 @@
 0000000000
 0000000000
 0000000000
-00009Y0000
+0000900000
 0000000000
 0000000000
 
@@ -111,7 +109,7 @@
 0000000000
 0000000000
 0000000000
-00009Y0000
+0000900000
 0000000000
 0000000000
 

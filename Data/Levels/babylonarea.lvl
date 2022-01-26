@@ -75,10 +75,11 @@
 \%lasertrap_chance             0                            // 35, 35, 25, 25
 \%sparktrap_chance             0                            // 35, 35, 25, 25
 
-\+ufo                   0
-\+hd_procedural_alientank 0
-\+hd_procedural_light   0
-\+hd_procedural_turret  0
+\+hd_procedural_ufo              30
+\+hd_procedural_alientank        20
+\+hd_procedural_turret           40
+\+hd_procedural_mshiplight       45
+\+hd_procedural_bouncetrap       15
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

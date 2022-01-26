@@ -78,22 +78,20 @@
 \%pushblock_chance             0                            // Used both for powder kegs and push blocks
 \%leprechaun_chance            0                            // 1/n chance that a Leprechaun will spawn
 
-\+bat                   0
-\+imp                   0
-\+hd_procedural_bat 0
-\+hd_procedural_imp 0
-\+hd_procedural_jiangshi 0
-\+hd_procedural_vampire 0
-\+hd_procedural_devil   0
-\+hd_procedural_tikitrap 0
-\+hd_procedural_spikeball 0
-\+hd_procedural_yama_bat 0
-\+hd_procedural_yama_imp 0
-\+hd_procedural_yama_jiangshi 0
-\+hd_procedural_yama_vampire 0
-\+hd_procedural_yama_devil   0
-\+hd_procedural_yama_spikeball 0
-\+firebug               0                            // Still not preventing firebugs from spawning, odd
+\+hd_procedural_bat                35, 35, 35, 35
+\+hd_procedural_imp                45, 45, 45, 45
+\+hd_procedural_jiangshi           40, 40, 20, 20
+\+hd_procedural_vampire            30, 30, 30, 10
+\+hd_procedural_devil              40, 40, 40, 40
+\+hd_procedural_tikitrap           8, 8, 5, 0
+\+hd_procedural_spikeball          32, 32, 24, 32
+
+\+hd_procedural_yama_bat           35
+\+hd_procedural_yama_imp           45
+\+hd_procedural_yama_jiangshi      20
+\+hd_procedural_yama_vampire       10
+\+hd_procedural_yama_devil         40
+\+hd_procedural_yama_spikeball     32
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

@@ -65,21 +65,29 @@
 \?wanted_poster                    W
 \?shopkeeper                       $
 \?ghist_shopkeeper                 #
-\?ghist_door2                      k
+\?shop_door                        k
 \?autowalltorch                    A
 
-\%arrowtrap_chance             0
-\%totemtrap_chance             0
-\%pushblock_chance             0
 
-\+snake                 0
-\+bat                   0
-\+caveman               0
-\+spider                0
-\+hornedlizard          0
-\+critterdungbeetle     0
+\+hd_procedural_arrowtrap                   25, 25, 35, 35//levelfeeling-persistant
+\+hd_procedural_giantspider                 0, 160, 120, 120//Bool prevents spawning more than 1
+\+hd_procedural_hangspider                  0, 65, 40, 40
+\+hd_procedural_bat                         60, 60, 40, 30
+\+hd_procedural_spider                      60, 60, 40, 40
+\+hd_procedural_caveman                     0, 0, 400, 200
+\+hd_procedural_scorpion                    0, 0, 200, 180
+\+hd_procedural_cobra                       0, 0, 120, 70
+\+hd_procedural_snake                       80, 80, 40, 40
+\+hd_procedural_critter_rat                 200, 200, 160, 160
+\+hd_procedural_pushblock                   32
+\+hd_procedural_powderkeg                   17, 16, 15, 14
 
+\+hd_procedural_spiderlair_hangspider       15
+\+hd_procedural_spiderlair_spider           10
+\+hd_procedural_spiderlair_webnest          40
+\+hd_procedural_spiderlair_ground_enemy     3
 
+\+hd_procedural_dark_lantern                100
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

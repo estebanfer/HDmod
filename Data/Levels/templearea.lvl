@@ -78,6 +78,16 @@
 \+critterlocust         0
 
 \+hd_procedural_pushblock        24
+\+hd_procedural_tikitrap         10, 8, 5, 0
+\+hd_procedural_crushtrap        35, 35, 40, 0
+\+hd_procedural_arrowtrap        15, 15, 25, 0
+\+hd_procedural_hawkman          80, 80, 60, 0
+\+hd_procedural_caveman          60, 60, 40, 0
+\+hd_procedural_crocman          200, 200, 80, 0
+\+hd_procedural_cobra            300, 300, 200, 0
+\+hd_procedural_scorpion         100, 100, 80, 0
+\+hd_procedural_scorpionfly      120, 120, 100, 0
+\+hd_procedural_critter_locust   40
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance

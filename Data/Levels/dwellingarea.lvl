@@ -71,14 +71,26 @@
 \%arrowtrap_chance             0                            // 35, 35, 25, 25
 \%pushblock_chance             0                            // 25
 
-\+snake                 0                            // 40, 45, 50, 50
-\+bat                   0                            // 70
-\+spider                0                            // 80, 60, 60, 40
-\+cobra                 0                            // 130, 130, 100, 100
-\+caveman               0                            // COMMENT
 
-\+hd_procedural_pushblock        32
-\+hd_procedural_powderkeg        17, 16, 15, 14
+\+hd_procedural_arrowtrap                   25, 25, 35, 35//levelfeeling-persistant
+\+hd_procedural_giantspider                 0, 160, 120, 120//Bool prevents spawning more than 1
+\+hd_procedural_hangspider                  0, 65, 40, 40
+\+hd_procedural_bat                         60, 60, 40, 30
+\+hd_procedural_spider                      60, 60, 40, 40
+\+hd_procedural_caveman                     0, 0, 400, 200
+\+hd_procedural_scorpion                    0, 0, 200, 180
+\+hd_procedural_cobra                       0, 0, 120, 70
+\+hd_procedural_snake                       80, 80, 40, 40
+\+hd_procedural_critter_rat                 200, 200, 160, 160
+\+hd_procedural_pushblock                   32
+\+hd_procedural_powderkeg                   17, 16, 15, 14
+
+\+hd_procedural_spiderlair_hangspider       15
+\+hd_procedural_spiderlair_spider           10
+\+hd_procedural_spiderlair_webnest          40
+\+hd_procedural_spiderlair_ground_enemy     3
+
+\+hd_procedural_dark_lantern                100
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
@@ -272,7 +284,7 @@
 1111111111
 
 // new room
-(000000000
+0000000000
 0000000000
 0000000000
 0000000000

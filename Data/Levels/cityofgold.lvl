@@ -63,9 +63,13 @@
 
 \%crusher_trap_chance          0
 
-\+crocman               0
-\+leprechaun            0
-\+critterlocust         0
+\+hd_procedural_tikitrap         5
+\+hd_procedural_crushtrap        40
+\+hd_procedural_arrowtrap        25
+\+hd_procedural_hawkman          60
+\+hd_procedural_caveman          40
+\+hd_procedural_scorpionfly      40
+\+hd_procedural_critter_locust   40
 
 \+hd_procedural_pushblock        24
 

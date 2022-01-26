@@ -6230,7 +6230,7 @@ function init_posttile_onstart()
 		TONGUE_SPAWNED = false
 		-- other stuff
 	end
-	message("TONGUE_SPAWNED: " .. tostring(TONGUE_SPAWNED))
+	-- message("TONGUE_SPAWNED: " .. tostring(TONGUE_SPAWNED))
 end
 
 function init_onlevel()
@@ -6708,7 +6708,7 @@ function create_idol_crystalskull(x, y, l)
 end
 
 function create_wormtongue(x, y, l)
-	message("created wormtongue:")
+	-- message("created wormtongue:")
 	set_interval(tongue_idle, 15)
 	set_interval(onframe_tonguetimeout, 1)
 	-- currently using level generation to place stickytraps
@@ -9252,10 +9252,10 @@ function set_run_unlock()
 		-- end
 	end
 	
-	-- debug message
-	if RUN_UNLOCK ~= nil then
-		message("RUN_UNLOCK: " .. RUN_UNLOCK)
-	end
+	-- -- debug message
+	-- if RUN_UNLOCK ~= nil then
+	-- 	message("RUN_UNLOCK: " .. RUN_UNLOCK)
+	-- end
 	return unlock
 end
 
@@ -12049,9 +12049,9 @@ function gen_levelcode_phase_1(rowfive)
 			offsety = check_feeling_content
 		end
 	end
-	if rowfive == true then
-		message("rowfive y location: " .. tostring(_sy + offsety))
-	end
+	-- if rowfive == true then
+	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
+	-- end
 
 	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
 	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
@@ -12231,9 +12231,9 @@ function gen_levelcode_phase_3(rowfive)
 			offsety = check_feeling_content
 		end
 	end
-	if rowfive == true then
-		message("rowfive y location: " .. tostring(_sy + offsety))
-	end
+	-- if rowfive == true then
+	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
+	-- end
 
 	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
 	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
@@ -12331,9 +12331,9 @@ function gen_levelcode_phase_4(rowfive)
 			offsety = check_feeling_content
 		end
 	end
-	if rowfive == true then
-		message("rowfive y location: " .. tostring(_sy + offsety))
-	end
+	-- if rowfive == true then
+	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
+	-- end
 
 	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
 	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w

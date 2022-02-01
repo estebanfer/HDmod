@@ -44,6 +44,8 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 
 bool_to_number={ [true]=1, [false]=0 }
 
+DEMO_MAX_WORLD = 1
+DEMO_TUTORIAL_AVAILABLE = false
 
 function teleport_mount(ent, x, y)
     if ent.overlay ~= nil then
@@ -1423,7 +1425,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
-						embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 43)
+						embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 41)
 					end
 				},
 			}
@@ -2070,7 +2072,10 @@ HD_TILENAME = {
 					spawn_entity(ENT_TYPE.ITEM_VAULTCHEST, x+2, y-2, l, 0, 0)
 					local shopkeeper_uid = spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l, 0, 0)
 					local shopkeeper = get_entity(shopkeeper_uid)
-					pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+					
+					if state.shoppie_aggro_next <= 0 then
+						pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+					end
 					shopkeeper.is_patrolling = true
 					shopkeeper.move_state = 9
 				end
@@ -6556,7 +6561,12 @@ function create_door_testing(x, y, l)
 end
 
 function create_door_tutorial(x, y, l)
-	DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
+	if DEMO_TUTORIAL_AVAILABLE == true then
+		DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
+	else
+		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
+		construction_sign:set_draw_depth(40)
+	end
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 end
@@ -7309,12 +7319,13 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
 
 set_pre_tile_code_callback(function(x, y, layer)
-	oncamp_tunnelman_spawn()
+	oncamp_tunnelman_spawn(x, y, layer)
 	return true
 end, "hd_tunnelman")
 
 set_post_tile_code_callback(function(x, y, layer)
-	oncamp_shortcuts()
+	oncamp_shortcuts(x, y, layer)
+	oncamp_fixes()
 	return true
 end, "hd_shortcuts")
 
@@ -7546,6 +7557,14 @@ local function detect_empty_nodoor(x, y, l)
 	)
 end
 
+local function detect_shop_room_template(x, y, l) -- is this position inside an entrance room?
+	local rx, ry = get_room_index(x, y)
+	return (
+		get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP
+		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP_LEFT
+	)
+end
+
 local function detect_entrance_room_template(x, y, l) -- is this position inside an entrance room?
 	local rx, ry = get_room_index(x, y)
 	return (
@@ -7686,7 +7705,10 @@ local function is_valid_damsel_spawn(x, y, l)
 				test_flag(get_entity_flags(entity_uid), ENT_FLAG.IS_PLATFORM) == false
 				and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
 			)
-            if (entity_left == true or entity_right == true) then
+            if (
+				(entity_left == true or entity_right == true)		
+				and detect_shop_room_template(x, y, l) == false
+			) then
 				return true
 			end
         end
@@ -8892,8 +8914,10 @@ set_callback(function()
 
 	state.camera.bounds_top = 93.9
 	state.camera.bounds_bottom = 82.7
-	state.camera.bounds_left = 12.5
+	state.camera.bounds_left = 8.5--12.5
 	state.camera.bounds_right = 51.5
+	-- state.camera.focus_x = 41.75
+	-- state.camera.focus_y = 88.25
 
 end, ON.CAMP)
 
@@ -10064,14 +10088,31 @@ function onlevel_toastfeeling()
 	end
 end
 
-function oncamp_tunnelman_spawn()
-	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, 15, 86, LAYER.FRONT, 0, 0)
+set_callback(function(text)
+    if (
+		text == "Your voice echoes in here..."
+		or text == "You hear the beating of drums..."
+		or text == "You hear the sounds of revelry!"
+		or text == "You feel strangely at peace."
+	) then -- this will only work when chosen language is English, unless you add all variants for all languages
+        text = "" -- message won't be shown
+	elseif (
+		text == "Shortcut Station: Coming Soon! -Mama Tunnel"
+		or text == "New shortcut coming soon! -Mama Tunnel"
+	) then
+		text = "Feature in development! -Super Ninja Fat"
+    end
+	return text
+end, ON.TOAST)
+
+function oncamp_tunnelman_spawn(x, y, l)
+	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
 	marla = get_entity(marla_uid)
 	marla.flags = clr_flag(marla.flags, ENT_FLAG.FACING_LEFT)
 	return marla_uid
 end
 
-function oncamp_shortcuts()
+function oncamp_shortcuts(x, y, l)
 
 	--loop once for door materials,
 	--once done, concatonate LOGIC_DOOR and ITEM_CONSTRUCTION_SIGN lists, make sure construction signs are last.
@@ -10084,42 +10125,53 @@ function oncamp_shortcuts()
 	--(+2.0 to x)
 	
 	-- shortcut_signframes = {}
-	shortcut_flagstocheck = {4, 7, 10}
-	shortcut_worlds = {2, 3, 4}
-	shortcut_levels = {1, 1, 1}
-	shortcut_themes = {THEME.JUNGLE, THEME.ICE_CAVES, THEME.TEMPLE}
-	shortcut_doortextures = {
+	local shortcut_flagstocheck = {4, 7, 10}
+	local shortcut_worlds = {2, 3, 4}
+	local shortcut_levels = {1, 1, 1}
+	local shortcut_themes = {THEME.JUNGLE, THEME.ICE_CAVES, THEME.TEMPLE}
+	local shortcut_doortextures = {
 		TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1,
 		TEXTURE.DATA_TEXTURES_FLOOR_ICE_1,
 		TEXTURE.DATA_TEXTURES_FLOOR_TEMPLE_1
 	}
 	
-	-- Placement of first shortcut door in HD: 16.0
-	new_x = 19.0 -- adjusted for S2 camera
+	-- hd-accurate x-placement of first shortcut door: 16
+	-- pre-camera fix x-placement of first shortcut door: 19
+	local new_x = x
+	local shortcut_available = false
 	for i, flagtocheck in ipairs(shortcut_flagstocheck) do
-		-- door_or_constructionsign
-		if savegame.shortcuts >= flagtocheck then
-			spawn_door(new_x, 86, LAYER.FRONT, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])
-			-- spawn_entity(ENT_TYPE.FLOOR_DOOR_STARTING_EXIT, new_x, 86, 0, 0)
-
-			door_bg = spawn_entity(ENT_TYPE.BG_DOOR, new_x, 86.31, LAYER.FRONT, 0, 0)
-			get_entity(door_bg):set_texture(shortcut_doortextures[i])
-			get_entity(door_bg).animation_frame = 1
-			
-			sign = get_entity(spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, 86-0.5, LAYER.FRONT, 0, 0))
-			local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_1)
-			texture_def.texture_path = "res/deco_basecamp_shortcut_signs.png"
-			sign:set_texture(define_texture(texture_def))
-			sign.animation_frame = sign.animation_frame + (i-1)
+		if (
+			shortcut_worlds[i] <= DEMO_MAX_WORLD
+			-- and savegame.shortcuts >= flagtocheck
+		) then
+			spawn_door(new_x, y, l, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])
 		else
-			spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, 86, LAYER.FRONT, 0, 0)
+			local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, y, l, 0, 0))
+			construction_sign:set_draw_depth(40)
 		end
-		-- Space between shortcut doors in HD: 4.0
-		new_x = new_x + 3 -- adjusted for S2 camera
-	end
+		
+		local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, new_x, y+.31, l, 0, 0)
+		get_entity(door_bg):set_texture(shortcut_doortextures[i])
+		get_entity(door_bg).animation_frame = 1
 
+		-- local sign = get_entity(spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, y-0.5, LAYER.FRONT, 0, 0))
+		-- local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_1)
+		-- texture_def.texture_path = "res/deco_basecamp_shortcut_signs.png"
+		-- sign:set_texture(define_texture(texture_def))
+		-- sign.animation_frame = sign.animation_frame + (i-1)
+
+		-- hd-accurate space between shortcut doors: 4
+		-- pre-camera fix space between shortcut doors: 3
+		new_x = new_x + 4
+	end
+end
+
+function oncamp_fixes()
 	-- fix gap in floor where S2 shortcut would normally spawn
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
+
+	-- add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
+	
 end
 
 function idol_disturbance()

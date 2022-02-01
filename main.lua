@@ -2121,14 +2121,16 @@ HD_ROOMOBJECT.GENERIC = {
 	[HD_SUBCHUNKID.SHOP_PRIZE] = {
 		--{"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb"} -- original
 		-- {"11111111111111..1111....22...1.0l00002....0000W0.0.0000000k0.000000000bb0bbbbbbb"} -- S2 sync
-		{"11111111111111001111000022000000l0000200000000W00000000000000000000000bb0bbbbbbb"} -- S2 sync without sign block
+		-- {"11111111111111001111000022000000l0000200000000W00000000000000000000000bb0bbbbbbb"} -- S2 sync without sign block (sync1) use this
 		-- {"11111111111111001111000022000100l0000200000000W00000000000k00000000000bb0bbbbbbb"} -- S2 sync
+		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
 	},
 	[HD_SUBCHUNKID.SHOP_PRIZE_LEFT] = {
 		--{"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"} -- original
 		-- {"11111111111111..11111...22......20000l0.0.W00000..0k0000000.000000000.bbbbbbb0bb"} -- S2 sync
-		{"1111111111111100111100002200000020000l0000W000000000000000000000000000bbbbbbb0bb"} -- S2 sync without sign block
+		-- {"1111111111111100111100002200000020000l0000W000000000000000000000000000bbbbbbb0bb"} -- S2 sync without sign block (sync1) use this
 		-- {"1111111111111100111110002200000020000l0000W00000000k000000000000000000bbbbbbb0bb"} -- S2 sync
+		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
 	},
 	-- Damzel
 	[HD_SUBCHUNKID.SHOP_BROTHEL] = {
@@ -6319,7 +6321,7 @@ function embed_item(enum, uid, frame)
 	local entity = get_entity(spawn_entity_over(ENT_TYPE.ITEM_ALIVE_EMBEDDED_ON_ICE, uid, 0, 0))
 	entity.inside = enum
 	entity.animation_frame = frame
-	-- entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
 	return 0;
 end
 
@@ -7544,6 +7546,14 @@ local function detect_empty_nodoor(x, y, l)
 	)
 end
 
+local function detect_entrance_room_template(x, y, l) -- is this position inside an entrance room?
+	local rx, ry = get_room_index(x, y)
+	return (
+		get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE
+		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE_DROP
+	)
+end
+
 local function detect_solid_nonshop_nontree(x, y, l)
     local entity_here = get_grid_entity_at(x, y, l)
 	if entity_here ~= -1 then
@@ -7575,6 +7585,55 @@ local function remove_damsel_spawn_item(x, y, l)
 	if #entity_uids ~= 0 then
 		move_entity(entity_uids[1], 1000, 0, 0, 0)
 	end
+end
+
+local function remove_floor_and_embedded_at(x, y, l)
+    local floor = get_grid_entity_at(x, y, l)
+    if floor ~= -1 then
+		local entity_uids = get_entities_at({
+			ENT_TYPE.EMBED_GOLD,
+			ENT_TYPE.EMBED_GOLD_BIG,
+			ENT_TYPE.ITEM_RUBY,
+			ENT_TYPE.ITEM_SAPPHIRE,
+			ENT_TYPE.ITEM_EMERALD,
+
+			ENT_TYPE.ITEM_ALIVE_EMBEDDED_ON_ICE,
+			ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+			ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+			ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+			ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+			ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+			ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+			ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+			ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+			ENT_TYPE.ITEM_PICKUP_PASTE,
+			ENT_TYPE.ITEM_PICKUP_COMPASS,
+			ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+			ENT_TYPE.ITEM_CAPE,
+			ENT_TYPE.ITEM_JETPACK,
+			ENT_TYPE.ITEM_TELEPORTER_BACKPACK,
+			ENT_TYPE.ITEM_HOVERPACK,
+			ENT_TYPE.ITEM_POWERPACK,
+			ENT_TYPE.ITEM_WEBGUN,
+			ENT_TYPE.ITEM_SHOTGUN,
+			ENT_TYPE.ITEM_FREEZERAY,
+			ENT_TYPE.ITEM_CROSSBOW,
+			ENT_TYPE.ITEM_CAMERA,
+			ENT_TYPE.ITEM_TELEPORTER,
+			ENT_TYPE.ITEM_MATTOCK,
+			ENT_TYPE.ITEM_BOOMERANG,
+			ENT_TYPE.ITEM_MACHETE
+		}, 0, x, y, l, 0.5)
+		if #entity_uids ~= 0 then
+			local entity = get_entity(entity_uids[1])
+			entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+			entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
+			move_entity(entity.uid, 1000, 0, 0, 0)
+			entity:destroy()
+		end
+        -- get_entity(floor):destroy()
+		kill_entity(floor)
+    end
 end
 
 -- Only spawn in a space that has floor above, below, and at least one left or right of it
@@ -7651,6 +7710,7 @@ local function is_valid_anubis_spawn(x, y, l)
 	)
 	return (
 		#entity_uids == 0
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end
 
@@ -7776,6 +7836,7 @@ local function is_valid_caveman_spawn(x, y, l)
 		run_spiderlair_ground_enemy_chance()
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid caveman spawn
 local global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", create_caveman, is_valid_caveman_spawn)
@@ -7786,6 +7847,7 @@ local function is_valid_scorpion_spawn(x, y, l)
 		run_spiderlair_ground_enemy_chance()
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid scorpion spawn
 local global_spawn_procedural_scorpion = define_procedural_spawn("hd_procedural_scorpion", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l) end, is_valid_scorpion_spawn)
@@ -7793,6 +7855,7 @@ local global_spawn_procedural_scorpion = define_procedural_spawn("hd_procedural_
 local function is_valid_cobra_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
+		and detect_entrance_room_template(x, y, l) == false
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
 	)
@@ -7802,6 +7865,7 @@ local global_spawn_procedural_cobra = define_procedural_spawn("hd_procedural_cob
 local function is_valid_snake_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
+		and detect_entrance_room_template(x, y, l) == false
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
 	)
@@ -7812,6 +7876,7 @@ local function create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, 
 local function is_valid_mantrap_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
+		and detect_entrance_room_template(x, y, l) == false
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
 	)
@@ -7825,6 +7890,7 @@ local function is_valid_tikiman_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid tikiman spawn
 local global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", create_tikiman, is_valid_tikiman_spawn)
@@ -7835,6 +7901,7 @@ local function is_valid_snail_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid snail spawn
 local global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", create_snail, is_valid_snail_spawn)
@@ -7846,6 +7913,7 @@ local function is_valid_firefrog_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid firefrog spawn
 local global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", create_firefrog, is_valid_firefrog_spawn)
@@ -7857,6 +7925,7 @@ local function is_valid_frog_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid frog spawn
 local global_spawn_procedural_frog = define_procedural_spawn("hd_procedural_frog", create_frog, is_valid_frog_spawn)
@@ -7885,6 +7954,7 @@ local function is_valid_critter_rat_spawn(x, y, l)
 		run_spiderlair_ground_enemy_chance()
 		and detect_floor_at(x, y, l) == false
 		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid critter_rat spawn
 local global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", create_critter_rat, is_valid_critter_rat_spawn)
@@ -7951,6 +8021,7 @@ local function is_valid_hangspider_spawn(x, y, l)
 		and detect_floor_below(x, y, l) == false
 		and floor_two_below == -1
 		and floor_three_below == -1
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid hangspider spawn
 local global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", create_hangspider, is_valid_hangspider_spawn)
@@ -7966,6 +8037,7 @@ local function is_valid_bat_spawn(x, y, l)
 		and detect_floor_above(x, y, l) == true
 		and detect_floor_below(x, y, l) == false
 		and floor_two_below == -1
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid bat spawn
 local global_spawn_procedural_bat = define_procedural_spawn("hd_procedural_bat", create_bat, is_valid_bat_spawn)
@@ -7981,6 +8053,7 @@ local function is_valid_spider_spawn(x, y, l)
 		and detect_floor_above(x, y, l) == true
 		and detect_floor_below(x, y, l) == false
 		and floor_two_below == -1
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid spider spawn
 local global_spawn_procedural_spider = define_procedural_spawn("hd_procedural_spider", create_spider, is_valid_spider_spawn)
@@ -8011,6 +8084,7 @@ local function is_valid_lantern_spawn(x, y, l)
 		and detect_floor_above(x, y, l) == true
 		and detect_floor_below(x, y, l) == false
 		and floor_two_below == -1
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid lantern spawn
 local global_spawn_procedural_dark_lantern = define_procedural_spawn("hd_procedural_dark_lantern", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end, is_valid_lantern_spawn)
@@ -8044,6 +8118,7 @@ local function is_valid_webnest_spawn(x, y, l)
 		and detect_floor_above(x, y, l) == true
 		and detect_floor_below(x, y, l) == false
 		and floor_two_below == -1
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid webnest spawn
 local global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", create_webnest, is_valid_webnest_spawn)
@@ -8054,8 +8129,10 @@ local global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural
 local function create_pushblock_powderkeg(x, y, l)
 	local entity_here = get_grid_entity_at(x, y, l)
 	if entity_here ~= -1 then
+        -- get_entity(entity_here):destroy()
 		kill_entity(entity_here)
 	end
+	-- remove_floor_and_embedded_at(x, y, l)
 
 	local current_powderkeg_chance = get_procedural_spawn_chance(global_spawn_procedural_powderkeg)
 	if (
@@ -8082,10 +8159,12 @@ local global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural
 local global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", create_spikeball, is_valid_spikeball_spawn)
 
 local function create_arrowtrap(x, y, l)
-    local floor = get_grid_entity_at(x, y, l)
-    if floor ~= -1 then
-        kill_entity(floor)
-    end
+	local entity_here = get_grid_entity_at(x, y, l)
+	if entity_here ~= -1 then
+        -- get_entity(entity_here):destroy()
+		kill_entity(entity_here)
+	end
+	-- remove_floor_and_embedded_at(x, y, l)
     local ent = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
     local left = get_grid_entity_at(x-1, y, l)
     local right = get_grid_entity_at(x+1, y, l)
@@ -8118,10 +8197,28 @@ end -- # TODO: Implement method for valid arrowtrap spawn
 local global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", create_arrowtrap, is_valid_arrowtrap_spawn)
 
 local function create_tikitrap(x, y, l) end -- spawn_entity_over the floor above
-local function is_valid_tikitrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid tikitrap spawn 
+local function is_valid_tikitrap_spawn(x, y, l)
+	
+	--[[
+		-- # TODO: Implement method for valid tikitrap spawn
+		-- Does it have a block underneith?
+		-- Does it have at least 3 spaces across unoccupied above it?
+		-- Does it have at least one tile unoccupied next to it? (not counting tiki trap tiles)
+		-- Is the top tiki part placed over an unoccupied space?
+	]]
+	return false
+end
 local global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", create_tikitrap, is_valid_tikitrap_spawn)
 
-local function is_valid_crushtrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid crushtrap spawn
+local function is_valid_crushtrap_spawn(x, y, l)
+	--[[
+		-- # TODO: Implement method for valid crushtrap spawn
+		-- Replace air
+		-- Needs at least one block open on one side of it
+		-- Needs at least one block occupide on one side of it
+	]]
+	return false
+end
 local global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, is_valid_crushtrap_spawn)
 
 local function create_tombstone(x, y, l)
@@ -8178,6 +8275,7 @@ local function is_valid_giantspider_spawn(x, y, l)
 		and detect_floor_above(x, y, l) == true
 		and floor_above_right ~= -1
 		and GIANTSPIDER_SPAWNED == false
+		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid giantspider spawn
 local global_spawn_procedural_giantspider = define_procedural_spawn("hd_procedural_giantspider", function(x, y, l) spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0) GIANTSPIDER_SPAWNED = true end, is_valid_giantspider_spawn)
@@ -8308,6 +8406,8 @@ set_callback(function(room_gen_ctx)
 							-- template_to_set = room_template_here
 						end
 					else
+						-- force dice shop spawning
+						-- state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
 						--[[
 							Sync scripted level generation rooms with S2 generation rooms
 						--]]
@@ -8789,12 +8889,22 @@ set_callback(function()
 	if options.hd_debug_testing_door == true then
 		set_interval(entrance_testing, 1)
 	end
+
+	state.camera.bounds_top = 93.9
+	state.camera.bounds_bottom = 82.7
+	state.camera.bounds_left = 12.5
+	state.camera.bounds_right = 51.5
+
 end, ON.CAMP)
 
 set_callback(function()
 	unlocks_init()
 	force_olmec_phase_0(true)
+	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
+
+-- title screen eyeball adjustments
+-- gamemanager.screen_title.ana_right_eyeball_torch_reflection
 
 -- ON.START
 set_callback(function()

@@ -24,7 +24,7 @@ register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
 	"Debug: Blacklist scripted level generation tilecodes",
 	""--w3"--QL"--prevents yama from crashing
 )
-register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													true)
+register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													false)
 register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple",							false)	-- Defaults to S2
 -- register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD",							false)	-- Defaults to S2
 register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers",										false)	-- Defaults to HD
@@ -221,9 +221,9 @@ global_dangers = {}
 global_feelings = nil
 global_levelassembly = nil
 danger_tracker = {}
-LEVEL_START = {} --LEVEL_PATH = {}
 TONGUE_SPAWNED = false
 POSTTILE_STARTBOOL = false
+FRAG_PREVENTION_UID = nil
 COOP_COFFIN = false
 IDOL_X = nil
 IDOL_Y = nil
@@ -2112,30 +2112,32 @@ HD_ROOMOBJECT.GENERIC = {
 	-- Regular
 	[HD_SUBCHUNKID.SHOP_REGULAR] = {
 		--{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb"} -- original
-		-- {"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..00000000bbbbbbbbbb"} -- S2 sync
-		{"111111111111110011111100220000110l000200000000W00000000000000000000000bbbbbbbbbb"} -- S2 sync without sign block
-		-- {"111111111111110011111100220001110l000200000000W00000000000k00000000000bbbbbbbbbb"} -- S2 sync
+		-- {"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..00000000bbbbbbbbbb"} -- hd accurate sync
+		{"111111111111110011111100220000110l000200000000W00000000000000000000000bbbbbbbbbb"} -- hd accurate sync without sign block
+		-- {"111111111111110011111100220001110l000200000000W00000000000k00000000000bbbbbbbbbb"} -- hd accurate sync
 	},
 	[HD_SUBCHUNKID.SHOP_REGULAR_LEFT] = {
 		--{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"} -- original
-		-- {"11111111111111..11111...22..11..2000l.110.W0000...0k00000...00000000..bbbbbbbbbb"} -- S2 sync
-		{"111111111111110011110000220011002000l01100W000000000000000000000000000bbbbbbbbbb"} -- S2 sync without sign block
-		-- {"111111111111110011111000220011002000l01100W00000000k000000000000000000bbbbbbbbbb"} -- S2 sync
+		-- {"11111111111111..11111...22..11..2000l.110.W0000...0k00000...00000000..bbbbbbbbbb"} -- hd accurate sync
+		{"111111111111110011110000220011002000l01100W000000000000000000000000000bbbbbbbbbb"} -- hd accurate sync without sign block
+		-- {"111111111111110011111000220011002000l01100W00000000k000000000000000000bbbbbbbbbb"} -- hd accurate sync
 	},
 	-- Prize Wheel
 	[HD_SUBCHUNKID.SHOP_PRIZE] = {
 		--{"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb"} -- original
-		-- {"11111111111111..1111....22...1.0l00002....0000W0.0.0000000k0.000000000bb0bbbbbbb"} -- S2 sync
-		-- {"11111111111111001111000022000000l0000200000000W00000000000000000000000bb0bbbbbbb"} -- S2 sync without sign block (sync1) use this
-		-- {"11111111111111001111000022000100l0000200000000W00000000000k00000000000bb0bbbbbbb"} -- S2 sync
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		-- {"11111111111111..1111....22...1.0l00002....0000W0.0.0000000k0.000000000bb0bbbbbbb"} -- hd accurate sync
+		-- {"11111111111111001111000022000000l0000200000000W00000000000000000000000bb0bbbbbbb"} -- hd accurate sync without sign block (sync1)
+		-- {"11111111111111001111000022000100l0000200000000W00000000000k00000000000bb0bbbbbbb"} -- hd accurate sync
+		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- s2
+		{"111111111110000000010000l000000bbb000000000000W00l00000000000000000000bb0bbbbbbb"} -- s2 sync
 	},
 	[HD_SUBCHUNKID.SHOP_PRIZE_LEFT] = {
 		--{"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"} -- original
-		-- {"11111111111111..11111...22......20000l0.0.W00000..0k0000000.000000000.bbbbbbb0bb"} -- S2 sync
-		-- {"1111111111111100111100002200000020000l0000W000000000000000000000000000bbbbbbb0bb"} -- S2 sync without sign block (sync1) use this
-		-- {"1111111111111100111110002200000020000l0000W00000000k000000000000000000bbbbbbb0bb"} -- S2 sync
-		{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		-- {"11111111111111..11111...22......20000l0.0.W00000..0k0000000.000000000.bbbbbbb0bb"} -- hd accurate sync
+		-- {"1111111111111100111100002200000020000l0000W000000000000000000000000000bbbbbbb0bb"} -- hd accurate sync without sign block (sync1)
+		-- {"1111111111111100111110002200000020000l0000W00000000k000000000000000000bbbbbbb0bb"} -- hd accurate sync
+		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- s2 sync
+		{"1111111111100000000100000l0000000000bbb0l00W00000000000000000000000000bbbbbbb0bb"} -- s2 sync
 	},
 	-- Damzel
 	[HD_SUBCHUNKID.SHOP_BROTHEL] = {
@@ -2162,12 +2164,12 @@ HD_ROOMOBJECT.GENERIC = {
 	[HD_SUBCHUNKID.VAULT] = {
 		--{"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"} -- original
 		{"11111111111111111111111|00011111100001111110000111111000011111111111111111111111"}
-		-- {"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- S2 sync
+		-- {"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- hd accurate sync
 	},
 	-- Altar
 	[HD_SUBCHUNKID.ALTAR] = {
 		{"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"}
-		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- S2 sync
+		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- hd accurate sync
 	},
 	[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
 		{"22222222220000000000000000000000000000000000000000000000000000000000000000000000"},
@@ -5006,7 +5008,7 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 		[HD_SUBCHUNKID.VAULT] = {{
 			--"02222222202111111112211|00011221100001122110EE0112211000011221111111120222222220"
 			"02222222202111111112211|00011221100001122110000112211000011221111111120222222220"
-			-- "02222222202000000002200|00000220000000022000000002200000000220000000020222222220" -- S2 sync
+			-- "02222222202000000002200|00000220000000022000000002200000000220000000020222222220" -- hd accurate sync
 		}},
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"00:0000000iiii00f000i00:00000fig0i000000iiiiff0000iiii000ff00ii00000000000000000"}},
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"0000000:00000f00iiiif00000:00i000000ig0i0000ffiiii0ff000iiii0000000ii00000000000"}},
@@ -6246,6 +6248,7 @@ function init_onlevel()
 	danger_tracker = {}
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	moai_veil = nil
+	FRAG_PREVENTION_UID = nil
 	IDOL_X = nil
 	IDOL_Y = nil
 	IDOL_UID = nil
@@ -7438,9 +7441,14 @@ set_post_tile_code_callback(function(x, y, layer)
 		if (
 			state.theme ~= THEME.OLMEC
 		) then
-			door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
-			for _, door_ents_uid in ipairs(door_ents_uids) do
-				kill_entity(door_ents_uid)
+			-- door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
+			-- for _, door_ents_uid in ipairs(door_ents_uids) do
+			-- 	kill_entity(door_ents_uid)
+			-- end
+			FRAG_PREVENTION_UID = get_grid_entity_at(x, y, layer)
+			local entity = get_entity(FRAG_PREVENTION_UID)
+			if entity ~= nil then
+				entity.flags = clr_flag(entity.flags, ENT_FLAG.SOLID)
 			end
 		end
 
@@ -8428,8 +8436,6 @@ set_callback(function(room_gen_ctx)
 							-- template_to_set = room_template_here
 						end
 					else
-						-- force dice shop spawning
-						-- state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
 						--[[
 							Sync scripted level generation rooms with S2 generation rooms
 						--]]
@@ -8869,7 +8875,13 @@ set_callback(function()
 						local floor = get_entity(floor_uid)
 						if floor.deco_top ~= -1 then
 							local deco_top = get_entity(floor.deco_top)
-							deco_top.animation_frame = deco_top.animation_frame - 24
+							if (
+								deco_top.animation_frame ~= 101
+								and deco_top.animation_frame ~= 102
+								and deco_top.animation_frame ~= 103
+							) then
+								deco_top.animation_frame = deco_top.animation_frame - 24
+							end
 						end
 					end
 				end
@@ -9018,6 +9030,10 @@ set_callback(function()
 	) then
 		for i = 1, #players, 1 do
 			move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
+		end
+		local entity = get_entity(FRAG_PREVENTION_UID)
+		if entity ~= nil then
+			entity.flags = set_flag(entity.flags, ENT_FLAG.SOLID)
 		end
 	end
 	
@@ -9543,25 +9559,29 @@ function onlevel_ankh_respawn()
 					end
 				end, 1)
 				cb_moai_hedjet = set_interval(function()
-					if entity_has_item_type(players[1].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[1].health == 0 then
-						set_timeout(function()
-							move_entity(players[1].uid, global_levelassembly.moai_exit.x, global_levelassembly.moai_exit.y, LAYER.FRONT, 0, 0)
-							kill_entity(moai_veil)
-							spawn_entity(ENT_TYPE.ITEM_PICKUP_HEDJET, global_levelassembly.moai_exit.x, global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
-							local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-							if sound ~= nil then sound:play() end
-							clear_callback(cb_moai_diamond)
-						end, 3)
-						return false
+					for i = 1, #players, 1 do
+						if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[i].health == 0 then
+							set_timeout(function()
+								move_entity(players[i].uid, global_levelassembly.moai_exit.x, global_levelassembly.moai_exit.y, LAYER.FRONT, 0, 0)
+								kill_entity(moai_veil)
+								spawn_entity(ENT_TYPE.ITEM_PICKUP_HEDJET, global_levelassembly.moai_exit.x, global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
+								local sound = get_sound(VANILLA_SOUND.UI_SECRET)
+								if sound ~= nil then sound:play() end
+								clear_callback(cb_moai_diamond)
+							end, 3)
+							return false
+						end
 					end
 				end, 1)
 			else
 				set_interval(function()
-					if entity_has_item_type(players[1].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[1].health == 0 then
-						set_timeout(function()
-							move_entity(players[1].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, LAYER.FRONT, 0, 0)
-						end, 3)
-						return false
+					for i = 1, #players, 1 do
+						if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[i].health == 0 then
+							set_timeout(function()
+								move_entity(players[1].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, LAYER.FRONT, 0, 0)
+							end, 3)
+							return false
+						end
 					end
 				end, 1)
 			end
@@ -11938,14 +11958,16 @@ function level_generation_method_shops()
 		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
 			shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
 			shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			-- if (
-			-- 	-- gurenteed regular shop on the second level of the first world
-			-- 	detect_same_levelstate(THEME.DWELLING, 2, 1)
-			-- 	-- # TODO: Add other shop types
-			-- ) then
-			-- 	shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
-			-- 	shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			-- end
+			-- # TODO: Find real chance of spawning a dice shop.
+			-- This is a temporary solution.
+			if math.random(7) == 1 then
+				state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
+				shop_id_right = HD_SUBCHUNKID.SHOP_PRIZE
+				shop_id_left = HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+			-- elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
+			-- 	state.level_gen.shop_type = math.random(0, 5)
+			end
+
 			level_generation_method_aligned(
 				{
 					left = {

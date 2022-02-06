@@ -8939,8 +8939,10 @@ set_callback(function()
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
 
--- title screen eyeball adjustments
--- gamemanager.screen_title.ana_right_eyeball_torch_reflection
+set_callback(function()
+	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
+	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
+end, ON.TITLE)
 
 -- ON.START
 set_callback(function()
@@ -9244,6 +9246,18 @@ function onloading_levelrules()
 
 	-- -- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
 	-- -- message(format_name)
+
+	-- Demo Handling
+	if (
+		state.level == 4
+		and state.world == DEMO_MAX_WORLD
+	) then
+		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
+		set_global_timeout(function()
+			if state.screen ~= ON.LEVEL then toast("Demo over. Thanks for playing!") end
+		end, 30)
+	end
+
 end
 
 -- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
@@ -10120,7 +10134,7 @@ set_callback(function(text)
 		text == "Shortcut Station: Coming Soon! -Mama Tunnel"
 		or text == "New shortcut coming soon! -Mama Tunnel"
 	) then
-		text = "Feature in development! -Super Ninja Fat"
+		text = "Feature in development!"
     end
 	return text
 end, ON.TOAST)

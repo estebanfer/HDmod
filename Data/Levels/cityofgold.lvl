@@ -9,7 +9,7 @@
 \-floor_side_spread_chance               0          // 1/N chance of a spreadable floor spreading to its side (default = 10)
 \-floor_bottom_spread_chance             0          // 1/N chance of a spreadable floor spreading to its bottom (default = 5)
 \-max_liquid_particles                   4000       // Maximum number of liquid drops that can be created until no more liquid rooms are allowed
-\-flagged_liquid_rooms                   16          // Number of random rooms that will be flagged for being eligible to spawn liquid
+\-flagged_liquid_rooms                   16         // Number of random rooms that will be flagged for being eligible to spawn liquid
 
 \?locked_door                      /
 \?stone_floor                      +
@@ -63,27 +63,37 @@
 
 \%crusher_trap_chance          0
 
-\+hd_procedural_tikitrap         5
-\+hd_procedural_crushtrap        40
-\+hd_procedural_arrowtrap        25
-\+hd_procedural_hawkman          60
-\+hd_procedural_caveman          40
-\+hd_procedural_scorpionfly      40
-\+hd_procedural_critter_locust   40
-
-\+hd_procedural_pushblock        24
+\+hd_procedural_tikitrap 5
+\+hd_procedural_crushtrap 40
+\+hd_procedural_arrowtrap 25
+\+hd_procedural_hawkman 60
+\+hd_procedural_caveman 40
+\+hd_procedural_scorpionfly 40
+\+hd_procedural_critter_locust 40
+\+hd_procedural_pushblock 24
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 
@@ -92,12 +102,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 

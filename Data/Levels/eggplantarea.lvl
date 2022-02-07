@@ -72,33 +72,43 @@
 \?regenerating_block%50%guts_floor >
 
 
-\+hd_procedural_worm_jungle_bacterium       30
-\+hd_procedural_worm_jungle_eggsac          40
-\+hd_procedural_worm_jungle_mantrap         60
-\+hd_procedural_worm_jungle_caveman         60
-\+hd_procedural_worm_jungle_tikiman         120
-\+hd_procedural_worm_jungle_snail           240
-\+hd_procedural_worm_jungle_firefrog        120
-\+hd_procedural_worm_jungle_frog            30
-\+hd_procedural_worm_jungle_bat             30
-\+hd_procedural_worm_jungle_critter_maggot  30
-
-\+hd_procedural_worm_icecaves_bacterium     30
-\+hd_procedural_worm_icecaves_eggsac        40
-\+hd_procedural_worm_icecaves_yeti          20
-\+hd_procedural_worm_icecaves_ufo           30
+\+hd_procedural_worm_jungle_bacterium 30
+\+hd_procedural_worm_jungle_eggsac 40
+\+hd_procedural_worm_jungle_mantrap 60
+\+hd_procedural_worm_jungle_caveman 60
+\+hd_procedural_worm_jungle_tikiman 120
+\+hd_procedural_worm_jungle_snail 240
+\+hd_procedural_worm_jungle_firefrog 120
+\+hd_procedural_worm_jungle_frog 30
+\+hd_procedural_worm_jungle_bat 30
+\+hd_procedural_worm_jungle_critter_maggot 30
+\+hd_procedural_worm_icecaves_bacterium 30
+\+hd_procedural_worm_icecaves_eggsac 40
+\+hd_procedural_worm_icecaves_yeti 20
+\+hd_procedural_worm_icecaves_ufo 30
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 
@@ -107,12 +117,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 

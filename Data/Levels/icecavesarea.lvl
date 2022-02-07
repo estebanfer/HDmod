@@ -80,36 +80,43 @@
 \?eggplant_child                   b
 
 
-\+hd_procedural_landmine         15
-\+hd_procedural_bouncetrap       15
-\+hd_procedural_yeti             20, 20, 20, 10
-\+hd_procedural_ufo              40, 40, 30, 20
-\+hd_procedural_mammoth          30, 30, 20, 20
-\+hd_procedural_piranha          20
-\+hd_procedural_critter_fish     30
-\+hd_procedural_critter_penguin  120, 120, 60, 60
-
-\+hd_procedural_wetfur_landmine             15
-\+hd_procedural_wetfur_bouncetrap           15
-\+hd_procedural_wetfur_yeti                 20, 20, 20, 10
-\+hd_procedural_wetfur_critter_penguin      20
-
-\+hd_procedural_ufo_turret                  20
-
-\+hd_procedural_mshipentrance_turret        40
-
+\+hd_procedural_landmine 15
+\+hd_procedural_bouncetrap 15
+\+hd_procedural_yeti    20, 20, 20, 10
+\+hd_procedural_ufo     40, 40, 30, 20
+\+hd_procedural_mammoth 30, 30, 20, 20
+\+hd_procedural_piranha 20
+\+hd_procedural_critter_fish 30
+\+hd_procedural_critter_penguin 120, 120, 60, 60
+\+hd_procedural_wetfur_landmine 15
+\+hd_procedural_wetfur_bouncetrap 15
+\+hd_procedural_wetfur_yeti 20, 20, 20, 10
+\+hd_procedural_wetfur_critter_penguin 20
+\+hd_procedural_ufo_turret 20
+\+hd_procedural_mshipentrance_turret 40
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 
@@ -118,12 +125,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 

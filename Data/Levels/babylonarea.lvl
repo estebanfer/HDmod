@@ -17,6 +17,7 @@
 \-background_chance                      0          // COMMENT
 \-ground_background_chance               0          // COMMENT
 
+\?forcefield                       (
 \?locked_door                      /
 \?stone_floor                      +
 \?tomb_floor                       G
@@ -29,7 +30,6 @@
 \?merchant                         #
 \?cavemanshopkeeper                &
 \?sleeping_hiredhand               \
-\?forcefield                       (
 \?chunk_ground                     5
 \?chunk_air                        6
 \?chunk_door                       8
@@ -75,23 +75,34 @@
 \%lasertrap_chance             0                            // 35, 35, 25, 25
 \%sparktrap_chance             0                            // 35, 35, 25, 25
 
-\+hd_procedural_ufo              30
-\+hd_procedural_alientank        20
-\+hd_procedural_turret           40
-\+hd_procedural_mshiplight       45
-\+hd_procedural_bouncetrap       15
+\+hd_procedural_ufo     30
+\+hd_procedural_alientank 20
+\+hd_procedural_turret  40
+\+hd_procedural_mshiplight 45
+\+hd_procedural_bouncetrap 15
 
 ////////////////////////////////////////////////////////////////////////////////
 \.entrance
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 
@@ -100,12 +111,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // new room
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 

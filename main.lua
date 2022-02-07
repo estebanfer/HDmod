@@ -6550,10 +6550,16 @@ function create_door_entrance(x, y, l)
 		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-
+	if (
+		test_flag(state.level_flags, 18) == true
+		and state.theme ~= THEME.VOLCANA
+	) then
+		ent = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_TORCH, x, y, l, 0, 0))
+		ent:light_up(true)
+	end
 	-- assign coordinates to a global variable to define the game coordinates the player needs to be
 	global_levelassembly.entrance = {x = x, y = y}
-	-- state.level_gen.spawn_x, state.level_gen.spawn_y = x, y
+	state.level_gen.spawn_x, state.level_gen.spawn_y = x, y
 end
 
 function create_door_testing(x, y, l)
@@ -7438,19 +7444,19 @@ set_post_tile_code_callback(function(x, y, layer)
 		
 		-- TEMPORARY: Remove floor to avoid telefragging the player.
 		
-		if (
-			state.theme ~= THEME.OLMEC
-		) then
-			-- door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
-			-- for _, door_ents_uid in ipairs(door_ents_uids) do
-			-- 	kill_entity(door_ents_uid)
-			-- end
-			FRAG_PREVENTION_UID = get_grid_entity_at(x, y, layer)
-			local entity = get_entity(FRAG_PREVENTION_UID)
-			if entity ~= nil then
-				entity.flags = clr_flag(entity.flags, ENT_FLAG.SOLID)
-			end
-		end
+		-- if (
+		-- 	state.theme ~= THEME.OLMEC
+		-- ) then
+		-- 	-- door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
+		-- 	-- for _, door_ents_uid in ipairs(door_ents_uids) do
+		-- 	-- 	kill_entity(door_ents_uid)
+		-- 	-- end
+		-- 	FRAG_PREVENTION_UID = get_grid_entity_at(x, y, layer)
+		-- 	local entity = get_entity(FRAG_PREVENTION_UID)
+		-- 	if entity ~= nil then
+		-- 		entity.flags = clr_flag(entity.flags, ENT_FLAG.SOLID)
+		-- 	end
+		-- end
 
 		-- message("post-door: " .. tostring(state.time_level))
 	else
@@ -8198,13 +8204,20 @@ local function create_arrowtrap(x, y, l)
     local ent = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
     local left = get_grid_entity_at(x-1, y, l)
     local right = get_grid_entity_at(x+1, y, l)
+	local flip = false
 	if left == -1 and right == -1 then
 		--math.randomseed(read_prng()[5])
 		if prng:random() < 0.5 then
-			flip_entity(ent)
+			flip = true
 		end
 	elseif left == -1 then
+		flip = true
+	end
+	if flip == true then
 		flip_entity(ent)
+	end
+	if test_flag(state.level_flags, 18) == true then
+		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, ent, 0, 0.35)
 	end
 end
 local function is_valid_arrowtrap_spawn(x, y, l)
@@ -8441,12 +8454,12 @@ set_callback(function(room_gen_ctx)
 						--]]
 						
 						--LevelGenSystem variables
-						-- if (
-						-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE or
-						-- 	_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
-						-- ) then
-						-- 	state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
-						-- end
+						if (
+							_template_hd == HD_SUBCHUNKID.ENTRANCE or
+							_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
+						) then
+							state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
+						end
 	
 						-- normal paths
 						if (
@@ -8939,8 +8952,10 @@ set_callback(function()
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
 
--- title screen eyeball adjustments
--- gamemanager.screen_title.ana_right_eyeball_torch_reflection
+set_callback(function()
+	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
+	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
+end, ON.TITLE)
 
 -- ON.START
 set_callback(function()
@@ -9024,18 +9039,18 @@ set_callback(function()
 
 	-- TEMPORARY: move players and things they have to entrance point
 	
-	if (
-		options.hd_debug_scripted_levelgen_disable == false and
-		state.theme ~= THEME.OLMEC-- detect_level_non_boss()
-	) then
-		for i = 1, #players, 1 do
-			move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
-		end
-		local entity = get_entity(FRAG_PREVENTION_UID)
-		if entity ~= nil then
-			entity.flags = set_flag(entity.flags, ENT_FLAG.SOLID)
-		end
-	end
+	-- if (
+	-- 	options.hd_debug_scripted_levelgen_disable == false and
+	-- 	state.theme ~= THEME.OLMEC-- detect_level_non_boss()
+	-- ) then
+	-- 	for i = 1, #players, 1 do
+	-- 		move_entity(players[i].uid, global_levelassembly.entrance.x, global_levelassembly.entrance.y, 0, 0)
+	-- 	end
+	-- 	local entity = get_entity(FRAG_PREVENTION_UID)
+	-- 	if entity ~= nil then
+	-- 		entity.flags = set_flag(entity.flags, ENT_FLAG.SOLID)
+	-- 	end
+	-- end
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
@@ -9244,6 +9259,18 @@ function onloading_levelrules()
 
 	-- -- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
 	-- -- message(format_name)
+
+	-- Demo Handling
+	if (
+		state.level == 4
+		and state.world == DEMO_MAX_WORLD
+	) then
+		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
+		set_global_timeout(function()
+			if state.screen ~= ON.LEVEL then toast("Demo over. Thanks for playing!") end
+		end, 30)
+	end
+
 end
 
 -- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
@@ -10120,7 +10147,7 @@ set_callback(function(text)
 		text == "Shortcut Station: Coming Soon! -Mama Tunnel"
 		or text == "New shortcut coming soon! -Mama Tunnel"
 	) then
-		text = "Feature in development! -Super Ninja Fat"
+		text = "Feature in development!"
     end
 	return text
 end, ON.TOAST)
@@ -11004,6 +11031,10 @@ function create_hd_type_notrack(hd_type, x, y, l, _vx, _vy)
 			uid = spawn_entity_over(hd_type.tospawn, floor_uid, 0, 1)
 			if hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL then
 				s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
+				if test_flag(state.level_flags, 18) == true then
+					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, 0.29, 0.26)
+					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, -0.29, 0.26)
+				end
 			end
 		end
 	else

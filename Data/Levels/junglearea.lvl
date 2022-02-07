@@ -72,36 +72,33 @@
 \%jungle_spear_trap_chance     0
 \%beehive_chance               0                            // 1/n chance of trying to spawn a beehive
 
-\+hd_procedural_tikitrap                    10, 10, 8, 5
-\+hd_procedural_monkey                      10
-\+hd_procedural_piranha                     20
-\+hd_procedural_giantfrog                   200, 200, 120, 80
-\+hd_procedural_mantrap                     70, 70, 60, 50
-\+hd_procedural_caveman                     60, 60, 40, 30
-\+hd_procedural_tikiman                     120, 120, 50, 40
-\+hd_procedural_snail                       240, 240, 70, 50
-\+hd_procedural_firefrog                    120
-\+hd_procedural_frog                        40, 40, 20, 20
-\+hd_procedural_critter_frog                30
-\+hd_procedural_critter_fish                18
-
-\+hd_procedural_restless_tombstone          7
-\+hd_procedural_restless_hangspider         80, 80, 60, 60
-\+hd_procedural_restless_vampire            100, 100, 80, 80
-\+hd_procedural_restless_jiangshi           25
-
-\+hd_procedural_hive_bee                    2
-
-\+hd_procedural_hcastle_piranha             5
-\+hd_procedural_hcastle_bat                 30
-\+hd_procedural_hcastle_hangspider          80, 80, 60, 60
-\+hd_procedural_hcastle_vampire             100, 100, 80, 80
-\+hd_procedural_hcastle_jiangshi            25
-\+hd_procedural_hcastle_mantrap             60, 60, 40, 40
-\+hd_procedural_hcastle_greenknight         60, 60, 30, 20
-\+hd_procedural_hcastle_snail               240, 240, 70, 50
-\+hd_procedural_hcastle_firefrog            120
-\+hd_procedural_hcastle_frog                30, 30, 20, 20
+\+hd_procedural_tikitrap 10, 10, 8, 5
+\+hd_procedural_monkey  10
+\+hd_procedural_piranha 20
+\+hd_procedural_giantfrog 200, 200, 120, 80
+\+hd_procedural_mantrap 70, 70, 60, 50
+\+hd_procedural_caveman 60, 60, 40, 30
+\+hd_procedural_tikiman 120, 120, 50, 40
+\+hd_procedural_snail   240, 240, 70, 50
+\+hd_procedural_firefrog 120
+\+hd_procedural_frog    40, 40, 20, 20
+\+hd_procedural_critter_frog 30
+\+hd_procedural_critter_fish 18
+\+hd_procedural_restless_tombstone 7
+\+hd_procedural_restless_hangspider 80, 80, 60, 60
+\+hd_procedural_restless_vampire 100, 100, 80, 80
+\+hd_procedural_restless_jiangshi 25
+\+hd_procedural_hive_bee 2
+\+hd_procedural_hcastle_piranha 5
+\+hd_procedural_hcastle_bat 30
+\+hd_procedural_hcastle_hangspider 80, 80, 60, 60
+\+hd_procedural_hcastle_vampire 100, 100, 80, 80
+\+hd_procedural_hcastle_jiangshi 25
+\+hd_procedural_hcastle_mantrap 60, 60, 40, 40
+\+hd_procedural_hcastle_greenknight 60, 60, 30, 20
+\+hd_procedural_hcastle_snail 240, 240, 70, 50
+\+hd_procedural_hcastle_firefrog 120
+\+hd_procedural_hcastle_frog 30, 30, 20, 20
 
 ////////////////////////////////////////////////////////////////////////////////
 \.hdmod_blackmarket_ankh
@@ -161,12 +158,23 @@ K...22....
 
 // new room
 \!liquid
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 
@@ -176,12 +184,23 @@ K...22....
 
 // new room
 \!liquid
+\!ignore
 0000000000
 0000000000
 0000000000
 0000000000
 0000000000
 0000900000
+0000000000
+0000000000
+
+// empty
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
 0000000000
 0000000000
 

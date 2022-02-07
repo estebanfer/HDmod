@@ -4,11 +4,11 @@
 0xe8d85bff: I finally made it!
 
 
-0xe89a14e6: Wheel of Prizes
-0x2cfad86d: Spin The Wheel
+#0xe89a14e6: Wheel of Prizes
+#0x2cfad86d: Spin The Wheel
 #0xb1b878ff: The Dice House is closed! I'm out of items!
 # Originally "You bet $%d! Now roll the dice!"
-0x63603fa0: Good luck!
+#0x63603fa0: Good luck!
 #0xac2fb5f2: You lose.
 # Originally "You rolled a %d!"
 #0xd6738cf2: You won some money!

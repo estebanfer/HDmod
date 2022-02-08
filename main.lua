@@ -14,7 +14,7 @@ register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-end
 register_option_bool("hd_debug_info_boss", "Debug: Info - Bossfight",																false)
 register_option_bool("hd_debug_info_boulder", "Debug: Info - Boulder",																false)
 register_option_bool("hd_debug_info_feelings", "Debug: Info - Level Feelings",														false)
-register_option_bool("hd_debug_info_path", "Debug: Info - Path",																	true)
+register_option_bool("hd_debug_info_path", "Debug: Info - Path",																	false)
 register_option_bool("hd_debug_info_tongue", "Debug: Info - Wormtongue",															false)
 register_option_bool("hd_debug_info_worldstate", "Debug: Info - Worldstate",														false)
 register_option_bool("hd_debug_scripted_enemies_show", "Debug: Enable visibility of entities used in custom enemy behavior",		false)
@@ -800,7 +800,7 @@ HD_TILENAME = {
 			},
 		},
 		-- hd_type = HD_ENT.TRAP_SPIKEBALL
-		-- spawn method for plasma cannon should spawn a tile under it, stylized
+		-- spawn method for plasma cannon in HD spawned a tile under it, stylized
 		description = "Spikeball",
 	},
 	["+"] = {
@@ -7325,6 +7325,10 @@ define_tile_code("hd_door_testing")
 
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
+
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
 
 set_pre_tile_code_callback(function(x, y, layer)
@@ -8182,6 +8186,13 @@ local function create_pushblock_powderkeg(x, y, l)
 end
 local function is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath
+    local above = get_grid_entity_at(x, y+1, l)
+	if above ~= -1 then
+		above = get_entity(above)
+		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
+			return false
+		end
+	end
     return (
 		detect_solid_nonshop_nontree(x, y, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
@@ -8366,14 +8377,11 @@ local s2_room_template_blackmarket_shop = define_room_template("hdmod_blackmarke
 set_callback(function(room_gen_ctx)
 	if state.screen == SCREEN.LEVEL then
 		init_posttile_onstart()
-		-- set height for rushing water
 		if options.hd_debug_scripted_levelgen_disable == false then
 			init_posttile_door()
 			levelcreation_init()
 			
-			if feeling_check(FEELING_ID.RUSHING_WATER) then
-				state.height = 5
-			end
+			assign_s2_level_height()
 		end
 	end
 end, ON.PRE_LEVEL_GENERATION)
@@ -8939,10 +8947,11 @@ set_callback(function()
 
 	state.camera.bounds_top = 93.9
 	state.camera.bounds_bottom = 82.7
-	state.camera.bounds_left = 8.5--12.5
+	state.camera.bounds_left = 8.5
 	state.camera.bounds_right = 51.5
-	-- state.camera.focus_x = 41.75
-	-- state.camera.focus_y = 88.25
+
+	state.camera.adjusted_focus_x = 41.55
+	state.camera.adjusted_focus_y = 88.3
 
 end, ON.CAMP)
 
@@ -9013,6 +9022,42 @@ end
 function levelcreation()
 	--ONLEVEL_PRIORITY: 3 - Perform any script-generated chunk creation
 	onlevel_generation_modification()
+end
+
+function assign_s2_level_height()
+	
+	local new_width = 4
+	local new_height = 4
+
+	if (--levels that already have a constant width and height
+		state.theme ~= THEME.OLMEC
+		and state.theme ~= THEME.EGGPLANT_WORLD
+		and state.theme ~= THEME.CITY_OF_GOLD
+		and state.theme ~= THEME.NEO_BABYLON
+	) then
+		if (
+			(--echoes themes
+				state.theme == THEME.DWELLING
+				or state.theme == THEME.JUNGLE
+				or state.theme == THEME.TEMPLE
+				or state.theme == THEME.VOLCANA
+			)
+			and (
+				state.height ~= 4
+				and state.width ~= 4
+			)
+		) then
+			new_width = 4
+			new_height = 4
+		end
+	
+		-- set height for rushing water
+		if feeling_check(FEELING_ID.RUSHING_WATER) then
+			new_height = 5
+		end
+		state.width = new_width
+		state.height = new_height
+	end
 end
 
 function detect_coop_coffin(room_gen_ctx)
@@ -11854,12 +11899,13 @@ function level_generation_method_aligned(_aligned_room_types)
 
 	-- pick random place to fill
 	spot = spots[math.random(#spots)]
-
-	levelcode_inject_roomcode(
-		(spot.facing_left and _aligned_room_types.left.subchunk_id or _aligned_room_types.right.subchunk_id),
-		(spot.facing_left and _aligned_room_types.left.roomcodes or _aligned_room_types.right.roomcodes),
-		spot.y, spot.x
-	)
+	if spot ~= nil then
+		levelcode_inject_roomcode(
+			(spot.facing_left and _aligned_room_types.left.subchunk_id or _aligned_room_types.right.subchunk_id),
+			(spot.facing_left and _aligned_room_types.left.roomcodes or _aligned_room_types.right.roomcodes),
+			spot.y, spot.x
+		)
+	end
 end
 
 function detect_level_non_boss()

@@ -374,7 +374,7 @@ HD_FEELING_DEFAULTS = {
 	},
 	[FEELING_ID.YETIKINGDOM] = {
 		chance = 10,
-		-- chance = 0,
+		-- chance = 1,
 		themes = { THEME.ICE_CAVES },
 		message = "It smells like wet fur in here."
 	},
@@ -631,6 +631,7 @@ HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP = 128
 HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM = 129
 
 HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN = 2001
+HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD = 2002
 
 HD_SUBCHUNKID.RESTLESS_TOMB = 147
 HD_SUBCHUNKID.RESTLESS_IDOL = 148
@@ -3951,6 +3952,21 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 }
 HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	
+	if LEVEL_UNLOCK ~= nil then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
 
 	spots = {}
 		--{x, y, subchunk_id}
@@ -4919,8 +4935,6 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 	
 	local unlock_location_x, unlock_location_y = nil, nil
 
-	if LEVEL_UNLOCK ~= nil then
-	end
 	-- Coffin
 	if LEVEL_UNLOCK ~= nil then
 		-- Select room coordinates between x = 1..2 and y = 11
@@ -5165,18 +5179,9 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 	chunkRules = {
 		rooms = {
 			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
-				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
-					chunkPool_rand_index = 3
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
-				elseif CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
-					chunkPool_rand_index = 3
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
-				else
-					chunkPool_rand_index = math.random(2)
-				end
-				
+				chunkPool_rand_index = math.random(2)
 				if math.random(10) == 1 then 
-					chunkPool_rand_index = 4
+					chunkPool_rand_index = 3
 				end
 				return {index = chunkPool_rand_index}
 			end,
@@ -5186,10 +5191,6 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 		[HD_SUBCHUNKID.SIDE] = {
 			{"50000500000000000000000000000011111111115000050000000000000000000000001111111111"},
 			{"00000000000000110000000022000010001100011000110001100000000120~0000~021111111111"},
-			{ -- Alien Lord
-				"0000000000000000000000111111000011X0000000110000000011111L000~111111~01111111111",
-				"0000000000000000000000111111000000X01100000000110000L11111000~111111~01111111111"
-			},
 			-- Zoo
 			{"11110011110000000000010:00:01001111111100000000000m10:00:01m01111111101111111111"},
 		},
@@ -5224,12 +5225,29 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 			{"000000000000110011000010009100001111110000z0000z000000000000mm000000mm1111001111"},
 			{"000000000000110011000019000100001111110000z0000z000000000000mm000000mm1111001111"},
 		},
+		
+		[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN] = {
+			{
+				"110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L01111111111",
+				"0110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L1111111111",
+				"1100000011100000001100000Q001100000000110LL11100010000010*0111000111111111001111",
+				"110000001111000000011100Q0000011000000001000111LL010*010000011111000111111001111",
+			},
+		},
+		[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD] = {
+			{ -- Alien Lord
+				"0000000000000000000000111111000011X0000000110000000011111L000~111111~01111111111",
+				"0000000000000000000000111111000000X01100000000110000L11111000~111111~01111111111"
+			},
+		},
+
 		[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
 			{"22222222220000000000000000000000000000000000000000000000000000000000000000000000"},
 			{"11111111112222222222000000000000000000000000000000000000000000000000000000000000"},
 			{"22211112220001111000000211200000011110000002112000000022000000000000000000000000"},
 			{"11112211112112002112022000022000000000000000000000000000000000000000000000000000"},
 		},
+
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"11000000001111111110110010001011g00000001111100000000010000011000000~011111LLL11"}},
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000001101111111110100010011000000g011000001111100000100000~0000001111LLL11111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
@@ -5287,18 +5305,59 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN,
-			roomcodes = {
-				{
-					"110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L01111111111",
-					"0110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L1111111111",
-					"1100000011100000001100000Q001100000000110LL11100010000010*0111000111111111001111",
-					"110000001111000000011100Q0000011000000001000111LL010*010000011111000111111001111",
-				},
-			},
+			roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN]
 		},
 		nil,
 		{1, 2, 3, 4}
 	)
+
+	-- # TODO: Make all HD_ROOMOBJECT.method functions have a prePath parameter. Then put below in prePath == false.
+	--[[
+		loop through top to bottom, replace the first two side rooms found with alienlord rooms
+	--]]
+
+	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	minw, minh, maxw, maxh = 1, 1, levelw, levelh
+
+	for hi = minh, maxh, 1 do
+		for wi = minw, maxw, 1 do
+			local spawn_alienlord = false
+			local pathid = global_levelassembly.modification.levelrooms[hi][wi]
+
+
+			if pathid == HD_SUBCHUNKID.SIDE then
+				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
+					spawn_alienlord = true
+					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
+				elseif CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
+					spawn_alienlord = true
+					CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
+				else
+					break
+				end
+			end
+
+			if spawn_alienlord == true then
+				levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD, HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD], hi, wi)
+			end
+		end
+	end
+	
+
+	if LEVEL_UNLOCK ~= nil then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
 end
 
 HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
@@ -5415,8 +5474,8 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		[HD_SUBCHUNKID.IDOL] = {{"11CCCCCC1111000000111D000000D11000000001100000000100000000000000I00000qqqqA0qqqq"}}, -- modified from original for sliding doors
 		[HD_SUBCHUNKID.ALTAR] = {{"220000002200000000000000000000000000000000000000000000x0000000111111001111111111"}},
 		
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001101004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100101100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
+		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001101004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
+		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100101100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
@@ -8571,6 +8630,8 @@ set_callback(function(room_gen_ctx)
 
 			levelcreation()
 
+			set_blackmarket_shoprooms(room_gen_ctx)
+
 			onlevel_generation_execution_phase_one()
 			onlevel_generation_execution_phase_two()
 
@@ -9228,6 +9289,23 @@ function detect_coop_coffin(room_gen_ctx)
 	end
 end
 
+function set_blackmarket_shoprooms(room_gen_ctx)
+
+	if feeling_check(FEELING_ID.BLACKMARKET) then
+		-- room_gen_ctx:set_shop_type(1, 0, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 0, LAYER.FRONT, math.random(0, 5))
+
+		-- room_gen_ctx:set_shop_type(1, 1, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 1, LAYER.FRONT, math.random(0, 5))
+
+		-- room_gen_ctx:set_shop_type(1, 2, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 2, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
+
+		room_gen_ctx:set_shop_type(3, 2, LAYER.FRONT, SHOP_TYPE.HEDJET_SHOP)
+	end
+
+end
+
 set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
 	onlevel_generation_execution_phase_four()
@@ -9463,6 +9541,7 @@ function onloading_levelrules()
 	if (
 		state.level == 4
 		and state.world == DEMO_MAX_WORLD
+		and state.screen_next ~= ON.DEATH
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
 		set_global_timeout(function()
@@ -9508,6 +9587,8 @@ function onlevel_generation_modification()
 			gen_levelrooms_path()
 		end
 		gen_levelrooms_nonpath(false)
+		
+		level_generation_method_world_coffin()
 
 		level_generation_method_coffin_coop()
 
@@ -12030,6 +12111,31 @@ function detect_level_allow_coop_coffin()
 	)
 end
 
+function level_generation_method_world_coffin()
+	if (
+		LEVEL_UNLOCK ~= nil
+		and (
+			LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+		)
+	) then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
+end
+
 function level_generation_method_coffin_coop()
 	if detect_level_allow_coop_coffin() then
 		levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
@@ -12211,7 +12317,10 @@ end
 
 function gen_levelrooms_nonpath(prePath)
 	
-	if (HD_ROOMOBJECT.WORLDS[state.theme].prePath == nil and prePath == false) or (HD_ROOMOBJECT.WORLDS[state.theme].prePath ~= nil and HD_ROOMOBJECT.WORLDS[state.theme].prePath == prePath) then
+	if (
+		(HD_ROOMOBJECT.WORLDS[state.theme].prePath == nil and prePath == false)
+		or (HD_ROOMOBJECT.WORLDS[state.theme].prePath ~= nil and HD_ROOMOBJECT.WORLDS[state.theme].prePath == prePath)
+	) then
 		if HD_ROOMOBJECT.WORLDS[state.theme].method ~= nil then
 			HD_ROOMOBJECT.WORLDS[state.theme].method()
 		end

@@ -1,5 +1,5 @@
-meta.name = "Spelunky 2: HDmod"
-meta.version = "0.0" -- Alpha
+meta.name = "HDmod - Demo"
+meta.version = "1.02"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
@@ -22,7 +22,7 @@ register_option_bool("hd_debug_item_botd_give", "Debug: Start with item - Book o
 register_option_bool("hd_debug_scripted_levelgen_disable", "Debug: Disable scripted level generation",								false)
 register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
 	"Debug: Blacklist scripted level generation tilecodes",
-	""--w3"--QL"--prevents yama from crashing
+	""
 )
 register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													false)
 register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple",							false)	-- Defaults to S2
@@ -44,7 +44,7 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 
 bool_to_number={ [true]=1, [false]=0 }
 
-DEMO_MAX_WORLD = 5
+DEMO_MAX_WORLD = 1
 DEMO_TUTORIAL_AVAILABLE = false
 
 function teleport_mount(ent, x, y)
@@ -54,7 +54,7 @@ function teleport_mount(ent, x, y)
         move_entity(ent.uid, x, y, 0, 0)
     end
     -- ent.more_flags = clr_flag(ent.more_flags, 16)
-    set_camera_position(x, y)
+    set_camera_position(x, y)--wow this looks wrong, i think this auto-corrected at some point :/
 end
 
 function rotate(cx, cy, x, y, degrees)
@@ -180,8 +180,8 @@ end
 -- translate game coordinates to levelrooms coordinates
 function locate_levelrooms_position_from_game_position(e_x, e_y)
 	xmin, ymin, _, _ = get_bounds()
-	roomx = math.ceil((e_x-(xmin+0.5))/HD_ROOMOBJECT.DIM.w)
-	roomy = math.ceil(((ymin-0.5)-e_y)/HD_ROOMOBJECT.DIM.h)
+	roomx = math.floor((e_x-(xmin+0.5))/HD_ROOMOBJECT.DIM.w)+1
+	roomy = math.floor(((ymin-0.5)-e_y)/HD_ROOMOBJECT.DIM.h)+1
 	return roomx, roomy
 end
 
@@ -225,6 +225,7 @@ TONGUE_SPAWNED = false
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 LEVEL_UNLOCK = nil
+UNLOCK_WI, UNLOCK_HI = nil, nil
 CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 COOP_COFFIN = false
 IDOL_X = nil
@@ -265,8 +266,9 @@ bookofdead_tick = 0
 bookofdead_frames = 4
 bookofdead_frames_index = 1
 bookofdead_squash = (1/bookofdead_frames) --options.hd_ui_botd_e_squash
-TONGUE_UID = nil
-TONGUE_BG_UID = nil
+WORMTONGUE_UID = nil
+WORMTONGUE_BG_UID = nil
+WORM_BG_UID = nil
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
 DOOR_ENDGAME_OLMEC_UID = nil
@@ -291,7 +293,6 @@ HD_THEMEORDER = {
 	THEME.TEMPLE,
 	THEME.VOLCANA
 }
-
 
 MESSAGE_FEELING = nil
 
@@ -374,7 +375,7 @@ HD_FEELING_DEFAULTS = {
 	},
 	[FEELING_ID.YETIKINGDOM] = {
 		chance = 10,
-		-- chance = 0,
+		-- chance = 1,
 		themes = { THEME.ICE_CAVES },
 		message = "It smells like wet fur in here."
 	},
@@ -631,6 +632,7 @@ HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP = 128
 HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM = 129
 
 HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN = 2001
+HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD = 2002
 
 HD_SUBCHUNKID.RESTLESS_TOMB = 147
 HD_SUBCHUNKID.RESTLESS_IDOL = 148
@@ -741,6 +743,29 @@ HD_OBSTACLEBLOCK_TILENAME["F"] = HD_OBSTACLEBLOCK.PLATFORM
 HD_OBSTACLEBLOCK_TILENAME["V"] = HD_OBSTACLEBLOCK.VINE
 HD_OBSTACLEBLOCK_TILENAME["("] = HD_OBSTACLEBLOCK.TEMPLE
 
+function create_liquidfall(x, y, l, texture_path, is_lava)
+	local is_lava = is_lava or false
+	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
+	if is_lava == true then
+		type = ENT_TYPE.LOGICAL_LAVA_DRAIN
+	end
+	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
+	texture_def.texture_path = texture_path
+	drain_texture = define_texture(texture_def)
+	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
+	get_entity(drain_uid):set_texture(drain_texture)
+
+	local backgrounds = entity_get_items_by(drain_uid, ENT_TYPE.BG_WATER_FOUNTAIN, 0)
+	if #backgrounds ~= 0 then
+		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
+		texture_def2.texture_path = texture_path
+		fountain_texture = define_texture(texture_def2)
+
+		local fountain = get_entity(backgrounds[1])
+		fountain:set_texture(fountain_texture)
+	end
+end
+
 -- retains HD tilenames
 HD_TILENAME = {
 	["0"] = {
@@ -776,21 +801,17 @@ HD_TILENAME = {
 	["&"] = { -- 50% chance to spawn # TOTEST probably wrong
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_WATER_DRAIN, x, y-2.5, l, 0, 0) end,
-				-- function(x, y, l) return 0 end
+				function(x, y, l) create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
 			},
 			alternate = {
 				[THEME.CITY_OF_GOLD] = {
-					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y-3, l, 0, 0) end,
-					-- function(x, y, l) return 0 end
+					function(x, y, l) create_liquidfall(x, y-3, l, "res/floorstyled_gold_fountain.png", true) end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y-3, l, 0, 0) end,
-					-- function(x, y, l) return 0 end
+					function(x, y, l) create_liquidfall(x, y-3, l, "res/floorstyled_temple_fountain.png", true) end,
 				},
 				[THEME.VOLCANA] = {
-					function(x, y, l) spawn_entity(ENT_TYPE.LOGICAL_LAVA_DRAIN, x, y-3, l, 0, 0) end,
-					-- function(x, y, l) return 0 end
+					function(x, y, l) create_liquidfall(x, y-3, l, "res/hell_fountain.png", true) end,
 				},
 			},
 		},
@@ -801,13 +822,6 @@ HD_TILENAME = {
 		-- 	[THEME.VOLCANA] = { 0, 0 },
 		-- },
 		description = "Waterfall",
-		-- # TODO - Waterfall reskins in ASE:
-			-- DWELLING: N/A
-			-- COG: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\WORM\wormsmallbg.png
-			-- JUNGLE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\LUSH\lushsmallbg.png
-			-- VOLCANA/TIAMAT: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\HELL\hellsmallbg.png
-			-- TEMPLE: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\TEMPLE\templesmallbg.png
-			-- ICE_CAVES: N/A(?)
 	},
 	["*"] = {
 		phase_1 = {
@@ -1045,13 +1059,24 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
-					if #floorsAtOffset > 0 then floorToSpawnOver = floorsAtOffset[1] end
 					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
 					
-					if (
-						floorToSpawnOver ~= nil
-					) then
-						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, 0, 1)
+					if #floorsAtOffset > 0 then
+						local floor_uid = floorsAtOffset[1]
+						-- local floor = get_entity(floor_uid)
+						
+						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
+						-- if state.theme == THEME.EGGPLANT_WORLD then
+						-- 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_GUTS_0)
+						-- 	deco_texture = define_texture(texture_def)
+
+						-- 	floor:add_decoration(FLOOR_SIDE.TOP)
+							
+						-- 	if floor.deco_top ~= -1 then
+						-- 		local deco = get_entity(floor.deco_top)
+						-- 		deco:set_texture(deco_texture)
+						-- 	end
+						-- end
 					end
 				end,
 				function(x, y, l) return 0 end
@@ -1098,9 +1123,17 @@ HD_TILENAME = {
 						-- 2 tiles down
 						-- Spawn skeleton
 						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l, 0, 0)
-						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l, 0, 0)
+						local skull_uid = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l, 0, 0)
+						flip_entity(skull_uid)
+
 						-- Spawn Crown
-						local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
+						-- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
+						local dar_crown_uid = spawn_entity_over(ENT_TYPE.ITEM_DIAMOND, skull_uid, -0.15, 0.42)
+						local dar_crown = get_entity(dar_crown_uid)
+						-- # TODO: Setting the crown angled results in it staying angled when knocked off.
+						-- Make an on frame method to adjust the angle after dismount
+						-- dar_crown.angle = -0.15
+
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 						texture_def.texture_path = "res/items_dar_crown.png"
 						dar_crown:set_texture(define_texture(texture_def))
@@ -1139,7 +1172,7 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					spawn_grid_entity(math.random(ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_DOG+2), x, y, l, 0, 0)
+					create_damsel(x, y, l)
 					create_idol(x+1, y, l)
 				end,
 			},
@@ -1170,11 +1203,18 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0))
-					idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l, 0, 0))
+					local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0))
+					local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l, 0, 0))
+
 					if state.theme ~= THEME.VOLCANA then
-						idol_block_first:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-						idol_block_second:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						texture_def.texture_path = "res/idol_platform_generic.png"
+						if state.theme == THEME.TEMPLE then
+							texture_def.texture_path = "res/idol_platform_temple.png"
+						end
+
+						idol_block_first:set_texture(define_texture(texture_def))
+						idol_block_second:set_texture(define_texture(texture_def))
 					end
 					idol_block_second.animation_frame = idol_block_second.animation_frame + 1
 				end,
@@ -1219,6 +1259,17 @@ HD_TILENAME = {
 				local slidingwall_ceiling = get_entity(spawn_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, l, 0.0, 0.0))
 				local slidingwall_chain = get_entity(spawn_over(ENT_TYPE.ITEM_SLIDINGWALL_CHAIN_LASTPIECE, slidingwall_ceiling.uid, 0, 0))
 				local slidingwall = get_entity(spawn_over(ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, slidingwall_chain.uid, 0, -1.5))
+				
+				if state.theme == THEME.TEMPLE then
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
+					texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+					slidingwall_ceiling:set_texture(define_texture(texture_def))
+					slidingwall_chain:set_texture(define_texture(texture_def))
+	
+					texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
+					texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+					slidingwall:set_texture(define_texture(texture_def))
+				end
 
 				-- spawn_entity(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH, x+1, y-1, l, 0, 0)
 
@@ -1232,9 +1283,7 @@ HD_TILENAME = {
 
 			end},
 			tutorial = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_DOG, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_CAT, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_PET_HAMSTER, x, y, l, 0, 0) end,
+				function(x, y, l) create_damsel(x, y, l) end,
 			},
 		},
 		--#TOTEST: Also used in tutorial level 3 placement {3, 4} as Damsel
@@ -1319,7 +1368,10 @@ HD_TILENAME = {
 				function(x, y, l)
 					-- Idol trap variants
 					if state.theme == THEME.DWELLING then
-						spawn(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0)
+						local statue = get_entity(spawn_entity(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0))
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_1)
+						texture_def.texture_path = "res/deco_extra_idol_statue.png"
+						statue:set_texture(define_texture(texture_def))
 					end
 					
 					-- need subchunkid of what room we're in
@@ -1432,6 +1484,15 @@ HD_TILENAME = {
 					function(x, y, l) return 0 end,
 				},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
+				[THEME.CITY_OF_GOLD] = {
+					function(x, y, l)
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						texture_def.texture_path = "res/floorstyled_gold_ladders.png"
+						local ent_texture = define_texture(texture_def)
+						local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l)
+						get_entity(ent_uid):set_texture(ent_texture)
+					end
+				},
 			},
 		},
 		description = "Ladder", -- sometimes used as Vine or Chain
@@ -1543,6 +1604,17 @@ HD_TILENAME = {
 	["P"] = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l, 0, 0) end,},
+			alternate = {
+				[THEME.CITY_OF_GOLD] = {
+					function(x, y, l)
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+						texture_def.texture_path = "res/floorstyled_gold_ladders.png"
+						local ent_texture = define_texture(texture_def)
+						local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l)
+						get_entity(ent_uid):set_texture(ent_texture)
+					end
+				},
+			}
 		},
 		description = "Ladder Platform (Strict)",
 	},
@@ -1649,7 +1721,9 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
+					local shopkeeper = spawn_shopkeeper(x+3, y, l, ROOM_TEMPLATE.SHOP_LEFT)
 					ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
+					add_item_to_shop(ankh_uid, shopkeeper)
 					add_custom_name(ankh_uid, "Ankh")
 					ankh_mov = get_entity(ankh_uid)
 					ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
@@ -1807,8 +1881,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.JUNGLE] = {
 					function(x, y, l)
-						spawn_entity(ENT_TYPE.ITEM_COOKFIRE, x, y, l, 0, 0)
-						spawn_entity(ENT_TYPE.ITEM_LAVAPOT, x, y, l, 0, 0)
+						spawn_entity_over(ENT_TYPE.ITEM_LAVAPOT, spawn_entity(ENT_TYPE.ITEM_COOKFIRE, x, y, l, 0, 0), 0, 0.675)
 					end,
 				}
 			},
@@ -1818,17 +1891,17 @@ HD_TILENAME = {
 	["j"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,
 				function(x, y, l) return 0 end,
 			},
 		},
-		description = "Ice Block/Empty", -- Old description: "Ice Block with Caveman".
+		description = "Unused (In classic this was 'Ice Block/Empty'", -- Old description: "Ice Block with Caveman".
 	},
 	["k"] = { -- Sign creation currently done in S2 gen
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0)
+					spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l)
 
 					-- #TOTEST: Scripted gen shopsign spawning: For some reason this is really unstable and breaks generation 1/4 of the time.
 					-- Steps:
@@ -1868,7 +1941,7 @@ HD_TILENAME = {
 			alternate = {
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l)
-						spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l)
 						-- need subchunkid of what room we're in
 						roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
 						_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
@@ -1886,12 +1959,11 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE, x, y, l, 0, 0))--_GENERIC, x, y, l, 0, 0))
-					-- entity.flags = set_flag(entity.flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR)
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l))
+					entity.flags = set_flag(entity.flags, ENT_FLAG.TAKE_NO_DAMAGE)
 				end,
 			},
 			alternate = {
-				-- # TOFIX: Crashes when attempting to spawn in ON.POST_ROOM_GENERATION
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l) return 0 end,
 				},
@@ -1963,13 +2035,37 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
-					if #floorsAtOffset > 0 then floorToSpawnOver = floorsAtOffset[1] end
 					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
 					
-					if (
-						floorToSpawnOver ~= nil
-					) then
-						spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floorToSpawnOver, 0, 1)
+					if #floorsAtOffset > 0 then
+						local floor_uid = floorsAtOffset[1]
+						local floor = get_entity(floor_uid)
+						local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
+						if state.theme == THEME.EGGPLANT_WORLD then
+							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0)
+							deco_texture = define_texture(texture_def)
+
+							floor:add_decoration(FLOOR_SIDE.TOP)
+							
+							if floor.deco_top ~= -1 then
+								local deco = get_entity(floor.deco_top)
+								deco:set_texture(deco_texture)
+								deco.animation_frame = math.random(101, 103)
+							end
+						elseif state.theme == THEME.VOLCANA then
+							-- need subchunkid of what room we're in
+							local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+							local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
+							if (
+								_subchunk_id == HD_SUBCHUNKID.VLAD_TOP
+								or _subchunk_id == HD_SUBCHUNKID.VLAD_MIDSECTION
+								or _subchunk_id == HD_SUBCHUNKID.VLAD_BOTTOM
+							) then
+								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
+								texture_def.texture_path = "res/vladspikes.png"
+								get_entity(spikes_uid):set_texture(define_texture(texture_def))
+							end
+						end
 					end
 				end,
 			}
@@ -2733,6 +2829,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.VAULT] = {
 	end
 }
 
+-- # TODO: Make method to remove pots during spiderlair
 -- pots will not spawn on this level.
 -- Spiders, spinner spiders, and webs appear much more frequently.
 -- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
@@ -2885,6 +2982,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].method = function()
 				subchunk_id = HD_SUBCHUNKID.RESTLESS_TOMB,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_TOMB]
 			}
+			,feeling_check(FEELING_ID.RUSHING_WATER)
 		)
 	end
 	if feeling_check(FEELING_ID.RUSHING_WATER) == false then
@@ -2893,6 +2991,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].method = function()
 				subchunk_id = HD_SUBCHUNKID.RESTLESS_IDOL,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_IDOL]
 			}
+			,feeling_check(FEELING_ID.RUSHING_WATER)
 		)
 	end
 end
@@ -2924,18 +3023,18 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 				}
 			}
 		},
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
-		-- 	placement = {1, 2},
-		-- 	-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
-		-- 	roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
-		-- },
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
-		-- 	placement = {1, 3},
-		-- 	-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
-		-- 	roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
-		-- },
+		{
+			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			placement = {1, 2},
+			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
+			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			placement = {1, 3},
+			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
+			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+		},
 		{
 			subchunk_id = HD_SUBCHUNKID.PATH_DROP,
 			placement = {1, 4},
@@ -2961,18 +3060,18 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 				{"12G000002100P111100000G222200000G000000000G0000000000000000022222000021111110001"},
 			}
 		},
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
-		-- 	placement = {2, 2},
-		-- 	-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
-		-- 	roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
-		-- },
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
-		-- 	placement = {2, 3},
-		-- 	-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
-		-- 	roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
-		-- },
+		{
+			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			placement = {2, 2},
+			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
+			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			placement = {2, 3},
+			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
+			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+		},
 		{
 			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {2, 4},
@@ -2993,21 +3092,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 				{"12G000002100P111100000G222200000G000000000G0000000000000000022222000021111110001"},
 			}
 		},
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
-		-- 	placement = {3, 2},
-		-- 	-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
-		-- 	roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
-		-- },
-		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE_LEFT,
-		-- 	placement = {3, 3},
-		-- 	roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
-		-- },
+		{
+			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			placement = {3, 2},
+			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
+			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
+		},
+		{
+			subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE_LEFT,
+			placement = {3, 3},
+			roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
+		},
 		{
 			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_ANKH,
 			placement = {3, 4},
 			roomcodes = {{"000G011111000G000000000G00a0l0000bbbbbbb0000000000111111111111111111111111111111"}}
+			-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 
 		-- 4
@@ -3441,37 +3541,39 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
 	local levelh_start, levelh_end = 2, levelh-1
 	local levelw_start, levelw_end = 1, levelw
 
-	local unlock_location_x, unlock_location_y = nil, nil
-
-	local spots = {}
-		--{x, y}
-	-- build a collection of potential spots
-	for room_y = levelh_start, levelh_end, 1 do
-		for room_x = levelw_start, levelw_end, 1 do
-			local subchunk_id = global_levelassembly.modification.levelrooms[room_y][room_x]
-			if (
-				(subchunk_id == HD_SUBCHUNKID.PATH_DROP or subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP)
-			) then
-				table.insert(spots, {x = room_x, y = room_y, subchunk_id = subchunk_id})
+	if LEVEL_UNLOCK ~= nil then
+		local spots = {}
+		-- build a collection of potential spots
+		for room_y = levelh_start, levelh_end, 1 do
+			for room_x = levelw_start, levelw_end, 1 do
+				local subchunk_id = global_levelassembly.modification.levelrooms[room_y][room_x]
+				if (
+					(subchunk_id == HD_SUBCHUNKID.PATH_DROP or subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP)
+				) then
+					table.insert(spots, {x = room_x, y = room_y, subchunk_id = subchunk_id})
+				end
 			end
 		end
-	end
 
-	-- pick random place to fill
-	local spot = spots[math.random(#spots)]
-	local path_to_replace_with = nil
-	if spot.subchunk_id ~= nil then
-		if spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP then
-			path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
-		elseif spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-			path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
+		-- pick random place to fill
+		local spot = spots[math.random(#spots)]
+		local path_to_replace_with = nil
+		if (
+			spot ~= nil
+			and spot.subchunk_id ~= nil
+		) then
+			if spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP then
+				path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
+			elseif spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP then
+				path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
+			end
+		end
+
+		if path_to_replace_with ~= nil then
+			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], spot.y, spot.x)
 		end
 	end
-
-	if path_to_replace_with ~= nil then
-		levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], spot.y, spot.x)
-	end
-
+	
 	for room_y = levelh_start, levelh_end, 1 do
 		for room_x = levelw_start, levelw_end, 1 do
 			path_to_replace = global_levelassembly.modification.levelrooms[room_y][room_x]
@@ -3951,6 +4053,21 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 }
 HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	
+	if LEVEL_UNLOCK ~= nil then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
 
 	spots = {}
 		--{x, y, subchunk_id}
@@ -4919,8 +5036,6 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 	
 	local unlock_location_x, unlock_location_y = nil, nil
 
-	if LEVEL_UNLOCK ~= nil then
-	end
 	-- Coffin
 	if LEVEL_UNLOCK ~= nil then
 		-- Select room coordinates between x = 1..2 and y = 11
@@ -5165,18 +5280,9 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 	chunkRules = {
 		rooms = {
 			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
-				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
-					chunkPool_rand_index = 3
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
-				elseif CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
-					chunkPool_rand_index = 3
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
-				else
-					chunkPool_rand_index = math.random(2)
-				end
-				
+				chunkPool_rand_index = math.random(2)
 				if math.random(10) == 1 then 
-					chunkPool_rand_index = 4
+					chunkPool_rand_index = 3
 				end
 				return {index = chunkPool_rand_index}
 			end,
@@ -5186,10 +5292,6 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 		[HD_SUBCHUNKID.SIDE] = {
 			{"50000500000000000000000000000011111111115000050000000000000000000000001111111111"},
 			{"00000000000000110000000022000010001100011000110001100000000120~0000~021111111111"},
-			{ -- Alien Lord
-				"0000000000000000000000111111000011X0000000110000000011111L000~111111~01111111111",
-				"0000000000000000000000111111000000X01100000000110000L11111000~111111~01111111111"
-			},
 			-- Zoo
 			{"11110011110000000000010:00:01001111111100000000000m10:00:01m01111111101111111111"},
 		},
@@ -5224,12 +5326,29 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 			{"000000000000110011000010009100001111110000z0000z000000000000mm000000mm1111001111"},
 			{"000000000000110011000019000100001111110000z0000z000000000000mm000000mm1111001111"},
 		},
+		
+		[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN] = {
+			{
+				"110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L01111111111",
+				"0110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L1111111111",
+				"1100000011100000001100000Q001100000000110LL11100010000010*0111000111111111001111",
+				"110000001111000000011100Q0000011000000001000111LL010*010000011111000111111001111",
+			},
+		},
+		[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD] = {
+			{ -- Alien Lord
+				"0000000000000000000000111111000011X0000000110000000011111L000~111111~01111111111",
+				"0000000000000000000000111111000000X01100000000110000L11111000~111111~01111111111"
+			},
+		},
+
 		[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
 			{"22222222220000000000000000000000000000000000000000000000000000000000000000000000"},
 			{"11111111112222222222000000000000000000000000000000000000000000000000000000000000"},
 			{"22211112220001111000000211200000011110000002112000000022000000000000000000000000"},
 			{"11112211112112002112022000022000000000000000000000000000000000000000000000000000"},
 		},
+
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"11000000001111111110110010001011g00000001111100000000010000011000000~011111LLL11"}},
 		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000001101111111110100010011000000g011000001111100000100000~0000001111LLL11111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
@@ -5287,18 +5406,59 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 	level_generation_method_structure_vertical(
 		{
 			subchunk_id = HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN,
-			roomcodes = {
-				{
-					"110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L01111111111",
-					"0110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L1111111111",
-					"1100000011100000001100000Q001100000000110LL11100010000010*0111000111111111001111",
-					"110000001111000000011100Q0000011000000001000111LL010*010000011111000111111001111",
-				},
-			},
+			roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN]
 		},
 		nil,
 		{1, 2, 3, 4}
 	)
+
+	-- # TODO: Make all HD_ROOMOBJECT.method functions have a prePath parameter. Then put below in prePath == false.
+	--[[
+		loop through top to bottom, replace the first two side rooms found with alienlord rooms
+	--]]
+
+	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+	minw, minh, maxw, maxh = 1, 1, levelw, levelh
+
+	for hi = minh, maxh, 1 do
+		for wi = minw, maxw, 1 do
+			local spawn_alienlord = false
+			local pathid = global_levelassembly.modification.levelrooms[hi][wi]
+
+
+			if pathid == HD_SUBCHUNKID.SIDE then
+				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
+					spawn_alienlord = true
+					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
+				elseif CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
+					spawn_alienlord = true
+					CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
+				else
+					break
+				end
+			end
+
+			if spawn_alienlord == true then
+				levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD, HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD], hi, wi)
+			end
+		end
+	end
+	
+
+	if LEVEL_UNLOCK ~= nil then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
 end
 
 HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
@@ -5366,8 +5526,8 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 				"11111111112400000042110111101112000000211111111111000000000000000000001111111111"
 			},
 			{
-				"0000000000000000000000000000000000&000000qqwwwwwq0013wwww31011133331111111111111",
-				"0000000000000000000000000000000000&000000qwwwwwqq0013wwww31011133331111111111111"
+				"0000000000000000000000000000000000&000000qqwwwwwq0013wwww3101113w331111111111111",
+				"0000000000000000000000000000000000&000000qwwwwwqq0013wwww3101113w331111111111111"
 			}
 		},
 		[HD_SUBCHUNKID.PATH_DROP] = {
@@ -5388,7 +5548,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 			{"1000000001100(000001100000000110000000011100000011000000000000000000001111111111"},
 			{"1000000000100(000000100000000010000000001100000000000000000000000000001111111111"},
 			{"0000000001000(000001000000000100000000010000000011000000000000000000001111111111"},
-			{"0000000000000000000000000000000000&000000q3wwww3q0013wwww31011133331111111111111"},
+			{"0000000000000000000000000000000000&000000q3wwww3q0013wwww3101113w331111111111111"},
 		},
 		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
@@ -5415,8 +5575,8 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		[HD_SUBCHUNKID.IDOL] = {{"11CCCCCC1111000000111D000000D11000000001100000000100000000000000I00000qqqqA0qqqq"}}, -- modified from original for sliding doors
 		[HD_SUBCHUNKID.ALTAR] = {{"220000002200000000000000000000000000000000000000000000x0000000111111001111111111"}},
 		
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001101004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100101100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
+		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001104004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
+		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100401100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
@@ -5763,8 +5923,8 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			  "00000000000000001110000001110000000011105000011100000000111000000111001111112111"
 			},
 			{
-				"000000000000000000000000&000000000000000013wwww310013wwww31011133331111111111111",
-				"0000000000000000000000000&00000000000000013wwww310013wwww31011133331111111111111",
+				"0000000000000000000000000000000000&00000013wwww310013wwww3101113w331111111111111",--000000000000000000000000&000000000000000013wwww310013wwww31011133331111111111111
+				"00000000000000000000000000000000000&0000013wwww310013wwww31011133w31111111111111",--0000000000000000000000000&00000000000000013wwww310013wwww31011133331111111111111
 			},
 			{"hhhhhhhhhhh00000000h00rr00rr00h00000000hh========h000000000000000000001111111111"}
 		},
@@ -5795,8 +5955,8 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			{"10000000011112002111111200211110000000010022222200001111110002111111201111111111"},
 			{"00000000000000000000000000000000ffffff000000000000020000002011ssssss111111111111"},
 			{
-				"000000000000000000000000&000000000000000013wwww310013wwww31011133331111111111111",
-				"0000000000000000000000000&00000000000000013wwww310013wwww31011133331111111111111",
+				"0000000000000000000000000000000000&00000013wwww310013wwww3101113w331111111111111",--000000000000000000000000&000000000000000013wwww310013wwww31011133331111111111111
+				"00000000000000000000000000000000000&0000013wwww310013wwww31011133w31111111111111",--0000000000000000000000000&00000000000000013wwww310013wwww31011133331111111111111
 			}
 		},
 		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
@@ -6347,8 +6507,9 @@ function init_onlevel()
 	BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 	BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 	BOULDER_DEBUG_PLAYERTOUCH = false
-	TONGUE_UID = nil
-	TONGUE_BG_UID = nil
+	WORMTONGUE_UID = nil
+	WORMTONGUE_BG_UID = nil
+	WORM_BG_UID = nil
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 	DOOR_ENDGAME_OLMEC_UID = nil
@@ -6365,6 +6526,7 @@ function init_onlevel()
 	LOCKEDCHEST_KEY_SPAWNED = false
 	
 	LEVEL_UNLOCK = nil
+	UNLOCK_WI, UNLOCK_HI = nil, nil
 
 	COOP_COFFIN = false
 
@@ -6659,23 +6821,6 @@ function get_unlock()
 	end
 end
 
-
--- function get_unlock_area()
--- 	rand_pool = {"AREA_RAND1","AREA_RAND2","AREA_RAND3","AREA_RAND4"}
--- 	coffin_rand_pool = {}
--- 	rand_index = 1
--- 	n = #rand_pool
--- 	for rand_index = 1, #rand_pool, 1 do
--- 		if HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
--- 			rand_pool[rand_index] = nil
--- 		end
--- 	end
--- 	rand_pool = CompactList(rand_pool, n)
--- 	rand_index = math.random(1, #rand_pool)
--- 	unlock = rand_pool[rand_index]
--- 	return unlock
--- end
-
 function create_coffin_coop(x, y, l)
 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	the_coffin = get_entity(coffin_uid)
@@ -6685,11 +6830,35 @@ end
 
 -- # TODO: determining character unlock for coffin creation
 function create_coffin_unlock(x, y, l)
-	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
+	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	if LEVEL_UNLOCK ~= nil then
 		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
 		set_contents(coffin_uid, 193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
 	end
+
+	set_post_statemachine(coffin_uid, function()
+		local coffin = get_entity(coffin_uid)
+		if (
+			coffin.animation_frame == 1
+			and (
+				LEVEL_UNLOCK ~= nil
+				and (
+					LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
+					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
+					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
+					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+				)
+			)
+		) then
+			for i = 1, #RUN_UNLOCK_AREA, 1 do
+				if RUN_UNLOCK_AREA[i].theme == state.theme then
+					RUN_UNLOCK_AREA[i].unlocked = true 
+					break
+				end
+			end
+		end
+	end)
+
 	return coffin_uid
 end
 
@@ -6697,11 +6866,20 @@ function create_ceiling_chain(x, y, l)
 	local ent_to_spawn_over = nil
 	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
 	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-	
+
 	if (
 		ent_to_spawn_over ~= nil
 	) then
+		local ent = get_entity(ent_to_spawn_over)
+
 		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
+		if (
+			ent.type.id == ENT_TYPE.FLOOR_GENERIC
+			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
+			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
+		) then
+			get_entity(ent_to_spawn_over).animation_frame = 4
+		end
 	end
 end
 
@@ -6715,7 +6893,16 @@ function create_ceiling_chain_growable(x, y, l)
 		if (
 			ent_to_spawn_over ~= nil
 		) then
+			local ent = get_entity(ent_to_spawn_over)
+
 			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
+			if (
+				ent.type.id == ENT_TYPE.FLOOR_GENERIC
+				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
+				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
+			) then
+				get_entity(ent_to_spawn_over).animation_frame = 4
+			end
 			yi = yi - 1
 			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)
 			floors_at_offset = TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
@@ -6758,6 +6945,7 @@ function create_door_ending(x, y, l)
 	elseif feeling_check(FEELING_ID.YAMA) then
 		set_interval(exit_yama, 1)
 	end
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 end
 
 function create_door_entrance(x, y, l)
@@ -6926,6 +7114,19 @@ function create_regenblock(x, y, l)
 	regen_bg.hitboxx, regen_bg.hitboxy = regen_bg.width/2, regen_bg.height/2
 end
 
+function create_damsel(x, y, l)
+	local pet_setting = get_setting(GAME_SETTING.PET_STYLE)
+	local pet_type = math.random(ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_CAT+2)
+	if pet_setting == 0 then
+		pet_type = ENT_TYPE.MONS_PET_DOG
+	elseif pet_setting == 1 then
+		pet_type = ENT_TYPE.MONS_PET_CAT
+	elseif pet_setting == 2 then
+		pet_type = ENT_TYPE.MONS_PET_HAMSTER
+	end
+	spawn_grid_entity(pet_type, x, y, l, 0, 0)
+end
+
 function create_idol(x, y, l)
 	IDOL_X, IDOL_Y = x, y
 	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
@@ -6957,14 +7158,18 @@ function create_wormtongue(x, y, l)
 	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
 	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
 	if #balls > 0 then
-		-- # TODO: Add correct worm textures (in HD it's `LUSH\lushsmallbg.png` and `ICE\icesmallbg.png`)
-		TONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-		worm_background = get_entity(TONGUE_BG_UID)
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
+		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+		local ent_texture = define_texture(texture_def)
+		
+		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+		worm_background = get_entity(WORMTONGUE_BG_UID)
+		worm_background:set_texture(ent_texture)
 		worm_background.animation_frame = 8
 	
 		-- sticky part creation
-		TONGUE_UID = balls[1] -- HAHA tongue and balls
-		ball = get_entity(TONGUE_UID)
+		WORMTONGUE_UID = balls[1] -- HAHA tongue and balls
+		ball = get_entity(WORMTONGUE_UID)
 		ball.width = 1.35
 		ball.height = 1.35
 		ball.hitboxx = 0.3375
@@ -6979,29 +7184,11 @@ function create_wormtongue(x, y, l)
 		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
 		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
 		
-		-- worm_exit_uid = spawn_door(x, y, l, state.world, state.level+1, THEME.EGGPLANT_WORLD)
-		-- worm_exit = get_entity(worm_exit_uid)
-		-- worm_exit.flags = set_flag(worm_exit.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS) -- pause ai to prevent magnetizing damsels
-		-- lock_door_at(x, y)
-		
-		
-		
 		TONGUE_STATE = TONGUE_SEQUENCE.READY
-		
-		-- set_timeout(function()
-		-- 	x, y, l = get_position(TONGUE_UID)
-		-- 	door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
-		-- 	if #door_platforms > 0 then
-		-- 		door_platform = get_entity(door_platforms[1])
-		-- 		door_platform.flags = set_flag(door_platform.flags, ENT_FLAG.INVISIBLE)
-		-- 		door_platform.flags = clr_flag(door_platform.flags, ENT_FLAG.SOLID)
-		-- 		door_platform.flags = clr_flag(door_platform.flags, ENT_FLAG.IS_PLATFORM)
-		-- 	else message("No Worm Door platform found") end
-		-- 	-- Platform seems not to spawn if vine/branch is in the way
-		-- end, 2)
 	else
 		message("No STICKYTRAP_BALL found, no tongue generated.")
 		kill_entity(stickytrap_uid)
+		
 		TONGUE_STATE = TONGUE_SEQUENCE.GONE
 	end
 end
@@ -7240,8 +7427,14 @@ function remove_entitytype_inventory(entity_type, inventory_entities)
 	for r, _uid in ipairs(get_entities_by_type(entity_type)) do
 		for _, inventoryitem in ipairs(inventory_entities) do
 			local items = entity_get_items_by(_uid, inventoryitem, 0)
-			for _, _to_remove in ipairs(items) do
-				move_entity(_to_remove, -r, 0, 0, 0)
+			for _, _to_remove_uid in ipairs(items) do
+				move_entity(_to_remove_uid, -r, 0, 0, 0)
+				--[[
+					-- # TODO: Find a better way to remove powderkegs and pushblocks. The following uncommented code does not remove it propperly.
+					local entity = get_entity(_to_remove_uid)
+					entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
+					kill_entity(_to_remove_uid)
+				]]
 			end
 		end
 	end
@@ -7558,6 +7751,43 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
 
+set_pre_entity_spawn(function(type, x, y, l, _)
+	local rx, ry = get_room_index(x, y)
+	if (
+		LEVEL_UNLOCK ~= nil
+		and (
+			(UNLOCK_WI ~= nil and UNLOCK_WI == rx+1)
+			and (UNLOCK_HI ~= nil and UNLOCK_HI == ry+1)
+		)
+	) then
+		local uid = spawn_grid_entity(193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
+		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
+		--[[
+			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
+			You'll have to suppress the unlock dialog since it'll be pointing to wherever the coffin was out of bounds."
+			
+			local coffin_id = spawn_entity(ENT_TYPE.ITEM_COFFIN, -100, -100, LAYER.FRONT, 0, 0)
+			get_entity(coffin_id).inside = ENT_TYPE.CHAR_GREEN_GIRL
+		]]
+		-- set_post_statemachine(uid, function()
+		-- 	local ent = get_entity(uid)
+		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+		-- 		-- Can't manually unlock characters this way
+		-- 		-- savegame.characters = set_flag(savegame.characters, HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+
+		-- 		return false
+		-- 	end
+		-- end)
+		return uid
+	end
+	-- return spawn_grid_entity(ENT_TYPE.CHAR_HIREDHAND, x, y, l)
+end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
+
+-- set_post_entity_spawn(function(entity)
+-- 	entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
+-- 	entity:destroy()
+-- end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, 0)
+
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
@@ -7811,6 +8041,8 @@ local function detect_shop_room_template(x, y, l) -- is this position inside an 
 	return (
 		get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP
 		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP_LEFT
+		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP
+		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP_LEFT
 	)
 end
 
@@ -7891,7 +8123,7 @@ local function is_valid_damsel_spawn(x, y, l)
 				and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
 			)
             if (
-				(entity_left == true or entity_right == true)		
+				(entity_left == true or entity_right == true)
 				and detect_shop_room_template(x, y, l) == false
 			) then
 				return true
@@ -7947,31 +8179,51 @@ local function is_valid_wormtongue_spawn(x, y, l)
 			),
 			l
 		)
-		return #entity_uids == 0
+		return (
+			#entity_uids == 0
+			and detect_shop_room_template(x, y, l) == false
+		)
 	end
 	return false
 end
 
 local function is_valid_blackmarket_spawn(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y, l)
+	local floor_uid2 = get_grid_entity_at(x, y-1, l)
 	if (
 		floor_uid ~= -1
+		and floor_uid2 ~= -1
 	) then
 		local floor = get_entity(floor_uid)
 		local floor_type = get_entity_type(floor_uid)
+
+		local floor2 = get_entity(floor_uid2)
+		local floor_type2 = get_entity_type(floor_uid2)
 		return (
-			test_flag(floor.flags, ENT_FLAG.SOLID) == true
-			and test_flag(floor.flags, ENT_FLAG.SHOP_FLOOR) == false
-			and floor_type ~= ENT_TYPE.FLOOR_BORDERTILE
-			and floor_type ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
-			and floor_type ~= ENT_TYPE.FLOORSTYLED_STONE
-			and floor_type ~= ENT_TYPE.FLOOR_TREE_BASE
-			and floor_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
-			and floor_type ~= ENT_TYPE.FLOOR_TREE_TOP
-			-- and floor_type ~= ENT_TYPE.ACTIVEFLOOR_POWDERKEG
-			-- and floor_type ~= ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
-			-- and floor_type ~= ENT_TYPE.FLOOR_LADDER
-			-- and floor_type ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
+			(
+				test_flag(floor.flags, ENT_FLAG.SOLID) == true
+				and test_flag(floor.flags, ENT_FLAG.SHOP_FLOOR) == false
+				and floor_type ~= ENT_TYPE.FLOOR_BORDERTILE
+				and floor_type ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
+				and floor_type ~= ENT_TYPE.FLOORSTYLED_STONE
+				and floor_type ~= ENT_TYPE.FLOOR_TREE_BASE
+				and floor_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
+				and floor_type ~= ENT_TYPE.FLOOR_TREE_TOP
+				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER
+				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
+			)
+			and (
+				test_flag(floor2.flags, ENT_FLAG.SOLID) == true
+				and test_flag(floor2.flags, ENT_FLAG.SHOP_FLOOR) == false
+				and floor_type2 ~= ENT_TYPE.FLOOR_BORDERTILE
+				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
+				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_STONE
+				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_BASE
+				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TRUNK
+				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TOP
+				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER
+				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
+			)
 		)
 	end
 	return false
@@ -8379,7 +8631,7 @@ local function create_arrowtrap(x, y, l)
 	-- 	kill_entity(entity_here)
 	-- end
 	remove_floor_and_embedded_at(x, y, l)
-    local ent = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
+    local uid = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
     local left = get_grid_entity_at(x-1, y, l)
     local right = get_grid_entity_at(x+1, y, l)
 	local flip = false
@@ -8392,11 +8644,18 @@ local function create_arrowtrap(x, y, l)
 		flip = true
 	end
 	if flip == true then
-		flip_entity(ent)
+		flip_entity(uid)
 	end
 	if test_flag(state.level_flags, 18) == true then
-		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, ent, 0, 0.35)
+		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, uid, 0, 0.35)
 	end
+	
+	if state.theme == THEME.CITY_OF_GOLD then
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+		texture_def.texture_path = "res/floormisc_gold_trap.png"
+		get_entity(uid):set_texture(define_texture(texture_def))
+	end
+
 end
 local function is_valid_arrowtrap_spawn(x, y, l)
 	local rx, ry = get_room_index(x, y)
@@ -8571,6 +8830,8 @@ set_callback(function(room_gen_ctx)
 
 			levelcreation()
 
+			set_blackmarket_shoprooms(room_gen_ctx)
+
 			onlevel_generation_execution_phase_one()
 			onlevel_generation_execution_phase_two()
 
@@ -8691,9 +8952,9 @@ set_callback(function(room_gen_ctx)
 							
 						-- black market
 						elseif (_template_hd == HD_SUBCHUNKID.BLACKMARKET_SHOP) then
-							template_to_set = s2_room_template_blackmarket_shop
+							template_to_set = ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN_LEFT--s2_room_template_blackmarket_shop
 						elseif (_template_hd == HD_SUBCHUNKID.BLACKMARKET_ANKH) then
-							template_to_set = s2_room_template_blackmarket_ankh
+							template_to_set = ROOM_TEMPLATE.SHOP_ENTRANCE_UP_LEFT--s2_room_template_blackmarket_ankh
 
 						-- coop coffin
 						
@@ -8928,6 +9189,12 @@ set_callback(function()
 
 					embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
 				end
+				if feeling_check(FEELING_ID.BLACKMARKET) then
+					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
+					for _, shopkeeper_uid in pairs(shopkeeper_uids) do
+						get_entity(shopkeeper_uid).has_key = false
+					end
+				end
 			end
 		end
 		
@@ -9017,6 +9284,9 @@ set_callback(function()
 							backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
 							backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 
+							-- mother statue
+							spawn_entity(ENT_TYPE.BG_CROWN_STATUE, corner_x+4.5, corner_y+(8*3)-7, l, 0, 0)
+
 						elseif _template_hd == HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP then
 							local w, h = 10, 8
 							local x, y, l = corner_x+4.5, corner_y-3.5, LAYER.FRONT
@@ -9059,6 +9329,16 @@ set_callback(function()
 						end
 					end
 				end
+			end
+			--[[
+				Lut Settings
+			]]
+			
+			if state.theme == THEME.VOLCANA then
+				local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_LUT_ORIGINAL_0)
+				texture_def.texture_path = "res/lut_hell.png"
+				local vlad_atmos_id = define_texture(texture_def)
+				set_lut(vlad_atmos_id, LAYER.FRONT)
 			end
 		end
 	end
@@ -9228,6 +9508,42 @@ function detect_coop_coffin(room_gen_ctx)
 	end
 end
 
+function set_blackmarket_shoprooms(room_gen_ctx)
+
+	if feeling_check(FEELING_ID.BLACKMARKET) then
+		local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
+		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
+		UNLOCK_WI, UNLOCK_HI = 0, 0
+		if LEVEL_UNLOCK ~= nil then
+			UNLOCK_WI = math.random(minw, maxw)
+			UNLOCK_HI = math.random(minh, (UNLOCK_WI ~= maxw and maxh or maxh-1))
+		end
+		-- message("wi, hi: " .. UNLOCK_WI .. ", " .. UNLOCK_HI)
+		for hi = minh, maxh, 1 do
+			for wi = minw, maxw, 1 do
+				if (hi == maxh and wi == maxw) then
+					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
+				elseif (hi == UNLOCK_HI and wi == UNLOCK_WI) then
+					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
+				else
+					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, math.random(0, 5))
+				end
+			end
+		end
+		-- room_gen_ctx:set_shop_type(1, 0, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 0, LAYER.FRONT, math.random(0, 5))
+
+		-- room_gen_ctx:set_shop_type(1, 1, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 1, LAYER.FRONT, math.random(0, 5))
+
+		-- room_gen_ctx:set_shop_type(1, 2, LAYER.FRONT, math.random(0, 5))
+		-- room_gen_ctx:set_shop_type(2, 2, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
+
+		-- room_gen_ctx:set_shop_type(3, 2, LAYER.FRONT, SHOP_TYPE.HEDJET_SHOP)--unneeded
+	end
+
+end
+
 set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
 	onlevel_generation_execution_phase_four()
@@ -9261,6 +9577,7 @@ set_callback(function()
 	onlevel_acidbubbles()
 	onlevel_ankh_respawn()
 	onlevel_decorate_trees()
+	onlevel_replace_border()
 	onlevel_removeborderfloor()
 	onlevel_create_impostorlake()
 	onlevel_remove_boulderstatue()
@@ -9463,6 +9780,7 @@ function onloading_levelrules()
 	if (
 		state.level == 4
 		and state.world == DEMO_MAX_WORLD
+		and state.screen_next ~= ON.DEATH
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
 		set_global_timeout(function()
@@ -9508,6 +9826,8 @@ function onlevel_generation_modification()
 			gen_levelrooms_path()
 		end
 		gen_levelrooms_nonpath(false)
+		
+		level_generation_method_world_coffin()
 
 		level_generation_method_coffin_coop()
 
@@ -9654,6 +9974,32 @@ function onlevel_removeborderfloor()
 		-- or state.theme == THEME.OLMEC -- Lava touching the void ends up in a crash
 	) then
 		remove_borderfloor()
+	end
+end
+
+function onlevel_replace_border()
+	if (
+		state.theme == THEME.EGGPLANT_WORLD
+		or state.theme == THEME.VOLCANA
+	) then
+		
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
+		if state.theme == THEME.EGGPLANT_WORLD then
+			texture_def.texture_path = "res/worm_border.png"
+		elseif state.theme == THEME.VOLCANA then
+			texture_def.texture_path = "res/hell_border.png"
+		end
+		boneder_texture = define_texture(texture_def)
+
+		local bonebordere = get_entities_by_type(ENT_TYPE.FLOOR_BORDERTILE) -- get all entities of these types
+		for _, boneborder_uid in pairs(bonebordere) do 
+			get_entity(boneborder_uid):set_texture(boneder_texture)
+
+			local boneborderdecoratione = entity_get_items_by(boneborder_uid, ENT_TYPE.DECORATION_BORDER, 0)
+			for _, boneborderdecoration_uid in pairs(boneborderdecoratione) do
+				get_entity(boneborderdecoration_uid):set_texture(boneder_texture)
+			end
+		end
 	end
 end
 
@@ -10111,33 +10457,19 @@ end
 function onlevel_set_feelings()
 	if (
 		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
-		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL) or
-		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
+		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
+		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
 	) then
 
 		if state.level == 1 then
 			global_feelings = TableCopy(HD_FEELING_DEFAULTS)
 		end
 
-		--[[
-			Game-wide Feelings
-		--]]
 		-- Vaults
 		if state.theme ~= THEME.VOLCANA then
 			feeling_set_once(FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
 		elseif state.theme == THEME.TEMPLE then
 			feeling_set_once(FEELING_ID.VAULT, {1, 2, 3})
-		end
-		
-		if (
-			TONGUE_SPAWNED == false
-			and (
-				state.theme == THEME.JUNGLE or
-				state.theme == THEME.ICE_CAVES
-			)
-		) then
-			feeling_set_once(FEELING_ID.WORMTONGUE, {1})
-			TONGUE_SPAWNED = true
 		end
 		
 		--[[
@@ -10156,7 +10488,10 @@ function onlevel_set_feelings()
 			end
 
 			-- spiderlair and snakepit cannot happen at the same time
-			if feeling_check(FEELING_ID.SPIDERLAIR) == false then
+			if (
+				feeling_check(FEELING_ID.SPIDERLAIR) == false
+				and state.level ~= 1
+			) then
 				feeling_set_once(FEELING_ID.SNAKEPIT, {state.level})
 			end
 		end
@@ -10169,14 +10504,20 @@ function onlevel_set_feelings()
 				feeling_set_once(FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
 			end
 
-			-- Haunted Castle cannot have level feelings
+			-- Restless cannot happen on haunted castle
 			if feeling_check(FEELING_ID.HAUNTEDCASTLE) == false then
-				
 				feeling_set_once(FEELING_ID.RESTLESS, {state.level})
-				feeling_set_once(FEELING_ID.RUSHING_WATER, {state.level})
+			end
 
+			-- Haunted Castle and Black Market cannot have rushing water nor tikivillage
+			if (
+				feeling_check(FEELING_ID.HAUNTEDCASTLE) == false
+				and feeling_check(FEELING_ID.BLACKMARKET) == false
+			) then
+				feeling_set_once(FEELING_ID.RUSHING_WATER, {state.level})
+				
 				-- tikivillage levels cannot be restless
-				-- tikivillage and flooded cannot happen at the same time
+				-- tikivillage and rushing water cannot happen at the same time
 				if (
 					feeling_check(FEELING_ID.RESTLESS) == false and
 					feeling_check(FEELING_ID.RUSHING_WATER) == false
@@ -10185,6 +10526,21 @@ function onlevel_set_feelings()
 				end
 			end
 		end
+		
+		-- Worm Tongue
+		if (
+			TONGUE_SPAWNED == false
+			and state.level == 1
+			and (
+				state.theme == THEME.JUNGLE or
+				state.theme == THEME.ICE_CAVES
+			)
+			and feeling_check(FEELING_ID.RESTLESS) == false
+		) then
+			feeling_set_once(FEELING_ID.WORMTONGUE, {1})
+			TONGUE_SPAWNED = true
+		end
+
 		--[[
 			Ice Caves
 		--]]
@@ -10212,16 +10568,16 @@ function onlevel_set_feelings()
 			end
 			
 			if (
-				feeling_check(FEELING_ID.MOAI) == false and
-				state.level ~= 4
+				feeling_check(FEELING_ID.MOAI) == false
+				and state.level ~= 4
 			) then
 				feeling_set_once(FEELING_ID.YETIKINGDOM, {state.level})
 			end
 			
 			-- # TODO: Verify exactly when UFO is allowed to spawn
 			if (
-				feeling_check(FEELING_ID.YETIKINGDOM) == false and
-				state.level ~= 4
+				feeling_check(FEELING_ID.YETIKINGDOM) == false
+				and state.level ~= 4
 			) then
 				feeling_set_once(FEELING_ID.UFO, {state.level})
 			end
@@ -10417,6 +10773,8 @@ function onframe_idoltrap()
 				end
 			else -- Normal temple trap
 				-- # TODO: Normal temple idol trap sliding doors
+				local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
+				texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
 				for i = 1, #idoltrap_blocks, 1 do
 					local floor = get_entity(idoltrap_blocks[i])
 					-- Code provided by Dregu
@@ -10425,8 +10783,11 @@ function onframe_idoltrap()
 						kill_entity(floor.uid)
 						local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))
 						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, 17)
+						block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
 						block.velocityy = -0.01
+						
+						block:set_texture(define_texture(texture_def))
+						block.animation_frame = 27
 					end
 				end
 			end
@@ -10537,13 +10898,13 @@ end
 function tongue_idle()
 	if (
 		state.theme == THEME.JUNGLE and -- or state.theme == THEME.ICE_CAVES) and
-		TONGUE_UID ~= nil and
+		WORMTONGUE_UID ~= nil and
 		(
 			TONGUE_STATE == TONGUE_SEQUENCE.READY or
 			TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
 		)
 	) then
-		x, y, l = get_position(TONGUE_UID)
+		x, y, l = get_position(WORMTONGUE_UID)
 		for _ = 1, 3, 1 do
 			if math.random() >= 0.5 then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((math.random()*1.5)-1), y+((math.random()*1.5)-1), l, 0, 0) end
 		end
@@ -10551,9 +10912,9 @@ function tongue_idle()
 end
 
 function onframe_tonguetimeout()
-	if TONGUE_UID ~= nil and TONGUE_STATE ~= TONGUE_SEQUENCE.GONE then
-		local tongue = get_entity(TONGUE_UID)
-		x, y, l = get_position(TONGUE_UID)
+	if WORMTONGUE_UID ~= nil and TONGUE_STATE ~= TONGUE_SEQUENCE.GONE then
+		local tongue = get_entity(WORMTONGUE_UID)
+		x, y, l = get_position(WORMTONGUE_UID)
 		checkradius = 1.5
 		
 		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
@@ -10563,10 +10924,7 @@ function onframe_tonguetimeout()
 				damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
 				if #damsels > 0 then
 					damsel = get_entity(damsels[1])
-					-- message("damsel.move_state: " .. tostring(damsel.state))
-					stuck_in_web = test_flag(damsel.more_flags, 8)--9)
-					-- local falling = (damsel.state == 9)
-					dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
+					stuck_in_web = test_flag(damsel.more_flags, 8)
 					if (
 						(stuck_in_web == true)
 					) then
@@ -10581,14 +10939,11 @@ function onframe_tonguetimeout()
 					end
 				end
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
-				-- kill the boulder once you find one (or kill LOGICAL_BOULDERSPAWNER before it spawns one)
 				set_timeout(function()
-				
-					if TONGUE_BG_UID ~= nil then
-						worm_background = get_entity(TONGUE_BG_UID)
-						-- # TODO: Add correct worm textures (in HD it's `ANYLEVEL\holes.png`)
-						worm_background.animation_frame = 4
-					else message("TONGUE_BG_UID is nil :(") end
+					if WORMTONGUE_BG_UID ~= nil then
+						worm_background = get_entity(WORMTONGUE_BG_UID)
+						worm_background.animation_frame = 7
+					else message("WORMTONGUE_BG_UID is nil :(") end
 					
 					-- # TODO: Method to animate rubble better.
 					for _ = 1, 3, 1 do
@@ -10613,14 +10968,74 @@ function onframe_tonguetimeout()
 						end
 					end
 
+					--create worm bg
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
+					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+					local ent_texture = define_texture(texture_def)
+					
+					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+					worm_background = get_entity(WORM_BG_UID)
+					worm_background:set_texture(ent_texture)
+					worm_background.animation_frame = 5
+
+					local ent = get_entity(WORM_BG_UID)
+					worm_background.width, worm_background.height = 2, 2
+					-- message("WORM_BG_UID: " .. WORM_BG_UID)
+					
+					-- animate worm
+					set_interval(function()
+						if WORM_BG_UID ~= nil then
+							local ent = get_entity(WORM_BG_UID)
+							if ent ~= nil then
+								if ent.width >= 4 then
+									if ent.animation_frame == 5 then
+										ent.animation_frame = 4
+									elseif ent.animation_frame == 4 then
+										ent.animation_frame = 2
+									elseif ent.animation_frame == 2 then
+										ent.animation_frame = 1
+									else
+										return false
+									end
+								else
+									ent.width, ent.height = ent.width + 0.1, ent.height + 0.1
+								end
+							end
+						end
+					end, 1)
+
 					TONGUE_STATE = TONGUE_SEQUENCE.EMERGE
 					TONGUE_STATECOMPLETE = false
 				end, 65)
 				TONGUE_STATECOMPLETE = true
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then
 				set_timeout(function() -- level exit should activate here
-					
 					tongue_exit()
+					
+					-- animate worm
+					set_interval(function()
+						if WORM_BG_UID ~= nil then
+							local ent = get_entity(WORM_BG_UID)
+							if ent ~= nil then
+								if ent.animation_frame == 1 then
+									ent.animation_frame = 2
+								elseif ent.animation_frame == 2 then
+									ent.animation_frame = 4
+								elseif ent.animation_frame == 4 then
+									ent.animation_frame = 5
+								else
+									if ent.width > 2 then
+										ent.width, ent.height = ent.width - 0.1, ent.height - 0.1
+									else
+										kill_entity(WORM_BG_UID)
+										WORM_BG_UID = nil
+										return false
+									end
+								end
+							end
+						end
+					end, 1)
+					
 
 					TONGUE_STATE = TONGUE_SEQUENCE.SWALLOW
 					TONGUE_STATECOMPLETE = false
@@ -10632,13 +11047,19 @@ function onframe_tonguetimeout()
 					boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
 					kill_entity(boulder_spawners[1])
 					
-					kill_entity(TONGUE_UID)
-					TONGUE_UID = nil
-					
+					local entity = get_entity(WORMTONGUE_UID)
+					entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
+					entity:destroy()
+					-- kill_entity(WORMTONGUE_UID)
+					WORMTONGUE_UID = nil
+
 					TONGUE_STATE = TONGUE_SEQUENCE.GONE
 				end, 40)
+				
 				TONGUE_STATECOMPLETE = true
-			end -- never reaches "TONGUE_SEQUENCE.GONE"
+				
+				return false
+			end
 		end
 	end
 end
@@ -10660,7 +11081,7 @@ function players_in_moai()
 end
 
 function tongue_exit()
-	x, y, l = get_position(TONGUE_UID)
+	x, y, l = get_position(WORMTONGUE_UID)
 	checkradius = 1.5
 	local damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
 	damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
@@ -10688,108 +11109,65 @@ function tongue_exit()
 		for _, damsel_uid in ipairs(damsels) do
 			damsel = get_entity(damsel_uid):as_movable()
 			stuck_in_web = test_flag(damsel.more_flags, 9)
-			-- local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
+			local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
 			if (
 				(stuck_in_web == true)
-				-- # TODO: Don't teleport damsel if dead(? did this happen if the damsel was dead in HD? Investigate.)
-				-- (dead == false)
 			) then
-				damsel.stun_timer = 0
-				if options.hd_debug_scripted_enemies_show == false then
-					damsel.flags = set_flag(damsel.flags, ENT_FLAG.INVISIBLE)
+				if dead then
+					damsel:destroy()
+				else
+					damsel.stun_timer = 0
+					if options.hd_debug_scripted_enemies_show == false then
+						damsel.flags = set_flag(damsel.flags, ENT_FLAG.INVISIBLE)
+					end
+					damsel.flags = clr_flag(damsel.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
+					-- damsel.flags = clr_flag(damsel.flags, ENT_FLAG.STUNNABLE)-- disable stunable
+					damsel.flags = set_flag(damsel.flags, ENT_FLAG.TAKE_NO_DAMAGE)--6)-- enable take no damage
+					move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
 				end
-				damsel.flags = clr_flag(damsel.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-				-- damsel.flags = clr_flag(damsel.flags, ENT_FLAG.STUNNABLE)-- disable stunable
-				damsel.flags = set_flag(damsel.flags, ENT_FLAG.TAKE_NO_DAMAGE)--6)-- enable take no damage
-				move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
 			end
 		end
 	else
 		message("No Level Exitdoor found, can't force-rescue damsels.")
 	end
-	-- if worm_exit_uid ~= nil then
-	-- 	worm_exit = get_entity(worm_exit_uid)
-	-- 	worm_exit.flags = clr_flag(worm_exit.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS) -- resume ai to magnetize damsels
-		if #ensnaredplayers > 0 then
-			-- unlock worm door, let players in
-			-- unlock_door_at(x, y)
-			-- local door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
-			-- if #door_platforms > 0 then
-			-- 	door_platform = get_entity(door_platforms[1])
-			-- 	if options.hd_debug_scripted_enemies_show == true then
-			-- 		door_platform.flags = clr_flag(door_platform.flags, ENT_FLAG.INVISIBLE)
-			-- 	end
-			-- 	door_platform.flags = set_flag(door_platform.flags, ENT_FLAG.SOLID)
-			-- 	door_platform.flags = set_flag(door_platform.flags, ENT_FLAG.IS_PLATFORM)
-			-- end
-			
-			for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-				ensnaredplayer = get_entity(ensnaredplayer_uid)
-				ensnaredplayer.stun_timer = 0
-				ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)-- disable input
-				
-				if options.hd_debug_scripted_enemies_show == false then
-					ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
-				end
-					-- disable interactions with anything else that may interfere with entering the door
-				ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
-				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.NO_GRAVITY)-- disable gravity
-				
-				-- -- teleport player to the newly created invisible door (platform is at y+0.05)
-				-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
-			end
-			
-			
-			-- -- after enough time passed to let the player touch the platform, force door enter button
-			-- set_timeout(function()
-			-- 	x, y, l = get_position(TONGUE_UID)
-			-- 	checkradius = 1.5
-			-- 	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
-			-- 	for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-			-- 		steal_input(ensnaredplayer_uid)
-			-- 		send_input(ensnaredplayer_uid, BUTTON.DOOR)
-			-- 	end
-			-- end, 15)
-			
-			-- lock worm door
-			set_timeout(function()
-				
-				state.screen_next = SCREEN.TRANSITION
-				state.world_next = state.world
-				state.level_next = state.level+1
-				state.theme_next = THEME.EGGPLANT_WORLD
-				state.loading = 1--SCREEN.INTRO?
-				state.pause = 0
 
-				-- x, y, l = get_position(TONGUE_UID)
-				-- local exits = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 1)
-				-- local door_platforms = get_entities_at(ENT_TYPE.FLOOR_DOOR_PLATFORM, 0, x, y, l, 1.5)
-				-- if #exits > 0 then
-				-- 	if #door_platforms > 0 then
-				-- 		door_platform = get_entity(door_platforms[1])
-				-- 		if options.hd_debug_scripted_enemies_show == true then
-				-- 			door_platform.flags = set_flag(door_platform.flags, ENT_FLAG.INVISIBLE)
-				-- 		end
-				-- 		door_platform.flags = clr_flag(door_platform.flags, ENT_FLAG.SOLID)
-				-- 		door_platform.flags = clr_flag(door_platform.flags, ENT_FLAG.IS_PLATFORM)
-				-- 	end
-				-- 	worm_exit = get_entity(exits[1])
-				-- 	worm_exit.flags = set_flag(worm_exit.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS) -- pause ai to prevent magnetizing damsels
-				-- 	lock_door_at(x, y)
-				-- end
-			end, 55)
+	if #ensnaredplayers > 0 then
+		
+		for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
+			ensnaredplayer = get_entity(ensnaredplayer_uid)
+			ensnaredplayer.stun_timer = 0
+			ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)-- disable input
+			
+			if options.hd_debug_scripted_enemies_show == false then
+				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
+			end
+				-- disable interactions with anything else that may interfere with entering the door
+			ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
+			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
+			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.NO_GRAVITY)-- disable gravity
+			
+			-- -- teleport player to the newly created invisible door (platform is at y+0.05)
+			-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
 		end
 		
-		-- hide worm tongue
-		tongue = get_entity(TONGUE_UID)
-		if options.hd_debug_scripted_enemies_show == false then
-			tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
-		end
-		tongue.flags = set_flag(tongue.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
-	-- else
-	-- 	message("No Worm Exitdoor found, can't force-exit players.")
-	-- end
+		set_timeout(function()
+			
+			state.screen_next = SCREEN.TRANSITION
+			state.world_next = state.world
+			state.level_next = state.level+1
+			state.theme_next = THEME.EGGPLANT_WORLD
+			state.loading = 1--SCREEN.INTRO?
+			state.pause = 0
+
+		end, 55)
+	end
+	
+	-- hide worm tongue
+	tongue = get_entity(WORMTONGUE_UID)
+	if options.hd_debug_scripted_enemies_show == false then
+		tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
+	end
+	tongue.flags = set_flag(tongue.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
 end
 
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
@@ -11068,7 +11446,7 @@ function onframe_olmec_cutscene() -- **Move to set_interval() that you can close
 			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
 			-- kill the blocks olmec would normally smash.
 			for b = 1, 4, 1 do
-				local blocks = get_entities_at(ENT_TYPE.FLOORSTYLED_STONE, 0, 21+b, 97, LAYER.FRONT, 0.5)--98, LAYER.FRONT, 0.5)
+				local blocks = get_entities_at({ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, 0, 21+b, 97, LAYER.FRONT, 0.5)--98, LAYER.FRONT, 0.5)
 				if #blocks > 0 then
 					kill_entity(blocks[1])
 				end
@@ -11490,8 +11868,8 @@ function onguiframe_ui_info_wormtongue()
 			draw_text(text_x, text_y, 0, "Worm Tongue State: " .. tongue_debugtext_sequence, white)
 			text_y = text_y-0.1
 			
-			tongue_debugtext_uid = tostring(TONGUE_UID)
-			if TONGUE_UID == nil then tongue_debugtext_uid = "nil" end
+			tongue_debugtext_uid = tostring(WORMTONGUE_UID)
+			if WORMTONGUE_UID == nil then tongue_debugtext_uid = "nil" end
 			draw_text(text_x, text_y, 0, "Worm Tongue UID: " .. tongue_debugtext_uid, white)
 			text_y = text_y-0.1
 			
@@ -12030,6 +12408,31 @@ function detect_level_allow_coop_coffin()
 	)
 end
 
+function level_generation_method_world_coffin()
+	if (
+		LEVEL_UNLOCK ~= nil
+		and (
+			LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
+			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+		)
+	) then
+		level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+				},
+				right = {
+					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+				}
+			}
+		)
+	end
+end
+
 function level_generation_method_coffin_coop()
 	if detect_level_allow_coop_coffin() then
 		levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
@@ -12211,7 +12614,10 @@ end
 
 function gen_levelrooms_nonpath(prePath)
 	
-	if (HD_ROOMOBJECT.WORLDS[state.theme].prePath == nil and prePath == false) or (HD_ROOMOBJECT.WORLDS[state.theme].prePath ~= nil and HD_ROOMOBJECT.WORLDS[state.theme].prePath == prePath) then
+	if (
+		(HD_ROOMOBJECT.WORLDS[state.theme].prePath == nil and prePath == false)
+		or (HD_ROOMOBJECT.WORLDS[state.theme].prePath ~= nil and HD_ROOMOBJECT.WORLDS[state.theme].prePath == prePath)
+	) then
 		if HD_ROOMOBJECT.WORLDS[state.theme].method ~= nil then
 			HD_ROOMOBJECT.WORLDS[state.theme].method()
 		end

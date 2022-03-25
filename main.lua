@@ -1,7 +1,7 @@
-local commonlib = require 'lib.common'
-local HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
-local FEELING_ID = require 'lib.const.feeling_ids'
-local HD_UNLOCK_ID = require 'lib.const.unlock_ids'
+commonlib = require 'lib.common'
+HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
+FEELING_ID = require 'lib.const.feeling_ids'
+HD_UNLOCK_ID = require 'lib.const.unlock_ids'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"

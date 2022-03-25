@@ -1,3 +1,5 @@
+local commonlib = require 'lib.common'
+
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
@@ -42,124 +44,8 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
-bool_to_number={ [true]=1, [false]=0 }
-
 DEMO_MAX_WORLD = 1
 DEMO_TUTORIAL_AVAILABLE = false
-
-function teleport_mount(ent, x, y)
-    if ent.overlay ~= nil then
-        move_entity(ent.overlay.uid, x, y, 0, 0)
-    else
-        move_entity(ent.uid, x, y, 0, 0)
-    end
-    -- ent.more_flags = clr_flag(ent.more_flags, 16)
-    set_camera_position(x, y)--wow this looks wrong, i think this auto-corrected at some point :/
-end
-
-function rotate(cx, cy, x, y, degrees)
-	radians = degrees * (math.pi/180)
-	rx = math.cos(radians) * (x - cx) - math.sin(radians) * (y - cy) + cx
-	ry = math.sin(radians) * (x - cx) + math.cos(radians) * (y - cy) + cy
-	result = {rx, ry}
-	return result
-end
-
-function file_exists(file)
-	local f = io.open(file, "rb")
-	if f then f:close() end
-	return f ~= nil
-end
-
--- get all lines from a file, returns an empty 
--- list/table if the file does not exist
-function lines_from(file)
-  if not file_exists(file) then return {} end
-  lines = {}
-  for line in io.lines(file) do 
-    lines[#lines + 1] = line
-  end
-  return lines
-end
-
-function CompactList(list, prev_size)
-	local j=0
-	for i=1,prev_size do
-		if list[i]~=nil then
-			j=j+1
-			list[j]=list[i]
-		end
-	end
-	for i=j+1,prev_size do
-		list[i]=nil
-	end
-	return list
-end
-
-function TableLength(t)
-  local count = 0
-  for _ in pairs(t) do count = count + 1 end
-  return count
-end
-
-function TableFirstKey(t)
-  local count = 0
-  for k,_ in pairs(t) do return k end
-  return nil
-end
-
-function TableFirstValue(t)
-  local count = 0
-  for _,v in pairs(t) do return v end
-  return nil
-end
-
-function TableRandomElement(tbl)
-	local t = {}
-	if #tbl == 0 then return nil end
-	for _, v in ipairs(tbl) do
-		t[#t+1] = v
-	end
-	return t[math.random(1, #t)]
-end
-
-function TableConcat(t1, t2)
-	for i=1,#t2 do
-        t1[#t1+1] = t2[i]
-    end
-    return t1
-end
-
-local function has(arr, item)
-    for i, v in pairs(arr) do
-        if v == item then
-            return true
-        end
-    end
-    return false
-end
-
-function map(tbl, f)
-	local t = {}
-	for k, v in ipairs(tbl) do
-		t[k] = f(v)
-	end
-	return t
-end
-
-function TableCopy(obj, seen)
-  if type(obj) ~= 'table' then return obj end
-  if seen and seen[obj] then return seen[obj] end
-  local s = seen or {}
-  local res = setmetatable({}, getmetatable(obj))
-  s[obj] = res
-  for k, v in pairs(obj) do res[TableCopy(k, s)] = TableCopy(v, s) end
-  return res
-end
-
-function setn(t,n)
-	setmetatable(t,{__len=function() return n end})
-end
 
 -- translate levelrooms coordinates to the tile in the top-left corner in game coordinates
 function locate_game_corner_position_from_levelrooms_position(roomx, roomy)
@@ -208,7 +94,7 @@ function get_levelsize()
 end
 
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
-local valid_floors = TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
+local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
 DANGER_GHOST_UIDS = {}
 GHOST_TIME = 10800
@@ -2521,7 +2407,7 @@ HD_ROOMOBJECT.TUTORIAL[3] = {
 			placement = {2, 4},
 			-- wow, okay, so comparing SHOP_REGULAR_LEFT's roomcode to the original shows that it's almost exactly the same
 			-- with the exception of the overhead tiles not set to shopkeeper tiles
-			roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_REGULAR_LEFT]) -- {{"111111111111111111111111221111112000l11101W0000...0k00000...000S000K..bbbbbbbbbb"}}
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_REGULAR_LEFT]) -- {{"111111111111111111111111221111112000l11101W0000...0k00000...000S000K..bbbbbbbbbb"}}
 		},
 
 		-- 3
@@ -3101,7 +2987,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 		{
 			subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE_LEFT,
 			placement = {3, 3},
-			roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
 		},
 		{
 			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_ANKH,
@@ -3752,22 +3638,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].method = function()
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	}
@@ -3996,22 +3882,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	},
@@ -4271,7 +4157,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].method = function()
 	end
 
 	-- pick random place to fill
-	spot = TableRandomElement(spots)
+	spot = commonlib.TableRandomElement(spots)
 	
 	if (
 		math.random(4) <= 3
@@ -4353,7 +4239,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 	{
 		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
 		placement = {2, 1},
-		roomcodes = TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
@@ -4371,7 +4257,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 	{
 		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
 		placement = {2, 4},
-		roomcodes = TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 
@@ -4379,7 +4265,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 	{
 		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
 		placement = {3, 1},
-		roomcodes = TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
@@ -4407,7 +4293,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 	{
 		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
 		placement = {3, 4},
-		roomcodes = TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 
@@ -5089,7 +4975,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 		)
 
 		spots[spot1_i] = nil
-		CompactList(spots, n)
+		commonlib.CompactList(spots, n)
 		spot2 = spots[math.random(#spots)]
 
 		levelcode_inject_roomcode(
@@ -5258,7 +5144,7 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 		},
 	},
 }
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.SIDE] = TableConcat({
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
 	{"20000000020000000000000000000000000000000000000000000000000000000000002000000002"},
 	{"10000000001000000000111000000022201100000000220100000000010000000001110000000222"},
 	{"00000000010000000001000000011100001102220010220000001000000011100000002220000000"},
@@ -5267,9 +5153,9 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.SIDE] = TableConcat({
 	{"0jiiiiiij00jij00jij0jjii0jiij0000000jij0jjiij0iij00jiij0jijj0jiij000000jjiiiiijj"},
 	{"0jiiiiiij00jij00jij00jii0jiijj0jij0000000jij0jiijj0jij0jiij000000jiij00jjiiiiijj"},
 	{"011iiii110000jjjj0000000ii00000000jj00000000ii00000000jj00000000ii00000002222000"},
-}, TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH]))
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
+}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH]))
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
 HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_NOTOP] = {
 	{"00000000000000000000000000000000005000000000000000000000000000021111100000222211",
 	"00000000000000000000000000000005000000000000000000000000000001111120001122220000"}
@@ -5366,22 +5252,22 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
 				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	},
@@ -5615,7 +5501,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		},
 	},
 }
-HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = TableConcat({
+HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
 	{"11111000001111100000111110000011111000001111150000111110000011111000001111111111"},
 	{"00000111110000011111000001111100000111115000011111000001111100000111111111111111"},
 	{"11000000001110000000211100000011111000002211110000111111100022211111001111111111"},
@@ -5636,7 +5522,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = TableConcat({
 	{"111111111111111111111111EE1111110111101111E1111E111111EE111111111111111111111111"},
 	{"1000000001000000000010000000011000000001100000000100T0000T000dddddddd01111111111"},
 	{"10000000010021111200100000000110000000011111001111111200211111120021111111001111"},
-}, TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]))
+}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]))
 
 HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	chunkRules = {
@@ -5667,7 +5553,7 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = TableConcat(
+		[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat(
 			{
 				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][1],
 				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][2],
@@ -5682,12 +5568,12 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][11],
 				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][12]
 			},
-			TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH])
+			commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH])
 		),
-		[HD_SUBCHUNKID.PATH] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]),
-		[HD_SUBCHUNKID.PATH_NOTOP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_NOTOP]),
-		[HD_SUBCHUNKID.PATH_DROP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP]),
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP]),
+		[HD_SUBCHUNKID.PATH] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]),
+		[HD_SUBCHUNKID.PATH_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_NOTOP]),
+		[HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP]),
+		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP]),
 		[HD_SUBCHUNKID.ENTRANCE] = {
 			{
 				"011111110000000000000000000000000000000000z090z000011111110001111111001111111111",
@@ -5700,8 +5586,8 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 				"0011111110000000000000000000000000000000000z090z00001111111000100000401112002111"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT]),
-		[HD_SUBCHUNKID.EXIT_NOTOP] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT_NOTOP]),
+		[HD_SUBCHUNKID.EXIT] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT]),
+		[HD_SUBCHUNKID.EXIT_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT_NOTOP]),
 		
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{""}},
 		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{""}},
@@ -5716,9 +5602,9 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.GROUND.tilename]),
-		[HD_OBSTACLEBLOCK.AIR.tilename] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.AIR.tilename]),
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.DOOR.tilename]),
+		[HD_OBSTACLEBLOCK.GROUND.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.GROUND.tilename]),
+		[HD_OBSTACLEBLOCK.AIR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.AIR.tilename]),
+		[HD_OBSTACLEBLOCK.DOOR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.DOOR.tilename]),
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
@@ -5827,22 +5713,22 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
 		{
 			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 1,
-			roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
 			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 2,
-			roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
 			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 3,
-			roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
 			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 4,
-			roomcodes = TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 	}
 }
@@ -6482,7 +6368,7 @@ end
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
-		global_feelings = TableCopy(HD_FEELING_DEFAULTS)
+		global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
 		TONGUE_SPAWNED = false
 		-- other stuff
 	end
@@ -6782,7 +6668,7 @@ function get_unlock()
 					rand_pool[rand_index] = nil
 				end
 			end
-			rand_pool = CompactList(rand_pool, n)
+			rand_pool = commonlib.CompactList(rand_pool, n)
 			chunkPool_rand_index = math.random(1, #rand_pool)
 			unlock = rand_pool[chunkPool_rand_index]
 		else -- feeling/theme-based unlocks
@@ -6905,7 +6791,7 @@ function create_ceiling_chain_growable(x, y, l)
 			end
 			yi = yi - 1
 			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)
-			floors_at_offset = TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
+			floors_at_offset = commonlib.TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
 			if #floors_at_offset > 0 then break end
 		else break end
 	end
@@ -7896,7 +7782,7 @@ set_post_tile_code_callback(function(x, y, layer)
 		-- }
 		-- door_ents_uids = {}
 		-- for _, door_ent_mask in ipairs(door_ents_masks) do
-			-- door_ents_uids = TableConcat(door_ents_uids, get_entities_overlapping(
+			-- door_ents_uids = commonlib.TableConcat(door_ents_uids, get_entities_overlapping(
 				-- 0,
 				-- door_ent_mask,
 				-- leveldoor_sx,
@@ -8670,7 +8556,7 @@ local function is_valid_arrowtrap_spawn(x, y, l)
 		or (left ~= -1 and right == -1 and right2 == -1)
 	) then
         floor = get_entity(floor)
-        return has(valid_floors, floor.type.id)
+        return commonlib.has(valid_floors, floor.type.id)
     end
     return false
 end -- # TODO: Implement method for valid arrowtrap spawn
@@ -9402,7 +9288,7 @@ end, ON.TITLE)
 -- ON.START
 set_callback(function()
 	onstart_init_options()
-	-- global_feelings = TableCopy(HD_FEELING_DEFAULTS)
+	-- global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
 	
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
@@ -9881,17 +9767,17 @@ end
 
 function levelrooms_setn_rowfive(levelw)
 	tw = {}
-	setn(tw, levelw)
+	commonlib.setn(tw, levelw)
 	return tw
 end
 
 function levelrooms_setn(levelw, levelh)
 	path = {}
 
-	setn(path, levelh)
+	commonlib.setn(path, levelh)
 	for hi = 1, levelh, 1 do
 		tw = {}
-		setn(tw, levelw)
+		commonlib.setn(tw, levelw)
 		path[hi] = tw
 	end
 	
@@ -9903,10 +9789,10 @@ function levelcode_setn(levelw, levelh)
 	levelcodew, levelcodeh = levelw*10, levelh*8
 	levelcode = {}
 
-	setn(levelcode, levelcodeh)
+	commonlib.setn(levelcode, levelcodeh)
 	for hi = 1, levelcodeh, 1 do
 		tw = {}
-		setn(tw, levelcodew)
+		commonlib.setn(tw, levelcodew)
 		levelcode[hi] = tw
 	end
 
@@ -10462,7 +10348,7 @@ function onlevel_set_feelings()
 	) then
 
 		if state.level == 1 then
-			global_feelings = TableCopy(HD_FEELING_DEFAULTS)
+			global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
 		end
 
 		-- Vaults
@@ -10612,7 +10498,7 @@ function onlevel_set_feelingToastMessage()
 	-- NOTES:
 		-- Black Market, COG and Beehive are currently handled by the game
 	
-	loadchecks = TableCopy(global_feelings)
+	loadchecks = commonlib.TableCopy(global_feelings)
 	
 	n = #loadchecks
 	for feelingname, loadcheck in pairs(loadchecks) do
@@ -10628,7 +10514,7 @@ function onlevel_set_feelingToastMessage()
 			feeling_check(feelingname) == false
 		) then loadchecks[feelingname] = nil end
 	end
-	loadchecks = CompactList(loadchecks, n)
+	loadchecks = commonlib.CompactList(loadchecks, n)
 	
 	MESSAGE_FEELING = nil
 	for feelingname, feeling in pairs(loadchecks) do
@@ -10840,7 +10726,7 @@ function onframe_idoltrap()
 					BOULDER_SY2,
 					LAYER.FRONT
 				)
-				blocks = TableConcat(
+				blocks = commonlib.TableConcat(
 					blocks, get_entities_overlapping(
 						ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
 						0,
@@ -10920,8 +10806,8 @@ function onframe_tonguetimeout()
 		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
 			if TONGUE_STATE == TONGUE_SEQUENCE.READY then
 				damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-				damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-				damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
+				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
+				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
 				if #damsels > 0 then
 					damsel = get_entity(damsels[1])
 					stuck_in_web = test_flag(damsel.more_flags, 8)
@@ -11084,8 +10970,8 @@ function tongue_exit()
 	x, y, l = get_position(WORMTONGUE_UID)
 	checkradius = 1.5
 	local damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-	damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-	damsels = TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
+	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
+	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
 	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 	
 	-- TESTING OVERRIDE
@@ -11251,7 +11137,7 @@ function onframe_manage_dangers()
 											behavior_toggle(
 												danger.behavior.imp_uid,--behavior.abilities.agro[1],
 												danger.uid,
-												TableConcat({danger.uid}, {danger.behavior.imp_uid}),--map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
+												commonlib.TableConcat({danger.uid}, {danger.behavior.imp_uid}),--commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
 												danger.behavior.agro
 											)
 										-- end
@@ -11266,7 +11152,7 @@ function onframe_manage_dangers()
 									-- behavior_toggle(
 										-- danger.behavior.abilities.agro[1],
 										-- danger.behavior.abilities.idle[1],
-										-- TableConcat({danger.uid}, map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
+										-- commonlib.TableConcat({danger.uid}, commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
 										-- danger.behavior.agro
 									-- )
 								-- end	
@@ -11352,7 +11238,7 @@ function onframe_manage_dangers()
 		end
 	end
 	-- compact danger_tracker
-	CompactList(danger_tracker, n)
+	commonlib.CompactList(danger_tracker, n)
 end
 
 -- if enabled == true, enable target_uid and disable master
@@ -11515,7 +11401,7 @@ end
 function create_hd_behavior(behavior)
 	decorated_behavior = {}
 	if behavior ~= nil then
-		decorated_behavior = TableCopy(behavior)
+		decorated_behavior = commonlib.TableCopy(behavior)
 		-- if behavior.abilities ~= nil then
 			if behavior == HD_BEHAVIOR.SCORPIONFLY then
 				-- **Ask the discord if it's actually possible to check if a variable exists even if it's set to nil
@@ -12315,7 +12201,7 @@ function level_generation_method_nonaligned(_nonaligned_room_type, _avoid_bottom
 	end
 
 	-- pick random place to fill
-	spot = TableRandomElement(spots)
+	spot = commonlib.TableRandomElement(spots)
 
 	levelcode_inject_roomcode(_nonaligned_room_type.subchunk_id, _nonaligned_room_type.roomcodes, spot.y, spot.x)
 end
@@ -12840,7 +12726,7 @@ function gen_levelcode_phase_1(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -12937,7 +12823,7 @@ function gen_levelcode_phase_2(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 				end
 			end
@@ -13022,7 +12908,7 @@ function gen_levelcode_phase_3(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -13122,7 +13008,7 @@ function gen_levelcode_phase_4(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -13542,7 +13428,7 @@ end
 			-- Shops and vaults in HELL
 		-- Make the outline of a vault room tilecode `2` (50% chance to remove each outlining block)
 		-- pass in tiles as nil to ignore.
-			-- initialize an empty table t of size n: setn(t, n)
+			-- initialize an empty table t of size n: commonlib.setn(t, n)
 		-- Black Market & Flooded Revamp:
 			-- Replace S2 style black market with HD
 				-- HD and S2 differences:

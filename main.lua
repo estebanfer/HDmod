@@ -1,8 +1,8 @@
 commonlib = require 'lib.common'
-HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
-FEELING_ID = require 'lib.const.feeling_ids'
-HD_UNLOCK_ID = require 'lib.const.unlock_ids'
-HD_FEELING_DEFAULTS = require 'lib.const.feeling_values'
+genlib = require 'lib.gen'
+feelingslib = require 'lib.feelings'
+unlockslib = require 'lib.unlocks'
+locatelib = require 'lib.locate'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -50,52 +50,6 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 
 DEMO_MAX_WORLD = 1
 DEMO_TUTORIAL_AVAILABLE = false
-
--- translate levelrooms coordinates to the tile in the top-left corner in game coordinates
-function locate_game_corner_position_from_levelrooms_position(roomx, roomy)
-	xmin, ymin, _, _ = get_bounds()
-	tc_x = (roomx-1)*HD_ROOMOBJECT.DIM.w+(xmin+0.5)
-	tc_y = (ymin-0.5) - ((roomy-1)*(HD_ROOMOBJECT.DIM.h))
-	return tc_x, tc_y
-end
-
--- -- translate levelrooms coordinates to the tile in the top-left corner in levelcode coordinates
--- function locate_cornerpos_levelassembly(roomx, roomy)
--- 	xmin, ymin = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
--- 	tc_x = (roomx-1)*HD_ROOMOBJECT.DIM.w+(xmin+0.5)
--- 	tc_y = (ymin-0.5) - ((roomy-1)*(HD_ROOMOBJECT.DIM.h))
--- 	return tc_x, tc_y
--- end
-
--- translate game coordinates to levelrooms coordinates
-function locate_levelrooms_position_from_game_position(e_x, e_y)
-	xmin, ymin, _, _ = get_bounds()
-	roomx = math.floor((e_x-(xmin+0.5))/HD_ROOMOBJECT.DIM.w)+1
-	roomy = math.floor(((ymin-0.5)-e_y)/HD_ROOMOBJECT.DIM.h)+1
-	return roomx, roomy
-end
-
--- translate game coordinates to levelcode coordinates
-function locate_levelcode_position_from_game_position(e_x, e_y)
-	_xmin, _ymin, _, _ = get_bounds()
-	return e_x-(_xmin-0.5), (_ymin+0.5)-e_y
-end
-
--- translate levelcode coordinates to levelrooms coordinates
-function locate_levelrooms_position_from_levelcode_position(e_x, e_y)
-	-- xmin, ymin, xmax, ymax = 1, 1, 4*10, 4*8
-	roomx, roomy = math.ceil(e_x/HD_ROOMOBJECT.DIM.w), math.ceil(e_y/HD_ROOMOBJECT.DIM.h)
-	return roomx, roomy
-end
-
--- NOTE: Levels with irregular room sizes may lead to unintended return values.
--- For now, anything related to scripted level generation should use known constants instead of this.
-function get_levelsize()
-	xmin, ymin, xmax, ymax = get_bounds()
-	levelw = math.ceil((xmax-xmin)/HD_ROOMOBJECT.DIM.w)
-	levelh = math.ceil((ymin-ymax)/HD_ROOMOBJECT.DIM.h)
-	return levelw, levelh
-end
 
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
@@ -185,64 +139,6 @@ HD_THEMEORDER = {
 }
 
 MESSAGE_FEELING = nil
-
-RUN_UNLOCK_AREA = {} -- used to be `RUN_UNLOCK_AREA[THEME.DWELLING] = false` but that doesn't save into json well...
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.DWELLING, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.JUNGLE, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.ICE_CAVES, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.TEMPLE, unlocked = false }
-
-HD_UNLOCKS = {}
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER1] = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER2] = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER3] = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER4] = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND1] = { unlock_id = 12, unlocked = false }		--ENT_TYPE.CHAR_TINA_FLAN
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND2] = { unlock_id = 01, unlocked = false }		--ENT_TYPE.CHAR_ANA_SPELUNKY
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND3] = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND4] = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-HD_UNLOCKS[HD_UNLOCK_ID.OLMEC_WIN] = {
-	win = 1,
-	unlock_id = 07,													--ENT_TYPE.CHAR_AMAZON
-	unlocked = false
-}
-HD_UNLOCKS[HD_UNLOCK_ID.WORM] = {
-	unlock_theme = THEME.EGGPLANT_WORLD,
-	unlock_id = 16,													--ENT_TYPE.CHAR_PILOT
-	unlocked = false
-}				
-HD_UNLOCKS[HD_UNLOCK_ID.SPIDERLAIR] = {
-	feeling = FEELING_ID.SPIDERLAIR,
-	unlock_id = 13, unlocked = false }								--ENT_TYPE.CHAR_VALERIE_CRUMP
-HD_UNLOCKS[HD_UNLOCK_ID.YETIKINGDOM] = {
-	feeling = FEELING_ID.YETIKINGDOM,
-	unlock_id = 15, unlocked = false }								--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-HD_UNLOCKS[HD_UNLOCK_ID.HAUNTEDCASTLE] = {
-	feeling = FEELING_ID.HAUNTEDCASTLE,
-	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
-HD_UNLOCKS[HD_UNLOCK_ID.YAMA] = {
-	win = 2,
-	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
-	unlocked = false
-}
-HD_UNLOCKS[HD_UNLOCK_ID.OLMEC_CHAMBER] = {
-	unlock_theme = THEME.OLMEC,
-	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
-HD_UNLOCKS[HD_UNLOCK_ID.TIKIVILLAGE] = {
-	feeling = FEELING_ID.TIKIVILLAGE,
-	unlock_id = 11, unlocked = false }								--ENT_TYPE.CHAR_OTAKU
-HD_UNLOCKS[HD_UNLOCK_ID.BLACKMARKET] = {
-	feeling = FEELING_ID.BLACKMARKET,
-	unlock_id = 04, unlocked = false }								--ENT_TYPE.CHAR_ROFFY_D_SLOTH
-HD_UNLOCKS[HD_UNLOCK_ID.RUSHING_WATER] = {
-	feeling = FEELING_ID.RUSHING_WATER,
-	unlock_id = 10, unlocked = false }								--ENT_TYPE.CHAR_MANFRED_TUNNEL
-HD_UNLOCKS[HD_UNLOCK_ID.MOTHERSHIP] = {
-	unlock_theme = THEME.NEO_BABYLON,
-	unlock_id = 08, unlocked = false }								--ENT_TYPE.CHAR_LISE_SYSTEM
-HD_UNLOCKS[HD_UNLOCK_ID.COG] = {
-	unlock_theme = THEME.CITY_OF_GOLD,
-	unlock_id = 14, unlocked = false }								--ENT_TYPE.CHAR_AU
 
 -- "5", "6", "8", "F", "V", "("
 HD_OBSTACLEBLOCK = {}
@@ -458,7 +354,7 @@ HD_TILENAME = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
 						if (
-							feeling_check(FEELING_ID.YETIKINGDOM)
+							feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
 						) then
 							if (math.random(6) == 1) then
 								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
@@ -658,28 +554,28 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == HD_SUBCHUNKID.ENTRANCE)
-						or (_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
+						(_subchunk_id == genlib.HD_SUBCHUNKID.ENTRANCE)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.ENTRANCE_DROP)
 					) then
 						create_door_entrance(x, y, l)
-					elseif (_subchunk_id == HD_SUBCHUNKID.YAMA_ENTRANCE) then
+					elseif (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
 						create_door_entrance(x+0.5, y, l)
 					elseif (
-						(_subchunk_id == HD_SUBCHUNKID.EXIT)
-						or (_subchunk_id == HD_SUBCHUNKID.EXIT_NOTOP)
-						or (_subchunk_id == HD_SUBCHUNKID.RUSHING_WATER_EXIT)
-						or (_subchunk_id == HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT)
-						or (_subchunk_id == HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP)
+						(_subchunk_id == genlib.HD_SUBCHUNKID.EXIT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.EXIT_NOTOP)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.RUSHING_WATER_EXIT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP)
 					) then
 						-- spawn an exit door to the next level. Spawn a shopkeeper if agro.
 						create_door_exit(x, y, l)
-					elseif (_subchunk_id == HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
+					elseif (_subchunk_id == genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
 						create_door_exit_to_mothership(x, y, l)
-					elseif (_subchunk_id == HD_SUBCHUNKID.RESTLESS_TOMB) then
+					elseif (_subchunk_id == genlib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 						-- Spawn king's tombstone
 						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
@@ -707,7 +603,7 @@ HD_TILENAME = {
 						-- 4 tiles down
 						-- Spawn hidden entrance
 						create_door_exit_to_hauntedcastle(x, y-4, l)
-					elseif (_subchunk_id == HD_SUBCHUNKID.YAMA_EXIT) then
+					elseif (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_EXIT) then
 						create_door_ending(x, y, l)
 					end
 				end
@@ -941,17 +837,17 @@ HD_TILENAME = {
 					end
 					
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
+						(_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
 					) then
 						create_hd_type(HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
 					elseif (
-						(_subchunk_id == HD_SUBCHUNKID.YAMA_SETROOM_3_2)
-						-- or (_subchunk_id == HD_SUBCHUNKID.YAMA_SETROOM_3_3)
+						(_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
+						-- or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						for i = 0, 10, 2 do
 							local uid = create_hd_type(HD_ENT.TRAP_TIKI, x, y+i, l, false, 0, 0)
@@ -977,18 +873,18 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == HD_SUBCHUNKID.COFFIN_COOP)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_NOTOP)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_DROP)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
-						or (_subchunk_id == HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
-						or (_subchunk_id == HD_SUBCHUNKID.YAMA_SETROOM_3_2)
-						or (_subchunk_id == HD_SUBCHUNKID.YAMA_SETROOM_3_3)
+						(_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
+						or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						-- SORRY NOTHING 
 					else
@@ -1371,16 +1267,16 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					if global_levelassembly.modification.levelrooms[roomy] ~= nil then
 						local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					end
 					local coffin_uid = nil
 					if (
-						_subchunk_id == HD_SUBCHUNKID.COFFIN_COOP
-						or _subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_DROP
-						or _subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-						or _subchunk_id == HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
+						_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP
+						or _subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP
+						or _subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
+						or _subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 					) then
 						coffin_uid = create_coffin_coop(x+0.35, y, l)
 					else
@@ -1477,15 +1373,15 @@ HD_TILENAME = {
 
 					
 					-- -- need subchunkid of what room we're in
-					-- roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					-- roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					-- _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 					-- spawn_entity(ENT_TYPE.DECORATION_SHOPSIGN,
 					-- (
 					-- 	x+(
 					-- 		(
-					-- 			_subchunk_id == HD_SUBCHUNKID.SHOP_REGULAR_LEFT or
-					-- 			_subchunk_id == HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+					-- 			_subchunk_id == genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT or
+					-- 			_subchunk_id == genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
 					-- 		)
 					-- 		and -0.5 or 0.5
 					-- 	)
@@ -1509,11 +1405,11 @@ HD_TILENAME = {
 					function(x, y, l)
 						spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l)
 						-- need subchunkid of what room we're in
-						roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+						roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 						_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 						if (
-							(_subchunk_id == HD_SUBCHUNKID.ENTRANCE_DROP)
+							(_subchunk_id == genlib.HD_SUBCHUNKID.ENTRANCE_DROP)
 						) then
 							spawn_entity(ENT_TYPE.FLOOR_DOOR_PLATFORM, x, y-1, l, 0, 0)
 						end
@@ -1620,12 +1516,12 @@ HD_TILENAME = {
 							end
 						elseif state.theme == THEME.VOLCANA then
 							-- need subchunkid of what room we're in
-							local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+							local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 							local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 							if (
-								_subchunk_id == HD_SUBCHUNKID.VLAD_TOP
-								or _subchunk_id == HD_SUBCHUNKID.VLAD_MIDSECTION
-								or _subchunk_id == HD_SUBCHUNKID.VLAD_BOTTOM
+								_subchunk_id == genlib.HD_SUBCHUNKID.VLAD_TOP
+								or _subchunk_id == genlib.HD_SUBCHUNKID.VLAD_MIDSECTION
+								or _subchunk_id == genlib.HD_SUBCHUNKID.VLAD_BOTTOM
 							) then
 								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
 								texture_def.texture_path = "res/vladspikes.png"
@@ -1780,7 +1676,6 @@ HD_TILENAME = {
 
 
 HD_ROOMOBJECT = {}
-HD_ROOMOBJECT.DIM = {h = 8, w = 10}
 HD_ROOMOBJECT.GENERIC = {
 	
 	-- # TODO: Shopkeeper room assigning
@@ -1788,20 +1683,20 @@ HD_ROOMOBJECT.GENERIC = {
 	-- https://discord.com/channels/150366712775180288/862012437892825108/873695668173148171
 	
 	-- Regular
-	[HD_SUBCHUNKID.SHOP_REGULAR] = {
+	[genlib.HD_SUBCHUNKID.SHOP_REGULAR] = {
 		--{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..KS000000bbbbbbbbbb"} -- original
 		-- {"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..00000000bbbbbbbbbb"} -- hd accurate sync
 		{"111111111111110011111100220000110l000200000000W00000000000000000000000bbbbbbbbbb"} -- hd accurate sync without sign block
 		-- {"111111111111110011111100220001110l000200000000W00000000000k00000000000bbbbbbbbbb"} -- hd accurate sync
 	},
-	[HD_SUBCHUNKID.SHOP_REGULAR_LEFT] = {
+	[genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT] = {
 		--{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S000K..bbbbbbbbbb"} -- original
 		-- {"11111111111111..11111...22..11..2000l.110.W0000...0k00000...00000000..bbbbbbbbbb"} -- hd accurate sync
 		{"111111111111110011110000220011002000l01100W000000000000000000000000000bbbbbbbbbb"} -- hd accurate sync without sign block
 		-- {"111111111111110011111000220011002000l01100W00000000k000000000000000000bbbbbbbbbb"} -- hd accurate sync
 	},
 	-- Prize Wheel
-	[HD_SUBCHUNKID.SHOP_PRIZE] = {
+	[genlib.HD_SUBCHUNKID.SHOP_PRIZE] = {
 		--{"11111111111111..1111....22...1.Kl00002.....000W0.0.0%00000k0.$%00S0000bbbbbbbbbb"} -- original
 		-- {"11111111111111..1111....22...1.0l00002....0000W0.0.0000000k0.000000000bb0bbbbbbb"} -- hd accurate sync
 		-- {"11111111111111001111000022000000l0000200000000W00000000000000000000000bb0bbbbbbb"} -- hd accurate sync without sign block (sync1)
@@ -1809,7 +1704,7 @@ HD_ROOMOBJECT.GENERIC = {
 		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- s2
 		{"111111111110000000010000l000000bbb000000000000W00l00000000000000000000bb0bbbbbbb"} -- s2 sync
 	},
-	[HD_SUBCHUNKID.SHOP_PRIZE_LEFT] = {
+	[genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT] = {
 		--{"11111111111111..11111...22......20000lK.0.W0000...0k00000%0.0000S00%$.bbbbbbbbbb"} -- original
 		-- {"11111111111111..11111...22......20000l0.0.W00000..0k0000000.000000000.bbbbbbb0bb"} -- hd accurate sync
 		-- {"1111111111111100111100002200000020000l0000W000000000000000000000000000bbbbbbb0bb"} -- hd accurate sync without sign block (sync1)
@@ -1818,38 +1713,38 @@ HD_ROOMOBJECT.GENERIC = {
 		{"1111111111100000000100000l0000000000bbb0l00W00000000000000000000000000bbbbbbb0bb"} -- s2 sync
 	},
 	-- Damzel
-	[HD_SUBCHUNKID.SHOP_BROTHEL] = {
+	[genlib.HD_SUBCHUNKID.SHOP_BROTHEL] = {
 		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K00S0000bbbbbbbbbb"} -- original
 	},
-	[HD_SUBCHUNKID.SHOP_BROTHEL_LEFT] = {
+	[genlib.HD_SUBCHUNKID.SHOP_BROTHEL_LEFT] = {
 		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...0000S00K..bbbbbbbbbb"} -- original
 	},
 	-- Hiredhands(?)
-	[HD_SUBCHUNKID.SHOP_UNKNOWN1] = {
+	[genlib.HD_SUBCHUNKID.SHOP_UNKNOWN1] = {
 		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0SSS000bbbbbbbbbb"} -- original
 	},
-	[HD_SUBCHUNKID.SHOP_UNKNOWN1_LEFT] = {
+	[genlib.HD_SUBCHUNKID.SHOP_UNKNOWN1_LEFT] = {
 		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000SSS0K..bbbbbbbbbb"} -- original
 	},
 	-- Hiredhands(?)
-	[HD_SUBCHUNKID.SHOP_UNKNOWN2] = {
+	[genlib.HD_SUBCHUNKID.SHOP_UNKNOWN2] = {
 		{"11111111111111..111111..22...111.l0002.....000W0.0...00000k0..K0S0S000bbbbbbbbbb"} -- original
 	},
-	[HD_SUBCHUNKID.SHOP_UNKNOWN2_LEFT] = {
+	[genlib.HD_SUBCHUNKID.SHOP_UNKNOWN2_LEFT] = {
 		{"11111111111111..11111...22..11..2000l.110.W0000...0k00000...000S0S0K..bbbbbbbbbb"} -- original
 	},
 	-- Vault
-	[HD_SUBCHUNKID.VAULT] = {
+	[genlib.HD_SUBCHUNKID.VAULT] = {
 		--{"11111111111111111111111|00011111100001111110EE0111111000011111111111111111111111"} -- original
 		{"11111111111111111111111|00011111100001111110000111111000011111111111111111111111"}
 		-- {"11111111111000000001100|00000110000000011000000001100000000110000000011111111111"} -- hd accurate sync
 	},
 	-- Altar
-	[HD_SUBCHUNKID.ALTAR] = {
+	[genlib.HD_SUBCHUNKID.ALTAR] = {
 		{"220000002200000000000000000000000000000000000000000000x0000002211112201111111111"}
 		-- {"00000000000000000000000000000000000000000000000000000000000000000000000000000000"} -- hd accurate sync
 	},
-	[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
+	[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
 		{"22222222220000000000000000000000000000000000000000000000000000000000000000000000"},
 		{"11111111112222222222000000000000000000000000000000000000000000000000000000000000"},
 		{"22211112220001111000000211200000011110000002112000000022000000000000000000000000"},
@@ -1862,7 +1757,7 @@ HD_ROOMOBJECT.TUTORIAL[1] = {
 		-- 1
 		{
 			-- prePath = false,
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE,
 			placement = {1, 1},
 			roomcodes = {{"11111111111111111122121111120010222220001000000000100000000010090000001111111111"}}
 		},
@@ -1928,7 +1823,7 @@ HD_ROOMOBJECT.TUTORIAL[1] = {
 
 		-- 4
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {4, 1},
 			roomcodes = {{"1111111112111111222022222200000000000000000900000000vvv0000v00vvv0000v1vvvvv111v"}}
 		},
@@ -1969,7 +1864,7 @@ HD_ROOMOBJECT.TUTORIAL[2] = {
 			roomcodes = {{"11111111110110000000000000000000000000000000001110000001111s00000011111111111111"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE,
 			placement = {1, 4},
 			roomcodes = {{"111111111100000000010EEEE000010vvvv0090100vv001111ssvvss111111vv1111111111111111"}}
 		},
@@ -2025,7 +1920,7 @@ HD_ROOMOBJECT.TUTORIAL[2] = {
 			roomcodes = {{"10000000001000000000000!00000000000000001110101011RR10101011111s1s1s111111111111"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {4, 2},
 			roomcodes = {{"11111111110000111000000000000000900000001111000!00111100000111110a00011111111111"}}
 		},
@@ -2046,7 +1941,7 @@ HD_ROOMOBJECT.TUTORIAL[3] = {
 		-- 1
 		{
 			-- prePath = false,
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE,
 			placement = {1, 1},
 			roomcodes = {{"1111111111vvvvvv2222v0000v0000v009000000v====v000011111100vv11111111vv1111111111"}}
 		},
@@ -2083,11 +1978,11 @@ HD_ROOMOBJECT.TUTORIAL[3] = {
 			roomcodes = {{"1111111001011111000100111100110011110000!111vvv0001111vE0000h111vvvv001111110000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.SHOP_REGULAR_LEFT,
+			subchunk_id = genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT,
 			placement = {2, 4},
 			-- wow, okay, so comparing SHOP_REGULAR_LEFT's roomcode to the original shows that it's almost exactly the same
 			-- with the exception of the overhead tiles not set to shopkeeper tiles
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_REGULAR_LEFT]) -- {{"111111111111111111111111221111112000l11101W0000...0k00000...000S000K..bbbbbbbbbb"}}
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT]) -- {{"111111111111111111111111221111112000l11101W0000...0k00000...000S000K..bbbbbbbbbb"}}
 		},
 
 		-- 3
@@ -2129,7 +2024,7 @@ HD_ROOMOBJECT.TUTORIAL[3] = {
 			roomcodes = {{"111111111111111111110000000u0000000!0000N0000000001100000000110001111111sss11111"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {4, 4},
 			roomcodes = {{"111111111111111vvvvv00001v0000000000009000100v====001000111111111111111111111111"}}
 		},
@@ -2168,12 +2063,12 @@ HD_ROOMOBJECT.TESTING[1] = {
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE,
 			placement = {2, 2},
 			roomcodes = {{"00000000000LL09000001PP11111110LL00000000LL00LL00011111PP11100000LL00000000LL000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {2, 3},
 			roomcodes = {{"00000000000000090LL01111111PP10000000LL0000LL00LL0111PP11111000LL00000000LL00000"}}
 		},
@@ -2260,12 +2155,12 @@ HD_ROOMOBJECT.TESTING[2] = {
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE,
 			placement = {2, 2},
 			roomcodes = {{"00000000000LL09000001PP11111110LL00000000LL00LL00011111PP11100000LL00000000LL000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {2, 3},
 			roomcodes = {{"00000000000000090LL01111111PP10000000LL0000LL00LL0111PP11111000LL00000000LL00000"}}
 		},
@@ -2321,28 +2216,28 @@ HD_ROOMOBJECT.TESTING[2] = {
 	}
 }
 HD_ROOMOBJECT.FEELINGS = {}
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.HIVE] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE] = {
 	prePath = false,
 	rooms = {
 		-- This is an absolute abomination of a naming scheme, but that's for future-me to resolve.
-		-- Resolutions I can only dream of. Imagine living in a post-hive-spawn-understanding world: World peace. Solving world hunger. The hive hd_subchunkid naming scheme not being a total cluster-truck.
+		-- Resolutions I can only dream of. Imagine living in a post-hive-spawn-understanding world: World peace. Solving world hunger. The hive genlib.HD_SUBCHUNKID naming scheme not being a total cluster-truck.
 		
 		
-		-- [HD_SUBCHUNKID.HIVE_LEFT_OPEN] = {{"11eeeeeeeeeeezzzzzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
-		-- [HD_SUBCHUNKID.HIVE_LEFT_OPEN_AND_UP] = {{"11ee00eeeeeeez00zzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
-		-- [HD_SUBCHUNKID.HIVE_LEFT_CLOSED] = {{"11eeeeeee1eeezzzzzeeeez00000ze00000000ze00000000zeeez00000zeeeezzzzzee11eeeeeee1"}},
-		-- [HD_SUBCHUNKID.HIVE_RIGHT_OPEN] = {{"eeeeeeee11zzzzzzzeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_RIGHT_OPEN_AND_UP] = {{"eeee00ee11zzzz00zeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_RIGHT_CLOSED] = {{"1eeeeeee11eezzzzzeeeez00000zeeez00000000ez00000000ez00000zeeeezzzzzeee1eeeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_LEFT_RIGHT] = {{"11eeeeee11eeezzzzeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_LEFT_RIGHT_AND_UP] = {{"11ee00ee11eeez00zeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED] = {{"11ee00ee11eeez00zeeeeez0000zeeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT] = {{"ez000000zeez00zz00zeez00zz00zeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_AND_RIGHT] = {{"11ee00ee11eeez00zeeeeez0000zeeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_AND_LEFT] = {{"11ee00ee11eeez00zeeeeez0000zee00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_RIGHT] = {{"ez000000zeez00zz00zeez00zz00zeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_LEFT] = {{"ez000000zeez00zz00zeez00zz00ze00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
-		-- [HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_LEFT_AND_RIGHT] = {{"ez000000zeez00zz00zeez00zz00ze00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_LEFT_OPEN] = {{"11eeeeeeeeeeezzzzzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_LEFT_OPEN_AND_UP] = {{"11ee00eeeeeeez00zzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_LEFT_CLOSED] = {{"11eeeeeee1eeezzzzzeeeez00000ze00000000ze00000000zeeez00000zeeeezzzzzee11eeeeeee1"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_RIGHT_OPEN] = {{"eeeeeeee11zzzzzzzeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_RIGHT_OPEN_AND_UP] = {{"eeee00ee11zzzz00zeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_RIGHT_CLOSED] = {{"1eeeeeee11eezzzzzeeeez00000zeeez00000000ez00000000ez00000zeeeezzzzzeee1eeeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_LEFT_RIGHT] = {{"11eeeeee11eeezzzzeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_LEFT_RIGHT_AND_UP] = {{"11ee00ee11eeez00zeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED] = {{"11ee00ee11eeez00zeeeeez0000zeeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT] = {{"ez000000zeez00zz00zeez00zz00zeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_AND_RIGHT] = {{"11ee00ee11eeez00zeeeeez0000zeeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_AND_LEFT] = {{"11ee00ee11eeez00zeeeeez0000zee00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_RIGHT] = {{"ez000000zeez00zz00zeez00zz00zeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_LEFT] = {{"ez000000zeez00zz00zeez00zz00ze00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		-- [genlib.HD_SUBCHUNKID.HIVE_UP_CLOSED_ALT_AND_LEFT_AND_RIGHT] = {{"ez000000zeez00zz00zeez00zz00ze00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
 		-- -- I give up
 		-- -- ??? = {{"11ee00ee11eeez00zeee0000000zee00000000ze00000000ze00000000zeeeez00zzee11ee00eeee"}},
 		-- -- ??? = {{"11ee00ee11eeez00zeeeeez0000000ez00000000ez00000000ez00000000eezz00zeeeeeee00ee11"}},
@@ -2371,11 +2266,11 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HIVE] = {
 		-- -- there's 33 total room types, good god. In S2 there are TWO.
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.HIVE].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 	
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.VAULT] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
 	prePath = false,
 	method = function()
 		if (
@@ -2383,13 +2278,13 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.VAULT] = {
 		) then
 			level_generation_method_nonaligned(
 				{
-					subchunk_id = HD_SUBCHUNKID.VAULT,
+					subchunk_id = genlib.HD_SUBCHUNKID.VAULT,
 					roomcodes = (
 						HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
-						HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] ~= nil
-					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.VAULT]
+						HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] ~= nil
+					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.VAULT]
 				}
-				,feeling_check(FEELING_ID.RUSHING_WATER)
+				,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			)
 		end
 	end
@@ -2400,50 +2295,50 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.VAULT] = {
 -- Spiders, spinner spiders, and webs appear much more frequently.
 -- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
 -- Move pots into the void
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR] = {
 	rooms = {
-		[HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE] = {
 			{"11111111112X0211111100002X011100000002112222000210000000021022222000001111111111"},
 			{"1111111111222221111100000X011101100002110X00001110000100021022212000001111111111"},
 			{"1111111111222111X0110002000011000001021101110102100X0100021000011000001111111111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_NOTOP] = {
 			{"1v000000v11vvv00vvv10X0v00vX0100000000012222000200000000021122222000001111111111"},
 			{"1v000000v11vvv00vvv1000v00vX010vvv0000010X00002100000100011122212000001111111111"},
 			{"1v000000v11vvv00vvv1000v00vX01000000000101110002000X0100021100011000001111111111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP_NOTOP] = {
 			{"111v00v1112X0v00v111000v00v111000000v211111v00v2120X00000010000v00v000111v00v111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP] = {
 			{"11111111112X0vvvv111000vX0v111000000021122220002120000000010222v00v000111v00v111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE] = {
 			{"11111111111111112X02111X02000011200000000120002222012000000000000222221111111111"},
 			{"11111111111111122222111X00000011200001100111000X00012000100000000212221111111111"},
 			{"111111111111X01112221100002000112010000001201011100120001X0000000110001111111111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP] = {
 			{"1v000000v11vvv00vvv11X0v00vX0010000000000020002222112000000000000222221111111111"},
 			{"1v000000v11vvv00vvv11X0v00v000100000vvv00012000X00111000100000000212221111111111"},
 			{"1v000000v11vvv00vvv11X0v00v000100000000000200011101120001X0000000110001111111111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP_NOTOP] = {
 			{"111v00v111111v00vX02111v00v000112v000000212v00v1110100000X00000v00v000111v00v111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP] = {
 			{"1111111111111vvvvX02111vX0v000112000000021200022220100000000000v00v222111v00v111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK] = {
 			{"1111111111111X0X000211100000011111100g010120001111012000000000000122221111111111"},
 		},
-		[HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP] = {
 			{"1v000000v11vvv00vvv1X00000vX00000010000000g0102222111110000000000022221111111111"},
 		},
 	}
 }
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].method = function()
 	local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 	--1.) Select room coordinates between x = 1..3 and y = 2..3
@@ -2452,43 +2347,43 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR].method = function()
 
 	--2.) Replace room at y and x coord with SPIDERLAIR_LEFTSIDE*
 	local path_to_replace = global_levelassembly.modification.levelrooms[room_l_y][room_l_x]
-	local path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE
+	local path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE
 
 	if LEVEL_UNLOCK ~= nil then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK
 	end
 
-	if path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
+	if path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
 		if LEVEL_UNLOCK ~= nil then
-			path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP
+			path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP
 		else
-			path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP
+			path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP
 		end
-	elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP
-	elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP_NOTOP
+	elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP then
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP
+	elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP_NOTOP
 	end
-	levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR].rooms[path_to_replace_with], room_l_y, room_l_x)
+	levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].rooms[path_to_replace_with], room_l_y, room_l_x)
 
 	--3.) Replace room at y and x+1 coord with SPIDERLAIR_RIGHTSIDE*	
 	path_to_replace = global_levelassembly.modification.levelrooms[room_r_y][room_r_x]
-	path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE
-	if path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_NOTOP
-	elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP
-	elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-		path_to_replace_with = HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP_NOTOP
+	path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE
+	if path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_NOTOP
+	elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP then
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP
+	elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP_NOTOP
 	end
-	levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.SPIDERLAIR].rooms[path_to_replace_with], room_r_y, room_r_x)
+	levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].rooms[path_to_replace_with], room_r_y, room_r_x)
 
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT] = {
 	prePath = true,
 	rooms = {
-		[HD_SUBCHUNKID.SNAKEPIT_TOP] = { -- grabs 4 and upwards from HD's path_drop roomcodes
+		[genlib.HD_SUBCHUNKID.SNAKEPIT_TOP] = { -- grabs 4 and upwards from HD's path_drop roomcodes
 			{"00000000000060000000000000000000000000000000000000001112220002100000001110111111"},
 			{"00000000000060000000000000000000000000000000000000002221110000000001201111110111"},
 			{"00000000000000000000600006000000000000000000000000000000000002200002201112002111"},
@@ -2499,24 +2394,24 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT] = {
 			{"11111111111111112222211220000001200000000000000000000000000012000000001120000211"},
 			{"11111111112111111112021111112000211112000002112000000022000002200002201111001111"},
 		},
-		[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION] = {{"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}},
-		[HD_SUBCHUNKID.SNAKEPIT_BOTTOM] = {{"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}}
+		[genlib.HD_SUBCHUNKID.SNAKEPIT_MIDSECTION] = {{"111000011111n0000n11111200211111n0000n11111200211111n0000n11111200211111n0000n11"}},
+		[genlib.HD_SUBCHUNKID.SNAKEPIT_BOTTOM] = {{"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}}
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].method = function()
 	level_generation_method_structure_vertical(
 		{
-			subchunk_id = HD_SUBCHUNKID.SNAKEPIT_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_TOP]
+			subchunk_id = genlib.HD_SUBCHUNKID.SNAKEPIT_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].rooms[genlib.HD_SUBCHUNKID.SNAKEPIT_TOP]
 		},
 		{
 			middle = {
-				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_MIDSECTION]
+				subchunk_id = genlib.HD_SUBCHUNKID.SNAKEPIT_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].rooms[genlib.HD_SUBCHUNKID.SNAKEPIT_MIDSECTION]
 			},
 			bottom = {
-				subchunk_id = HD_SUBCHUNKID.SNAKEPIT_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].rooms[HD_SUBCHUNKID.SNAKEPIT_BOTTOM]
+				subchunk_id = genlib.HD_SUBCHUNKID.SNAKEPIT_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].rooms[genlib.HD_SUBCHUNKID.SNAKEPIT_BOTTOM]
 			}
 		},
 		{1, 2, 3, 4},
@@ -2525,13 +2420,13 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.SNAKEPIT].method = function()
 	
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
 	prePath = false,
 	rooms = {
-		[HD_SUBCHUNKID.RESTLESS_IDOL] = {
+		[genlib.HD_SUBCHUNKID.RESTLESS_IDOL] = {
 			{"tttttttttttttttttttttt00c000tt0tt0A00tt00400000040ttt0tt0ttttt000000tt1111111111"}
 		},
-		[HD_SUBCHUNKID.RESTLESS_TOMB] = {
+		[genlib.HD_SUBCHUNKID.RESTLESS_TOMB] = {
 			{
 				"000000000000000000000000900000021t1t1200211t0t112011rtttr11011r111r11111rrrrr111",
 				"0000000000000000000000000900000021t1t1200211t0t112011rtttr11111r111r11111rrrrr11",
@@ -2539,31 +2434,31 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].method = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	if state.level ~= 4 then
 		level_generation_method_nonaligned(
 			{
-				subchunk_id = HD_SUBCHUNKID.RESTLESS_TOMB,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_TOMB]
+				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_TOMB,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_TOMB]
 			}
-			,feeling_check(FEELING_ID.RUSHING_WATER)
+			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
-	if feeling_check(FEELING_ID.RUSHING_WATER) == false then
+	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
 		level_generation_method_nonaligned(
 			{
-				subchunk_id = HD_SUBCHUNKID.RESTLESS_IDOL,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_IDOL]
+				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_IDOL,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL]
 			}
-			,feeling_check(FEELING_ID.RUSHING_WATER)
+			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
 end
 
 -- # TODO: Replace haunted castle roomcode altar tilecodes with new tilecode (or re-used) for torches
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
@@ -2580,7 +2475,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 	setRooms = {
 		-- 1
 		{
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE_DROP,
 			placement = {1, 1},
 			roomcodes = {
 				{
@@ -2590,19 +2485,19 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP,
 			placement = {1, 2},
 			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP,
 			placement = {1, 3},
 			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP,
 			placement = {1, 4},
 			roomcodes = {
 				{"12G000002100P111100000G222200000G000000000G000000000G000002200000002111111202111"},
@@ -2616,7 +2511,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 		
 		-- 2
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {2, 1},
 			roomcodes = {
 				{"12G000002100P111100000G222200000G000000000G000000000G000002200000002111111202111"},
@@ -2627,19 +2522,19 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP,
 			placement = {2, 2},
 			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP,
 			placement = {2, 3},
 			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {2, 4},
 			roomcodes = {
 				{"12G000002100P111100000G222200000G000000000G00000000000000022001G000211111P011111"},
@@ -2648,7 +2543,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 
 		-- 3
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {3, 1},
 			roomcodes = {
 				{"12G000002100P111100000G222200000G000000000G000000000G000002200000002111111202111"},
@@ -2659,18 +2554,18 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_SHOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP,
 			placement = {3, 2},
 			-- roomcodes = {{"000000000000000000000000220000002l00l200000000000000000000000000000000bbbbbbbbbb"}}
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.SHOP_PRIZE_LEFT,
+			subchunk_id = genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT,
 			placement = {3, 3},
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT])
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.BLACKMARKET_ANKH,
+			subchunk_id = genlib.HD_SUBCHUNKID.BLACKMARKET_ANKH,
 			placement = {3, 4},
 			roomcodes = {{"000G011111000G000000000G00a0l0000bbbbbbb0000000000111111111111111111111111111111"}}
 			-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
@@ -2678,7 +2573,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 
 		-- 4
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_NOTOP,
 			placement = {4, 1},
 			roomcodes = {
 				{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
@@ -2691,7 +2586,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH,
 			placement = {4, 2},
 			roomcodes = {
 				{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
@@ -2705,7 +2600,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH,
 			placement = {4, 3},
 			roomcodes = {
 				{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
@@ -2719,7 +2614,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.EXIT,
+			subchunk_id = genlib.HD_SUBCHUNKID.EXIT,
 			placement = {4, 4},
 			roomcodes = {
 				{
@@ -2737,7 +2632,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.BLACKMARKET] = {
 }
 
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
@@ -2754,12 +2649,12 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 	setRooms = {
 		-- 1
 		{
-			subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_UNLOCK,
+			subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_UNLOCK,
 			placement = {1, 1},
 			roomcodes = {{"00000000000t0t0t0t0ttttttttttttttttttttt000400000tg00tt0000tttttU00000tttttttttt"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_SETROOM_1_2,
+			subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_SETROOM_1_2,
 			placement = {1, 2},
 			roomcodes = {
 				-- # TODO: Figure out why "param_1 == 0" chooses the first roomcode.
@@ -2768,12 +2663,12 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 			}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_SETROOM_1_3,
+			subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_SETROOM_1_3,
 			placement = {1, 3},
 			roomcodes = {{"00000000000t0t0t0t0ttttttttttttttttttttt0000000ttttttt000ttt00000N0ttttt000ttttt"}}
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.ENTRANCE_DROP,
+			subchunk_id = genlib.HD_SUBCHUNKID.ENTRANCE_DROP,
 			placement = {1, 4},
 			roomcodes = {
 				{"00000000000000000000000000000000000000000008000000000000000000000000002021111120"},
@@ -2798,7 +2693,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		-- 	roomcodes = {{""}}
 		-- },
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {2, 4},
 			roomcodes = {
 				{"00G000000000P111100000G222200000G000000000G000000000G000002200000002111111202111"},
@@ -2826,7 +2721,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		-- 	roomcodes = {{""}}
 		-- },
 		{
-			subchunk_id = HD_SUBCHUNKID.PATH_DROP_NOTOP,
+			subchunk_id = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
 			placement = {3, 4},
 			roomcodes = {
 				{"00G000000000P111100000G222200000G000000000G000000000G000002200000002111111202111"},
@@ -2839,12 +2734,12 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 
 		-- 4
 		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT,
+		-- 	subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT,
 		-- 	placement = {4, 1},
 		-- 	roomcodes = {{"00000000000000000000000000000000000000000000h000000900000000rrrttttrrr1111111111"}}
 		-- },
 		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM,
+		-- 	subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM,
 		-- 	placement = {4, 2},
 		-- 	roomcodes = {
 		-- 		{"0000000000tt000000tt000000000000000000000000tt00000000tt0000rrrrttrrrr1111111111"},
@@ -2855,21 +2750,21 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		-- 	}
 		-- },
 		-- {
-		-- 	subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_GATE,
+		-- 	subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_GATE,
 		-- 	placement = {4, 3},
 		-- 	roomcodes = {{"0000000ttt0000000ttt0000000ttD0000000ttD00000000000000000N00rrrrrrrrrr1111111111"}}
 		-- },
 		{
-			subchunk_id = HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT,
+			subchunk_id = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT,
 			placement = {4, 4},
 			roomcodes = {{"000000000000000000000000000000000000000000000000000000000T00wwwww11111wwwww11111"}}
 		},
 	},
 	rooms = {
-		-- [HD_SUBCHUNKID.ENTRANCE] = { -- never happends
+		-- [genlib.HD_SUBCHUNKID.ENTRANCE] = { -- never happends
 		-- 	{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 		-- },
-		-- [HD_SUBCHUNKID.PATH] = { -- never happends
+		-- [genlib.HD_SUBCHUNKID.PATH] = { -- never happends
 		-- 	{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
 		-- 	{"60000600000000000000000000000000000000005000050000000000000000000000001111111111"},
 		-- 	{"60000600000000000000000000000050000500000000000000000000000011111111111111111111"},
@@ -2879,7 +2774,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		-- 	{"000000000000000000000000000000013wwww310013wwww310113wwww31111133331111111111111"},
 		-- 	{"0060000000000000000000000000000000000000013wwww310113wwww31111133331111111111111"},
 		-- },
-		-- [HD_SUBCHUNKID.PATH_NOTOP] = { -- never happends
+		-- [genlib.HD_SUBCHUNKID.PATH_NOTOP] = { -- never happends
 		-- 	{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
 		-- 	{"00000000000000000000000000000000000000005000050000000000000000000000001111111111"},
 		-- 	{"00000000000000000000000000000050000500000000000000000000000011111111111111111111"},
@@ -2888,44 +2783,44 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		-- 	{"000000000000000000000000000000013wwww310013wwww310113wwww31111133331111111111111"},
 		-- 	{"0000000000006000000000000000000000000000013wwww310113wwww31111133331111111111111"},
 		-- },
-		-- [HD_SUBCHUNKID.PATH_DROP] = { -- never happends
+		-- [genlib.HD_SUBCHUNKID.PATH_DROP] = { -- never happends
 		-- 	{"11111111111111111111120000002120000000020000000000022000022021120021121111001111"},
 		-- },
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE] = { -- basically "Castle Middle (notop/path/side)"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE] = { -- basically "Castle Middle (notop/path/side)"
 			{"0000000000000t000G00000ttttPtt0000000G000000000G00ttt0000G00ttttt00G00tttttttttt"},
 			{"000000000000G000t000ttPtttt00000G000000000G000000000G0000ttt00G00ttttttttttttttt"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE_DROP] = { -- basically "Castle Middle drop"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE_DROP] = { -- basically "Castle Middle drop"
 			{"000G00G000tttPttPttt000G00G000000G00G000000tttt0000000000000tt000000ttttt0000ttt"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM] = { -- "Castle Bottom notop"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM] = { -- "Castle Bottom notop"
 			{"0000000000tt000000tt000000000000000000000000tt00000000tt0000rrrrttrrrr1111111111"},
 			{"0000000000tt000000000000000000000000000000000000tt0000rrrrttrrrrrrrrtt1111111111"},
 			{"000000000000000000tt00000000000000000000tt00000000ttrrrr0000ttrrrrrrrr1111111111"},
 			{"000000000000000000tt000000000000000000000000000000000T000000rrrrrrrrrr1111111111"},
 			{"0000000000tt00000000000000000000000000000000000000000000T000rrrrrrrrrr1111111111"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM_NOTOP] = { -- "Castle Bottom notop"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM_NOTOP] = { -- "Castle Bottom notop"
 			{"0000GG0000ttttPPtttt0000GG00000000GG00000000GG00000000GG0000rrrrrrrrrr1111111111"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_WALL] = { -- "Castle Bottom Rightside"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL] = { -- "Castle Bottom Rightside"
 			{"0000G00ttt000tG00tttttttPttttt0000G002tt0000G00ttt0000G00ttt0000G00ttttttttttttt"},
 			{"0000G00ttt0000Pttttt0000G0tttt0000G002tt0000G00ttt000ttttttt0ttttttttttttttttttt"},
 			-- {"0000000ttt00tt000ttt000000tttt00000002tt000ttttttt0000000ttttt000002tttttttttttt"}, -- unused
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP] = { -- "Castle Bottom Rightside drop"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP] = { -- "Castle Bottom Rightside drop"
 			{"0000000ttt00000ttttt000000tttt0ttt0002tt00t0000ttt000000tttt000000tttttt0000tttt"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_GATE] = { -- "Castle Bottom Rightside drop"
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_GATE] = { -- "Castle Bottom Rightside drop"
 			{"0000000ttt0000000ttD0000000tt00000000tt000000000000000000N00rrrrrrrrrr1111111111"}, -- modified from original for sliding doors
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_GATE_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_GATE_NOTOP] = {
 			{"0000000ttt0000tttttD0000000tt0000tttttt0t000000000t000N00N00trrrrrrrrr1111111111"}, -- modified from original for sliding doors
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT] = {
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT] = {
 			{"00000000000000000000000000000000000000000000h000000900000000rrrttttrrr1111111111"},
 		},
-		[HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP] = {
 			{"0G00000000tPtt00tt000G000000000G000000000G00h000000G00000090rrrttttrrr1111111111"},
 		},
 	},
@@ -2942,7 +2837,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].method = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	
@@ -2959,10 +2854,10 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].method = function()
 		pathid = math.random(2)
 		ind_off_x, ind_off_y = 0, 0
 
-		if pathid == HD_SUBCHUNKID.PATH then
+		if pathid == genlib.HD_SUBCHUNKID.PATH then
 			dir = 0
 			if detect_sideblocked_both(global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
-				pathid = HD_SUBCHUNKID.PATH_DROP
+				pathid = genlib.HD_SUBCHUNKID.PATH_DROP
 			elseif detect_sideblocked_neither(global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 				dir = (math.random(2) == 2) and 1 or -1
 			else
@@ -2974,51 +2869,51 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].method = function()
 			end
 			ind_off_x = dir
 		end
-		if pathid == HD_SUBCHUNKID.PATH and dropping == true then
-			pathid = HD_SUBCHUNKID.PATH_NOTOP
+		if pathid == genlib.HD_SUBCHUNKID.PATH and dropping == true then
+			pathid = genlib.HD_SUBCHUNKID.PATH_NOTOP
 			dropping = false
 		end
-		if pathid == HD_SUBCHUNKID.PATH_DROP then
+		if pathid == genlib.HD_SUBCHUNKID.PATH_DROP then
 			ind_off_y = 1
 			if dropping == true then
-				pathid = HD_SUBCHUNKID.PATH_DROP_NOTOP
+				pathid = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP
 			end
 			dropping = true
 		end
 
 		if assigned_entrance == false then
-			if pathid == HD_SUBCHUNKID.PATH_DROP then
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP
+			if pathid == genlib.HD_SUBCHUNKID.PATH_DROP then
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP
 			else
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
 			end
 			assigned_entrance = true
 		elseif hi == maxh then
 			if wi == minw then
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP
 			elseif wi == maxw then
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_GATE_NOTOP
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_GATE_NOTOP
 			else
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM_NOTOP
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM_NOTOP
 			end
 			assigned_exit = true
 		-- replace path with appropriate haunted castle path
 		elseif wi == maxw then
-			if pathid == HD_SUBCHUNKID.PATH or pathid == HD_SUBCHUNKID.PATH_NOTOP then
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
+			if pathid == genlib.HD_SUBCHUNKID.PATH or pathid == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
 			else
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL_DROP
 			end
 		else
-			if pathid == HD_SUBCHUNKID.PATH or pathid == HD_SUBCHUNKID.PATH_NOTOP then
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE
+			if pathid == genlib.HD_SUBCHUNKID.PATH or pathid == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE
 			else
-				pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE_DROP
+				pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE_DROP
 			end
 		end
 
 		global_levelassembly.modification.levelrooms[hi][wi] = pathid
-		levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
+		levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
 
 		if assigned_exit == false then -- preserve final coordinates for bugtesting purposes
 			wi, hi = (wi+ind_off_x), (hi+ind_off_y)
@@ -3030,29 +2925,29 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].method = function()
 			if global_levelassembly.modification.levelrooms[hi][wi] == nil then
 				if hi == maxh then
 					if wi == minw then
-						pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT
+						pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT
 					elseif wi == maxw then
-						pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_GATE
+						pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_GATE
 					else
-						pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM
+						pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_BOTTOM
 					end
 				elseif wi == maxw then
-					pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
+					pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_WALL
 				else
-					pathid = HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE
+					pathid = genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_MIDDLE
 				end
-				levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
+				levelcode_inject_roomcode(pathid, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].rooms[pathid], hi, wi)
 			end
 		end
 	end
 
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE] = {
 	prePath = false,
 	rooms = {
 		-- Replaced all "d" tiles with "v"
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH] = {
 			{
 				"0000:0000000vvvvv00000v000v0000G00:00Gv0vPv===vPv0vG00000Gv00G00:00G00v=======v1",
 				"00000:0000000vvvvv00000v000v000vG00:00G00vPv===vPv0vG00000Gv00G00:00G01v=======v"
@@ -3060,40 +2955,40 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE] = {
 			{"00000000000000:0000000vvvv000000v+0v00000vv0vv0000000:0100001vv=v110T01111111111"},
 			{"000000000000000:00000000vvvv000000v0+v000000vv0vv0000010:0000T011v=vv11111111111"},
 		},
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP] = {
 			{"111111111111v1111v1112v0000v210000:0000000v====v0000000000002q120021121111001111"},
 			{"111111111111v1111v1112v0000v210000:0000000v====v00000000000021120021q21111001111"},
 		},
 
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP] = {
 			{"00000000000000000000000000t0t00vvvvvt0t00v0000t0t000:0000it00v====ttt01111111111"},
 			{"000000000000000000000t0t0000000t0tvvvvv00t0t0000v00ti0000:000ttt====v01111111111"},
 		},
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_LEFT] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_LEFT] = {
 			{"1200000000vvvvv00000v000vv0000v0:00000001===vvv00011++00v00011110:00001111==v111"},
 		},
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_RIGHT] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_RIGHT] = {
 			{"000000002100000vvvvv0000vv000v0000000:0v000vv====1000v00++110000:01111111v==1111"},
 		},
 
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP] = {
 			{"000000000000vvvvvv0000v0+00v000000G:000000v=P==v0000v0G00v002qv2G02v121111G01111"},
 			{"000000000000vvvvvv0000v00+0v000000:G000000v==P=v0000v00G0v002qv20G2v1211110G1111"},
 		},
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT] = {
 			{"12000000001v0vvvv0001v00+0v0001vv:G000001v==P==0001112G000001120G010001111G01111"},
 		},
-		[HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT] = {
+		[genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT] = {
 			{"0000000021000vvvvvv1000v0+00v100000G:vv1000v=P===100000G211100010G021101110G1111"},
 		},
 		
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {
 			{
 				"11110011111111001111v00v00v00v0g00000::0v==v00v==v002100120000210012001111001111",
 				"11110011111111001111v00v00v00v0::0000g00v==v00v==v002100120000210012001111001111",
 			}
 		},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {
 			{
 				"11110011111111001111v00v00v00v0g00000::0v==v00v==v002100120000210012001111001111",
 				"11110011111111001111v00v00v00v0::0000g00v==v00v==v002100120000210012001111001111",
@@ -3101,7 +2996,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE] = {
 		},
 	},
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].method = function()
 	local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	
 	local levelh_start, levelh_end = 2, levelh-1
@@ -3114,7 +3009,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
 			for room_x = levelw_start, levelw_end, 1 do
 				local subchunk_id = global_levelassembly.modification.levelrooms[room_y][room_x]
 				if (
-					(subchunk_id == HD_SUBCHUNKID.PATH_DROP or subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP)
+					(subchunk_id == genlib.HD_SUBCHUNKID.PATH_DROP or subchunk_id == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP)
 				) then
 					table.insert(spots, {x = room_x, y = room_y, subchunk_id = subchunk_id})
 				end
@@ -3128,15 +3023,15 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
 			spot ~= nil
 			and spot.subchunk_id ~= nil
 		) then
-			if spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP then
-				path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
-			elseif spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-				path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
+			if spot.subchunk_id == genlib.HD_SUBCHUNKID.PATH_DROP then
+				path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
+			elseif spot.subchunk_id == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+				path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
 			end
 		end
 
 		if path_to_replace_with ~= nil then
-			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], spot.y, spot.x)
+			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], spot.y, spot.x)
 		end
 	end
 	
@@ -3147,48 +3042,48 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].method = function()
 			
 			-- drop/drop_notop
 			if (
-				(path_to_replace == HD_SUBCHUNKID.PATH_DROP or path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP) and
+				(path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP or path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP) and
 				-- don't replace path_drop or path_drop_notop when room_y == 1
 				-- (room_y ~= 1) and
 				-- 2/5 chance not to replace path_drop or path_drop_notop
 				(math.random(5) > 3)
 			) then
-				if path_to_replace == HD_SUBCHUNKID.PATH_DROP then
-					path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP
-				elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP then
+				if path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP then
+					path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP
+				elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
 					if (room_y == 2 or room_y == 3) and (room_x == 1) then
-						path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT
+						path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT
 					elseif (room_y == 2 or room_y == 3) and (room_x == 4) then
-						path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT
+						path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT
 					else
-						path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP
+						path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP
 					end
 				end
 			end
 		
 			-- notop
 			if (
-				(path_to_replace == HD_SUBCHUNKID.PATH_NOTOP) and
+				(path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP) and
 				math.random(5) < 5 -- 1/5 chance not to replace path_notop
 			) then
 				if (room_y == 2 or room_y == 3) and (room_x == 1) then
-					path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_LEFT
+					path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_LEFT
 				elseif (room_y == 2 or room_y == 3) and (room_x == 4) then
-					path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_RIGHT
+					path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_RIGHT
 				else
-					path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP
+					path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP
 				end
 			end
 		
 			-- path
 			if (
-				(path_to_replace == HD_SUBCHUNKID.PATH)
+				(path_to_replace == genlib.HD_SUBCHUNKID.PATH)
 			) then
-				path_to_replace_with = HD_SUBCHUNKID.TIKIVILLAGE_PATH
+				path_to_replace_with = genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH
 			end
 		
 			if path_to_replace_with ~= -1 then
-				levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], room_y, room_x)
+				levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].rooms[path_to_replace_with], room_y, room_x)
 			end
 		end
 	end
@@ -3198,11 +3093,11 @@ end
 
 
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER] = {
 	prePath = false,
 	rooms = {
-		[HD_SUBCHUNKID.RUSHING_WATER_EXIT] = {{"000000000000000900000221111220wwvvvvvvwwwwwwwwwwww000000000000000000000000000000"}},--"000000000000000900000221111220wwvvvvvvwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}},
-		[HD_SUBCHUNKID.RUSHING_WATER_SIDE] = {
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_EXIT] = {{"000000000000000900000221111220wwvvvvvvwwwwwwwwwwww000000000000000000000000000000"}},--"000000000000000900000221111220wwvvvvvvwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}},
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_SIDE] = {
 			--[[ ORIGINAL (not impostorlake-adjusted)
 				{"000000000000000000000001111000w,,vvvv,,wwwww,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 				{"000000000000000000001200000000vvwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
@@ -3222,7 +3117,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER] = {
 			{"600006000000000000000000000000wwwvvvvwwwwwww,,wwww000000000000000000000000000000"},
 			{"000022000000021120000221111220www,,,,wwwwwwwwwwwww000000000000000000000000000000"},
 		},
-		[HD_SUBCHUNKID.RUSHING_WATER_PATH] = {
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_PATH] = {
 			--[[ ORIGINAL (not impostorlake-adjusted)
 				{"000000000000000000000001111000w,,vvvv,,wwwww,,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
 				{"000000000000000000001200000000vvwwwwwwww,wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"},
@@ -3238,10 +3133,10 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER] = {
 			{"000000000000000000000001111000w,,vvvv,,wwww,vv,www0000vv00000000,,00000000000000"},
 		},
 
-		[HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE] = {{"00000000000000000000000000000,00000000000,,000000000,,00000000,,,,,,,,,00,,,,,,,"}},
-		[HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE] = {{"0000000000,000000000,,00000000,000000000,0000000,0,g0EEE0,,0,,,,,,,,,0,,,,,,,,00"}},
-		[HD_SUBCHUNKID.RUSHING_WATER_OLBITEY] = {{"0000000000000000000000000000000000000000000J00000000000000000000000000,,,,,,,,,,"}},
-		[HD_SUBCHUNKID.RUSHING_WATER_BOTTOM] = {
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE] = {{"00000000000000000000000000000,00000000000,,000000000,,00000000,,,,,,,,,00,,,,,,,"}},
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE] = {{"0000000000,000000000,,00000000,000000000,0000000,0,g0EEE0,,0,,,,,,,,,0,,,,,,,,00"}},
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_OLBITEY] = {{"0000000000000000000000000000000000000000000J00000000000000000000000000,,,,,,,,,,"}},
+		[genlib.HD_SUBCHUNKID.RUSHING_WATER_BOTTOM] = {
 			{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"},
 			{"0000000000000000000000000000000000000000000000000000000000000000000000,,EE,,EE,,"},
 			{"0000000000000000000000000000000000000000,,000000,,00000000000000000000,,EE,,EE,,"},
@@ -3253,7 +3148,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER] = {
 		},
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	-- exit row
 	for room_x = 1, levelw, 1 do
@@ -3261,22 +3156,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].method = function()
 		path_to_replace_with = -1
 		
 		-- path
-		if path_to_replace == HD_SUBCHUNKID.PATH or path_to_replace == nil then
-			path_to_replace_with = HD_SUBCHUNKID.RUSHING_WATER_SIDE
+		if path_to_replace == genlib.HD_SUBCHUNKID.PATH or path_to_replace == nil then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
 		end
 	
 		-- path_notop
-		if path_to_replace == HD_SUBCHUNKID.PATH or path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
-			path_to_replace_with = HD_SUBCHUNKID.RUSHING_WATER_PATH
+		if path_to_replace == genlib.HD_SUBCHUNKID.PATH or path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.RUSHING_WATER_PATH
 		end
 	
 		-- exit
-		if (path_to_replace == HD_SUBCHUNKID.EXIT or path_to_replace == HD_SUBCHUNKID.EXIT_NOTOP) then
-			path_to_replace_with = HD_SUBCHUNKID.RUSHING_WATER_EXIT
+		if (path_to_replace == genlib.HD_SUBCHUNKID.EXIT or path_to_replace == genlib.HD_SUBCHUNKID.EXIT_NOTOP) then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
 		end
 	
 		if path_to_replace_with ~= -1 then
-			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].rooms[path_to_replace_with], levelh, room_x)
+			levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].rooms[path_to_replace_with], levelh, room_x)
 		end
 	end
 	local struct_x_pool = {1, 2, 3, 4}
@@ -3284,28 +3179,28 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].method = function()
 		struct_x_pool = {1, 4}
 
 		levelcode_inject_roomcode_rowfive(
-			HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE,
-			HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].rooms[HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE],
+			genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE,
+			HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].rooms[genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_LEFTSIDE],
 			2
 		)
 		levelcode_inject_roomcode_rowfive(
-			HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE,
-			HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].rooms[HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE],
+			genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE,
+			HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].rooms[genlib.HD_SUBCHUNKID.RUSHING_WATER_UNLOCK_RIGHTSIDE],
 			3
 		)
 	end
 	
 	levelcode_inject_roomcode_rowfive(
-		HD_SUBCHUNKID.RUSHING_WATER_OLBITEY,
-		HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].rooms[HD_SUBCHUNKID.RUSHING_WATER_OLBITEY],
+		genlib.HD_SUBCHUNKID.RUSHING_WATER_OLBITEY,
+		HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].rooms[genlib.HD_SUBCHUNKID.RUSHING_WATER_OLBITEY],
 		struct_x_pool[math.random(1, #struct_x_pool)]
 	)
 	-- inject rushing water side rooms
 	for xi = 1, levelw, 1 do
 		if global_levelassembly.modification.rowfive.levelrooms[xi] == nil then
 			levelcode_inject_roomcode_rowfive(
-				HD_SUBCHUNKID.RUSHING_WATER_BOTTOM,
-				HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].rooms[HD_SUBCHUNKID.RUSHING_WATER_BOTTOM],
+				genlib.HD_SUBCHUNKID.RUSHING_WATER_BOTTOM,
+				HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].rooms[genlib.HD_SUBCHUNKID.RUSHING_WATER_BOTTOM],
 				xi
 			)
 		end
@@ -3316,32 +3211,32 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.RUSHING_WATER].method = function()
 	rowfive = {
 		setRooms = {
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	}
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI] = {
 	rooms = {
-		[HD_SUBCHUNKID.MOAI] = {
+		[genlib.HD_SUBCHUNKID.MOAI] = {
 			{
 				"000000000000000O000000000000000000000000021110002002111mmm2000111111000000000000",
 				"000000000000O000000000000000000000000000020001112002mmm1112000111111000000000000",
@@ -3349,7 +3244,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI] = {
 		}
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 	spots = {}
@@ -3393,22 +3288,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].method = function()
 	spot = spots[math.random(#spots)]
 
 	levelcode_inject_roomcode(
-		HD_SUBCHUNKID.MOAI,
-		HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOAI].rooms[HD_SUBCHUNKID.MOAI],
+		genlib.HD_SUBCHUNKID.MOAI,
+		HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].rooms[genlib.HD_SUBCHUNKID.MOAI],
 		spot.y, spot.x
 	)
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO] = {
 	prePath = false,
 	rooms = {
-		[HD_SUBCHUNKID.UFO_LEFTSIDE] = {
+		[genlib.HD_SUBCHUNKID.UFO_LEFTSIDE] = {
 			{"0000000000000+++++++0+++0000000+000000000+000000000++000000000++++++++0000000000"}
 		},
-		[HD_SUBCHUNKID.UFO_MIDDLE] = {
+		[genlib.HD_SUBCHUNKID.UFO_MIDDLE] = {
 			{"0000000000++++++++++0000000000000000000000000000000000000000++++++++++0000000000"}
 		},
-		[HD_SUBCHUNKID.UFO_RIGHTSIDE] = {
+		[genlib.HD_SUBCHUNKID.UFO_RIGHTSIDE] = {
 			{"0022122111++++++11110+00002211000000X01100000000M10+;0021111+++++1+1110000222221"}
 		},
 	},
@@ -3421,7 +3316,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO] = {
 	What should be done is make it so the path at least passes through or around UFO_LEFTSIDE (considering it as a PATH_DROP or PATH_DROP_NOTOP).
 	Note that this implimentation shouldn't be wrapping around UFO subchunks, but forcing the path to drop down and continue from there.
 --]]
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	minw, minh, maxw, maxh = 1, 1, levelw, levelh
 
@@ -3434,22 +3329,22 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].method = function()
 
 	wi, hi = maxw, minh+(drop_detected and 1 or 2)
 
-	levelcode_inject_roomcode(HD_SUBCHUNKID.UFO_RIGHTSIDE, HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_RIGHTSIDE], hi, wi)
+	levelcode_inject_roomcode(genlib.HD_SUBCHUNKID.UFO_RIGHTSIDE, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_RIGHTSIDE], hi, wi)
 	_mid_width_min = 0
 	mid_width = math.random(_mid_width_min, maxw-2)
 	for i = maxw-1, maxw-mid_width, -1 do
-		levelcode_inject_roomcode(HD_SUBCHUNKID.UFO_MIDDLE, HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_MIDDLE], hi, i)
+		levelcode_inject_roomcode(genlib.HD_SUBCHUNKID.UFO_MIDDLE, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_MIDDLE], hi, i)
 	end
-	levelcode_inject_roomcode(HD_SUBCHUNKID.UFO_LEFTSIDE, HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_LEFTSIDE], hi, maxw-mid_width-1)
+	levelcode_inject_roomcode(genlib.HD_SUBCHUNKID.UFO_LEFTSIDE, HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_LEFTSIDE], hi, maxw-mid_width-1)
 
-	-- 	HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_LEFTSIDE]
-	-- 	HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_MIDDLE]
-	-- 	HD_ROOMOBJECT.FEELINGS[FEELING_ID.UFO].rooms[HD_SUBCHUNKID.UFO_RIGHTSIDE]
+	-- 	HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_LEFTSIDE]
+	-- 	HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_MIDDLE]
+	-- 	HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[genlib.HD_SUBCHUNKID.UFO_RIGHTSIDE]
 end
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (
 					CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
@@ -3460,18 +3355,18 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 				
 				return {index = math.random(2)}
 			end,
-			[HD_SUBCHUNKID.PATH] = function() return math.random(9) end,
-			[HD_SUBCHUNKID.PATH_DROP] = function() return math.random(12) end,
-			-- [HD_SUBCHUNKID.PATH_NOTOP] = function() return math.random(9) end,
-			[HD_SUBCHUNKID.PATH_DROP_NOTOP] = function() return math.random(8) end,
+			[genlib.HD_SUBCHUNKID.PATH] = function() return math.random(9) end,
+			[genlib.HD_SUBCHUNKID.PATH_DROP] = function() return math.random(12) end,
+			-- [genlib.HD_SUBCHUNKID.PATH_NOTOP] = function() return math.random(9) end,
+			[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = function() return math.random(8) end,
 		},
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"00000000000010111100000000000000011010000050000000000000000000000000001111111111"},
 			{"000000000011------11120000002112002200211200000021120022002111ssssss111111111111"},
 		},
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"60000600000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{"60000600000000000000000000000000050000000000000000000000000011111111111111111111"},
@@ -3482,7 +3377,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 			{"6000060000000000000000000000000000000000000000000000000000000000000000----------"},
 			{"6000060000000000000000000000000000000000000000000001------1021ssssss121111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000050000000000000000000000001202111111"},
 			{"00000000006000060000000000000000000000005000000000000000000000000000001111112021"},
@@ -3496,7 +3391,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 			{"11111111111111112222111220000011200000000000000000000000000012000000001120000211"},
 			{"11111111112111111112021111112000211112000002112000000022000002200002201111001111"},
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{"00000000000000000000000000000050000500000000000000000000000011111111111111111111"},
@@ -3507,7 +3402,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 			{"0000000000600006000000000000000000000000000000000000000000000000000000----------"},
 			{"0000000000600006000000000000000000000000000000000001------1021ssssss121111111111"}
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000050000000000000000000000001202111111"},
 			{"00000000006000060000000000000000000000005000000000000000000000000000001111112021"},
@@ -3517,67 +3412,67 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 			{"00000000000060000000000000000000000000000000000000002221110000000001201111110111"},
 			{"00000000000060000000000000000000000000000000000000002022020000100001001111001111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000000000111000"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000000000111000"},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 		},
-		[HD_SUBCHUNKID.ALTAR] = {
+		[genlib.HD_SUBCHUNKID.ALTAR] = {
 			{"220000002200000000000000000000000000000000000000000000x00000022qqqq2201111111111"}
 		},
-		[HD_SUBCHUNKID.YETIKINGDOM_YETIKING] = {
+		[genlib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING] = {
 			{"iiiiiiiiiijiiiiiiiij0jjjjjjjj0000000000000000000000000Y0000000::00::00iiiiiiiiii"}
 		},
-		[HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP] = {
 			{"ii000000iijiii00iiij0jj0000jj0000000000000000000000000Y0000000::00::00iiiiiiiiii"}
 		},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"0:::000000i-----i000i00000i000ig0000ii00i--0001i00i0000011i01sssss11101111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000:::0000i-----i000i00000i00ii000g0i00i1000--i0i1100000i0111sssss11111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"11111111112111111112022222222000000000000000g00000000011000002200002201111001111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"0000000000000000000022000000220000g000000000110000000000000002100001201111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"0:::000000i-----i000i00000i000ig0000ii00i--0001i00i0000011i01sssss11101111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000:::0000i-----i000i00000i00ii000g0i00i1000--i0i1100000i0111sssss11111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"11111111112111111112022222222000000000000000g00000000011000002200002201111001111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"0000000000000000000022000000220000g000000000110000000000000002100001201111001111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"11111111112111111112022222222000000000000000g00000000011000002200002201111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"0000000000000000000022000000220000g000000000110000000000000002100001201111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"11111111112111111112022222222000000000000000g00000000011000002200002201111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"0000000000000000000022000000220000g000000000110000000000000002100001201111001111"}},
 	},
 	rowfive = {
 		setRooms = {
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	},
@@ -3617,19 +3512,19 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM] = {
 		},
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	
 	if LEVEL_UNLOCK ~= nil then
 		level_generation_method_aligned(
 			{
 				left = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
-					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
 				},
 				right = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
-					roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
 				}
 			}
 		)
@@ -3674,56 +3569,56 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].method = function()
 
 	-- pick random place to fill
 	local spot = spots[math.random(#spots)]
-	local subchunk_id_yeti = HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	local subchunk_id_yeti = genlib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
 	if spot.subchunk_id ~= nil then
 		if (
-			spot.subchunk_id == HD_SUBCHUNKID.PATH_NOTOP or
-			spot.subchunk_id == HD_SUBCHUNKID.PATH_DROP_NOTOP
+			spot.subchunk_id == genlib.HD_SUBCHUNKID.PATH_NOTOP or
+			spot.subchunk_id == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP
 		) then
-			subchunk_id_yeti = HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+			subchunk_id_yeti = genlib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 		end
 	end
 	levelcode_inject_roomcode(
 		subchunk_id_yeti,
-		HD_ROOMOBJECT.FEELINGS[FEELING_ID.YETIKINGDOM].rooms[subchunk_id_yeti],
+		HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].rooms[subchunk_id_yeti],
 		spot.y, spot.x
 	)
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE] = {
 	prePath = true,
 	rooms = {
-		[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
+		[genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
 			{
 				"++++++++++++000000++++090000++++++00++++++++00++++++++00++++++++00++++++++00++++",
 				"++++++++++++000000++++000090++++++00++++++++00++++++++00++++++++00++++++++00++++",
 			}
 		},
-		[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM] = {{"++++00++++++++00++++++++00++++++++00++++++000000++0+++00+++000++00++000000000000"}}
+		[genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM] = {{"++++00++++++++00++++++++00++++++++00++++++000000++0+++00+++000++00++000000000000"}}
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].method = function()
 	level_generation_method_structure_vertical(
 		{
-			subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
+			subchunk_id = genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP]
 		},
 		{
 			bottom = {
-				subchunk_id = HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
+				subchunk_id = genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].rooms[genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM]
 			}
 		},
 		{1, 4}
 		-- ,0
 	)
 end
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT] = {
 	prePath = true,
 	rooms = {
-		[HD_SUBCHUNKID.SACRIFICIALPIT_TOP] = {{"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"}},
-		[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION] = {{"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}},
-		[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM] = {{"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}}
+		[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP] = {{"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"}},
+		[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION] = {{"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}},
+		[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM] = {{"112000021111200002111120000211113wwww311113wwww311113wwww31111yyyyyy111111111111"}}
 	}
 }
 
@@ -3743,20 +3638,20 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT] = {
 		-- end
 	-- 118
 		-- spawn 118 at structx, struct_midheight+1
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].method = function()
 	level_generation_method_structure_vertical(
 		{
-			subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_TOP]
+			subchunk_id = genlib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].rooms[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP]
 		},
 		{
 			middle = {
-				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION]
+				subchunk_id = genlib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].rooms[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION]
 			},
 			bottom = {
-				subchunk_id = HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].rooms[HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM]
+				subchunk_id = genlib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].rooms[genlib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM]
 			}
 		},
 		{1, 2, 3, 4},
@@ -3764,49 +3659,49 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.SACRIFICIALPIT].method = function()
 	)
 end
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD] = {
 	prePath = true,
 	rooms = {
-		[HD_SUBCHUNKID.VLAD_TOP] = {{"0000hh000000shhhhs000shhhhhhs00hhhU0hhh0shh0000hhshhhh00hhhhhhQ0000Qhhhh000000hh"}},
-		[HD_SUBCHUNKID.VLAD_MIDSECTION] = {{
+		[genlib.HD_SUBCHUNKID.VLAD_TOP] = {{"0000hh000000shhhhs000shhhhhhs00hhhU0hhh0shh0000hhshhhh00hhhhhhQ0000Qhhhh000000hh"}},
+		[genlib.HD_SUBCHUNKID.VLAD_MIDSECTION] = {{
 			"hh000000hhhh0V0000hhhh000000hhhh000000hhhh000000hhhhh00000hhhhQ0hhhhhhhh0qhhhhhh",
 			"hh000000hhhh0V0000hhhh000000hhhh000000hhhh000000hhhh00000hhhhhhhhh0Qhhhhhhhhq0hh"
 		}},
-		[HD_SUBCHUNKID.VLAD_BOTTOM] = {{"hh0L00L0hhhhhL00Lhhh040L00L040hhhL00Lhhhhh0L00L0hh040ssss040hhshhhhshhhhhhhhhhhh"}},
+		[genlib.HD_SUBCHUNKID.VLAD_BOTTOM] = {{"hh0L00L0hhhhhL00Lhhh040L00L040hhhL00Lhhhhh0L00L0hh040ssss040hhshhhhshhhhhhhhhhhh"}},
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].method = function()
 	level_generation_method_structure_vertical(
 		{
-			subchunk_id = HD_SUBCHUNKID.VLAD_TOP,
-			roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_TOP]
+			subchunk_id = genlib.HD_SUBCHUNKID.VLAD_TOP,
+			roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].rooms[genlib.HD_SUBCHUNKID.VLAD_TOP]
 		},
 		{
 			middle = {
-				subchunk_id = HD_SUBCHUNKID.VLAD_MIDSECTION,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_MIDSECTION]
+				subchunk_id = genlib.HD_SUBCHUNKID.VLAD_MIDSECTION,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].rooms[genlib.HD_SUBCHUNKID.VLAD_MIDSECTION]
 			},
 			bottom = {
-				subchunk_id = HD_SUBCHUNKID.VLAD_BOTTOM,
-				roomcodes = HD_ROOMOBJECT.FEELINGS[FEELING_ID.VLAD].rooms[HD_SUBCHUNKID.VLAD_BOTTOM]
+				subchunk_id = genlib.HD_SUBCHUNKID.VLAD_BOTTOM,
+				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].rooms[genlib.HD_SUBCHUNKID.VLAD_BOTTOM]
 			}
 		},
 		{1, 4},
 		2
 	)
 end
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL] = {
 	rooms = {
-		[HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE] = {{"000000000021------1221wwwwww12213wwww312013wwww310011333311002111111200022222200"}},
+		[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE] = {{"000000000021------1221wwwwww12213wwww312013wwww310011333311002111111200022222200"}},
 		-- single room of water
 		-- subchunkid 68
 		-- uses level_generation_method_nonaligned() after path gen
 
 		-- uses level_generation_method_nonaligned() after path gen
-		[HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP] = {{"000000000021------1221wwwwww12213wwww312213wwww312213wwww312213wwww312213wwww312"}},
+		[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP] = {{"000000000021------1221wwwwww12213wwww312213wwww312213wwww312213wwww312213wwww312"}},
 		-- top room of water
 		-- subchunkid 69 *NICE*
-		[HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM] = {{"213wwww312213wwww312213wwww312213wwww312013wwww310011333311002111111200022222200"}},
+		[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM] = {{"213wwww312213wwww312213wwww312213wwww312013wwww310011333311002111111200022222200"}},
 		-- bottom room of water
 		-- subchunkid 70
 	}
@@ -3819,7 +3714,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL] = {
 		2. If 3/4 chance passes and the space under it is a sideroom, use two-room.
 			Otherwise, spawn single room.
 --]]
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 	spots = {}
@@ -3847,19 +3742,19 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].method = function()
 		)
 	) then
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP,
-			HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].rooms[HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP],
+			genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP,
+			HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].rooms[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP],
 			spot.y, spot.x
 		)
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM,
-			HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].rooms[HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM],
+			genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM,
+			HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].rooms[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM],
 			spot.y+1, spot.x
 		)
 	else
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE,
-			HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].rooms[HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE],
+			genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE,
+			HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].rooms[genlib.HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE],
 			spot.y, spot.x
 		)
 	end
@@ -3867,10 +3762,10 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.ICE_CAVES_POOL].method = function()
 end
 
 
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA] = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA] = {
 	prepath = false,
 	rooms = {
-		[HD_SUBCHUNKID.YAMA_LEFTSIDE] = {
+		[genlib.HD_SUBCHUNKID.YAMA_LEFTSIDE] = {
 			{"0000000000000070000000021207000000Q00120070000000021000000000Q000212000000000000"},
 			{"00000000000000070000007021200002100Q00000000000070000000001202120000Q00000000000"},
 			{"00000070000700001200010000L0000Q0020L000000000L000007000L020001200L0000000000000"},
@@ -3878,7 +3773,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA] = {
 			{"0000000000200000070000000001000010000L0000Q0020L001000000L0020007000000000100000"},
 			{"00000000000070000002001000000000L000010000L0200Q0000L000000700000700010000010000"},
 		},
-		[HD_SUBCHUNKID.YAMA_RIGHTSIDE] = {
+		[genlib.HD_SUBCHUNKID.YAMA_RIGHTSIDE] = {
 			{"0000000000000070000000021207000000Q00120070000000021000000000Q000212000000000000"},
 			{"00000000000000070000007021200002100Q00000000000070000000001202120000Q00000000000"},
 			{"00000070000700001200010000L0000Q0020L000000000L000007000L020001200L0000000000000"},
@@ -3888,28 +3783,28 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA] = {
 		},
 	}
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].setRooms = {
 	-- 1
 	-- {
-	-- 	subchunk_id = HD_SUBCHUNKID.YAMA_TOP,
+	-- 	subchunk_id = genlib.HD_SUBCHUNKID.YAMA_TOP,
 	-- 	placement = {1, 1},
 	-- 	roomcodes = {{"0000Q000L000000000L0CCC00000L0hhhh00h0L0hhhh00h000hhhh00h000hhhh00h0000000000000"}}
 	-- 	-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	-- },
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_1_2,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_1_2,
 		placement = {1, 2},
 		roomcodes = {{"0L00L0L0000L00L0L0000L00L000000000L000000000L000000000000Y0000000000000000000000"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_1_3,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_1_3,
 		placement = {1, 3},
 		roomcodes = {{"000L0L00L0000L0L00L000000L00L000000L000000000L0000000000000000000000000000000000"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	-- {
-	-- 	subchunk_id = HD_SUBCHUNKID.YAMA_TOP,
+	-- 	subchunk_id = genlib.HD_SUBCHUNKID.YAMA_TOP,
 	-- 	placement = {1, 4},
 	-- 	roomcodes = {{"0L000Q00000L000000000L00000CCC0L0h00hhhh000h00hhhh000h00hhhh000h00hhhh0000000000"}}
 	-- 	-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
@@ -3917,39 +3812,39 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 	
 	-- 2
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_LEFTSIDE,
 		placement = {2, 1},
-		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].rooms[genlib.HD_SUBCHUNKID.YAMA_LEFTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_2_2,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_2_2,
 		placement = {2, 2},
 		roomcodes = {{"00000000000000000000000000000000000000000000000hhh0000000hyy0000000hyy0000000hyy"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_2_3,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_2_3,
 		placement = {2, 3},
 		roomcodes = {{"0000000000000000000000000000000000000000hhh0000000yyh0000000yyh0000000yyh0000000"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_RIGHTSIDE,
 		placement = {2, 4},
-		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].rooms[genlib.HD_SUBCHUNKID.YAMA_RIGHTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 
 	-- 3
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_LEFTSIDE,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_LEFTSIDE,
 		placement = {3, 1},
-		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_LEFTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].rooms[genlib.HD_SUBCHUNKID.YAMA_LEFTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_3_2,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2,
 		placement = {3, 2},
 		roomcodes = {
 			{
@@ -3960,7 +3855,7 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_3_3,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3,
 		placement = {3, 3},
 		roomcodes = {
 			{
@@ -3971,62 +3866,62 @@ HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].setRooms = {
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_RIGHTSIDE,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_RIGHTSIDE,
 		placement = {3, 4},
-		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].rooms[HD_SUBCHUNKID.YAMA_RIGHTSIDE])
+		roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].rooms[genlib.HD_SUBCHUNKID.YAMA_RIGHTSIDE])
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 
 	-- 4
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_1,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_4_1,
 		placement = {4, 1},
 		roomcodes = {{"00000000000000000000000000000000000X00000&00qqq000000qqqqqqqwwwwwwwwwwwwwwwwwwww"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_ENTRANCE,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_ENTRANCE,
 		placement = {4, 2},
 		roomcodes = {{"000000000000000000000000000000000000000000000z0009qqqqqqqqqqwwwwwwwwwwwwwwwwwwww"}}
 		-- roomcodes = {{"000000000000000000000000000000000000000000000z0009qqqqqqqqqq00000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_3,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_4_3,
 		placement = {4, 3},
 		roomcodes = {{"00000000000000000000000000000000000000000000000000qqqqqqqqqqwwwwwwwwwwwwwwwwwwww"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 	{
-		subchunk_id = HD_SUBCHUNKID.YAMA_SETROOM_4_4,
+		subchunk_id = genlib.HD_SUBCHUNKID.YAMA_SETROOM_4_4,
 		placement = {4, 4},
 		roomcodes = {{"0000000000000000000000000000000000X00000000qqq00&0qqqqqqq000wwwwwwwwwwwwwwwwwwww"}}
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 }
-HD_ROOMOBJECT.FEELINGS[FEELING_ID.YAMA].method = function()
+HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].method = function()
 	levelw, _ = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	
 	exit_on_left = (math.random(2) == 1)
 	
 	if exit_on_left == true then
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.YAMA_EXIT,
+			genlib.HD_SUBCHUNKID.YAMA_EXIT,
 			{{"0000Q000L000000000L009000000L0hhhh00h0L0hhhh00h000hhhh00h000hhhh00h0000000000000"}},
 			1, 1
 		)
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.YAMA_TOP,
+			genlib.HD_SUBCHUNKID.YAMA_TOP,
 			{{"0L000Q00000L000000000L00000CCC0L0h00hhhh000h00hhhh000h00hhhh000h00hhhh0000000000"}},
 			1, levelw
 		)
 	else
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.YAMA_TOP,
+			genlib.HD_SUBCHUNKID.YAMA_TOP,
 			{{"0000Q000L000000000L0CCC00000L0hhhh00h0L0hhhh00h000hhhh00h000hhhh00h0000000000000"}},
 			1, 1
 		)
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.YAMA_EXIT,
+			genlib.HD_SUBCHUNKID.YAMA_EXIT,
 			{{"0L000Q00000L000000000L000000900L0h00hhhh000h00hhhh000h00hhhh000h00hhhh0000000000"}},
 			1, levelw
 		)
@@ -4038,7 +3933,7 @@ HD_ROOMOBJECT.WORLDS = {}
 HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				_, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 				if state.level == 1 then
@@ -4066,22 +3961,22 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				if chunkPool_rand_index == 4 and state.level < 3 then return {index = 2}
 				else return {index = chunkPool_rand_index} end
 			end,
-			[HD_SUBCHUNKID.PATH_DROP] = function()
+			[genlib.HD_SUBCHUNKID.PATH_DROP] = function()
 				local range_start, range_end = 1, 12
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(FEELING_ID.SPIDERLAIR) == true
+					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 11
 				end
 				return chunkpool_rand_index
 			end,
-			[HD_SUBCHUNKID.PATH_DROP_NOTOP] = function()
+			[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = function()
 				local range_start, range_end = 1, 8
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(FEELING_ID.SPIDERLAIR) == true
+					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 7
@@ -4104,7 +3999,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"00000000000010111100000000000000011010000050000000000000000000000000001111111111"},
 			{
 				"110000000040L600000011P000000011L000000011L5000000110000000011000000001111111111",
@@ -4126,7 +4021,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			},
 			{"121111112100L2112L0011P1111P1111L2112L1111L1111L1111L1221L1100L0000L001111221111"},
 		},
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"60000600000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{"60000600000000000000000000000000050000000000000000000000000011111111111111111111"},
@@ -4146,7 +4041,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"222222222200000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111"
 			},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000000000000000600006000000000000000000000000600006000000000000000000000000"},
 			{"00000000000000000000600006000000000000000000050000000000000000000000001202111111"},
 			{"00000000000000000000600006000000000000005000000000000000000000000000001111112021"},
@@ -4166,7 +4061,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"00000000000060000000000000000000000000000000000000001112220002100000001110011111"},
 			{"00000000000060000000000000000000000000000000000000002221110000000001201111100111"},
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000005000050000000000000000000000001111111111"},-- empty case (extra chance)
 			{"00000000000000000000000000000000000000005000050000000000000000000000001111111111"},--
@@ -4179,7 +4074,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"000000000000000000000L000000000Pvvvvvvv00L500000v00L000000vv0L0000000v1111111111"
 			},
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000000000000000600006000000000000000000000000600006000000000000000000000000"},
 			{"00000000000000000000600006000000000000000000050000000000000000000000001202111111"},
 			{"00000000000000000000600006000000000000005000000000000000000000000000001111112021"},
@@ -4195,7 +4090,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"00000000000060000000000000000000000000000000000000001112220002100000001110011111"},
 			{"00000000000060000000000000000000000000000000000000002221110000000001201111100111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000008000000000000000000L000000000P111111000L111111000L00111111111111111"},
@@ -4205,7 +4100,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"011111111001111111100vvvvvvvv00vv0000vv0000009000001v====v1001111111101111111111"
 			},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000002000000002"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000002000000002"},
 			{"00000000000008000000000000000000L000000000P111111000Lvvvv11000L000v1111vvvv0v111"},
@@ -4215,7 +4110,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				"011111111001111111100vvvvvvvv00vv0000vv0000009000001v====v1000000v111011vv0v1111"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
@@ -4223,23 +4118,23 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000006000060000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 			-- {"00000000000010021110001001111000110111129012000000111111111021111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
 			{"00000000000111200100011110010021111011000000002109011111111102111111121111111111"},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"vvvvvvvvvvv++++++++vvL00000g0vvPvvvvvvvv0L000000000L0:000:0011111111111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"vvvvvvvvvvv++++++++vvg000000LvvvvvvvvvPv00000000L000:000:0L011111111111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{""}},
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"vvvvvvvvvv0++++++++0vL00g000LvvPvvvvvvPv0L000000L00L000000L00L000000L01111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000L222222L0vPvvvvvvPvvL000000LvvL00g000Lvv========v"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"vvvvvvvvvvv++++++++vvL00g000LvvPvvvvvvPv0L000000L00L000000L00L000000L01111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000vvvvvv0000v0000v000L00g000L00Pv====vP00L0v00v0L00L000000L0111v00v111"}},
+		[genlib.HD_SUBCHUNKID.IDOL] = {{"2200000022000000000000000000000000000000000000000000000000000000I000001111A01111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"vvvvvvvvvvv++++++++vvL00000g0vvPvvvvvvvv0L000000000L0:000:0011111111111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"vvvvvvvvvvv++++++++vvg000000LvvvvvvvvvPv00000000L000:000:0L011111111111111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{""}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"vvvvvvvvvv0++++++++0vL00g000LvvPvvvvvvPv0L000000L00L000000L00L000000L01111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000L222222L0vPvvvvvvPvvL000000LvvL00g000Lvv========v"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"vvvvvvvvvvv++++++++vvL00g000LvvPvvvvvvPv0L000000L00L000000L00L000000L01111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000vvvvvv0000v0000v000L00g000L00Pv====vP00L0v00v0L00L000000L0111v00v111"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
@@ -4297,7 +4192,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (
 					CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
@@ -4307,7 +4202,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 				elseif (
 					CHUNKBOOL_IDOL == false and
 					(
-						feeling_check(FEELING_ID.RESTLESS) == false and feeling_check(FEELING_ID.RUSHING_WATER) == false
+						feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
 					) and
 					math.random(10) == 1
 				) then
@@ -4344,7 +4239,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 		
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"00000000000010111100000000000000011010000050000000000000000000000000001111111111"},
 			{"111111111111V0000211120000021100000002110000000211112000021111120021111111001111"},
 			{"1111111111112V000011112000002111200000001120000000112000021111120021111111001111"},
@@ -4358,7 +4253,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			{"000000000001wwwwww1011wwwwww11113wwww311113wwww311113wwww31111133331111111111111"},
 			{"00000000000000rr0000000rttr00000rrrrrr0000V0000000000000000000000000002000000002"},
 		},
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"60000600000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{"60000600000000000000000000000050000500000000000000000000000011111111111111111111"},
@@ -4373,7 +4268,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			{"000000000000000000000000&000000q3wwww3q0013wwww310113wwww31111133331111111111111"},
 			{"0060000000000000000000000000000000&000000q3wwww3q0113wwww31111133331111111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000000000000000000000000000000000000000000000000000002200000002111112002111"},
 			{"000000000000000000000000000000000000000000000000002200000000112T0000001111001111"},
 			{"00000000006000000000000000000000000000000000000000000000000000000000001000000001"},
@@ -4381,7 +4276,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			{"00000000000000000000000000000000000000000000000000000000000022222000021111100001"},
 			{"11111111111111111111120000002100000000000000000000022000022021120021121111001111"},
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"00000000000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{
@@ -4399,22 +4294,22 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			{"000000000000000000000000&000000q3wwww3q0013wwww310113wwww31111133331111111111111"},
 			{"00000000000060000000000000000000000000000q3wwww3q0113wwww31111133331111111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000000000000000000000000000000000000000000000000000002200000002111112002111"},
 			{"000000000000000000000000000000000000000000000000002200000000112T0000001111001111"},
 			{"00000000006000000000000000000000000000000000000000000000000000000000001000000001"},
 			{"00000000000000000000000000000000000000000000000000000000000020000222221000011111"},
 			{"00000000000000000000000000000000000000000000000000000000000022222000021111100001"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"01111111100222222220000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"60000600000000000000000000000000080000000000000000000000000000000000001110000111"},
 			{"60000600000000000000000000000000800000000000000000000000000000000000001110000111"},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{"20000000020000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000011111100000000000000000000000008000000000000000000000000001111111111"},
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
@@ -4424,21 +4319,21 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 				"1111111111211110000L000000900L020000110L000000210L00000011200T00T022001111111111"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"20000000020000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000011111100000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"01000000100000I0000001BBBBBB10010000001011wwwwww1111wwwwww11113wwww3111111111111"}},
+		[genlib.HD_SUBCHUNKID.IDOL] = {{"01000000100000I0000001BBBBBB10010000001011wwwwww1111wwwwww11113wwww3111111111111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"ttttt11111t000000000tg0t000000ttttI0000000ttttt000ttttttt000rrrrrrrr001111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"11111ttttt000000000t000000tg0t00000Itttt000ttttt00000ttttttt00rrrrrrrr1111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},       -- # TODO: See if unlock coffins can spawn as these. (I HIGHLY doubt it, though.)
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}}, --
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"ttttt11111t000000000tg0t000000ttttI0000000ttttt000ttttttt000rrrrrrrr001111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"11111ttttt000000000t000000tg0t00000Itttt000ttttt00000ttttttt00rrrrrrrr1111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},       -- # TODO: See if unlock coffins can spawn as these. (I HIGHLY doubt it, though.)
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}}, --
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"000000000000000000000000g00000000tttt00000tt00tt00000000000001tt00tt1011rr00rr11"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000000tttt00000tt00tt00000000000001tt00tt1011rr00rr11"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"000000000000000000000000g00000000tttt00000tt00tt00000000000001tt00tt1011rr00rr11"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000000tttt00000tt00tt00000000000001tt00tt1011rr00rr11"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
@@ -4486,7 +4381,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	setRooms = {
 		{
 			-- prePath = false,
-			subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_LEFTSIDE,
+			subchunk_id = genlib.HD_SUBCHUNKID.WORM_CRYSKNIFE_LEFTSIDE,
 			placement = {6, 1},
 			roomcodes = {
 				{"0000000dd00011111110011333333w013wwwwwww013wwwwwww011cwwwwww00111111110000000000"}
@@ -4494,7 +4389,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 		},
 		{
 			-- prePath = false,
-			subchunk_id = HD_SUBCHUNKID.WORM_CRYSKNIFE_RIGHTSIDE,
+			subchunk_id = genlib.HD_SUBCHUNKID.WORM_CRYSKNIFE_RIGHTSIDE,
 			placement = {6, 2},
 			roomcodes = {
 				{"0dd00000000111111100w333333110wwwwwww310wwwwwww310wwwwwww11011111111000000000000"}
@@ -4502,7 +4397,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"00100001000111121101010000010221011101010001000000012101101101000100002111112121"},
 			{"00100001000111121121010000000221110111010200000000011010111000001000101212112112"},
 			{"0010000100011000011021wwwwww1221wwwwww12011wwww110021111112000000000001111111111"},
@@ -4516,7 +4411,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 				"00000000000000021200021200L00000Q000L212000000L0L0000000L0L000000000L00000000000"
 			},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00200001000111101101010000010221011101010001000000012101101101000100002111110121"},
 			{"00100002000111101121010000000221110111010200000000011010111000001000101210112112"},
 
@@ -4531,12 +4426,12 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 				"00000000000000021200021200L00000Q000L212000000L0L0000000L0L000000000L00000000000"
 			}
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"000000000000000000000001002000000000000000020020001s000000s111ssssss111111111111"},
 			{"000000000000000000000002001000000000000000020020001s000000s111ssssss111111111111"},
 			{"000000000000000000000002002000000000000000010010001s000000s111ssssss111111111111"}
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00200001000111101101010000010221011101010001000000012101101101000100002111110121"},
 			{"00100002000111101121010000000221110111010200000000011010111000001000101210112112"},
 			{"0000000000011000011001wwwwww1001wwwwww10011wwww110021111112000000000001112002111"},
@@ -4550,38 +4445,38 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 				"00000000000000021200021200L00000Q000L212000000L0L0000000L0L000000000L00000000000"
 			}
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"}
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000002021111120"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000002021111120"}
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"000000000000000000000000090000000111100001w3333w1001wwwwww1011wwwwww11133wwww331"},
 			--{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"} -- unused
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"00000000000011111100000000000000000000000008000000000000000000000000001111111111"}
 		},
-		[HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE] = {
+		[genlib.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE] = {
 			{"0dd0000dd02d0dddd0d20ddd00ddd02d0dddd0d20ddd00ddd000dddddd0011d0000d111111001111"}
 		},
 
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{""}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111001111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111001111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{""}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111001111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"11111111111100000011100000000100000000000000g00000100000000111000000111111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"10000000011100000011100000000100000000000000g00000100000000111000000111111001111"}},
 	},
 	
 	obstacleBlocks = {
@@ -4608,14 +4503,14 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 		local unlock_location_x, unlock_location_y = math.random(1, levelw), 11
 	
 		local path_to_replace = global_levelassembly.modification.levelrooms[unlock_location_y][unlock_location_x]
-		local path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK
+		local path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK
 	
-		if path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
-			path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP
-		elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP then
-			path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
-		elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-			path_to_replace_with = HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
+		if path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP
+		elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
+		elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+			path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
 		end
 		levelcode_inject_roomcode(path_to_replace_with, HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].rooms[path_to_replace_with], unlock_location_y, unlock_location_x)
 	end
@@ -4630,8 +4525,8 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 			path_to_replace_with = -1
 			
 			if (
-				path_to_replace == HD_SUBCHUNKID.PATH_DROP
-				or path_to_replace == HD_SUBCHUNKID.PATH_NOTOP_DROP
+				path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP
+				or path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP_DROP
 				and (
 					unlock_location_x ~= nil and unlock_location_y ~= nil
 					and unlock_location_x ~= room_x and unlock_location_y ~= room_y
@@ -4649,8 +4544,8 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 		spot1 = spots[spot1_i]
 
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
-			HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].rooms[HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE],
+			genlib.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
+			HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].rooms[genlib.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE],
 			spot1.y, spot1.x
 		)
 
@@ -4659,8 +4554,8 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 		spot2 = spots[math.random(#spots)]
 
 		levelcode_inject_roomcode(
-			HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
-			HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].rooms[HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE],
+			genlib.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
+			HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].rooms[genlib.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE],
 			spot2.y, spot2.x
 		)
 	end
@@ -4686,7 +4581,7 @@ end
 HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (math.random(2) == 2) then
 					if (
 						CHUNKBOOL_ALTAR == false and
@@ -4709,13 +4604,13 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 					return {index = path_algorithm_icecaves()+8} -- use path room algorithm + adjusted range 
 				end
 			end,
-			[HD_SUBCHUNKID.PATH] = path_algorithm_icecaves,
-			[HD_SUBCHUNKID.PATH_DROP] = path_algorithm_icecaves_drop,
-			[HD_SUBCHUNKID.PATH_DROP_NOTOP] = path_algorithm_icecaves_drop
+			[genlib.HD_SUBCHUNKID.PATH] = path_algorithm_icecaves,
+			[genlib.HD_SUBCHUNKID.PATH_DROP] = path_algorithm_icecaves_drop,
+			[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = path_algorithm_icecaves_drop
 		},
 	},
 	rooms = {
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{
 				"0111100000110010000000011000i1000000000011200ii0001120000000000000000011iiii0000",
 				"000001111000000100111i000110000000000000000ii00211000000021100000000000000iiii11"
@@ -4747,48 +4642,48 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 			{"00000000000000000000000000000000005000000000000000000000000000021111100000222211",
 			"00000000000000000000000000000005000000000000000000000000000001111120001122220000"} -- path_notop
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{
 				"00000000000000000000000000000000000000000008000000000000000000000000001111111111",
 				"00000000000000000000000000000000000000000080000000000000000000000000001111111111"
 			},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{
 				"00000000000000000000000000000000000000000008000000000000000000000000000011111110",
 				"00000000000000000000000000000000000000000080000000000000000000000000000011111110"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{
 				"00000000000000000000000000000000000000000008000000000000000000000000001111qqq111",
 				"0000000000000000000000000000000000000000008000000000000000000000000000111qqq1111"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{
 				"00000000000000000000000000000000000000000008000000000000000000000000001111qqq111",
 				"0000000000000000000000000000000000000000008000000000000000000000000000111qqq1111"
 			},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"00000000000000I000000000--00000000000000000000000000000000000000ss00000000110000"}},
-		[HD_SUBCHUNKID.ALTAR] = {{"000000000000000000000000000000000000000000000000000000x0000002211112201111111111"}},
-		[HD_SUBCHUNKID.VAULT] = {{
+		[genlib.HD_SUBCHUNKID.IDOL] = {{"00000000000000I000000000--00000000000000000000000000000000000000ss00000000110000"}},
+		[genlib.HD_SUBCHUNKID.ALTAR] = {{"000000000000000000000000000000000000000000000000000000x0000002211112201111111111"}},
+		[genlib.HD_SUBCHUNKID.VAULT] = {{
 			--"02222222202111111112211|00011221100001122110EE0112211000011221111111120222222220"
 			"02222222202111111112211|00011221100001122110000112211000011221111111120222222220"
 			-- "02222222202000000002200|00000220000000022000000002200000000220000000020222222220" -- hd accurate sync
 		}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"00:0000000iiii00f000i00:00000fig0i000000iiiiff0000iiii000ff00ii00000000000000000"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"0000000:00000f00iiiif00000:00i000000ig0i0000ffiiii0ff000iiii0000000ii00000000000"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0021111200021iiii12002i0000i20000000000000i0g00i0002iiiiii2000211112000002222000"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000000000000000000000000g000000fiiiiiif0000iiii00000000000000000000000"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"00:0000000iiii00f000i00:00000fig0i000000iiiiff0000iiii000ff00ii00000000000000000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"0000000:00000f00iiiif00000:00i000000ig0i0000ffiiii0ff000iiii0000000ii00000000000"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0021111200021iiii12002i0000i20000000000000i0g00i0002iiiiii2000211112000002222000"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000000000000000000000000g000000fiiiiiif0000iiii00000000000000000000000"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"0021111200021iiii12002i0000i20000000000000i0g00i0002iiiiii2000211112000002222000"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000000g000000fiiiiiif0000iiii00000000000000000000000"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"0021111200021iiii12002i0000i20000000000000i0g00i0002iiiiii2000211112000002222000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000000000000000000000000g000000fiiiiiif0000iiii00000000000000000000000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
@@ -4824,7 +4719,7 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 		},
 	},
 }
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
 	{"20000000020000000000000000000000000000000000000000000000000000000000002000000002"},
 	{"10000000001000000000111000000022201100000000220100000000010000000001110000000222"},
 	{"00000000010000000001000000011100001102220010220000001000000011100000002220000000"},
@@ -4833,10 +4728,10 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.SIDE] = commonlib.Tabl
 	{"0jiiiiiij00jij00jij0jjii0jiij0000000jij0jjiij0iij00jiij0jijj0jiij000000jjiiiiijj"},
 	{"0jiiiiiij00jij00jij00jii0jiijj0jij0000000jij0jiijj0jij0jiij000000jiij00jjiiiiijj"},
 	{"011iiii110000jjjj0000000ii00000000jj00000000ii00000000jj00000000ii00000002222000"},
-}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH]))
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH])
-HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[HD_SUBCHUNKID.PATH_NOTOP] = {
+}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH]))
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH])
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH])
+HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 	{"00000000000000000000000000000000005000000000000000000000000000021111100000222211",
 	"00000000000000000000000000000005000000000000000000000000000001111120001122220000"}
 }
@@ -4845,7 +4740,7 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 	prePath = true,
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				chunkPool_rand_index = math.random(2)
 				if math.random(10) == 1 then 
 					chunkPool_rand_index = 3
@@ -4855,45 +4750,45 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 		},
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"50000500000000000000000000000011111111115000050000000000000000000000001111111111"},
 			{"00000000000000110000000022000010001100011000110001100000000120~0000~021111111111"},
 			-- Zoo
 			{"11110011110000000000010:00:01001111111100000000000m10:00:01m01111111101111111111"},
 		},
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{"50000500000000000000000000000011111111115000050000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000000000000000000000000000002200000000000000000022000000000000001111001111"},
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"000000000000000000000000000000000000000000000000000000mm000000000000001111111111"},
 			{"0000000000000000000000000000000000~~0000000011000000001100000~001100~01111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"0000000000000000000000000000000000~~00000000110000000000000000~0000~001112002111"},
 			{"000000000000000000000000000000000000000000000000000000mm000000000000001112002111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"}
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"000000000000000000000000000000000000000000000000000001mm100000219012001111111111"},
 			{"000000000000000000000000000000000000000000000000000001mm100000210912001111111111"},
 			{"0000000000000000000000000000000000~000000011111000011000110000009000001111111111"},
 			{"00000000000000000000000000000000000~00000001111100001100011000000900001111111111"},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{"01000001000z00000z00000000000000000000000011011000011090110001111111001111111111"},
 			{"001000001000z00000z0000000000000000000000001101100001109011000111111101111111111"},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"000000000000110011000010009100001111110000z0000z000000000000mm000000mm1111001111"},
 			{"000000000000110011000019000100001111110000z0000z000000000000mm000000mm1111001111"},
 		},
 		
-		[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN] = {
+		[genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN] = {
 			{
 				"110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L01111111111",
 				"0110000011010000000100000Q0000000000000000L00000L000110*01100L1111111L1111111111",
@@ -4901,53 +4796,53 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 				"110000001111000000011100Q0000011000000001000111LL010*010000011111000111111001111",
 			},
 		},
-		[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD] = {
+		[genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD] = {
 			{ -- Alien Lord
 				"0000000000000000000000111111000011X0000000110000000011111L000~111111~01111111111",
 				"0000000000000000000000111111000000X01100000000110000L11111000~111111~01111111111"
 			},
 		},
 
-		[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
+		[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE] = {
 			{"22222222220000000000000000000000000000000000000000000000000000000000000000000000"},
 			{"11111111112222222222000000000000000000000000000000000000000000000000000000000000"},
 			{"22211112220001111000000211200000011110000002112000000022000000000000000000000000"},
 			{"11112211112112002112022000022000000000000000000000000000000000000000000000000000"},
 		},
 
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"11000000001111111110110010001011g00000001111100000000010000011000000~011111LLL11"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000001101111111110100010011000000g011000001111100000100000~0000001111LLL11111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"500005000000000000000000000000101111110100000000000000g000000~001100~01111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"11000000001111111110110010001011g00000001111100000000010000011000000~011111LLL11"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000001101111111110100010011000000g011000001111100000100000~0000001111LLL11111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"500005000000000000000000000000101111110100000000000000g000000~001100~01111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"500005000000000000000000000000101111110100000000000000g000000~001100~01111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"5000050000000000000000000000001111111111010z00z0100100g0001000001100001111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"500005000000000000000000000000101111110100000000000000g000000~001100~01111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"0000000000000011000000000000001000g000010000110000000000000000~0000~001112002111"}},
 	},
 	rowfive = {
 		setRooms = {
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 1,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 2,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 3,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 			{
-				subchunk_id = HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
+				subchunk_id = genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
 				placement = 4,
-				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
+				roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
 			},
 		}
 	},
@@ -4971,8 +4866,8 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 	level_generation_method_structure_vertical(
 		{
-			subchunk_id = HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN,
-			roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN]
+			subchunk_id = genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN,
+			roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN]
 		},
 		nil,
 		{1, 2, 3, 4}
@@ -4992,7 +4887,7 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 			local pathid = global_levelassembly.modification.levelrooms[hi][wi]
 
 
-			if pathid == HD_SUBCHUNKID.SIDE then
+			if pathid == genlib.HD_SUBCHUNKID.SIDE then
 				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
 					spawn_alienlord = true
 					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
@@ -5005,7 +4900,7 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 			end
 
 			if spawn_alienlord == true then
-				levelcode_inject_roomcode(HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD, HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD], hi, wi)
+				levelcode_inject_roomcode(genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD, HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[genlib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD], hi, wi)
 			end
 		end
 	end
@@ -5015,12 +4910,12 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 		level_generation_method_aligned(
 			{
 				left = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
-					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
 				},
 				right = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
-					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
 				}
 			}
 		)
@@ -5031,7 +4926,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 	-- NOTE: All imported temple roomcodes have their "r" tiles replaced with "("
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (math.random(4) == 4) then
 					chunkPool_rand_index = math.random(15, 24) -- use path roomcodes
 				else
@@ -5042,7 +4937,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 						CHUNKBOOL_ALTAR = true
 						return {altar = true}
 					elseif (
-						feeling_check(FEELING_ID.SACRIFICIALPIT) == false
+						feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
 						and CHUNKBOOL_IDOL == false
 						and math.random(15) == 1
 					) then
@@ -5060,7 +4955,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		},
 	},
 	rooms = {
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{
 				"1000000001200(00000210000000011000000001110000001100000000000000Y00000qqqqqqqqqq",
 				"1000000001200(000002100000000110000000011100000011000000000000000000001111111111"
@@ -5096,7 +4991,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 				"0000000000000000000000000000000000&000000qwwwwwqq0013wwww3101113w331111111111111"
 			}
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000000000000060000000000000001202000000"},
 			{"00000000006000060000000000000000000000000500000000000000000000000000001111112021"},
@@ -5110,13 +5005,13 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 			{"11111111111111112222111220000011200000000000000000000000000012000000001120000211"},
 			{"11111111112111111112021111112000211112000002112000000022000002200002201111001111"},
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"1000000001100(000001100000000110000000011100000011000000000000000000001111111111"},
 			{"1000000000100(000000100000000010000000001100000000000000000000000000001111111111"},
 			{"0000000001000(000001000000000100000000010000000011000000000000000000001111111111"},
 			{"0000000000000000000000000000000000&000000q3wwww3q0013wwww3101113w331111111111111"},
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000000000000060000000000000001202000000"},
 			{"00000000006000060000000000000000000000000500000000000000000000000000001111112021"},
@@ -5126,32 +5021,32 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 			{"000000000000600000000000000000000000000000000000000022211q0000000001201qqqq10111"},
 			{"00000000000060000000000000000000000000000000000000002022020000100001001111001111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{"11111111110000000000000000000000000000000008000000000000000000000000001111111111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{"11111111110000000000000000000000000000000008000000000000000000000000002000000002"},
 		},
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			{"00000000000000000000000000000000000000000008000000000000000000000000000000000000"},
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			{"00000000000000000000000000000000000000000008000000000000000000000000000000000000"},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"11CCCCCC1111000000111D000000D11000000001100000000100000000000000I00000qqqqA0qqqq"}}, -- modified from original for sliding doors
-		[HD_SUBCHUNKID.ALTAR] = {{"220000002200000000000000000000000000000000000000000000x0000000111111001111111111"}},
+		[genlib.HD_SUBCHUNKID.IDOL] = {{"11CCCCCC1111000000111D000000D11000000001100000000100000000000000I00000qqqqA0qqqq"}}, -- modified from original for sliding doors
+		[genlib.HD_SUBCHUNKID.ALTAR] = {{"220000002200000000000000000000000000000000000000000000x0000000111111001111111111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001104004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100401100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"111111111110001104004g00110400111000011010000000101wwwwwww111wwwwwww111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"111111111100401100010040110g040110000111010000000111wwwwwww111wwwwwww11111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
@@ -5181,7 +5076,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		},
 	},
 }
-HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
+HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE] = commonlib.TableConcat({
 	{"11111000001111100000111110000011111000001111150000111110000011111000001111111111"},
 	{"00000111110000011111000001111100000111115000011111000001111100000111111111111111"},
 	{"11000000001110000000211100000011111000002211110000111111100022211111001111111111"},
@@ -5202,12 +5097,12 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE] = commonlib.TableCo
 	{"111111111111111111111111EE1111110111101111E1111E111111EE111111111111111111111111"},
 	{"1000000001000000000010000000011000000001100000000100T0000T000dddddddd01111111111"},
 	{"10000000010021111200100000000110000000011111001111111200211111120021111111001111"},
-}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]))
+}, commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH]))
 
 HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (math.random(4) == 4) then
 					chunkPool_rand_index = math.random(13, 22) -- use path roomcodes
 				end
@@ -5220,66 +5115,66 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	setRooms = {
 		{
 			prePath = false,
-			subchunk_id = HD_SUBCHUNKID.COG_BOTD_LEFTSIDE,
+			subchunk_id = genlib.HD_SUBCHUNKID.COG_BOTD_LEFTSIDE,
 			placement = {3, 2},
 			-- # TODO: alter this roomcode's altar (HAHHHH)
 			roomcodes = {{"00000111110000011000000001100000Y00110001111111000000001100#00Y001100A1111111111"}}
 		},
 		{
 			prePath = false,
-			subchunk_id = HD_SUBCHUNKID.COG_BOTD_RIGHTSIDE,
+			subchunk_id = genlib.HD_SUBCHUNKID.COG_BOTD_RIGHTSIDE,
 			placement = {3, 3},
 			roomcodes = {{"111110000000011000000001100Y000001111111000110000000011000000001100Y001111111111"}}
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = commonlib.TableConcat(
+		[genlib.HD_SUBCHUNKID.SIDE] = commonlib.TableConcat(
 			{
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][1],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][2],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][3],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][4],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][5],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][6],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][7],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][8],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][9],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][10],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][11],
-				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.SIDE][12]
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][1],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][2],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][3],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][4],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][5],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][6],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][7],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][8],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][9],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][10],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][11],
+				HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.SIDE][12]
 			},
-			commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH])
+			commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH])
 		),
-		[HD_SUBCHUNKID.PATH] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH]),
-		[HD_SUBCHUNKID.PATH_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_NOTOP]),
-		[HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP]),
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.PATH_DROP_NOTOP]),
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.PATH] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH]),
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH_NOTOP]),
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH_DROP]),
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP]),
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{
 				"011111110000000000000000000000000000000000z090z000011111110001111111001111111111",
 				"0011111110000000000000000000000000000000000z090z00001111111000111111101111111111"
 			},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{
 				"011111110000000000000000000000000000000000z090z000011111110004000001001112002111",
 				"0011111110000000000000000000000000000000000z090z00001111111000100000401112002111"
 			},
 		},
-		[HD_SUBCHUNKID.EXIT] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT]),
-		[HD_SUBCHUNKID.EXIT_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[HD_SUBCHUNKID.EXIT_NOTOP]),
+		[genlib.HD_SUBCHUNKID.EXIT] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.EXIT]),
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].rooms[genlib.HD_SUBCHUNKID.EXIT_NOTOP]),
 		
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{""}},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{""}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
-		-- [HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{""}},
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP] = {{"000111100000110011000011g0110000011110000011111100000011000002201102201110000111"}},
 		
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000000g000000000110000013wwww310013wwww31011133331111111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.GROUND.tilename]),
@@ -5305,36 +5200,36 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
 					(
 						global_levelassembly.modification.levelrooms[hi][wi] == nil or
 						(
-							global_levelassembly.modification.levelrooms[hi][wi] ~= HD_SUBCHUNKID.PATH_DROP_NOTOP and
-							global_levelassembly.modification.levelrooms[hi][wi] ~= HD_SUBCHUNKID.PATH_NOTOP
+							global_levelassembly.modification.levelrooms[hi][wi] ~= genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP and
+							global_levelassembly.modification.levelrooms[hi][wi] ~= genlib.HD_SUBCHUNKID.PATH_NOTOP
 						)
 					)
 				) then
-					pathid = HD_SUBCHUNKID.PATH_DROP
+					pathid = genlib.HD_SUBCHUNKID.PATH_DROP
 				elseif hi == maxh then
-					pathid = HD_SUBCHUNKID.PATH_NOTOP
+					pathid = genlib.HD_SUBCHUNKID.PATH_NOTOP
 				else
-					pathid = HD_SUBCHUNKID.PATH_DROP_NOTOP
+					pathid = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP
 				end
 			elseif hi == maxh then
-				pathid = HD_SUBCHUNKID.PATH
+				pathid = genlib.HD_SUBCHUNKID.PATH
 			end
 
 			if (
 				global_levelassembly.modification.levelrooms[hi][wi] ~= nil and hi == maxh and
 				(
-					global_levelassembly.modification.levelrooms[hi][wi] == HD_SUBCHUNKID.EXIT or
-					global_levelassembly.modification.levelrooms[hi][wi] == HD_SUBCHUNKID.EXIT_NOTOP
+					global_levelassembly.modification.levelrooms[hi][wi] == genlib.HD_SUBCHUNKID.EXIT or
+					global_levelassembly.modification.levelrooms[hi][wi] == genlib.HD_SUBCHUNKID.EXIT_NOTOP
 				)
 			) then
 				if ( -- exits under the middle setrooms can't be notop
 					wi > minw and wi < maxw
 				) then
-					pathid = HD_SUBCHUNKID.EXIT
+					pathid = genlib.HD_SUBCHUNKID.EXIT
 				elseif ( -- exits at corners have to be notop
 					wi == minw or wi == maxw
 				) then
-					pathid = HD_SUBCHUNKID.EXIT_NOTOP
+					pathid = genlib.HD_SUBCHUNKID.EXIT_NOTOP
 				end
 			end
 
@@ -5348,7 +5243,7 @@ end
 HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 	level_dim = {w = 4, h = 2},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"60000000000000000000000000000000000000000000000000600000000000000000000000000000"},
 			{"00000600000000000000000000000000000000000000000000600000000000000000000000000000"},
 			{"60000000000000000000000000000000000000000000000000000006000000000000000000000000"},
@@ -5356,7 +5251,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 			{"00000000000000000000000000000000000000000000000000600006000000000000000000000000"},
 			{"00000000000000000000000000000000600000000000000000000000000000000000000000000000"},
 		},
-		[HD_SUBCHUNKID.OLMEC_ROW_FIVE] = {
+		[genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE] = {
 			{"11111111111111111111111111111111111111111111111111111111111111111111111111111111"},
 			{"11111111111222111111122211111111111111111111111111111111111111111111111111111111"},
 			{"11111111111111111111111111111111122221111112222111111111111111111111111111111111"},
@@ -5364,7 +5259,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 			{"11111111111111111111111111111111111111111111111111122211111112221111111111111111"},
 			{"11111111111111111111111111111111111111111111111111111111222111111122211111111111"},
 		},
-		[HD_SUBCHUNKID.COFFIN_UNLOCK] = {
+		[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {
 			-- Spawn steps:
 				-- levelw, _ = get_levelsize()
 				-- structx = math.random(levelw)
@@ -5374,7 +5269,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 				"00001000000E111011E001100001100E100001E00110g00110001111110000000000000000000000"
 			}
 		},
-		-- [HD_SUBCHUNKID.COFFIN_COOP] = {{""}},
+		-- [genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{""}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.AIR.tilename] = {
@@ -5388,27 +5283,27 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
-	offsety = (-(3*HD_ROOMOBJECT.DIM.h)-3),
+	offsety = (-(3*CONST.ROOM_HEIGHT)-3),
 	setRooms = {
 		{
-			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
+			subchunk_id = genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 1,
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
+			subchunk_id = genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 2,
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
+			subchunk_id = genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 3,
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 		{
-			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
+			subchunk_id = genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE,
 			placement = 4,
-			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[HD_SUBCHUNKID.OLMEC_ROW_FIVE])
+			roomcodes = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[genlib.HD_SUBCHUNKID.OLMEC_ROW_FIVE])
 		},
 	}
 }
@@ -5416,7 +5311,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
 HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 	chunkRules = {
 		rooms = {
-			[HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+			[genlib.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				_, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 
 				if (
@@ -5452,7 +5347,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 		}
 	},
 	rooms = {
-		[HD_SUBCHUNKID.SIDE] = {
+		[genlib.HD_SUBCHUNKID.SIDE] = {
 			{"00000000000010111100000000000000011010000050000000000000000000000000001111111111"},
 			{"50000500000000000000000000000011111111111111111111022222222000000000001100000011"},
 			{"00011110000002112000000022000011200002110112002110022000022000002200001111111111"},
@@ -5469,7 +5364,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			{"11111111110000000000110000001111222222111111111111112222221122000000221100000011"},
 			{"00000000000000hh00000000hh0000h0&0hh0&0hhwwwhhwwwhhwwwhhwwwhhhwwhhwwhh1111111111"},
 		},
-		[HD_SUBCHUNKID.PATH] = {
+		[genlib.HD_SUBCHUNKID.PATH] = {
 			{"60000600000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{"60000600000000000000000000000000000000005000050000000000000000000000001111111111"},
 			{"60000600000000000000000000000000050000000000000000000000000011111111111111111111"},
@@ -5494,7 +5389,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			},
 			{"hhhhhhhhhhh00000000h00rr00rr00h00000000hh========h000000000000000000001111111111"}
 		},
-		[HD_SUBCHUNKID.PATH_DROP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000050000000000000000000000001200011111"},
 			{"00000000006000060000000000000000000000005000000000000000000000000000001111100021"},
@@ -5508,7 +5403,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			{"11111111111111112222111220000011200000000000000000000000000012000000001120000211"},
 			{"11111111112111111112021111112000211112000002112000000022000002200002201111001111"}
 		},
-		[HD_SUBCHUNKID.PATH_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_NOTOP] = {
 			{"00000000000000000000000000000000000000000050000000000000000000000000001111111111"},
 			{
 			"hhq0000hhhh000000q0q00qhqh0000h=h0000q=q0000q000000010h1200000002122201111111111",
@@ -5525,7 +5420,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 				"00000000000000000000000000000000000&0000013wwww310013wwww31011133w31111111111111",--0000000000000000000000000&00000000000000013wwww310013wwww31011133331111111111111
 			}
 		},
-		[HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP] = {
 			{"00000000006000060000000000000000000000006000060000000000000000000000000000000000"},
 			{"00000000006000060000000000000000000000000000050000000000000000000000001200011111"},
 			{"00000000006000060000000000000000000000005000000000000000000000000000001111100021"},
@@ -5534,7 +5429,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			{"001000010000L0110L0000L2112L0000L2112L0000L2112L0000L0110L0000001100001000000001"},
 			{"00000000000f000000f00000000000000q00q00000010010000f010010f000010010001111001111"},
 		},
-		[HD_SUBCHUNKID.ENTRANCE] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE] = {
 			{
 			"1100000L002h09000L00hhhhhhhL00h000000L000050000L000000000L0000000000001111111111",
 			"00L000001100L00090h200Lhhhhhhh00L000000h00L500000000L000000000000000001111111111"
@@ -5548,7 +5443,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			"000L00L0000hhL00Lhh00hhL00Lhh00hhL00Lhh00hhL00Lhh00hh0090hh01hh====hh11hhhhhhhh1"
 			},
 		},
-		[HD_SUBCHUNKID.ENTRANCE_DROP] = {
+		[genlib.HD_SUBCHUNKID.ENTRANCE_DROP] = {
 			{
 			"1100000L002h09000L00hhhhhhhL00h060000L000000000L000000000L0000000000001111001111",
 			"00L000001100L00090h200Lhhhhhhh00L600000h00L000000000L000000000000000001111001111"
@@ -5563,23 +5458,23 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			}
 		},
 		-- # TODO: Verify that these are the correct arrangements of exit roomcodes.
-		[HD_SUBCHUNKID.EXIT] = {
+		[genlib.HD_SUBCHUNKID.EXIT] = {
 			-- {"000000000000100hhhh000100h00h000110h00h2001200000090111h==h011111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
 			{"00000000000hhhh001000h00h001002h00h0110000000021000h==h1110902111111111111111111"},
 			{"60000600000000000000000000000000000000000008000000000000000000000000001111111111"},
 			{"11111111112222222222000000000000000000000008000000000000000000000000001111111111"}
 		},
-		[HD_SUBCHUNKID.EXIT_NOTOP] = {
+		[genlib.HD_SUBCHUNKID.EXIT_NOTOP] = {
 			-- {"00000000006000060000000000000000000000000008000000000000000000000000001111111111"}, --probably unused
 			{"00000000000000000000000000000000000000000008000000000000000000000000001111111111"},
 			-- {"000000000000100hhhh000100h00h000110h00h2001200000090111h==h011111111201111111111"}, -- # TOFIX: No exit spawns for this roomcode for some reason
 			{"00000000000hhhh001000h00h001002h00h0110000000021000h==h1110902111111111111111111"},
 		},
-		[HD_SUBCHUNKID.IDOL] = {{"111111111101*1111*10001111110000000000000000I000000011A0110001*1111*101111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP] = {{"00000000000000000000001wwww100001wwww100011111111001100001100000g000001111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000011ww11000011ww1100011111111001100001100000g000001111111111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"01111111100011111100000000000022000000220000g0000000001100000000QQ00001111001111"}},
-		[HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"01110011100011001100000000000022000000220000g0000000001100000000QQ00001111001111"}},
+		[genlib.HD_SUBCHUNKID.IDOL] = {{"111111111101*1111*10001111110000000000000000I000000011A0110001*1111*101111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{"00000000000000000000001wwww100001wwww100011111111001100001100000g000001111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"000000000000000000000011ww11000011ww1100011111111001100001100000g000001111111111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP] = {{"01111111100011111100000000000022000000220000g0000000001100000000QQ00001111001111"}},
+		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"01110011100011001100000000000022000000220000g0000000001100000000QQ00001111001111"}},
 	},
 	obstacleBlocks = {
 		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
@@ -6048,7 +5943,7 @@ end
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
-		global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
+		global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
 		TONGUE_SPAWNED = false
 		-- other stuff
 	end
@@ -6272,21 +6167,6 @@ end
 -- end, "minewood_floor")
 
 --[[
-	Detect if an area unlock has not been unlocked yet.
-	Where can AREA unlocks spawn?
-	- When it's in one of the four areas.
-	- Any exceptions to this, such as special areas? Not that I'm aware of.
-]]
-function detect_if_area_unlock_not_unlocked_yet()
-	-- RUN_UNLOCK_AREA[state.theme] ~= nil and RUN_UNLOCK_AREA[state.theme] == false
-	for i = 1, #RUN_UNLOCK_AREA, 1 do
-		if RUN_UNLOCK_AREA[i].theme == state.theme and RUN_UNLOCK_AREA[i].unlocked == false then
-			return true
-		end
-	end
-	return false
-end
---[[
 	Run the chance for an area coffin to spawn.
 	1 / (X - deaths), chance can't go better than 1/9
 ]]
@@ -6312,17 +6192,6 @@ function run_unlock_area_chance()
 	return false
 end
 
--- # TODO: Boss win unlocks.
--- Run this method after a post-win screen
-function get_boss_unlock()
-	-- unlockconditions_win = {}
-	-- for unlock_name, unlock_properties in pairs(HD_UNLOCKS) do
-		-- if unlock_properties.win ~= nil then
-			-- unlockconditions_win[unlock_name] = unlock_properties
-		-- end
-	-- end
-end
-
 -- Set LEVEL_UNLOCK
 function get_unlock()
 	local unlock = nil
@@ -6331,20 +6200,20 @@ function get_unlock()
 		and state.items.player_count == 1
 	) then
 		if (
-			detect_if_area_unlock_not_unlocked_yet()
+			unlockslib.detect_if_area_unlock_not_unlocked_yet()
 			and run_unlock_area_chance()
 		) then -- AREA_RAND* unlocks
 			rand_pool = {
-				HD_UNLOCK_ID.AREA_RAND1,
-				HD_UNLOCK_ID.AREA_RAND2,
-				HD_UNLOCK_ID.AREA_RAND3,
-				HD_UNLOCK_ID.AREA_RAND4
+				unlockslib.HD_UNLOCK_ID.AREA_RAND1,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND2,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND3,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND4
 			}
 			coffin_rand_pool = {}
 			chunkPool_rand_index = 1
 			n = #rand_pool
 			for rand_index = 1, #rand_pool, 1 do
-				if HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
+				if unlockslib.HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
 					rand_pool[rand_index] = nil
 				end
 			end
@@ -6354,7 +6223,7 @@ function get_unlock()
 		else -- feeling/theme-based unlocks
 			local unlockconditions_feeling = {}
 			local unlockconditions_theme = {}
-			for id, unlock_properties in pairs(HD_UNLOCKS) do
+			for id, unlock_properties in pairs(unlockslib.HD_UNLOCKS) do
 				if unlock_properties.feeling ~= nil then
 					unlockconditions_feeling[id] = unlock_properties
 				elseif unlock_properties.unlock_theme ~= nil then
@@ -6399,7 +6268,7 @@ function create_coffin_unlock(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	if LEVEL_UNLOCK ~= nil then
 		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
 	end
 
 	set_post_statemachine(coffin_uid, function()
@@ -6409,16 +6278,16 @@ function create_coffin_unlock(x, y, l)
 			and (
 				LEVEL_UNLOCK ~= nil
 				and (
-					LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+					LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 				)
 			)
 		) then
-			for i = 1, #RUN_UNLOCK_AREA, 1 do
-				if RUN_UNLOCK_AREA[i].theme == state.theme then
-					RUN_UNLOCK_AREA[i].unlocked = true 
+			for i = 1, #unlockslib.RUN_UNLOCK_AREA, 1 do
+				if unlockslib.RUN_UNLOCK_AREA[i].theme == state.theme then
+					unlockslib.RUN_UNLOCK_AREA[i].unlocked = true 
 					break
 				end
 			end
@@ -6508,7 +6377,7 @@ function create_door_ending(x, y, l)
 	-- Olmec/Yama Win
 	if state.theme == THEME.OLMEC then
 		set_interval(exit_olmec, 1)
-	elseif feeling_check(FEELING_ID.YAMA) then
+	elseif feeling_check(feelingslib.FEELING_ID.YAMA) then
 		set_interval(exit_yama, 1)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -6517,7 +6386,7 @@ end
 function create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feeling_check(FEELING_ID.HAUNTEDCASTLE) == true then
+	if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
 		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -6770,9 +6639,9 @@ function clear_dark_level()
 		or HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING
 		or state.theme == THEME.VOLCANA
 		or state.theme == THEME.NEO_BABYLON
-		or feeling_check(FEELING_ID.HAUNTEDCASTLE) == true
-		or feeling_check(FEELING_ID.UDJAT) == true
-		or feeling_check(FEELING_ID.SPIDERLAIR) == true
+		or feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+		or feeling_check(feelingslib.FEELING_ID.UDJAT) == true
+		or feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 	) then
 		state.level_flags = clr_flag(state.level_flags, 18)
 	end
@@ -7070,9 +6939,9 @@ end
 
 function entrance_force_feeling(_feeling_to_force)
 	local x, y = nil, nil
-	if _feeling_to_force == FEELING_ID.BLACKMARKET and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
+	if _feeling_to_force == feelingslib.FEELING_ID.BLACKMARKET and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
 		x, y = DOOR_EXIT_TO_BLACKMARKET_POS.x, DOOR_EXIT_TO_BLACKMARKET_POS.y
-	elseif _feeling_to_force == FEELING_ID.HAUNTEDCASTLE and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
+	elseif _feeling_to_force == feelingslib.FEELING_ID.HAUNTEDCASTLE and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
 		x, y = DOOR_EXIT_TO_HAUNTEDCASTLE_POS.x, DOOR_EXIT_TO_HAUNTEDCASTLE_POS.y
 	end
 
@@ -7108,11 +6977,11 @@ function entrance_force_feeling(_feeling_to_force)
 end
 
 function entrance_blackmarket()
-	entrance_force_feeling(FEELING_ID.BLACKMARKET)
+	entrance_force_feeling(feelingslib.FEELING_ID.BLACKMARKET)
 end
 
 function entrance_hauntedcastle()
-	entrance_force_feeling(FEELING_ID.HAUNTEDCASTLE)
+	entrance_force_feeling(feelingslib.FEELING_ID.HAUNTEDCASTLE)
 end
 
 -- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
@@ -7326,7 +7195,7 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 			and (UNLOCK_HI ~= nil and UNLOCK_HI == ry+1)
 		)
 	) then
-		local uid = spawn_grid_entity(193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
+		local uid = spawn_grid_entity(193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
 		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
 		--[[
 			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
@@ -7339,7 +7208,7 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 		-- 	local ent = get_entity(uid)
 		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
 		-- 		-- Can't manually unlock characters this way
-		-- 		-- savegame.characters = set_flag(savegame.characters, HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+		-- 		-- savegame.characters = set_flag(savegame.characters, unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
 
 		-- 		return false
 		-- 	end
@@ -7729,7 +7598,7 @@ local function is_valid_wormtongue_spawn(x, y, l)
 	-- ) then
 
 	-- end
-	local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	-- local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 	if roomy < 5 then
 
@@ -7838,7 +7707,7 @@ local function run_spiderlair_ground_enemy_chance()
 	]]
 	local current_ground_chance = get_procedural_spawn_chance(global_spawn_procedural_spiderlair_ground_enemy)
 	if (
-		feeling_check(FEELING_ID.SPIDERLAIR) == false
+		feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (
 			current_ground_chance ~= 0
 			and math.random(current_ground_chance) == 1
@@ -8279,12 +8148,12 @@ local function is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
 	-- # TOFIX: Prevent tombstones from spawning in RESTLESS_TOMB.
 	--[[ the following code returns as nil, though it should be showing up at this point...
-	local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 	--]]
 	
     return (
-		-- _subchunk_id ~= HD_SUBCHUNKID.RESTLESS_TOMB and
+		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and
 		detect_empty_nodoor(x, y, l)
 		and detect_empty_nodoor(x, y+1, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
@@ -8426,11 +8295,11 @@ set_callback(function(room_gen_ctx)
 							template_to_set = room_template_here
 						end
 					elseif (
-						feeling_check(FEELING_ID.YAMA) == true
+						feeling_check(feelingslib.FEELING_ID.YAMA) == true
 					) then
-						if (_template_hd == HD_SUBCHUNKID.YAMA_ENTRANCE) then
+						if (_template_hd == genlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
 							template_to_set = ROOM_TEMPLATE.ENTRANCE
-						elseif (_template_hd == HD_SUBCHUNKID.YAMA_EXIT) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.YAMA_EXIT) then
 							template_to_set = ROOM_TEMPLATE.EXIT
 						else
 							template_to_set = ROOM_TEMPLATE.SIDE
@@ -8443,8 +8312,8 @@ set_callback(function(room_gen_ctx)
 						
 						--LevelGenSystem variables
 						if (
-							_template_hd == HD_SUBCHUNKID.ENTRANCE or
-							_template_hd == HD_SUBCHUNKID.ENTRANCE_DROP
+							_template_hd == genlib.HD_SUBCHUNKID.ENTRANCE or
+							_template_hd == genlib.HD_SUBCHUNKID.ENTRANCE_DROP
 						) then
 							state.level_gen.spawn_room_x, state.level_gen.spawn_room_y = x, y
 						end
@@ -8456,80 +8325,80 @@ set_callback(function(room_gen_ctx)
 							template_to_set = _template_hd
 	
 						-- tikivillage paths
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH then
 							template_to_set = ROOM_TEMPLATE.PATH_NORMAL
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP then
 							template_to_set = ROOM_TEMPLATE.PATH_DROP
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP then
 							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP then
 							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT then
 							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-						elseif _template_hd == HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
 							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
 	
 						-- flooded paths
-						elseif _template_hd == HD_SUBCHUNKID.RUSHING_WATER_SIDE then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.RUSHING_WATER_SIDE then
 							template_to_set = ROOM_TEMPLATE.SIDE
-						elseif _template_hd == HD_SUBCHUNKID.RUSHING_WATER_PATH_NOTOP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.RUSHING_WATER_PATH_NOTOP then
 							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
-						elseif _template_hd == HD_SUBCHUNKID.RUSHING_WATER_EXIT then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.RUSHING_WATER_EXIT then
 							template_to_set = ROOM_TEMPLATE.EXIT_NOTOP
 						
 						-- hauntedcastle paths
-						elseif _template_hd == HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT then
 							template_to_set = ROOM_TEMPLATE.EXIT
-						elseif _template_hd == HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP then
 							template_to_set = ROOM_TEMPLATE.EXIT_NOTOP
 	
 						-- shop
-						elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.SHOP_REGULAR) then
 							if state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
 								template_to_set = ROOM_TEMPLATE.DICESHOP
 							else
 								template_to_set = ROOM_TEMPLATE.SHOP
 							end
 						-- shop left
-						elseif (_template_hd == HD_SUBCHUNKID.SHOP_REGULAR_LEFT) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT) then
 							if state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
 								template_to_set = ROOM_TEMPLATE.DICESHOP_LEFT
 							else
 								template_to_set = ROOM_TEMPLATE.SHOP_LEFT
 							end
 						-- prize wheel
-						elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.SHOP_PRIZE) then
 							template_to_set = ROOM_TEMPLATE.DICESHOP
 						-- prize wheel left
-						elseif (_template_hd == HD_SUBCHUNKID.SHOP_PRIZE_LEFT) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT) then
 							template_to_set = ROOM_TEMPLATE.DICESHOP_LEFT
 							
 						-- vault
-						elseif (_template_hd == HD_SUBCHUNKID.VAULT) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.VAULT) then
 							template_to_set = ROOM_TEMPLATE.VAULT
 						
 						-- altar
-						elseif (_template_hd == HD_SUBCHUNKID.ALTAR) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.ALTAR) then
 							template_to_set = ROOM_TEMPLATE.ALTAR
 						
 						-- idol
-						elseif (_template_hd == HD_SUBCHUNKID.IDOL) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.IDOL) then
 							template_to_set = ROOM_TEMPLATE.IDOL
 							
 						-- black market
-						elseif (_template_hd == HD_SUBCHUNKID.BLACKMARKET_SHOP) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.BLACKMARKET_SHOP) then
 							template_to_set = ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN_LEFT--s2_room_template_blackmarket_shop
-						elseif (_template_hd == HD_SUBCHUNKID.BLACKMARKET_ANKH) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.BLACKMARKET_ANKH) then
 							template_to_set = ROOM_TEMPLATE.SHOP_ENTRANCE_UP_LEFT--s2_room_template_blackmarket_ankh
 
 						-- coop coffin
 						
-						elseif (_template_hd == HD_SUBCHUNKID.COFFIN_COOP) then
+						elseif (_template_hd == genlib.HD_SUBCHUNKID.COFFIN_COOP) then
 							template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER
 						elseif (
-							_template_hd == HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-							or _template_hd == HD_SUBCHUNKID.COFFIN_COOP_DROP
-							or _template_hd == HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
+							_template_hd == genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
+							or _template_hd == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP
+							or _template_hd == genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 						) then
 							template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
 
@@ -8549,8 +8418,8 @@ set_callback(function(room_gen_ctx)
 	    end
 		
 		if (
-			feeling_check(FEELING_ID.YETIKINGDOM)
-			or feeling_check(FEELING_ID.RUSHING_WATER)
+			feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
+			or feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			or state.theme == THEME.NEO_BABYLON
 		) then
 			for x = 0, level_w - 1, 1 do
@@ -8560,13 +8429,13 @@ set_callback(function(room_gen_ctx)
 
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
-				if feeling_check(FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
+				if feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 0, 0)
 				end
 				
-				if feeling_check(FEELING_ID.SPIDERLAIR) then
+				if feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
 				else
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
@@ -8581,19 +8450,19 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
 				end
 
-				if feeling_check(FEELING_ID.WORMTONGUE) == true then
+				if feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 0, 0)
 				end
 
-				if feeling_check(FEELING_ID.BLACKMARKET_ENTRANCE) == true then
+				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 0, 0)
 				end
 
-				if feeling_check(FEELING_ID.RESTLESS) then
+				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
@@ -8610,14 +8479,14 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_jiangshi, 0)
 				end
 
-				if feeling_check(FEELING_ID.HIVE) then
+				if feeling_check(feelingslib.FEELING_ID.HIVE) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hive_bee, 0)
 				end
 
-				if feeling_check(FEELING_ID.HAUNTEDCASTLE) then
+				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_piranha, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
@@ -8662,27 +8531,27 @@ set_callback(function(room_gen_ctx)
 				end
 				
 				-- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
-				-- if feeling_check(FEELING_ID.YETIKINGDOM) then
+				-- if feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
 				-- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				-- else
 				-- end
 
-				if feeling_check(FEELING_ID.UFO) == false then
+				if feeling_check(feelingslib.FEELING_ID.UFO) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_ufo_turret, 0)
 				end
 
-				if feeling_check(FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
+				if feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mshipentrance_turret, 0)
 				end
 				
-				if feeling_check(FEELING_ID.ANUBIS) then
+				if feeling_check(feelingslib.FEELING_ID.ANUBIS) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 0, 0)
 				end
 
 				if state.theme == THEME.VOLCANA then
-					if feeling_check(FEELING_ID.YAMA) == true then
+					if feeling_check(feelingslib.FEELING_ID.YAMA) == true then
 						room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_imp, 0)
@@ -8706,7 +8575,7 @@ set_callback(function(room_gen_ctx)
 				end
 
 				--[[ procedural/extra spawn assign template
-				if feeling_check(FEELING_ID.) then
+				if feeling_check(feelingslib.FEELING_ID.) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				else
@@ -8745,7 +8614,7 @@ set_callback(function()
 			if (
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
-				if feeling_check(FEELING_ID.RESTLESS) then
+				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					local block_uid = tombstone_blocks[math.random(#tombstone_blocks)]
 					local x, y, l = get_position(block_uid)
 					
@@ -8755,7 +8624,7 @@ set_callback(function()
 
 					embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
 				end
-				if feeling_check(FEELING_ID.BLACKMARKET) then
+				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
 					for _, shopkeeper_uid in pairs(shopkeeper_uids) do
 						get_entity(shopkeeper_uid).has_key = false
@@ -8794,7 +8663,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 				
-				if feeling_check(FEELING_ID.HAUNTEDCASTLE) then
+				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					local w, h = 30, 28
 					local x, y, l = 17.5, 104.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8806,7 +8675,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 
-				if feeling_check(FEELING_ID.YAMA) then
+				if feeling_check(feelingslib.FEELING_ID.YAMA) then
 					local w, h = 6, 8
 					local x, y, l = 22.5, 94.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8825,8 +8694,8 @@ set_callback(function()
 				for y = 1, level_h, 1 do
 					for x = 1, level_w, 1 do
 						_template_hd = global_levelassembly.modification.levelrooms[y][x]
-						local corner_x, corner_y = locate_game_corner_position_from_levelrooms_position(x, y)
-						if _template_hd == HD_SUBCHUNKID.VLAD_BOTTOM then
+						local corner_x, corner_y = locatelib.locate_game_corner_position_from_levelrooms_position(x, y)
+						if _template_hd == genlib.HD_SUBCHUNKID.VLAD_BOTTOM then
 							
 							-- main tower
 							local w, h = 10, (8*3)+3
@@ -8853,7 +8722,7 @@ set_callback(function()
 							-- mother statue
 							spawn_entity(ENT_TYPE.BG_CROWN_STATUE, corner_x+4.5, corner_y+(8*3)-7, l, 0, 0)
 
-						elseif _template_hd == HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP then
+						elseif _template_hd == genlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP then
 							local w, h = 10, 8
 							local x, y, l = corner_x+4.5, corner_y-3.5, LAYER.FRONT
 							local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8877,8 +8746,8 @@ set_callback(function()
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				if (
-					feeling_check(FEELING_ID.SNOW)
-					or feeling_check(FEELING_ID.SNOWING)
+					feeling_check(feelingslib.FEELING_ID.SNOW)
+					or feeling_check(feelingslib.FEELING_ID.SNOWING)
 				) then
 					local floors = get_entities_by_type(ENT_TYPE.FLOOR_GENERIC)
 					for _, floor_uid in pairs(floors) do
@@ -8955,7 +8824,6 @@ set_callback(function()
 end, ON.CAMP)
 
 set_callback(function()
-	unlocks_init()
 	force_olmec_phase_0(true)
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
@@ -8968,7 +8836,7 @@ end, ON.TITLE)
 -- ON.START
 set_callback(function()
 	onstart_init_options()
-	-- global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
+	-- global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
 	
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
@@ -8990,27 +8858,13 @@ set_callback(function()
 	onloading_applyquestflags()
 end, ON.LOADING)
 
--- # TODO: When placing an AREA_RAND* character coffin in the level, set an ON.FRAME check for unlocking it; if check passes, set RUN_UNLOCK_AREA[state.theme] = true
-set_callback(function(save_ctx)
-	local save_areaUnlocks_str = json.encode(RUN_UNLOCK_AREA)
-	save_ctx:save(save_areaUnlocks_str)
-end, ON.SAVE)
-
--- Load bools of the areas you've unlocked AREA_RAND* characters in
-set_callback(function(load_ctx)
-	local load_areaUnlocks_str = load_ctx:load()
-	if load_areaUnlocks_str ~= "" then
-		RUN_UNLOCK_AREA = json.decode(load_areaUnlocks_str)
-	end
-end, ON.LOAD)
-
 set_callback(function()
 	-- global_levelassembly = nil
 end, ON.TRANSITION)
 
 function levelcreation_init()
 	init_onlevel()
-	unlocks_load()
+	unlockslib.unlocks_load()
 	-- onlevel_levelrules()
 	onlevel_set_feelings()
 	clear_dark_level()
@@ -9052,7 +8906,7 @@ function assign_s2_level_height()
 		end
 	
 		-- set height for rushing water
-		if feeling_check(FEELING_ID.RUSHING_WATER) then
+		if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 			new_height = 5
 		end
 		state.width = new_width
@@ -9076,7 +8930,7 @@ end
 
 function set_blackmarket_shoprooms(room_gen_ctx)
 
-	if feeling_check(FEELING_ID.BLACKMARKET) then
+	if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
 		UNLOCK_WI, UNLOCK_HI = 0, 0
@@ -9192,7 +9046,7 @@ function onstart_init_methods()
 		set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
 	elseif(
 		HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL
-		or feeling_check(FEELING_ID.YAMA) == true
+		or feeling_check(feelingslib.FEELING_ID.YAMA) == true
 	) then
 		set_ghost_spawn_times(-1, -1)
 	end
@@ -9519,7 +9373,7 @@ function onlevel_levelrules()
 end
 
 function onlevel_create_impostorlake()
-	if feeling_check(FEELING_ID.RUSHING_WATER) then
+	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 		local x, y = 22.5, 88.5--80.5
 		local w, h = 40, 12
 		spawn_impostor_lake(
@@ -9643,7 +9497,7 @@ function onlevel_ankh_respawn()
 			local cb_moai_diamond = -1
 			local cb_moai_hedjet = -1
 			-- # TODO: Investigate if breaking/teleporting into the Moai in HD disables being able to get the hedjet.
-			if feeling_check(FEELING_ID.MOAI) == true then
+			if feeling_check(feelingslib.FEELING_ID.MOAI) == true then
 				cb_moai_diamond = set_interval(function()
 					if players_in_moai() then
 						kill_entity(moai_veil)
@@ -9759,8 +9613,8 @@ function onlevel_decorate_trees()
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
 			if (
-				feeling_check(FEELING_ID.RESTLESS) == false and
-				feeling_check(FEELING_ID.HAUNTEDCASTLE) == false
+				feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
+				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
 			) then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
@@ -9872,7 +9726,7 @@ local removed_embedded_currencies = {
 -- 		if (
 -- 			state.theme ~= THEME.NEO_BABYLON
 -- 			and state.theme ~= THEME.EGGPLANT_WORLD
--- 			-- and (feeling_check(FEELING_ID.YAMA) == false)
+-- 			-- and (feeling_check(feelingslib.FEELING_ID.YAMA) == false)
 -- 		) then
 -- 			return
 -- 		end
@@ -10028,14 +9882,14 @@ function onlevel_set_feelings()
 	) then
 
 		if state.level == 1 then
-			global_feelings = commonlib.TableCopy(HD_FEELING_DEFAULTS)
+			global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
 		end
 
 		-- Vaults
 		if state.theme ~= THEME.VOLCANA then
-			feeling_set_once(FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
+			feeling_set_once(feelingslib.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
 		elseif state.theme == THEME.TEMPLE then
-			feeling_set_once(FEELING_ID.VAULT, {1, 2, 3})
+			feeling_set_once(feelingslib.FEELING_ID.VAULT, {1, 2, 3})
 		end
 		
 		--[[
@@ -10044,21 +9898,21 @@ function onlevel_set_feelings()
 		if state.theme == THEME.DWELLING then
 			-- placing chest and key on levels 2..4
 			if state.level == 2 then
-				feeling_set_once(FEELING_ID.UDJAT, {2, 3, 4})
+				feeling_set_once(feelingslib.FEELING_ID.UDJAT, {2, 3, 4})
 			end
 
 			if (
 				state.level >= 3
 			) then
-				feeling_set_once(FEELING_ID.SPIDERLAIR, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.SPIDERLAIR, {state.level})
 			end
 
 			-- spiderlair and snakepit cannot happen at the same time
 			if (
-				feeling_check(FEELING_ID.SPIDERLAIR) == false
+				feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 				and state.level ~= 1
 			) then
-				feeling_set_once(FEELING_ID.SNAKEPIT, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.SNAKEPIT, {state.level})
 			end
 		end
 		--[[
@@ -10067,28 +9921,28 @@ function onlevel_set_feelings()
 		if state.theme == THEME.JUNGLE then
 
 			if state.level == 1 then
-				feeling_set_once(FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
+				feeling_set_once(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
 			end
 
 			-- Restless cannot happen on haunted castle
-			if feeling_check(FEELING_ID.HAUNTEDCASTLE) == false then
-				feeling_set_once(FEELING_ID.RESTLESS, {state.level})
+			if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false then
+				feeling_set_once(feelingslib.FEELING_ID.RESTLESS, {state.level})
 			end
 
 			-- Haunted Castle and Black Market cannot have rushing water nor tikivillage
 			if (
-				feeling_check(FEELING_ID.HAUNTEDCASTLE) == false
-				and feeling_check(FEELING_ID.BLACKMARKET) == false
+				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+				and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 			) then
-				feeling_set_once(FEELING_ID.RUSHING_WATER, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.RUSHING_WATER, {state.level})
 				
 				-- tikivillage levels cannot be restless
 				-- tikivillage and rushing water cannot happen at the same time
 				if (
-					feeling_check(FEELING_ID.RESTLESS) == false and
-					feeling_check(FEELING_ID.RUSHING_WATER) == false
+					feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
+					feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
 				) then
-					feeling_set_once(FEELING_ID.TIKIVILLAGE, {state.level})
+					feeling_set_once(feelingslib.FEELING_ID.TIKIVILLAGE, {state.level})
 				end
 			end
 		end
@@ -10101,9 +9955,9 @@ function onlevel_set_feelings()
 				state.theme == THEME.JUNGLE or
 				state.theme == THEME.ICE_CAVES
 			)
-			and feeling_check(FEELING_ID.RESTLESS) == false
+			and feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
 		) then
-			feeling_set_once(FEELING_ID.WORMTONGUE, {1})
+			feeling_set_once(feelingslib.FEELING_ID.WORMTONGUE, {1})
 			TONGUE_SPAWNED = true
 		end
 
@@ -10112,20 +9966,20 @@ function onlevel_set_feelings()
 		--]]
 		if state.theme == THEME.ICE_CAVES then
 			
-			feeling_set_once(FEELING_ID.SNOW, {state.level})
+			feeling_set_once(feelingslib.FEELING_ID.SNOW, {state.level})
 
 			-- # TODO: Exception for MOAI spawn:
 				-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
 			if state.level == 2 then
-				feeling_set_once(FEELING_ID.MOAI, {2, 3})
+				feeling_set_once(feelingslib.FEELING_ID.MOAI, {2, 3})
 			end
 			
 			if state.level == 4 then
-				if global_feelings[FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
-					feeling_set_once(FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
+				if global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
+					feeling_set_once(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
 				else
-					global_feelings[FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-					feeling_set_once(FEELING_ID.YETIKINGDOM, {state.level})
+					global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
+					feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
 				end
 				-- This level feeling only, and always, occurs on level 3-4.
 					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
@@ -10134,33 +9988,33 @@ function onlevel_set_feelings()
 			end
 			
 			if (
-				feeling_check(FEELING_ID.MOAI) == false
+				feeling_check(feelingslib.FEELING_ID.MOAI) == false
 				and state.level ~= 4
 			) then
-				feeling_set_once(FEELING_ID.YETIKINGDOM, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
 			end
 			
 			-- # TODO: Verify exactly when UFO is allowed to spawn
 			if (
-				feeling_check(FEELING_ID.YETIKINGDOM) == false
+				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
 				and state.level ~= 4
 			) then
-				feeling_set_once(FEELING_ID.UFO, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.UFO, {state.level})
 			end
 			
 			-- # TODO: Verify exactly when pools are allowed to spawn
 			if (
-				feeling_check(FEELING_ID.YETIKINGDOM) == false
-				and feeling_check(FEELING_ID.UFO) == false
+				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
+				and feeling_check(feelingslib.FEELING_ID.UFO) == false
 			) then
-				feeling_set_once(FEELING_ID.ICE_CAVES_POOL, {state.level})
+				feeling_set_once(feelingslib.FEELING_ID.ICE_CAVES_POOL, {state.level})
 			end
 		end
 		--[[
 			Temple
 		--]]
 		if state.theme == THEME.TEMPLE then
-			feeling_set_once(FEELING_ID.SACRIFICIALPIT, {state.level})
+			feeling_set_once(feelingslib.FEELING_ID.SACRIFICIALPIT, {state.level})
 		end
 		
 		-- Currently hardcoded but keeping this here just in case
@@ -10168,7 +10022,7 @@ function onlevel_set_feelings()
 			Hell
 		--]]
 		-- if state.theme == THEME.VOLCANA and state.level == 1 then
-			-- feeling_set(FEELING_ID.VLAD, {state.level})
+			-- feeling_set(feelingslib.FEELING_ID.VLAD, {state.level})
 		-- end
 	end
 end
@@ -10200,7 +10054,7 @@ function onlevel_set_feelingToastMessage()
 	for feelingname, feeling in pairs(loadchecks) do
 		-- Message Overrides may happen here:
 		-- For example:
-			-- if feelingname == FEELING_ID.RUSHING_WATER and feeling_check(FEELING_ID.RESTLESS) == true then break end
+			-- if feelingname == feelingslib.FEELING_ID.RUSHING_WATER and feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then break end
 		MESSAGE_FEELING = feeling.message
 	end
 end
@@ -10313,7 +10167,7 @@ function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
 		IDOLTRAP_TRIGGER = true
-		if feeling_check(FEELING_ID.RESTLESS) == true then
+		if feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
 			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
@@ -10332,7 +10186,7 @@ function onframe_idoltrap()
 				end, idoltrap_timeout*2)
 			end
 		elseif state.theme == THEME.TEMPLE then
-			if feeling_check(FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
+			if feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
 				-- Break all 4 blocks under it at once
 				for i = 1, #idoltrap_blocks, 1 do
 					kill_entity(idoltrap_blocks[i])
@@ -11685,17 +11539,6 @@ function inventory_checkpickup_botd()
 	end
 end
 
-function unlocks_init()
-	unlocks_load()
-end
-
-function unlocks_load()
-	for id, unlock_properties in pairs(HD_UNLOCKS) do
-		HD_UNLOCKS[id].unlocked = test_flag(savegame.characters, unlock_properties.unlock_id)
-	end
-	-- RUN_UNLOCK_AREA gets loaded in an ON.LOAD callback
-end
-
 function level_generation_method_side()
 
 	--[[
@@ -11705,8 +11548,8 @@ function level_generation_method_side()
 	chunkcodes = (
 		HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 		HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
-		HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.SIDE] ~= nil
-	) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.SIDE]
+		HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
+	) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.SIDE]
 	-- feelings
 	check_feeling_content = nil
 	-- feelings
@@ -11714,9 +11557,9 @@ function level_generation_method_side()
 		if (
 			feeling_check(feeling) == true and
 			feelingContent.rooms ~= nil and
-			feelingContent.rooms[HD_SUBCHUNKID.SIDE] ~= nil
+			feelingContent.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
 		) then
-			check_feeling_content = feelingContent.rooms[HD_SUBCHUNKID.SIDE]
+			check_feeling_content = feelingContent.rooms[genlib.HD_SUBCHUNKID.SIDE]
 		end
 	end
 	if check_feeling_content ~= nil then
@@ -11734,18 +11577,18 @@ function level_generation_method_side()
 					if (
 						HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 						HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms ~= nil and
-						HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms[HD_SUBCHUNKID.SIDE] ~= nil
+						HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
 					) then
-						side_results = HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms[HD_SUBCHUNKID.SIDE]({wi = level_wi, hi = level_hi})
+						side_results = HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE]({wi = level_wi, hi = level_hi})
 					end
 					for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 						if (
 							feeling_check(feeling) == true and
 							feelingContent.chunkRules ~= nil and
 							feelingContent.chunkRules.rooms ~= nil and
-							feelingContent.chunkRules.rooms[HD_SUBCHUNKID.SIDE] ~= nil
+							feelingContent.chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
 						) then
-							side_results = feelingContent.chunkRules.rooms[HD_SUBCHUNKID.SIDE]({wi = level_wi, hi = level_hi})
+							side_results = feelingContent.chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE]({wi = level_wi, hi = level_hi})
 						end
 					end
 					
@@ -11755,39 +11598,39 @@ function level_generation_method_side()
 							side_results.index == nil
 						) then
 							if side_results.altar ~= nil then
-								altar_roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.ALTAR]
+								altar_roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.ALTAR]
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
 										feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
-										feelingContent.rooms[HD_SUBCHUNKID.ALTAR] ~= nil
+										feelingContent.rooms[genlib.HD_SUBCHUNKID.ALTAR] ~= nil
 									) then
-										check_feeling_content = feelingContent.rooms[HD_SUBCHUNKID.ALTAR]
+										check_feeling_content = feelingContent.rooms[genlib.HD_SUBCHUNKID.ALTAR]
 									end
 								end
 								if check_feeling_content ~= nil then
 									altar_roomcodes = check_feeling_content
 								end
 								if altar_roomcodes == nil then
-									altar_roomcodes = HD_ROOMOBJECT.GENERIC[HD_SUBCHUNKID.ALTAR]
+									altar_roomcodes = HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.ALTAR]
 								end
 
 								levelcode_inject_roomcode(
-									HD_SUBCHUNKID.ALTAR,
+									genlib.HD_SUBCHUNKID.ALTAR,
 									altar_roomcodes,
 									level_hi, level_wi
 								)
 							elseif side_results.idol ~= nil then
-								idol_roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.IDOL]
+								idol_roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.IDOL]
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
 										feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
-										feelingContent.rooms[HD_SUBCHUNKID.IDOL] ~= nil
+										feelingContent.rooms[genlib.HD_SUBCHUNKID.IDOL] ~= nil
 									) then
-										check_feeling_content = feelingContent.rooms[HD_SUBCHUNKID.IDOL]
+										check_feeling_content = feelingContent.rooms[genlib.HD_SUBCHUNKID.IDOL]
 									end
 								end
 								if check_feeling_content ~= nil then
@@ -11795,12 +11638,12 @@ function level_generation_method_side()
 								end
 								levelcode_inject_roomcode(
 									(
-										feeling_check(FEELING_ID.RESTLESS) and
-										HD_SUBCHUNKID.RESTLESS_IDOL or HD_SUBCHUNKID.IDOL
+										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										genlib.HD_SUBCHUNKID.RESTLESS_IDOL or genlib.HD_SUBCHUNKID.IDOL
 									),
 									(
-										feeling_check(FEELING_ID.RESTLESS) and
-										HD_ROOMOBJECT.FEELINGS[FEELING_ID.RESTLESS].rooms[HD_SUBCHUNKID.RESTLESS_IDOL] or
+										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL] or
 										idol_roomcodes
 									),
 									level_hi, level_wi
@@ -11814,8 +11657,8 @@ function level_generation_method_side()
 					if specified_index ~= -1 then
 
 						levelcode_inject_roomcode(
-							HD_SUBCHUNKID.SIDE,
-							chunkcodes, -- HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.SIDE],
+							genlib.HD_SUBCHUNKID.SIDE,
+							chunkcodes, -- HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.SIDE],
 							level_hi, level_wi,
 							-- rules
 							specified_index
@@ -11943,7 +11786,7 @@ end
 function detect_level_non_boss()
 	return (
 		state.theme ~= THEME.OLMEC
-		and feeling_check(FEELING_ID.YAMA) == false
+		and feeling_check(feelingslib.FEELING_ID.YAMA) == false
 	)
 end
 function detect_level_non_special()
@@ -11951,16 +11794,16 @@ function detect_level_non_special()
 		state.theme ~= THEME.EGGPLANT_WORLD and
 		state.theme ~= THEME.NEO_BABYLON and
 		state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(FEELING_ID.BLACKMARKET) == false
+		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 function detect_level_allow_path_gen()
 	return (
 		detect_level_non_boss() and
 		-- state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(FEELING_ID.BLACKMARKET) == false
+		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -11969,8 +11812,8 @@ function detect_level_allow_coop_coffin()
 		COOP_COFFIN == true
 		and detect_level_non_boss()
 		-- and state.theme ~= THEME.CITY_OF_GOLD
-		and feeling_check(FEELING_ID.HAUNTEDCASTLE) == false
-		and feeling_check(FEELING_ID.BLACKMARKET) == false
+		and feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+		and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -11978,21 +11821,21 @@ function level_generation_method_world_coffin()
 	if (
 		LEVEL_UNLOCK ~= nil
 		and (
-			LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+			LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 		)
 	) then
 		level_generation_method_aligned(
 			{
 				left = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
-					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT]
 				},
 				right = {
-					subchunk_id = HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
-					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
+					subchunk_id = genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT,
+					roomcodes = HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT]
 				}
 			}
 		)
@@ -12009,14 +11852,14 @@ function level_generation_method_coffin_coop()
 				path_to_replace = global_levelassembly.modification.levelrooms[room_y][room_x]
 				path_to_replace_with = -1
 				
-				if path_to_replace == HD_SUBCHUNKID.PATH_DROP then
-					path_to_replace_with = HD_SUBCHUNKID.COFFIN_COOP_DROP
-				elseif path_to_replace == HD_SUBCHUNKID.PATH_DROP_NOTOP then
-					path_to_replace_with = HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
-				elseif path_to_replace == HD_SUBCHUNKID.PATH_NOTOP then
-					path_to_replace_with = HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-				elseif path_to_replace == HD_SUBCHUNKID.PATH then
-					path_to_replace_with = HD_SUBCHUNKID.COFFIN_COOP
+				if path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP then
+					path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP
+				elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+					path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
+				elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+					path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
+				elseif path_to_replace == genlib.HD_SUBCHUNKID.PATH then
+					path_to_replace_with = genlib.HD_SUBCHUNKID.COFFIN_COOP
 				end
 				
 				if path_to_replace_with ~= -1 then
@@ -12064,14 +11907,14 @@ function level_generation_method_shops()
 		detect_level_non_special()
 	) then
 		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
-			shop_id_right = HD_SUBCHUNKID.SHOP_REGULAR
-			shop_id_left = HD_SUBCHUNKID.SHOP_REGULAR_LEFT
+			shop_id_right = genlib.HD_SUBCHUNKID.SHOP_REGULAR
+			shop_id_left = genlib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
 			-- # TODO: Find real chance of spawning a dice shop.
 			-- This is a temporary solution.
 			if math.random(7) == 1 then
 				state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
-				shop_id_right = HD_SUBCHUNKID.SHOP_PRIZE
-				shop_id_left = HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+				shop_id_right = genlib.HD_SUBCHUNKID.SHOP_PRIZE
+				shop_id_left = genlib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
 			-- elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
 			-- 	state.level_gen.shop_type = math.random(0, 5)
 			end
@@ -12129,12 +11972,12 @@ function levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _level_wi, _
 	global_levelassembly.modification.rowfive.levelrooms[_level_wi] = _subchunk_id
 
 	c_y = 1
-	c_x = ((_level_wi*HD_ROOMOBJECT.DIM.w)-HD_ROOMOBJECT.DIM.w)+1
+	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
 	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
-	levelcode_inject_rowfive(_roomPool, HD_ROOMOBJECT.DIM.h, HD_ROOMOBJECT.DIM.w, c_y, c_x, _specified_index)
+	levelcode_inject_rowfive(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
 end
 
 function levelcode_inject_rowfive(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
@@ -12155,13 +11998,13 @@ function levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi
 	_specified_index = _specified_index or math.random(#_roomPool)
 	global_levelassembly.modification.levelrooms[_level_hi][_level_wi] = _subchunk_id
 
-	c_y = ((_level_hi*HD_ROOMOBJECT.DIM.h)-HD_ROOMOBJECT.DIM.h)+1
-	c_x = ((_level_wi*HD_ROOMOBJECT.DIM.w)-HD_ROOMOBJECT.DIM.w)+1
+	c_y = ((_level_hi*CONST.ROOM_HEIGHT)-CONST.ROOM_HEIGHT)+1
+	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
 	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
-	levelcode_inject(_roomPool, HD_ROOMOBJECT.DIM.h, HD_ROOMOBJECT.DIM.w, c_y, c_x, _specified_index)
+	levelcode_inject(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
 end
 
 function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
@@ -12257,10 +12100,10 @@ function levelcode_chunks(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 
 	for levelcode_yi = 1, c_hi_len, 1 do
@@ -12339,14 +12182,14 @@ function gen_levelcode_phase_1(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12365,10 +12208,10 @@ function gen_levelcode_phase_1(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12439,14 +12282,14 @@ function gen_levelcode_phase_2(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12463,10 +12306,10 @@ function gen_levelcode_phase_2(rowfive)
 	end
 
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12521,14 +12364,14 @@ function gen_levelcode_phase_3(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12547,10 +12390,10 @@ function gen_levelcode_phase_3(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12621,14 +12464,14 @@ function gen_levelcode_phase_4(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12647,10 +12490,10 @@ function gen_levelcode_phase_4(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12818,12 +12661,12 @@ function gen_levelrooms_path()
 				)
 				-- or spread == true
 			) then
-				pathid = HD_SUBCHUNKID.PATH
+				pathid = genlib.HD_SUBCHUNKID.PATH
 			end
-			if pathid == HD_SUBCHUNKID.PATH then
+			if pathid == genlib.HD_SUBCHUNKID.PATH then
 				dir = 0
 				if detect_sideblocked_both(global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
-					pathid = HD_SUBCHUNKID.PATH_DROP
+					pathid = genlib.HD_SUBCHUNKID.PATH_DROP
 				elseif detect_sideblocked_neither(global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					dir = (math.random(2) == 2) and 1 or -1
 				else
@@ -12836,27 +12679,27 @@ function gen_levelrooms_path()
 				ind_off_x = dir
 			end
 			
-			if pathid == HD_SUBCHUNKID.PATH and dropping == true then
-				pathid = HD_SUBCHUNKID.PATH_NOTOP
+			if pathid == genlib.HD_SUBCHUNKID.PATH and dropping == true then
+				pathid = genlib.HD_SUBCHUNKID.PATH_NOTOP
 				dropping = false
 			end
-			if pathid == HD_SUBCHUNKID.PATH_DROP then
+			if pathid == genlib.HD_SUBCHUNKID.PATH_DROP then
 				ind_off_y = 1
 				if dropping == true then
-					pathid = HD_SUBCHUNKID.PATH_DROP_NOTOP
+					pathid = genlib.HD_SUBCHUNKID.PATH_DROP_NOTOP
 				end
 				dropping = true
 			end
 			if assigned_entrance == false then
-				if pathid == HD_SUBCHUNKID.PATH_DROP then
-					pathid = HD_SUBCHUNKID.ENTRANCE_DROP
+				if pathid == genlib.HD_SUBCHUNKID.PATH_DROP then
+					pathid = genlib.HD_SUBCHUNKID.ENTRANCE_DROP
 					if reverse_path == true then
-						pathid = HD_SUBCHUNKID.EXIT_NOTOP
+						pathid = genlib.HD_SUBCHUNKID.EXIT_NOTOP
 					end
 				else
-					pathid = HD_SUBCHUNKID.ENTRANCE
+					pathid = genlib.HD_SUBCHUNKID.ENTRANCE
 					if reverse_path == true then
-						pathid = HD_SUBCHUNKID.EXIT
+						pathid = genlib.HD_SUBCHUNKID.EXIT
 					end
 				end
 				assigned_entrance = true
@@ -12867,15 +12710,15 @@ function gen_levelrooms_path()
 					assigned_exit = (math.random(2) == 2)
 				end
 				if assigned_exit == true then
-					if pathid == HD_SUBCHUNKID.PATH_NOTOP then
-						pathid = HD_SUBCHUNKID.EXIT_NOTOP
+					if pathid == genlib.HD_SUBCHUNKID.PATH_NOTOP then
+						pathid = genlib.HD_SUBCHUNKID.EXIT_NOTOP
 						if reverse_path == true then
-							pathid = HD_SUBCHUNKID.ENTRANCE_DROP
+							pathid = genlib.HD_SUBCHUNKID.ENTRANCE_DROP
 						end
 					else
-						pathid = HD_SUBCHUNKID.EXIT
+						pathid = genlib.HD_SUBCHUNKID.EXIT
 						if reverse_path == true then
-							pathid = HD_SUBCHUNKID.ENTRANCE
+							pathid = genlib.HD_SUBCHUNKID.ENTRANCE
 						end
 					end
 				end
@@ -13009,7 +12852,7 @@ end
 		-- In a 2d list loop for each room to replace:
 			-- 1: log a 2d table of the level path and rooms to replace
 				-- 1: As you loop over each room:
-					-- Log in separate 2d array `rooms_subchunkids`: Based on HD_SUBCHUNKID and whether the space contains a shopkeep, log subchunk ids as generated by the game.
+					-- Log in separate 2d array `rooms_subchunkids`: Based on genlib.HD_SUBCHUNKID and whether the space contains a shopkeep, log subchunk ids as generated by the game.
 						-- 0: Non-main path subchunk
 						-- 1: Main path, goes L/R (also entrance/exit)
 						-- 2: Main path, goes L/R and down (and up if it's below another 2)
@@ -13117,7 +12960,7 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					-- if feeling_check(FEELING_ID.BLACKMARKET_ENTRANCE) == true
+					-- if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true
 				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
 					-- Will need at least:
 						-- 

@@ -140,62 +140,6 @@ HD_THEMEORDER = {
 
 MESSAGE_FEELING = nil
 
-RUN_UNLOCK_AREA = {} -- used to be `RUN_UNLOCK_AREA[THEME.DWELLING] = false` but that doesn't save into json well...
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.DWELLING, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.JUNGLE, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.ICE_CAVES, unlocked = false }
-RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.TEMPLE, unlocked = false }
-
-HD_UNLOCKS = {}
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER1] = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER2] = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER3] = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER4] = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND1] = { unlock_id = 12, unlocked = false }		--ENT_TYPE.CHAR_TINA_FLAN
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND2] = { unlock_id = 01, unlocked = false }		--ENT_TYPE.CHAR_ANA_SPELUNKY
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND3] = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND4] = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.OLMEC_WIN] = {
-	unlock_id = 07,													--ENT_TYPE.CHAR_AMAZON
-	unlocked = false
-}
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.WORM] = {
-	unlock_theme = THEME.EGGPLANT_WORLD,
-	unlock_id = 16,													--ENT_TYPE.CHAR_PILOT
-	unlocked = false
-}				
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.SPIDERLAIR] = {
-	feeling = feelingslib.FEELING_ID.SPIDERLAIR,
-	unlock_id = 13, unlocked = false }								--ENT_TYPE.CHAR_VALERIE_CRUMP
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.YETIKINGDOM] = {
-	feeling = feelingslib.FEELING_ID.YETIKINGDOM,
-	unlock_id = 15, unlocked = false }								--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.HAUNTEDCASTLE] = {
-	feeling = feelingslib.FEELING_ID.HAUNTEDCASTLE,
-	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.YAMA] = {
-	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
-	unlocked = false
-}
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.OLMEC_CHAMBER] = {
-	unlock_theme = THEME.OLMEC,
-	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.TIKIVILLAGE] = {
-	feeling = feelingslib.FEELING_ID.TIKIVILLAGE,
-	unlock_id = 11, unlocked = false }								--ENT_TYPE.CHAR_OTAKU
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.BLACKMARKET] = {
-	feeling = feelingslib.FEELING_ID.BLACKMARKET,
-	unlock_id = 04, unlocked = false }								--ENT_TYPE.CHAR_ROFFY_D_SLOTH
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.RUSHING_WATER] = {
-	feeling = feelingslib.FEELING_ID.RUSHING_WATER,
-	unlock_id = 10, unlocked = false }								--ENT_TYPE.CHAR_MANFRED_TUNNEL
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.MOTHERSHIP] = {
-	unlock_theme = THEME.NEO_BABYLON,
-	unlock_id = 08, unlocked = false }								--ENT_TYPE.CHAR_LISE_SYSTEM
-HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.COG] = {
-	unlock_theme = THEME.CITY_OF_GOLD,
-	unlock_id = 14, unlocked = false }								--ENT_TYPE.CHAR_AU
-
 -- "5", "6", "8", "F", "V", "("
 HD_OBSTACLEBLOCK = {}
 HD_OBSTACLEBLOCK.GROUND = {
@@ -6223,21 +6167,6 @@ end
 -- end, "minewood_floor")
 
 --[[
-	Detect if an area unlock has not been unlocked yet.
-	Where can AREA unlocks spawn?
-	- When it's in one of the four areas.
-	- Any exceptions to this, such as special areas? Not that I'm aware of.
-]]
-function detect_if_area_unlock_not_unlocked_yet()
-	-- RUN_UNLOCK_AREA[state.theme] ~= nil and RUN_UNLOCK_AREA[state.theme] == false
-	for i = 1, #RUN_UNLOCK_AREA, 1 do
-		if RUN_UNLOCK_AREA[i].theme == state.theme and RUN_UNLOCK_AREA[i].unlocked == false then
-			return true
-		end
-	end
-	return false
-end
---[[
 	Run the chance for an area coffin to spawn.
 	1 / (X - deaths), chance can't go better than 1/9
 ]]
@@ -6271,8 +6200,8 @@ function get_unlock()
 		and state.items.player_count == 1
 	) then
 		if (
-			detect_if_area_unlock_not_unlocked_yet()
-			and run_unlock_area_chance()
+			unlockslib.detect_if_area_unlock_not_unlocked_yet()
+			-- and run_unlock_area_chance()
 		) then -- AREA_RAND* unlocks
 			rand_pool = {
 				unlockslib.HD_UNLOCK_ID.AREA_RAND1,
@@ -6284,7 +6213,7 @@ function get_unlock()
 			chunkPool_rand_index = 1
 			n = #rand_pool
 			for rand_index = 1, #rand_pool, 1 do
-				if HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
+				if unlockslib.HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
 					rand_pool[rand_index] = nil
 				end
 			end
@@ -6294,7 +6223,7 @@ function get_unlock()
 		else -- feeling/theme-based unlocks
 			local unlockconditions_feeling = {}
 			local unlockconditions_theme = {}
-			for id, unlock_properties in pairs(HD_UNLOCKS) do
+			for id, unlock_properties in pairs(unlockslib.HD_UNLOCKS) do
 				if unlock_properties.feeling ~= nil then
 					unlockconditions_feeling[id] = unlock_properties
 				elseif unlock_properties.unlock_theme ~= nil then
@@ -6339,7 +6268,7 @@ function create_coffin_unlock(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	if LEVEL_UNLOCK ~= nil then
 		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
 	end
 
 	set_post_statemachine(coffin_uid, function()
@@ -6356,9 +6285,9 @@ function create_coffin_unlock(x, y, l)
 				)
 			)
 		) then
-			for i = 1, #RUN_UNLOCK_AREA, 1 do
-				if RUN_UNLOCK_AREA[i].theme == state.theme then
-					RUN_UNLOCK_AREA[i].unlocked = true 
+			for i = 1, #unlockslib.RUN_UNLOCK_AREA, 1 do
+				if unlockslib.RUN_UNLOCK_AREA[i].theme == state.theme then
+					unlockslib.RUN_UNLOCK_AREA[i].unlocked = true 
 					break
 				end
 			end
@@ -7266,7 +7195,7 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 			and (UNLOCK_HI ~= nil and UNLOCK_HI == ry+1)
 		)
 	) then
-		local uid = spawn_grid_entity(193 + HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
+		local uid = spawn_grid_entity(193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
 		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
 		--[[
 			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
@@ -7279,7 +7208,7 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 		-- 	local ent = get_entity(uid)
 		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
 		-- 		-- Can't manually unlock characters this way
-		-- 		-- savegame.characters = set_flag(savegame.characters, HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+		-- 		-- savegame.characters = set_flag(savegame.characters, unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
 
 		-- 		return false
 		-- 	end
@@ -8895,7 +8824,6 @@ set_callback(function()
 end, ON.CAMP)
 
 set_callback(function()
-	unlocks_init()
 	force_olmec_phase_0(true)
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
@@ -8930,27 +8858,13 @@ set_callback(function()
 	onloading_applyquestflags()
 end, ON.LOADING)
 
--- # TODO: When placing an AREA_RAND* character coffin in the level, set an ON.FRAME check for unlocking it; if check passes, set RUN_UNLOCK_AREA[state.theme] = true
-set_callback(function(save_ctx)
-	local save_areaUnlocks_str = json.encode(RUN_UNLOCK_AREA)
-	save_ctx:save(save_areaUnlocks_str)
-end, ON.SAVE)
-
--- Load bools of the areas you've unlocked AREA_RAND* characters in
-set_callback(function(load_ctx)
-	local load_areaUnlocks_str = load_ctx:load()
-	if load_areaUnlocks_str ~= "" then
-		RUN_UNLOCK_AREA = json.decode(load_areaUnlocks_str)
-	end
-end, ON.LOAD)
-
 set_callback(function()
 	-- global_levelassembly = nil
 end, ON.TRANSITION)
 
 function levelcreation_init()
 	init_onlevel()
-	unlocks_load()
+	unlockslib.unlocks_load()
 	-- onlevel_levelrules()
 	onlevel_set_feelings()
 	clear_dark_level()
@@ -11623,17 +11537,6 @@ function inventory_checkpickup_botd()
 			end
 		end
 	end
-end
-
-function unlocks_init()
-	unlocks_load()
-end
-
-function unlocks_load()
-	for id, unlock_properties in pairs(HD_UNLOCKS) do
-		HD_UNLOCKS[id].unlocked = test_flag(savegame.characters, unlock_properties.unlock_id)
-	end
-	-- RUN_UNLOCK_AREA gets loaded in an ON.LOAD callback
 end
 
 function level_generation_method_side()

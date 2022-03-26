@@ -1,4 +1,4 @@
-FEELING_ID = require 'feeling_ids'
+FEELING_ID = require 'ids'
 
 local module = {}
 

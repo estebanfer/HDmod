@@ -1,8 +1,8 @@
 commonlib = require 'lib.common'
 HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
-FEELING_ID = require 'lib.const.feeling_ids'
+FEELING_ID = require 'lib.feelings.ids'
 HD_UNLOCK_ID = require 'lib.const.unlock_ids'
-HD_FEELING_DEFAULTS = require 'lib.const.feeling_values'
+HD_FEELING_DEFAULTS = require 'lib.feelings.values'
 locatelib = require 'lib.locate'
 
 meta.name = "HDmod - Demo"
@@ -157,7 +157,6 @@ HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND2] = { unlock_id = 01, unlocked = false }		--EN
 HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND3] = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
 HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND4] = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
 HD_UNLOCKS[HD_UNLOCK_ID.OLMEC_WIN] = {
-	win = 1,
 	unlock_id = 07,													--ENT_TYPE.CHAR_AMAZON
 	unlocked = false
 }
@@ -176,7 +175,6 @@ HD_UNLOCKS[HD_UNLOCK_ID.HAUNTEDCASTLE] = {
 	feeling = FEELING_ID.HAUNTEDCASTLE,
 	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
 HD_UNLOCKS[HD_UNLOCK_ID.YAMA] = {
-	win = 2,
 	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
 	unlocked = false
 }
@@ -6264,17 +6262,6 @@ function run_unlock_area_chance()
 		end
 	end
 	return false
-end
-
--- # TODO: Boss win unlocks.
--- Run this method after a post-win screen
-function get_boss_unlock()
-	-- unlockconditions_win = {}
-	-- for unlock_name, unlock_properties in pairs(HD_UNLOCKS) do
-		-- if unlock_properties.win ~= nil then
-			-- unlockconditions_win[unlock_name] = unlock_properties
-		-- end
-	-- end
 end
 
 -- Set LEVEL_UNLOCK

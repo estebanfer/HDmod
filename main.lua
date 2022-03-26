@@ -6201,7 +6201,7 @@ function get_unlock()
 	) then
 		if (
 			unlockslib.detect_if_area_unlock_not_unlocked_yet()
-			-- and run_unlock_area_chance()
+			and run_unlock_area_chance()
 		) then -- AREA_RAND* unlocks
 			rand_pool = {
 				unlockslib.HD_UNLOCK_ID.AREA_RAND1,

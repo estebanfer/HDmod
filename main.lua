@@ -3,6 +3,7 @@ HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
 FEELING_ID = require 'lib.const.feeling_ids'
 HD_UNLOCK_ID = require 'lib.const.unlock_ids'
 HD_FEELING_DEFAULTS = require 'lib.const.feeling_values'
+locatelib = require 'lib.locate'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -50,52 +51,6 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 
 DEMO_MAX_WORLD = 1
 DEMO_TUTORIAL_AVAILABLE = false
-
--- translate levelrooms coordinates to the tile in the top-left corner in game coordinates
-function locate_game_corner_position_from_levelrooms_position(roomx, roomy)
-	xmin, ymin, _, _ = get_bounds()
-	tc_x = (roomx-1)*CONST.ROOM_WIDTH+(xmin+0.5)
-	tc_y = (ymin-0.5) - ((roomy-1)*(CONST.ROOM_HEIGHT))
-	return tc_x, tc_y
-end
-
--- -- translate levelrooms coordinates to the tile in the top-left corner in levelcode coordinates
--- function locate_cornerpos_levelassembly(roomx, roomy)
--- 	xmin, ymin = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
--- 	tc_x = (roomx-1)*CONST.ROOM_WIDTH+(xmin+0.5)
--- 	tc_y = (ymin-0.5) - ((roomy-1)*(CONST.ROOM_HEIGHT))
--- 	return tc_x, tc_y
--- end
-
--- translate game coordinates to levelrooms coordinates
-function locate_levelrooms_position_from_game_position(e_x, e_y)
-	xmin, ymin, _, _ = get_bounds()
-	roomx = math.floor((e_x-(xmin+0.5))/CONST.ROOM_WIDTH)+1
-	roomy = math.floor(((ymin-0.5)-e_y)/CONST.ROOM_HEIGHT)+1
-	return roomx, roomy
-end
-
--- translate game coordinates to levelcode coordinates
-function locate_levelcode_position_from_game_position(e_x, e_y)
-	_xmin, _ymin, _, _ = get_bounds()
-	return e_x-(_xmin-0.5), (_ymin+0.5)-e_y
-end
-
--- translate levelcode coordinates to levelrooms coordinates
-function locate_levelrooms_position_from_levelcode_position(e_x, e_y)
-	-- xmin, ymin, xmax, ymax = 1, 1, 4*10, 4*8
-	roomx, roomy = math.ceil(e_x/CONST.ROOM_WIDTH), math.ceil(e_y/CONST.ROOM_HEIGHT)
-	return roomx, roomy
-end
-
--- NOTE: Levels with irregular room sizes may lead to unintended return values.
--- For now, anything related to scripted level generation should use known constants instead of this.
-function get_levelsize()
-	xmin, ymin, xmax, ymax = get_bounds()
-	levelw = math.ceil((xmax-xmin)/CONST.ROOM_WIDTH)
-	levelh = math.ceil((ymin-ymax)/CONST.ROOM_HEIGHT)
-	return levelw, levelh
-end
 
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
@@ -658,7 +613,7 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
@@ -941,7 +896,7 @@ HD_TILENAME = {
 					end
 					
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
@@ -977,7 +932,7 @@ HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					-- need subchunkid of what room we're in
-					local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
@@ -1371,7 +1326,7 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					if global_levelassembly.modification.levelrooms[roomy] ~= nil then
 						local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 					end
@@ -1477,7 +1432,7 @@ HD_TILENAME = {
 
 					
 					-- -- need subchunkid of what room we're in
-					-- roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+					-- roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 					-- _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 					-- spawn_entity(ENT_TYPE.DECORATION_SHOPSIGN,
@@ -1509,7 +1464,7 @@ HD_TILENAME = {
 					function(x, y, l)
 						spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l)
 						-- need subchunkid of what room we're in
-						roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+						roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 						_subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 						if (
@@ -1620,7 +1575,7 @@ HD_TILENAME = {
 							end
 						elseif state.theme == THEME.VOLCANA then
 							-- need subchunkid of what room we're in
-							local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+							local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 							local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 							if (
 								_subchunk_id == HD_SUBCHUNKID.VLAD_TOP
@@ -7728,7 +7683,7 @@ local function is_valid_wormtongue_spawn(x, y, l)
 	-- ) then
 
 	-- end
-	local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	-- local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 	if roomy < 5 then
 
@@ -8278,7 +8233,7 @@ local function is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
 	-- # TOFIX: Prevent tombstones from spawning in RESTLESS_TOMB.
 	--[[ the following code returns as nil, though it should be showing up at this point...
-	local roomx, roomy = locate_levelrooms_position_from_game_position(x, y)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = global_levelassembly.modification.levelrooms[roomy][roomx]
 	--]]
 	
@@ -8824,7 +8779,7 @@ set_callback(function()
 				for y = 1, level_h, 1 do
 					for x = 1, level_w, 1 do
 						_template_hd = global_levelassembly.modification.levelrooms[y][x]
-						local corner_x, corner_y = locate_game_corner_position_from_levelrooms_position(x, y)
+						local corner_x, corner_y = locatelib.locate_game_corner_position_from_levelrooms_position(x, y)
 						if _template_hd == HD_SUBCHUNKID.VLAD_BOTTOM then
 							
 							-- main tower
@@ -12338,7 +12293,7 @@ function gen_levelcode_phase_1(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
@@ -12438,7 +12393,7 @@ function gen_levelcode_phase_2(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
@@ -12520,7 +12475,7 @@ function gen_levelcode_phase_3(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (
@@ -12620,7 +12575,7 @@ function gen_levelcode_phase_4(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local _sx, _sy = locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
+	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
 		offsety = (

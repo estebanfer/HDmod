@@ -151,6 +151,72 @@ module.HD_SUBCHUNKID = {
     YAMA_SETROOM_4_3 = 512,
     YAMA_SETROOM_4_4 = 513
 }
-    
+
+-- "5", "6", "8", "F", "V", "("
+module.HD_OBSTACLEBLOCK = {
+    GROUND = {
+        tilename = "5",
+        dim = {3,5}
+    },
+    AIR = {
+        tilename = "6",
+        dim = {3,5}
+    },
+    DOOR = {
+        tilename = "8",
+        dim = {3,5}
+    },
+    PLATFORM = {
+        tilename = "F",
+        dim = {3,3},
+        chunkcodes = {
+            {"0ff000000"},
+            {"0000ff000"},
+            {"0000000ff"},
+            {"00f000000"},
+            {"0000f0000"},
+            {"0000000f0"},
+            {"0ji000000"},
+            {"0000ji000"},
+            {"0000000ji"},
+            {"00i000000"},
+            {"0000i0000"},
+            {"0000000i0"}
+        }
+    },
+    VINE = {
+        tilename = "V",
+        dim = {4,5},
+        chunkcodes = {
+            {"L0L0LL0L0LL000LL0000"},
+            {"L0L0LL0L0LL000L0000L"},
+            {"0L0L00L0L00L0L0000L0"}
+        }
+    },
+    TEMPLE = {
+        tilename = "(",
+        dim = {3,4},
+        chunkcodes = {
+            {"111100000000"},
+            {"222200000000"},
+            {"222022200000"},
+            {"022202220000"},
+            {"000011110000"},
+            {"000011112222"},
+            {"000022221111"},
+            {"000002202112"},
+            {"000020021221"}
+        }
+    },
+}
+
+module.HD_OBSTACLEBLOCK_TILENAME = {
+    ["5"] = module.HD_OBSTACLEBLOCK.GROUND,
+    ["6"] = module.HD_OBSTACLEBLOCK.AIR,
+    ["8"] = module.HD_OBSTACLEBLOCK.DOOR,
+    ["F"] = module.HD_OBSTACLEBLOCK.PLATFORM,
+    ["V"] = module.HD_OBSTACLEBLOCK.VINE,
+    ["("] = module.HD_OBSTACLEBLOCK.TEMPLE
+}
 
 return module

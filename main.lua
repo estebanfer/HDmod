@@ -140,70 +140,6 @@ HD_THEMEORDER = {
 
 MESSAGE_FEELING = nil
 
--- "5", "6", "8", "F", "V", "("
-HD_OBSTACLEBLOCK = {}
-HD_OBSTACLEBLOCK.GROUND = {
-	tilename = "5",
-	dim = {3,5}
-}
-HD_OBSTACLEBLOCK.AIR = {
-	tilename = "6",
-	dim = {3,5}
-}
-HD_OBSTACLEBLOCK.DOOR = {
-	tilename = "8",
-	dim = {3,5}
-}
-HD_OBSTACLEBLOCK.PLATFORM = {
-	tilename = "F",
-	dim = {3,3},
-	chunkcodes = {
-		{"0ff000000"},
-		{"0000ff000"},
-		{"0000000ff"},
-		{"00f000000"},
-		{"0000f0000"},
-		{"0000000f0"},
-		{"0ji000000"},
-		{"0000ji000"},
-		{"0000000ji"},
-		{"00i000000"},
-		{"0000i0000"},
-		{"0000000i0"}
-	}
-}
-HD_OBSTACLEBLOCK.VINE = {
-	tilename = "V",
-	dim = {4,5},
-	chunkcodes = {
-		{"L0L0LL0L0LL000LL0000"},
-		{"L0L0LL0L0LL000L0000L"},
-		{"0L0L00L0L00L0L0000L0"}
-	}
-}
-HD_OBSTACLEBLOCK.TEMPLE = {
-	tilename = "(",
-	dim = {3,4},
-	chunkcodes = {
-		{"111100000000"},
-		{"222200000000"},
-		{"222022200000"},
-		{"022202220000"},
-		{"000011110000"},
-		{"000011112222"},
-		{"000022221111"},
-		{"000002202112"},
-		{"000020021221"}
-	}
-}
-
-HD_OBSTACLEBLOCK_TILENAME = {}
-HD_OBSTACLEBLOCK_TILENAME["5"] = HD_OBSTACLEBLOCK.GROUND
-HD_OBSTACLEBLOCK_TILENAME["6"] = HD_OBSTACLEBLOCK.AIR
-HD_OBSTACLEBLOCK_TILENAME["8"] = HD_OBSTACLEBLOCK.DOOR
-HD_OBSTACLEBLOCK_TILENAME["F"] = HD_OBSTACLEBLOCK.PLATFORM
-HD_OBSTACLEBLOCK_TILENAME["V"] = HD_OBSTACLEBLOCK.VINE
-HD_OBSTACLEBLOCK_TILENAME["("] = HD_OBSTACLEBLOCK.TEMPLE
 
 function create_liquidfall(x, y, l, texture_path, is_lava)
 	local is_lava = is_lava or false
@@ -2462,7 +2398,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
-			[HD_OBSTACLEBLOCK.GROUND.tilename] = function()
+			[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
 				range_start, range_end = 1, 2 -- default
 				if (math.random(8) == 8) then
 					range_start, range_end = 3, 5
@@ -2625,7 +2561,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 		},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 		},
 	},
@@ -2636,7 +2572,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
-			[HD_OBSTACLEBLOCK.GROUND.tilename] = function()
+			[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
 				range_start, range_end = 1, 2 -- default
 				if (math.random(8) == 8) then
 					range_start, range_end = 3, 5
@@ -2825,14 +2761,14 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 		},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = { -- never happends, but this IS different from regular jungle. Keep just in case.
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = { -- never happends, but this IS different from regular jungle. Keep just in case.
 			{"000000000022222"},
 			{"000002222211111"},
 			{"00000000000T022"},
 			{"000000000020T02"},
 			{"0000000000220T0"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000ttt011111"},
 		},
 	},
@@ -3477,7 +3413,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 		}
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"111110000000000"},
 			{"000001111000000"},
 			{"000000111100000"},
@@ -3495,7 +3431,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 			{"000002010077117"},
 			{"000000010271177"},
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"022220000022220"},
 			{"222200000002222"},
 			{"111002220000000"},
@@ -3507,7 +3443,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 			{"000000022001111"},
 			{"000002220011100"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 		},
 	}
@@ -3985,7 +3921,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			end,
 		},
 		obstacleBlocks = {
-			[HD_OBSTACLEBLOCK.GROUND.tilename] = function()
+			[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
 				range_start, range_end = 1, 32 -- default
 				if (state.level < 3) then
 					range_start, range_end = 1, 14
@@ -4137,7 +4073,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000vvvvvv0000v0000v000L00g000L00Pv====vP00L0v00v0L00L000000L0111v00v111"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"011100020000000"},
 			{"000001111000000"},
 			{"000000111100000"},
@@ -4172,7 +4108,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"000002010077177"},
 			{"000000010277177"},
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"022220000022220"},
 			{"222200000002222"},
 			{"111002220000000"},
@@ -4184,7 +4120,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 			{"000000022001111"},
 			{"000002220011100"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 		},
 	},
@@ -4216,7 +4152,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			end,
 		},
 		obstacleBlocks = {
-			[HD_OBSTACLEBLOCK.GROUND.tilename] = function()
+			[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
 				range_start, range_end = 1, 22 -- default
 				if (state.level < 3) then
 					if (math.random(6) == 6) then -- if (uVar8 % 6 == 0)
@@ -4336,7 +4272,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000000tttt00000tt00tt00000000000001tt00tt1011rr00rr11"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"000000000022222"},--1
 			{"0000022222q111q"},--2
 			{"0q000q100011122"},--3
@@ -4360,13 +4296,13 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 			{"000000000070T07"},--0x68
 			{"0000000000770T0"},--0x69 -- nice
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"111122222000000"},
 			{"211110222200000"},
 			{"222220000000000"},
 			{"111112111200000"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000q1q0q111q"},
 			{"00900q111q11111"},
 			{"0090000100q212q"},
@@ -4480,10 +4416,10 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	},
 	
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"111122222000000"},
 			{"211110222200000"},
 			{"222220000000000"},
@@ -4686,7 +4622,7 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"000000000000000000000000g00000002111120000000000002111ff111200210012000000000000"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"111110000000000"},
 			{"000001111100000"},
 			{"000000000011111"},
@@ -4703,13 +4639,13 @@ HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 			{"000002010000110"},
 			{"000000010201100"},
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"000000000011111"},
 			{"000001111122222"},
 			{"111112222200000"},
 			{"0jij00jij00jij0"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 			{"009000212002120"},
 			{"000000000092222"},
@@ -4847,13 +4783,13 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 		}
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"000001000010000"},
 			{"000000000100001"},
 			{"000000010000100"},
 			{"000000000000000"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"},
 			{"009000212002120"},
 			{"000000000092222"},
@@ -5049,7 +4985,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"000000222021112"},
 			{"000000202021212"},
 			{"111001111011111"},
@@ -5059,7 +4995,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 			{"220001100011000"},
 			{"000000000000000"},
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"022220000022220"},
 			{"222200000002222"},
 			{"222002220000000"},
@@ -5071,7 +5007,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 			{"000002010000111"},
 			{"000000010211100"},
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"00900q111q21112"},
 		},
 	},
@@ -5177,9 +5113,9 @@ HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"100000000100000000001000g000011L011110L11P110011P10L000000L00L000000L01111001111"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.GROUND.tilename]),
-		[HD_OBSTACLEBLOCK.AIR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.AIR.tilename]),
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[HD_OBSTACLEBLOCK.DOOR.tilename]),
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[genlib.HD_OBSTACLEBLOCK.GROUND.tilename]),
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[genlib.HD_OBSTACLEBLOCK.AIR.tilename]),
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = commonlib.TableCopy(HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[genlib.HD_OBSTACLEBLOCK.DOOR.tilename]),
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
@@ -5272,7 +5208,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 		-- [genlib.HD_SUBCHUNKID.COFFIN_COOP] = {{""}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"0EEE02111202220"},
 			{"0000E0EEE121111"},
 			{"E00001EEE011112"},
@@ -5334,7 +5270,7 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			end,
 		},
 		obstacleBlocks = {
-			[HD_OBSTACLEBLOCK.GROUND.tilename] = function()
+			[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
 				range_start, range_end = 1, 2 -- default
 
 				if (math.random(7) == 7) then
@@ -5477,14 +5413,14 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 		[genlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP] = {{"01110011100011001100000000000022000000220000g0000000001100000000QQ00001111001111"}},
 	},
 	obstacleBlocks = {
-		[HD_OBSTACLEBLOCK.GROUND.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.GROUND.tilename] = {
 			{"000000000022222"},
 			{"000002222211111"},
 			{"000000000000022"},
 			{"00000sssss11111"},
 			{"000000000022000"}
 		},
-		[HD_OBSTACLEBLOCK.AIR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.AIR.tilename] = {
 			{"111102222000000"},
 			{"011110222200000"},
 			{"222200000000000"},
@@ -5493,14 +5429,14 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 			{"000000ssss01111"},
 			{"00000ssss011110"},
 		},
-		[HD_OBSTACLEBLOCK.VINE.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.VINE.tilename] = {
 			{"0hhh000u000000000000"},
 			{"0hhh00u0u00000000000"},
 			{"0hhh00uu000000000000"},
 			{"0hh00hhhh0uhhu000000"},--uhhu0"}, -- the last row is unused in HD
 			{"00hh00hhhh0uhhu00000"},--0uhhu"}, -- the last row is unused in HD
 		},
-		[HD_OBSTACLEBLOCK.DOOR.tilename] = {
+		[genlib.HD_OBSTACLEBLOCK.DOOR.tilename] = {
 			{"009000111011111"}
 		},
 	},
@@ -12113,7 +12049,7 @@ function levelcode_chunks(rowfive)
 				tilename = global_levelassembly.modification.rowfive.levelcode[levelcode_yi][levelcode_xi]
 			end
 
-			if HD_OBSTACLEBLOCK_TILENAME[tilename] ~= nil then
+			if genlib.HD_OBSTACLEBLOCK_TILENAME[tilename] ~= nil then
 				chunkcodes = nil
 
 				--[[
@@ -12125,8 +12061,8 @@ function levelcode_chunks(rowfive)
 					HD_ROOMOBJECT.WORLDS[state.theme].obstacleBlocks[tilename] ~= nil
 				) then
 					chunkcodes = HD_ROOMOBJECT.WORLDS[state.theme].obstacleBlocks[tilename]
-				elseif HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes ~= nil then
-					chunkcodes = HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes
+				elseif genlib.HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes ~= nil then
+					chunkcodes = genlib.HD_OBSTACLEBLOCK_TILENAME[tilename].chunkcodes
 				end
 				-- feelings
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
@@ -12161,7 +12097,7 @@ function levelcode_chunks(rowfive)
 				end
 	
 				if chunkcodes ~= nil then
-					c_dim_h, c_dim_w = HD_OBSTACLEBLOCK_TILENAME[tilename].dim[1], HD_OBSTACLEBLOCK_TILENAME[tilename].dim[2]
+					c_dim_h, c_dim_w = genlib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[1], genlib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[2]
 					if rowfive == true then
 						levelcode_inject_rowfive(chunkcodes, c_dim_h, c_dim_w, levelcode_yi, levelcode_xi, chunkpool_rand_index)
 					else

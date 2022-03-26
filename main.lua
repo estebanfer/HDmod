@@ -1,7 +1,7 @@
 commonlib = require 'lib.common'
 HD_SUBCHUNKID = require 'lib.const.subchunk_ids'
 feelingslib = require 'lib.feelings'
-HD_UNLOCK_ID = require 'lib.const.unlock_ids'
+unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
 
 meta.name = "HDmod - Demo"
@@ -147,52 +147,52 @@ RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.ICE_CAVES, unlocked = fals
 RUN_UNLOCK_AREA[#RUN_UNLOCK_AREA+1] = { theme = THEME.TEMPLE, unlocked = false }
 
 HD_UNLOCKS = {}
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER1] = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER2] = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER3] = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
-HD_UNLOCKS[HD_UNLOCK_ID.STARTER4] = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND1] = { unlock_id = 12, unlocked = false }		--ENT_TYPE.CHAR_TINA_FLAN
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND2] = { unlock_id = 01, unlocked = false }		--ENT_TYPE.CHAR_ANA_SPELUNKY
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND3] = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
-HD_UNLOCKS[HD_UNLOCK_ID.AREA_RAND4] = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-HD_UNLOCKS[HD_UNLOCK_ID.OLMEC_WIN] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER1] = { unlock_id = 19, unlocked = false }			--ENT_TYPE.CHAR_GUY_SPELUNKY
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER2] = { unlock_id = 03, unlocked = false }			--ENT_TYPE.CHAR_COLIN_NORTHWARD
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER3] = { unlock_id = 05, unlocked = false }			--ENT_TYPE.CHAR_BANDA
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.STARTER4] = { unlock_id = 06, unlocked = false }			--ENT_TYPE.CHAR_GREEN_GIRL
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND1] = { unlock_id = 12, unlocked = false }		--ENT_TYPE.CHAR_TINA_FLAN
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND2] = { unlock_id = 01, unlocked = false }		--ENT_TYPE.CHAR_ANA_SPELUNKY
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND3] = { unlock_id = 02, unlocked = false }		--ENT_TYPE.CHAR_MARGARET_TUNNEL
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.AREA_RAND4] = { unlock_id = 09, unlocked = false }		--ENT_TYPE.CHAR_COCO_VON_DIAMONDS
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.OLMEC_WIN] = {
 	unlock_id = 07,													--ENT_TYPE.CHAR_AMAZON
 	unlocked = false
 }
-HD_UNLOCKS[HD_UNLOCK_ID.WORM] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.WORM] = {
 	unlock_theme = THEME.EGGPLANT_WORLD,
 	unlock_id = 16,													--ENT_TYPE.CHAR_PILOT
 	unlocked = false
 }				
-HD_UNLOCKS[HD_UNLOCK_ID.SPIDERLAIR] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.SPIDERLAIR] = {
 	feeling = feelingslib.FEELING_ID.SPIDERLAIR,
 	unlock_id = 13, unlocked = false }								--ENT_TYPE.CHAR_VALERIE_CRUMP
-HD_UNLOCKS[HD_UNLOCK_ID.YETIKINGDOM] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.YETIKINGDOM] = {
 	feeling = feelingslib.FEELING_ID.YETIKINGDOM,
 	unlock_id = 15, unlocked = false }								--ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-HD_UNLOCKS[HD_UNLOCK_ID.HAUNTEDCASTLE] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.HAUNTEDCASTLE] = {
 	feeling = feelingslib.FEELING_ID.HAUNTEDCASTLE,
 	unlock_id = 17, unlocked = false }								--ENT_TYPE.CHAR_PRINCESS_AIRYN
-HD_UNLOCKS[HD_UNLOCK_ID.YAMA] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.YAMA] = {
 	unlock_id = 20,													--ENT_TYPE.CHAR_CLASSIC_GUY
 	unlocked = false
 }
-HD_UNLOCKS[HD_UNLOCK_ID.OLMEC_CHAMBER] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.OLMEC_CHAMBER] = {
 	unlock_theme = THEME.OLMEC,
 	unlock_id = 18, unlocked = false }								--ENT_TYPE.CHAR_DIRK_YAMAOKA
-HD_UNLOCKS[HD_UNLOCK_ID.TIKIVILLAGE] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.TIKIVILLAGE] = {
 	feeling = feelingslib.FEELING_ID.TIKIVILLAGE,
 	unlock_id = 11, unlocked = false }								--ENT_TYPE.CHAR_OTAKU
-HD_UNLOCKS[HD_UNLOCK_ID.BLACKMARKET] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.BLACKMARKET] = {
 	feeling = feelingslib.FEELING_ID.BLACKMARKET,
 	unlock_id = 04, unlocked = false }								--ENT_TYPE.CHAR_ROFFY_D_SLOTH
-HD_UNLOCKS[HD_UNLOCK_ID.RUSHING_WATER] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.RUSHING_WATER] = {
 	feeling = feelingslib.FEELING_ID.RUSHING_WATER,
 	unlock_id = 10, unlocked = false }								--ENT_TYPE.CHAR_MANFRED_TUNNEL
-HD_UNLOCKS[HD_UNLOCK_ID.MOTHERSHIP] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.MOTHERSHIP] = {
 	unlock_theme = THEME.NEO_BABYLON,
 	unlock_id = 08, unlocked = false }								--ENT_TYPE.CHAR_LISE_SYSTEM
-HD_UNLOCKS[HD_UNLOCK_ID.COG] = {
+HD_UNLOCKS[unlockslib.HD_UNLOCK_ID.COG] = {
 	unlock_theme = THEME.CITY_OF_GOLD,
 	unlock_id = 14, unlocked = false }								--ENT_TYPE.CHAR_AU
 
@@ -6275,10 +6275,10 @@ function get_unlock()
 			and run_unlock_area_chance()
 		) then -- AREA_RAND* unlocks
 			rand_pool = {
-				HD_UNLOCK_ID.AREA_RAND1,
-				HD_UNLOCK_ID.AREA_RAND2,
-				HD_UNLOCK_ID.AREA_RAND3,
-				HD_UNLOCK_ID.AREA_RAND4
+				unlockslib.HD_UNLOCK_ID.AREA_RAND1,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND2,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND3,
+				unlockslib.HD_UNLOCK_ID.AREA_RAND4
 			}
 			coffin_rand_pool = {}
 			chunkPool_rand_index = 1
@@ -6349,10 +6349,10 @@ function create_coffin_unlock(x, y, l)
 			and (
 				LEVEL_UNLOCK ~= nil
 				and (
-					LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
-					or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+					LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 				)
 			)
 		) then
@@ -11918,10 +11918,10 @@ function level_generation_method_world_coffin()
 	if (
 		LEVEL_UNLOCK ~= nil
 		and (
-			LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND1
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND2
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND3
-			or LEVEL_UNLOCK == HD_UNLOCK_ID.AREA_RAND4
+			LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 		)
 	) then
 		level_generation_method_aligned(

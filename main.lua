@@ -54,24 +54,24 @@ DEMO_TUTORIAL_AVAILABLE = false
 -- translate levelrooms coordinates to the tile in the top-left corner in game coordinates
 function locate_game_corner_position_from_levelrooms_position(roomx, roomy)
 	xmin, ymin, _, _ = get_bounds()
-	tc_x = (roomx-1)*HD_ROOMOBJECT.DIM.w+(xmin+0.5)
-	tc_y = (ymin-0.5) - ((roomy-1)*(HD_ROOMOBJECT.DIM.h))
+	tc_x = (roomx-1)*CONST.ROOM_WIDTH+(xmin+0.5)
+	tc_y = (ymin-0.5) - ((roomy-1)*(CONST.ROOM_HEIGHT))
 	return tc_x, tc_y
 end
 
 -- -- translate levelrooms coordinates to the tile in the top-left corner in levelcode coordinates
 -- function locate_cornerpos_levelassembly(roomx, roomy)
 -- 	xmin, ymin = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
--- 	tc_x = (roomx-1)*HD_ROOMOBJECT.DIM.w+(xmin+0.5)
--- 	tc_y = (ymin-0.5) - ((roomy-1)*(HD_ROOMOBJECT.DIM.h))
+-- 	tc_x = (roomx-1)*CONST.ROOM_WIDTH+(xmin+0.5)
+-- 	tc_y = (ymin-0.5) - ((roomy-1)*(CONST.ROOM_HEIGHT))
 -- 	return tc_x, tc_y
 -- end
 
 -- translate game coordinates to levelrooms coordinates
 function locate_levelrooms_position_from_game_position(e_x, e_y)
 	xmin, ymin, _, _ = get_bounds()
-	roomx = math.floor((e_x-(xmin+0.5))/HD_ROOMOBJECT.DIM.w)+1
-	roomy = math.floor(((ymin-0.5)-e_y)/HD_ROOMOBJECT.DIM.h)+1
+	roomx = math.floor((e_x-(xmin+0.5))/CONST.ROOM_WIDTH)+1
+	roomy = math.floor(((ymin-0.5)-e_y)/CONST.ROOM_HEIGHT)+1
 	return roomx, roomy
 end
 
@@ -84,7 +84,7 @@ end
 -- translate levelcode coordinates to levelrooms coordinates
 function locate_levelrooms_position_from_levelcode_position(e_x, e_y)
 	-- xmin, ymin, xmax, ymax = 1, 1, 4*10, 4*8
-	roomx, roomy = math.ceil(e_x/HD_ROOMOBJECT.DIM.w), math.ceil(e_y/HD_ROOMOBJECT.DIM.h)
+	roomx, roomy = math.ceil(e_x/CONST.ROOM_WIDTH), math.ceil(e_y/CONST.ROOM_HEIGHT)
 	return roomx, roomy
 end
 
@@ -92,8 +92,8 @@ end
 -- For now, anything related to scripted level generation should use known constants instead of this.
 function get_levelsize()
 	xmin, ymin, xmax, ymax = get_bounds()
-	levelw = math.ceil((xmax-xmin)/HD_ROOMOBJECT.DIM.w)
-	levelh = math.ceil((ymin-ymax)/HD_ROOMOBJECT.DIM.h)
+	levelw = math.ceil((xmax-xmin)/CONST.ROOM_WIDTH)
+	levelh = math.ceil((ymin-ymax)/CONST.ROOM_HEIGHT)
 	return levelw, levelh
 end
 
@@ -1780,7 +1780,6 @@ HD_TILENAME = {
 
 
 HD_ROOMOBJECT = {}
-HD_ROOMOBJECT.DIM = {h = 8, w = 10}
 HD_ROOMOBJECT.GENERIC = {
 	
 	-- # TODO: Shopkeeper room assigning
@@ -5388,7 +5387,7 @@ HD_ROOMOBJECT.WORLDS[THEME.OLMEC] = {
 	},
 }
 HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
-	offsety = (-(3*HD_ROOMOBJECT.DIM.h)-3),
+	offsety = (-(3*CONST.ROOM_HEIGHT)-3),
 	setRooms = {
 		{
 			subchunk_id = HD_SUBCHUNKID.OLMEC_ROW_FIVE,
@@ -12129,12 +12128,12 @@ function levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _level_wi, _
 	global_levelassembly.modification.rowfive.levelrooms[_level_wi] = _subchunk_id
 
 	c_y = 1
-	c_x = ((_level_wi*HD_ROOMOBJECT.DIM.w)-HD_ROOMOBJECT.DIM.w)+1
+	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
 	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
-	levelcode_inject_rowfive(_roomPool, HD_ROOMOBJECT.DIM.h, HD_ROOMOBJECT.DIM.w, c_y, c_x, _specified_index)
+	levelcode_inject_rowfive(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
 end
 
 function levelcode_inject_rowfive(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
@@ -12155,13 +12154,13 @@ function levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi
 	_specified_index = _specified_index or math.random(#_roomPool)
 	global_levelassembly.modification.levelrooms[_level_hi][_level_wi] = _subchunk_id
 
-	c_y = ((_level_hi*HD_ROOMOBJECT.DIM.h)-HD_ROOMOBJECT.DIM.h)+1
-	c_x = ((_level_wi*HD_ROOMOBJECT.DIM.w)-HD_ROOMOBJECT.DIM.w)+1
+	c_y = ((_level_hi*CONST.ROOM_HEIGHT)-CONST.ROOM_HEIGHT)+1
+	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
 	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
-	levelcode_inject(_roomPool, HD_ROOMOBJECT.DIM.h, HD_ROOMOBJECT.DIM.w, c_y, c_x, _specified_index)
+	levelcode_inject(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
 end
 
 function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
@@ -12257,10 +12256,10 @@ function levelcode_chunks(rowfive)
 		levelw = #global_levelassembly.modification.rowfive.levelrooms
 	end
 	
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 
 	for levelcode_yi = 1, c_hi_len, 1 do
@@ -12346,7 +12345,7 @@ function gen_levelcode_phase_1(rowfive)
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12365,10 +12364,10 @@ function gen_levelcode_phase_1(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12446,7 +12445,7 @@ function gen_levelcode_phase_2(rowfive)
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12463,10 +12462,10 @@ function gen_levelcode_phase_2(rowfive)
 	end
 
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12528,7 +12527,7 @@ function gen_levelcode_phase_3(rowfive)
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12547,10 +12546,10 @@ function gen_levelcode_phase_3(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
@@ -12628,7 +12627,7 @@ function gen_levelcode_phase_4(rowfive)
 			HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
 			HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*HD_ROOMOBJECT.DIM.h)
+		) and HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
@@ -12647,10 +12646,10 @@ function gen_levelcode_phase_4(rowfive)
 	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
 	-- end
 
-	local c_hi_len = levelh*HD_ROOMOBJECT.DIM.h
-	local c_wi_len = levelw*HD_ROOMOBJECT.DIM.w
+	local c_hi_len = levelh*CONST.ROOM_HEIGHT
+	local c_wi_len = levelw*CONST.ROOM_WIDTH
 	if rowfive == true then
-		c_hi_len = HD_ROOMOBJECT.DIM.h
+		c_hi_len = CONST.ROOM_HEIGHT
 	end
 	y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do

@@ -4,16 +4,12 @@ feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
 
+botdlib = require 'lib.items.botd'
+
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
-
--- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
--- register_option_float("hd_ui_botd_b_h", "UI: botd height", 0.12, 0.0, 99.0)
--- register_option_float("hd_ui_botd_c_x", "UI: botd x", 0.2, -999.0, 999.0)
--- register_option_float("hd_ui_botd_d_y", "UI: botd y", 0.93, -999.0, 999.0)
--- register_option_float("hd_ui_botd_e_squash", "UI: botd uvx shifting rate", 0.25, -5.0, 5.0)
 
 register_option_bool("hd_debug_boss_exits_unlock", "Debug: Unlock boss exits",														false)
 register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-enduced feeling toasts",								false)
@@ -101,15 +97,7 @@ BOSS_STATE = nil
 OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 OLMEC_STATE = 0
 BOULDER_DEBUG_PLAYERTOUCH = false
-HELL_X = 0
 HELL_Y = 86
-BOOKOFDEAD_TIC_LIMIT = 5
-BOOKOFDEAD_RANGE = 14
-bookofdead_tick = 0
--- bookofdead_tick_min = BOOKOFDEAD_TIC_LIMIT
-bookofdead_frames = 4
-bookofdead_frames_index = 1
-bookofdead_squash = (1/bookofdead_frames) --options.hd_ui_botd_e_squash
 WORMTONGUE_UID = nil
 WORMTONGUE_BG_UID = nil
 WORM_BG_UID = nil
@@ -120,15 +108,6 @@ DOOR_TESTING_UID = nil
 DOOR_TUTORIAL_UID = nil
 HD_WORLDSTATE_STATUS = { ["NORMAL"] = 1, ["TUTORIAL"] = 2, ["TESTING"] = 3}
 HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
-
-
-OBTAINED_BOOKOFDEAD = false
-
-UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/bookofdead.png')
-UI_BOTD_PLACEMENT_W = 0.08
-UI_BOTD_PLACEMENT_H = 0.12
-UI_BOTD_PLACEMENT_X = 0.2
-UI_BOTD_PLACEMENT_Y = 0.93
 
 HD_THEMEORDER = {
 	THEME.DWELLING,
@@ -178,11 +157,7 @@ HD_TILENAME = {
 				[THEME.CITY_OF_GOLD] = {
 					function(x, y, l)
 						if not options.hd_debug_item_botd_give then
-							bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
-							book_ = get_entity(bookofdead_pickup_id):as_movable()
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-							texture_def.texture_path = "res/items_botd.png"
-							book_:set_texture(define_texture(texture_def))
+							botdlib.create_botd(x, y, l)
 						end
 					end
 				}
@@ -5933,11 +5908,10 @@ function init_onlevel()
 	TONGUE_STATECOMPLETE = false
 	OLMEC_STATE = 0
 	
-	bookofdead_tick = 0
+	botdlib.bookofdead_tick = 0
+	botdlib.bookofdead_frames_index = 1
 	acid_tick = ACID_POISONTIME
 	tongue_tick = TONGUE_ACCEPTTIME
-	-- bookofdead_tick_min = BOOKOFDEAD_TIC_LIMIT
-	bookofdead_frames_index = 1
 
 end
 
@@ -6392,19 +6366,10 @@ function create_door_exit_to_hell(x, y, l)
 	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
 	set_door_target(door_target, 5, 1, THEME.VOLCANA)
 	
-	if OBTAINED_BOOKOFDEAD == true then
+	if botdlib.OBTAINED_BOOKOFDEAD == true then
 		helldoor_e = get_entity(door_target):as_movable()
 		helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 		helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
-		-- set_timeout(function()
-			-- helldoors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, 0, HELL_X, 87, LAYER.FRONT, 2)
-			-- if #helldoors > 0 then
-				-- helldoor_e = get_entity(helldoors[1]):as_movable()
-				-- helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-				-- helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
-				-- -- message("Aaalllright come on in!!! It's WARM WHER YOU'RE GOIN HAHAHAH")
-			-- end
-		-- end, 5)
 	end
 end
 
@@ -6810,31 +6775,6 @@ function remove_entitytype_inventory(entity_type, inventory_entities)
 		end
 	end
 	
-end
-
--- removes all types of an entity from any player that has it.
-function remove_player_item(powerup, player)
-	powerup_uids = get_entities_by_type(powerup)
-	for i = 1, #powerup_uids, 1 do
-		for j = 1, #players, 1 do
-			if entity_has_item_uid(players[j].uid, powerup_uids[i]) then
-				entity_remove_item(players[j].uid, powerup_uids[i])
-			end
-		end
-	end
-end
-
-function animate_bookofdead(tick_limit)
-	if bookofdead_tick <= tick_limit then
-		bookofdead_tick = bookofdead_tick + 1
-	else
-		if bookofdead_frames_index == bookofdead_frames then
-			bookofdead_frames_index = 1
-		else
-			bookofdead_frames_index = bookofdead_frames_index + 1
-		end
-		bookofdead_tick = 0
-	end
 end
 
 function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
@@ -8947,14 +8887,12 @@ end, ON.LEVEL)
 set_callback(function()
 	onframe_manage_dangers()
 	onframe_ghosts()
-	onframe_manage_inventory()
 	onframe_idoltrap()
 	onframe_acidpoison()
 	onframe_boss()
 end, ON.FRAME)
 
 set_callback(function()
-	onguiframe_ui_animate_botd()
 	onguiframe_ui_info_boss()			-- debug
 	onguiframe_ui_info_wormtongue() 	--
 	onguiframe_ui_info_boulder()		--
@@ -8966,7 +8904,7 @@ end, ON.GUIFRAME)
 
 
 function onstart_init_options()	
-	OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
+	botdlib.OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
 	if options.hd_og_ghost_time_disable == false then GHOST_TIME = 9000 end
 
 	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
@@ -9777,9 +9715,9 @@ function onlevel_boss_init()
 		cutscene_move_olmec_pre()
 		cutscene_move_cavemen()
 		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
-
-		HELL_X = math.random(4,41)
-		create_door_exit_to_hell(HELL_X, HELL_Y, LAYER.FRONT)
+		
+		botdlib.set_hell_x()
+		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
 	end
 end
 
@@ -10534,10 +10472,6 @@ function enttype_replace_danger(enttypes, hd_type, _vx, _vy)
 	for _, danger_uid in ipairs(dangers_uids) do
 		danger_replace(danger_uid, hd_type, false, _vx, _vy)
 	end
-end
-
-function onframe_manage_inventory()
-	inventory_checkpickup_botd()
 end
 
 -- DANGER MODIFICATIONS - ON.FRAME
@@ -11415,65 +11349,6 @@ function onguiframe_ui_info_path()
 	end
 end
 
--- Book of dead animating
-function onguiframe_ui_animate_botd()
-	if state.pause == 0 and state.screen == 12 and #players > 0 then
-		if OBTAINED_BOOKOFDEAD == true then
-			local w = UI_BOTD_PLACEMENT_W
-			local h = UI_BOTD_PLACEMENT_H
-			local x = UI_BOTD_PLACEMENT_X
-			local y = UI_BOTD_PLACEMENT_Y
-			local uvx1 = 0
-			local uvy1 = 0
-			local uvx2 = bookofdead_squash
-			local uvy2 = 1
-			
-			if state.theme == THEME.OLMEC then
-				local hellx_min = HELL_X - math.floor(BOOKOFDEAD_RANGE/2)
-				local hellx_max = HELL_X + math.floor(BOOKOFDEAD_RANGE/2)
-				p_x, p_y, p_l = get_position(players[1].uid)
-				if (p_x >= hellx_min) and (p_x <= hellx_max) then
-					animate_bookofdead(0.6*((p_x - HELL_X)^2) + BOOKOFDEAD_TIC_LIMIT)
-				else
-					bookofdead_tick = 0
-					bookofdead_frames_index = 1
-				end
-			elseif state.theme == THEME.VOLCANA then
-				if state.level == 1 then
-					animate_bookofdead(12)
-				elseif state.level == 2 then
-					animate_bookofdead(8)
-				elseif state.level == 3 then
-					animate_bookofdead(4)
-				else
-					animate_bookofdead(2)
-				end
-			end
-			
-			uvx1 = -bookofdead_squash*(bookofdead_frames_index-1)
-			uvx2 = bookofdead_squash - bookofdead_squash*(bookofdead_frames_index-1)
-			
-			-- draw_text(x-0.1, y, 0, tostring(bookofdead_tick), rgba(234, 234, 234, 255))
-			-- draw_text(x-0.1, y-0.1, 0, tostring(bookofdead_frames_index), rgba(234, 234, 234, 255))
-			draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
-		end
-	end
-end
-
-
--- # TODO: Turn into a custom inventory system that works for all players.
-function inventory_checkpickup_botd()
-	if OBTAINED_BOOKOFDEAD == false then
-		for i = 1, #players, 1 do
-			if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
-				-- # TODO: Move into the method that spawns Anubis II in COG
-				toast("Death to the defiler!")
-				OBTAINED_BOOKOFDEAD = true
-				set_timeout(function() remove_player_item(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) end, 1)
-			end
-		end
-	end
-end
 
 function level_generation_method_side()
 

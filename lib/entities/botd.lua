@@ -10,8 +10,8 @@ BOOKOFDEAD_TIC_LIMIT = 5
 BOOKOFDEAD_RANGE = 14
 
 module.hell_x = 0
-module.bookofdead_tick = 0
-module.bookofdead_frames_index = 1
+bookofdead_tick = 0
+bookofdead_frames_index = 1
 BOOKOFDEAD_FRAMES = 4
 BOOKOFDEAD_SQUASH = (1/BOOKOFDEAD_FRAMES) --options.hd_ui_botd_e_squash
 
@@ -31,6 +31,11 @@ function module.create_botd(x, y, l)
     book_:set_texture(define_texture(texture_def))
 end
 
+function module.init()
+	bookofdead_tick = 0
+	bookofdead_frames_index = 1
+end
+
 -- removes all types of an entity from any player that has it.
 function remove_player_item(powerup, player)
 	local powerup_uids = get_entities_by_type(powerup)
@@ -48,15 +53,15 @@ function module.set_hell_x()
 end
 
 function animate_bookofdead(tick_limit)
-	if module.bookofdead_tick <= tick_limit then
-		module.bookofdead_tick = module.bookofdead_tick + 1
+	if bookofdead_tick <= tick_limit then
+		bookofdead_tick = bookofdead_tick + 1
 	else
-		if module.bookofdead_frames_index == BOOKOFDEAD_FRAMES then
-			module.bookofdead_frames_index = 1
+		if bookofdead_frames_index == BOOKOFDEAD_FRAMES then
+			bookofdead_frames_index = 1
 		else
-			module.bookofdead_frames_index = module.bookofdead_frames_index + 1
+			bookofdead_frames_index = bookofdead_frames_index + 1
 		end
-		module.bookofdead_tick = 0
+		bookofdead_tick = 0
 	end
 end
 
@@ -81,7 +86,7 @@ set_callback(function()
 					animate_bookofdead(0.6*((p_x - module.hell_x)^2) + BOOKOFDEAD_TIC_LIMIT)
 				else
 					bookofdead_tick = 0
-					module.bookofdead_frames_index = 1
+					bookofdead_frames_index = 1
 				end
 			elseif state.theme == THEME.VOLCANA then
 				if state.level == 1 then
@@ -95,11 +100,11 @@ set_callback(function()
 				end
 			end
 			
-			uvx1 = -BOOKOFDEAD_SQUASH*(module.bookofdead_frames_index-1)
-			uvx2 = BOOKOFDEAD_SQUASH - BOOKOFDEAD_SQUASH*(module.bookofdead_frames_index-1)
+			uvx1 = -BOOKOFDEAD_SQUASH*(bookofdead_frames_index-1)
+			uvx2 = BOOKOFDEAD_SQUASH - BOOKOFDEAD_SQUASH*(bookofdead_frames_index-1)
 			
 			-- draw_text(x-0.1, y, 0, tostring(bookofdead_tick), rgba(234, 234, 234, 255))
-			-- draw_text(x-0.1, y-0.1, 0, tostring(module.bookofdead_frames_index), rgba(234, 234, 234, 255))
+			-- draw_text(x-0.1, y-0.1, 0, tostring(bookofdead_frames_index), rgba(234, 234, 234, 255))
 			draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
 		end
 	end

@@ -4,7 +4,8 @@ feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
 
-botdlib = require 'lib.items.botd'
+botdlib = require 'lib.entities.botd'
+wormtonguelib = require 'lib.entities.wormtongue'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -55,13 +56,11 @@ GHOST_TIME = 10800
 GHOST_VELOCITY = 0.7
 IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
-TONGUE_ACCEPTTIME = 200
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 global_dangers = {}
 global_feelings = nil
 global_levelassembly = nil
 danger_tracker = {}
-TONGUE_SPAWNED = false
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 LEVEL_UNLOCK = nil
@@ -83,24 +82,17 @@ BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
 BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 acid_tick = ACID_POISONTIME
-tongue_tick = TONGUE_ACCEPTTIME
 idoltrap_timeout = 0
 idoltrap_blocks = {}
 tombstone_blocks = {}
 moai_veil = nil
 OLMEC_UID = nil
-TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
-TONGUE_STATE = nil
-TONGUE_STATECOMPLETE = false
 BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
 BOSS_STATE = nil
 OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 OLMEC_STATE = 0
 BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_Y = 86
-WORMTONGUE_UID = nil
-WORMTONGUE_BG_UID = nil
-WORM_BG_UID = nil
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
 DOOR_ENDGAME_OLMEC_UID = nil
@@ -120,28 +112,6 @@ HD_THEMEORDER = {
 MESSAGE_FEELING = nil
 
 
-function create_liquidfall(x, y, l, texture_path, is_lava)
-	local is_lava = is_lava or false
-	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
-	if is_lava == true then
-		type = ENT_TYPE.LOGICAL_LAVA_DRAIN
-	end
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
-	texture_def.texture_path = texture_path
-	drain_texture = define_texture(texture_def)
-	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
-	get_entity(drain_uid):set_texture(drain_texture)
-
-	local backgrounds = entity_get_items_by(drain_uid, ENT_TYPE.BG_WATER_FOUNTAIN, 0)
-	if #backgrounds ~= 0 then
-		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
-		texture_def2.texture_path = texture_path
-		fountain_texture = define_texture(texture_def2)
-
-		local fountain = get_entity(backgrounds[1])
-		fountain:set_texture(fountain_texture)
-	end
-end
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -5855,10 +5825,10 @@ function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
 		global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
-		TONGUE_SPAWNED = false
+		wormtonguelib.tongue_spawned = false
 		-- other stuff
 	end
-	-- message("TONGUE_SPAWNED: " .. tostring(TONGUE_SPAWNED))
+	-- message("wormtonguelib.tongue_spawned: " .. tostring(wormtonguelib.tongue_spawned))
 end
 
 function init_onlevel()
@@ -5879,9 +5849,6 @@ function init_onlevel()
 	BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
 	BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 	BOULDER_DEBUG_PLAYERTOUCH = false
-	WORMTONGUE_UID = nil
-	WORMTONGUE_BG_UID = nil
-	WORM_BG_UID = nil
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 	DOOR_ENDGAME_OLMEC_UID = nil
@@ -5904,14 +5871,11 @@ function init_onlevel()
 
 	OLMEC_UID = nil
 	BOSS_STATE = nil
-	TONGUE_STATE = nil
-	TONGUE_STATECOMPLETE = false
 	OLMEC_STATE = 0
 	
-	botdlib.bookofdead_tick = 0
-	botdlib.bookofdead_frames_index = 1
+	botdlib.init()
+	wormtonguelib.init()
 	acid_tick = ACID_POISONTIME
-	tongue_tick = TONGUE_ACCEPTTIME
 
 end
 
@@ -6439,6 +6403,29 @@ function create_crysknife(x, y, l)
 	spawn_entity(ENT_TYPE.ITEM_POWERPACK, x, y, l, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
 end
 
+function create_liquidfall(x, y, l, texture_path, is_lava)
+	local is_lava = is_lava or false
+	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
+	if is_lava == true then
+		type = ENT_TYPE.LOGICAL_LAVA_DRAIN
+	end
+	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
+	texture_def.texture_path = texture_path
+	drain_texture = define_texture(texture_def)
+	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
+	get_entity(drain_uid):set_texture(drain_texture)
+
+	local backgrounds = entity_get_items_by(drain_uid, ENT_TYPE.BG_WATER_FOUNTAIN, 0)
+	if #backgrounds ~= 0 then
+		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
+		texture_def2.texture_path = texture_path
+		fountain_texture = define_texture(texture_def2)
+
+		local fountain = get_entity(backgrounds[1])
+		fountain:set_texture(fountain_texture)
+	end
+end
+
 function create_regenblock(x, y, l)
 	spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l, 0, 0)
 	local regen_bg = get_entity(spawn_entity(ENT_TYPE.MIDBG, x, y, l, 0, 0))
@@ -6480,53 +6467,6 @@ function create_idol_crystalskull(x, y, l)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 	texture_def.texture_path = "res/items_dar_idol.png"
 	entity:set_texture(define_texture(texture_def))
-end
-
-function create_wormtongue(x, y, l)
-	-- message("created wormtongue:")
-	set_interval(tongue_idle, 15)
-	set_interval(onframe_tonguetimeout, 1)
-	-- currently using level generation to place stickytraps
-	stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
-	sticky = get_entity(stickytrap_uid)
-	sticky.flags = set_flag(sticky.flags, ENT_FLAG.INVISIBLE)
-	sticky.flags = clr_flag(sticky.flags, ENT_FLAG.SOLID)
-	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
-	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
-	if #balls > 0 then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
-		local ent_texture = define_texture(texture_def)
-		
-		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-		worm_background = get_entity(WORMTONGUE_BG_UID)
-		worm_background:set_texture(ent_texture)
-		worm_background.animation_frame = 8
-	
-		-- sticky part creation
-		WORMTONGUE_UID = balls[1] -- HAHA tongue and balls
-		ball = get_entity(WORMTONGUE_UID)
-		ball.width = 1.35
-		ball.height = 1.35
-		ball.hitboxx = 0.3375
-		ball.hitboxy = 0.3375
-		
-		ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
-		for _, ballstem_uid in ipairs(ballstems) do
-			ballstem = get_entity(ballstem_uid)
-			ballstem.flags = set_flag(ballstem.flags, ENT_FLAG.INVISIBLE)
-			ballstem.flags = clr_flag(ballstem.flags, ENT_FLAG.CLIMBABLE)
-		end
-		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
-		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
-		
-		TONGUE_STATE = TONGUE_SEQUENCE.READY
-	else
-		message("No STICKYTRAP_BALL found, no tongue generated.")
-		kill_entity(stickytrap_uid)
-		
-		TONGUE_STATE = TONGUE_SEQUENCE.GONE
-	end
 end
 
 function detect_same_levelstate(t_a, l_a, w_a)
@@ -7561,7 +7501,7 @@ local global_spawn_extra_succubus = define_extra_spawn(create_succubus, is_valid
 
 local global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x, y, l, 0, 0) end, nil, 0, 0)
 
-local global_spawn_extra_wormtongue = define_extra_spawn(create_wormtongue, is_valid_wormtongue_spawn, 0, 0)
+local global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_wormtongue, is_valid_wormtongue_spawn, 0, 0)
 
 local function create_anubis(x, y, l)
 	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
@@ -8894,7 +8834,6 @@ end, ON.FRAME)
 
 set_callback(function()
 	onguiframe_ui_info_boss()			-- debug
-	onguiframe_ui_info_wormtongue() 	--
 	onguiframe_ui_info_boulder()		--
 	onguiframe_ui_info_feelings()		--
 	onguiframe_ui_info_path()			--
@@ -9823,7 +9762,7 @@ function onlevel_set_feelings()
 		
 		-- Worm Tongue
 		if (
-			TONGUE_SPAWNED == false
+			wormtonguelib.tongue_spawned == false
 			and state.level == 1
 			and (
 				state.theme == THEME.JUNGLE or
@@ -9832,7 +9771,7 @@ function onlevel_set_feelings()
 			and feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
 		) then
 			feeling_set_once(feelingslib.FEELING_ID.WORMTONGUE, {1})
-			TONGUE_SPAWNED = true
+			wormtonguelib.tongue_spawned = true
 		end
 
 		--[[
@@ -10189,175 +10128,6 @@ function onframe_acidpoison()
 	end
 end
 
-function tongue_idle()
-	if (
-		state.theme == THEME.JUNGLE and -- or state.theme == THEME.ICE_CAVES) and
-		WORMTONGUE_UID ~= nil and
-		(
-			TONGUE_STATE == TONGUE_SEQUENCE.READY or
-			TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
-		)
-	) then
-		x, y, l = get_position(WORMTONGUE_UID)
-		for _ = 1, 3, 1 do
-			if math.random() >= 0.5 then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((math.random()*1.5)-1), y+((math.random()*1.5)-1), l, 0, 0) end
-		end
-	end
-end
-
-function onframe_tonguetimeout()
-	if WORMTONGUE_UID ~= nil and TONGUE_STATE ~= TONGUE_SEQUENCE.GONE then
-		local tongue = get_entity(WORMTONGUE_UID)
-		x, y, l = get_position(WORMTONGUE_UID)
-		checkradius = 1.5
-		
-		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
-			if TONGUE_STATE == TONGUE_SEQUENCE.READY then
-				damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
-				if #damsels > 0 then
-					damsel = get_entity(damsels[1])
-					stuck_in_web = test_flag(damsel.more_flags, 8)
-					if (
-						(stuck_in_web == true)
-					) then
-						if tongue_tick <= 0 then
-							spawn_entity(ENT_TYPE.LOGICAL_BOULDERSPAWNER, x, y, l, 0, 0)
-							TONGUE_STATE = TONGUE_SEQUENCE.RUMBLE
-						else
-							tongue_tick = tongue_tick - 1
-						end
-					else
-						tongue_tick = TONGUE_ACCEPTTIME
-					end
-				end
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
-				set_timeout(function()
-					if WORMTONGUE_BG_UID ~= nil then
-						worm_background = get_entity(WORMTONGUE_BG_UID)
-						worm_background.animation_frame = 7
-					else message("WORMTONGUE_BG_UID is nil :(") end
-					
-					-- # TODO: Method to animate rubble better.
-					for _ = 1, 3, 1 do
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
-					end
-					
-					local blocks_to_break = get_entities_at(
-						0, MASK.FLOOR,
-						x, y, l,
-						2.0
-					)
-					for _, block_uid in pairs(blocks_to_break) do
-						local entity_type = get_entity(block_uid).type.id
-						-- message("Type: " .. tostring(entity_type)
-						if (
-							entity_type ~= ENT_TYPE.FLOOR_STICKYTRAP_CEILING
-							and entity_type ~= ENT_TYPE.FLOOR_BORDERTILE
-						) then
-							kill_entity(block_uid)
-						end
-					end
-
-					--create worm bg
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
-					local ent_texture = define_texture(texture_def)
-					
-					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-					worm_background = get_entity(WORM_BG_UID)
-					worm_background:set_texture(ent_texture)
-					worm_background.animation_frame = 5
-
-					local ent = get_entity(WORM_BG_UID)
-					worm_background.width, worm_background.height = 2, 2
-					-- message("WORM_BG_UID: " .. WORM_BG_UID)
-					
-					-- animate worm
-					set_interval(function()
-						if WORM_BG_UID ~= nil then
-							local ent = get_entity(WORM_BG_UID)
-							if ent ~= nil then
-								if ent.width >= 4 then
-									if ent.animation_frame == 5 then
-										ent.animation_frame = 4
-									elseif ent.animation_frame == 4 then
-										ent.animation_frame = 2
-									elseif ent.animation_frame == 2 then
-										ent.animation_frame = 1
-									else
-										return false
-									end
-								else
-									ent.width, ent.height = ent.width + 0.1, ent.height + 0.1
-								end
-							end
-						end
-					end, 1)
-
-					TONGUE_STATE = TONGUE_SEQUENCE.EMERGE
-					TONGUE_STATECOMPLETE = false
-				end, 65)
-				TONGUE_STATECOMPLETE = true
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then
-				set_timeout(function() -- level exit should activate here
-					tongue_exit()
-					
-					-- animate worm
-					set_interval(function()
-						if WORM_BG_UID ~= nil then
-							local ent = get_entity(WORM_BG_UID)
-							if ent ~= nil then
-								if ent.animation_frame == 1 then
-									ent.animation_frame = 2
-								elseif ent.animation_frame == 2 then
-									ent.animation_frame = 4
-								elseif ent.animation_frame == 4 then
-									ent.animation_frame = 5
-								else
-									if ent.width > 2 then
-										ent.width, ent.height = ent.width - 0.1, ent.height - 0.1
-									else
-										kill_entity(WORM_BG_UID)
-										WORM_BG_UID = nil
-										return false
-									end
-								end
-							end
-						end
-					end, 1)
-					
-
-					TONGUE_STATE = TONGUE_SEQUENCE.SWALLOW
-					TONGUE_STATECOMPLETE = false
-				end, 40)
-				TONGUE_STATECOMPLETE = true
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then
-				set_timeout(function()
-					-- message("boulder deletion at state.time_level: " .. tostring(state.time_level))
-					boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
-					kill_entity(boulder_spawners[1])
-					
-					local entity = get_entity(WORMTONGUE_UID)
-					entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
-					entity:destroy()
-					-- kill_entity(WORMTONGUE_UID)
-					WORMTONGUE_UID = nil
-
-					TONGUE_STATE = TONGUE_SEQUENCE.GONE
-				end, 40)
-				
-				TONGUE_STATECOMPLETE = true
-				
-				return false
-			end
-		end
-	end
-end
-
 function players_in_moai()
 	local moai_hollow_aabb = AABB:new(
 		global_levelassembly.moai_exit.x-.5,
@@ -10372,96 +10142,6 @@ function players_in_moai()
 		LAYER.FRONT
 	)
 	return #players_in_moai ~= 0
-end
-
-function tongue_exit()
-	x, y, l = get_position(WORMTONGUE_UID)
-	checkradius = 1.5
-	local damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
-	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
-	
-	-- TESTING OVERRIDE
-	-- if #ensnaredplayers > 0 then
-		-- set_timeout(function()
-			-- warp(state.world, state.level+1, THEME.EGGPLANT_WORLD)
-		-- end, 20)
-	-- end
-	
-	exits_doors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)
-	-- exits_worm = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 1)
-	-- worm_exit_uid = exits_worm[1]
-	exitdoor = nil
-	for _, exits_door in ipairs(exits_doors) do
-		-- if exits_door ~= worm_exit_uid then
-			exitdoor = exits_door
-		-- end
-	end
-	if exitdoor ~= nil then
-		exit_x, exit_y, _ = get_position(exitdoor)
-		for _, damsel_uid in ipairs(damsels) do
-			damsel = get_entity(damsel_uid):as_movable()
-			stuck_in_web = test_flag(damsel.more_flags, 9)
-			local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
-			if (
-				(stuck_in_web == true)
-			) then
-				if dead then
-					damsel:destroy()
-				else
-					damsel.stun_timer = 0
-					if options.hd_debug_scripted_enemies_show == false then
-						damsel.flags = set_flag(damsel.flags, ENT_FLAG.INVISIBLE)
-					end
-					damsel.flags = clr_flag(damsel.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-					-- damsel.flags = clr_flag(damsel.flags, ENT_FLAG.STUNNABLE)-- disable stunable
-					damsel.flags = set_flag(damsel.flags, ENT_FLAG.TAKE_NO_DAMAGE)--6)-- enable take no damage
-					move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
-				end
-			end
-		end
-	else
-		message("No Level Exitdoor found, can't force-rescue damsels.")
-	end
-
-	if #ensnaredplayers > 0 then
-		
-		for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-			ensnaredplayer = get_entity(ensnaredplayer_uid)
-			ensnaredplayer.stun_timer = 0
-			ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)-- disable input
-			
-			if options.hd_debug_scripted_enemies_show == false then
-				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
-			end
-				-- disable interactions with anything else that may interfere with entering the door
-			ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
-			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.NO_GRAVITY)-- disable gravity
-			
-			-- -- teleport player to the newly created invisible door (platform is at y+0.05)
-			-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
-		end
-		
-		set_timeout(function()
-			
-			state.screen_next = SCREEN.TRANSITION
-			state.world_next = state.world
-			state.level_next = state.level+1
-			state.theme_next = THEME.EGGPLANT_WORLD
-			state.loading = 1--SCREEN.INTRO?
-			state.pause = 0
-
-		end, 55)
-	end
-	
-	-- hide worm tongue
-	tongue = get_entity(WORMTONGUE_UID)
-	if options.hd_debug_scripted_enemies_show == false then
-		tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
-	end
-	tongue.flags = set_flag(tongue.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
 end
 
 -- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
@@ -11137,35 +10817,6 @@ function onguiframe_ui_info_boss()
 				text_y = text_y - 0.1
 				draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
 			else draw_text(text_x, text_y, 0, "olmec is nil", white) end
-		end
-	end
-end
-
-function onguiframe_ui_info_wormtongue()
-	if options.hd_debug_info_tongue == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if state.level == 1 and (state.theme == THEME.JUNGLE or state.theme == THEME.ICE_CAVES) then
-			text_x = -0.95
-			text_y = -0.45
-			white = rgba(255, 255, 255, 255)
-			
-			-- TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
-			tongue_debugtext_sequence = "UNKNOWN"
-			if TONGUE_STATE == TONGUE_SEQUENCE.READY then tongue_debugtext_sequence = "READY"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then tongue_debugtext_sequence = "RUMBLE"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then tongue_debugtext_sequence = "EMERGE"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then tongue_debugtext_sequence = "SWALLOW"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.GONE then tongue_debugtext_sequence = "GONE" end
-			draw_text(text_x, text_y, 0, "Worm Tongue State: " .. tongue_debugtext_sequence, white)
-			text_y = text_y-0.1
-			
-			tongue_debugtext_uid = tostring(WORMTONGUE_UID)
-			if WORMTONGUE_UID == nil then tongue_debugtext_uid = "nil" end
-			draw_text(text_x, text_y, 0, "Worm Tongue UID: " .. tongue_debugtext_uid, white)
-			text_y = text_y-0.1
-			
-			tongue_debugtext_tick = tostring(tongue_tick)
-			if tongue_tick == nil then tongue_debugtext_tick = "nil" end
-			draw_text(text_x, text_y, 0, "Worm Tongue Acceptance tic: " .. tongue_debugtext_tick, white)
 		end
 	end
 end

@@ -3,9 +3,11 @@ genlib = require 'lib.gen'
 feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
+hdtypelib = require 'lib.hdtype'
 
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
+ghostlib = require 'lib.entities.ghost'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -51,16 +53,10 @@ DEMO_TUTORIAL_AVAILABLE = false
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
-DANGER_GHOST_UIDS = {}
-GHOST_TIME = 10800
-GHOST_VELOCITY = 0.7
 IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
-global_dangers = {}
-global_feelings = nil
 global_levelassembly = nil
-danger_tracker = {}
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 LEVEL_UNLOCK = nil
@@ -108,10 +104,6 @@ HD_THEMEORDER = {
 	THEME.TEMPLE,
 	THEME.VOLCANA
 }
-
-MESSAGE_FEELING = nil
-
-
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -177,7 +169,7 @@ HD_TILENAME = {
 				},
 			},
 		},
-		-- hd_type = HD_ENT.TRAP_SPIKEBALL
+		-- hd_type = hdtypelib.HD_ENT.TRAP_SPIKEBALL
 		-- spawn method for plasma cannon in HD spawned a tile under it, stylized
 		description = "Spikeball",
 	},
@@ -235,7 +227,7 @@ HD_TILENAME = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
 						if (
-							feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
+							feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
 						) then
 							if (math.random(6) == 1) then
 								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
@@ -725,20 +717,20 @@ HD_TILENAME = {
 						(_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
 						or (_subchunk_id == genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
 					) then
-						create_hd_type(HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
+						hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
 					elseif (
 						(_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
 						-- or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						for i = 0, 10, 2 do
-							local uid = create_hd_type(HD_ENT.TRAP_TIKI, x, y+i, l, false, 0, 0)
+							local uid = hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y+i, l, false, 0, 0)
 							-- uid = get_entities_at(ENT_TYPE.FLOOR_TRAP_TOTEM, 0, x, y+i, l, .5)[1]
 							if uid ~= -1 then
 								get_entity(uid).animation_frame = 12
 							end
 						end
 						for i = 0, 10, 2 do
-							local uid = create_hd_type(HD_ENT.TRAP_TIKI, x+7, y+i, l, false, 0, 0)
+							local uid = hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x+7, y+i, l, false, 0, 0)
 							-- uid = get_entities_at(ENT_TYPE.FLOOR_TRAP_TOTEM, 0, x, y+i, l, .5)[1]
 							if uid ~= -1 then
 								get_entity(uid).animation_frame = 12
@@ -2165,7 +2157,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
 						HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] ~= nil
 					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.VAULT]
 				}
-				,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+				,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			)
 		end
 	end
@@ -2324,16 +2316,16 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].method = function()
 				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_TOMB,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_TOMB]
 			}
-			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
-	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
 		level_generation_method_nonaligned(
 			{
 				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_IDOL,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL]
 			}
-			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
 end
@@ -3846,7 +3838,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				local range_start, range_end = 1, 12
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 11
@@ -3857,7 +3849,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				local range_start, range_end = 1, 8
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 7
@@ -4083,7 +4075,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 				elseif (
 					CHUNKBOOL_IDOL == false and
 					(
-						feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
+						feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
 					) and
 					math.random(10) == 1
 				) then
@@ -4818,7 +4810,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 						CHUNKBOOL_ALTAR = true
 						return {altar = true}
 					elseif (
-						feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
+						feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
 						and CHUNKBOOL_IDOL == false
 						and math.random(15) == 1
 					) then
@@ -5388,431 +5380,6 @@ HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 }
 
 
-HD_COLLISIONTYPE = {
-	AIR_TILE_1 = 1,
-	AIR_TILE_2 = 2,
-	FLOORTRAP = 3,
-	FLOORTRAP_TALL = 4,
-	GIANT_FROG = 5,
-	GIANT_SPIDER = 6,
-}
-
-HD_DANGERTYPE = {
-	CRITTER = 1,
-	ENEMY = 2,
-	FLOORTRAP = 3,
-	FLOORTRAP_TALL = 4
-}
-HD_LIQUIDSPAWN = {
-	PIRANHA = 1,
-	MAGMAMAN = 2
-}
-HD_REMOVEINVENTORY = {
-	SNAIL = {
-		inventory_ownertype = ENT_TYPE.MONS_HERMITCRAB,
-		inventory_entities = {
-			ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-			ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-			ENT_TYPE.ITEM_CRATE,
-			ENT_TYPE.ITEM_CHEST
-		}
-	},
-	SCORPIONFLY = {
-		inventory_ownertype = ENT_TYPE.MONS_IMP,
-		inventory_entities = {
-			ENT_TYPE.ITEM_LAVAPOT
-		}
-	}
-}
-HD_REPLACE = {
-	EGGSAC = 1
-}
-HD_KILL_ON = {
-	STANDING = 1,
-	STANDING_OUTOFWATER = 2
-}
-
--- # TODO: Revise into HD_ABILITIES:
-	-- HD_ABILITY_STATE = {
-		-- IDLE = 1,
-		-- AGRO = 2,
-	-- }
-	-- skin = nil,
-	-- ability_uids = {
-		-- master = nil,
-		-- idle = nil,
-		-- agro = nil
-	-- },
-	-- ability_state = 1
-HD_BEHAVIOR = {
-	-- IDEAS:
-		-- Disable monster attacks.
-			-- monster = get_entity():as_chasingmonster
-			-- monster.chased_target_uid = 0
-	OLMEC_SHOT = {
-		velocity_set = {
-			velocityx = nil,
-			velocityy = nil,
-			timer = 25
-		}
-	},
-	-- CRITTER_FROG = {
-		-- jump_timeout = 70
-		-- ai_timeout = 40
-	-- },
-	SCORPIONFLY = {
-		-- abilities = {
-			-- # TODO: replace with Imp
-				-- Avoid using for agro distance since imps without lavapots immediately agro on the player regardless of distance
-				-- set_timeout() to remove all lavapots from imps in onlevel_remove_mounts()
-			-- if killed immediately, imp_uid still exists.
-			-- # TOTEST: see if abilities can still be killed by the camera flash
-			imp_uid = nil,--agro = { imp_uid = nil },
-			-- idle = { mosquito_uid = nil }
-		-- },
-		agro = false -- upon agro, enable bat ability
-		-- once taken damage, remove abilities
-	}
-	-- HAWKMAN = {
-		-- caveman_uid = nil, -- Not sure if we want caveman or shopkeeperclone for this
-		-- agro = false -- upon agro, enable 
-	-- },
-	-- GREENKNIGHT = {
-		-- master = {uid = nil(caveman)},
-		-- idle = {uid = nil(olmitebodyarmor), }, -- tospawn = olmitebodyarmor
-			-- reskin olmitebodyarmor as greenknight
-			-- Initialize caveman as invisible, olmite as visible.
-			-- Once taken damage, remove abilities. If all abilities are removed, make caveman visible
-			-- # TOTEST: Determine if there's better alternatives for whipping and stopping(without spike shoes) immunity
-				-- pangxie
-		-- uncheck 15 and uncheck 31.
-	-- },
-	-- BLACKKNIGHT = {
-		-- shopkeeperclone_uid = nil,
-		-- agro = true -- upon dropping shield, disable shopkeeperclone ability
-	-- },
-	-- reskin: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\MONSTERS\monstersbig4.png
-	-- MAMMOTH = {
-		-- cobra_uid = nil
-			-- dim: {2, 2} -- set the dimensions to the same as the giantfly or else movement and collision will look weird
-			-- hitbox: {0.550, 0.705} -- based off pangxie
-	-- },
-	-- reskin: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\MONSTERS\monstersbig2.png
-	-- GIANTFROG = {
-		-- frog_uid = nil
-			-- dim: {2, 2} -- set the dimensions to the same as the giantfly or else movement and collision will look weird
-			-- hitbox: { ?, ? }
-	-- },
-	-- reskin: C:\SDD\Steam\steamapps\common\Spelunky\Data\Textures\unpacked\MONSTERS\monstersbig5.png
-	-- ALIEN_LORD = {
-		-- cobra_uid = nil
-	-- }
-	-- ALIEN_TANK = {
-		-- https://github.com/spelunky-fyi/overlunky/blob/main/docs/script-api.md#olmeccannon
-	-- }
-}
--- Currently supported db modifications:
-	-- onlevel_dangers_modifications()
-		-- Supported Variables:
-			-- dim = { w, h }
-				-- sets height and width
-				-- # TODO: Split into two variables: One that gets set in onlevel_dangers_replace(), and one in onlevel_dangers_modifications.
-					-- IDEA: dim_db and dim
-			-- acceleration
-			-- max_speed
-			-- sprint_factor
-			-- jump
-			-- damage
-			-- health
-				-- sets EntityDB's life
-			-- friction
-			-- weight
-			-- elasticity
-		-- # TODO:
-			-- blood_content
-			-- draw_depth
-	-- danger_applydb
-		-- Supported Variables:
-			-- dim = { w, h }
-				-- sets height and width
-				-- # TODO: Split into two variables: One that gets set in onlevel_dangers_replace(), and one in onlevel_dangers_modifications.
-					-- IDEA: dim_db and dim
-			-- color = { r, g, b }
-				-- # TODO: Add alpha channel support
-			-- hitbox = { w, h }
-				-- `w` for hitboxx, `y` for hitboxy.
-			-- flag_stunnable
-			-- flag_collideswalls
-			-- flag_nogravity
-			-- flag_passes_through_objects
-				-- sets flag if true, clears if false
-	-- create_hd_type
-		-- Supported Variables:
-			-- dangertype
-				-- Determines multiple factors required for certain dangers, such as spawn_entity_over().
-			-- collisiontype
-				-- Determines collision detection on creation of an HD_ENT. collision detection.
-	-- onframe_manage_dangers
-		-- Supported Variables:
-			-- kill_on_standing = 
-				-- HD_KILL_ON.STANDING
-					-- Once standing on a surface, kill it.
-				-- HD_KILL_ON.STANDING_OUTOFWATER
-					-- Once standing on a surface and not submerged, kill it.
-			-- itemdrop = { item = {HD_ENT, etc...}, chance = 0.0 }
-				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
-			-- treasuredrop = { item = {HD_ENT, etc...}, chance = 0.0 }
-				-- on it not existing in the world, have a chance to spawn a random item where it previously existed.
-HD_ENT = {}
-HD_ENT.ITEM_IDOL = {
-	tospawn = ENT_TYPE.ITEM_IDOL
-}
-HD_ENT.ITEM_CRYSTALSKULL = {
-	tospawn = ENT_TYPE.ITEM_MADAMETUSK_IDOL
-}
-HD_ENT.ITEM_PICKUP_SPRINGSHOES = {
-	tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
-}
-HD_ENT.ITEM_FREEZERAY = {
-	tospawn = ENT_TYPE.ITEM_FREEZERAY
-}
-HD_ENT.ITEM_SAPPHIRE = {
-	tospawn = ENT_TYPE.ITEM_SAPPHIRE
-}
-HD_ENT.FROG = {
-	tospawn = ENT_TYPE.MONS_FROG,
-	dangertype = HD_DANGERTYPE.ENEMY
-}
-HD_ENT.FIREFROG = {
-	tospawn = ENT_TYPE.MONS_FIREFROG,
-	dangertype = HD_DANGERTYPE.ENEMY
-}
-HD_ENT.SNAIL = {
-	tospawn = ENT_TYPE.MONS_HERMITCRAB,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	health_db = 1,
-	leaves_corpse_behind = false,
-	removeinventory = HD_REMOVEINVENTORY.SNAIL,
-}
-HD_ENT.PIRANHA = {
-	tospawn = ENT_TYPE.MONS_TADPOLE,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	liquidspawn = HD_LIQUIDSPAWN.PIRANHA,
-	-- sprint_factor = -1,
-	-- max_speed = -1,
-	-- acceleration = -1,
-	kill_on_standing = HD_KILL_ON.STANDING_OUTOFWATER
-}
-HD_ENT.WORMBABY = {
-	tospawn = ENT_TYPE.MONS_MOLE,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	health_db = 1,
-	leaves_corpse_behind = false,
-}
-HD_ENT.EGGSAC = {
-	tospawn = ENT_TYPE.ITEM_EGGSAC,
-	dangertype = HD_DANGERTYPE.FLOORTRAP,
-	collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
-	replaceoffspring = HD_REPLACE.EGGSAC
-}
-HD_ENT.TRAP_TIKI = {
-	tospawn = ENT_TYPE.FLOOR_TOTEM_TRAP,
-	entitydb = ENT_TYPE.ITEM_TOTEM_SPEAR,
-	dangertype = HD_DANGERTYPE.FLOORTRAP_TALL,
-	collisiontype = HD_COLLISIONTYPE.FLOORTRAP_TALL,
-	damage = 4
-	-- # TODO: Tikitrap flames on dark level. If they spawn, move each flame down 0.5.
-}
-HD_ENT.CRITTER_RAT = {
-	tospawn = ENT_TYPE.MONS_CRITTERDUNGBEETLE,
-	dangertype = HD_DANGERTYPE.CRITTER,
-	max_speed = 0.05,
-	acceleration = 0.05
-}
-HD_ENT.CRITTER_FROG = { -- # TODO: critter jump/idle behavior
-	tospawn = ENT_TYPE.MONS_CRITTERLOCUST,
-	dangertype = HD_DANGERTYPE.CRITTER,
-	-- # TODO: Make jumping script, adjust movement EntityDB properties
-	-- behavior = HD_BEHAVIOR.CRITTER_FROG,
-}
-HD_ENT.SPIDER = {
-	tospawn = ENT_TYPE.MONS_SPIDER,
-	dangertype = HD_DANGERTYPE.ENEMY
-}
-HD_ENT.HANGSPIDER = {
-	tospawn = ENT_TYPE.MONS_HANGSPIDER,
-	dangertype = HD_DANGERTYPE.ENEMY
-}
-HD_ENT.GIANTSPIDER = {
-	tospawn = ENT_TYPE.MONS_GIANTSPIDER,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	collisiontype = HD_COLLISIONTYPE.GIANT_SPIDER,
-	offset_spawn = {0.5, 0}
-}
-HD_ENT.SCORPIONFLY = {
-	tospawn = ENT_TYPE.MONS_SCORPION,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	behavior = HD_BEHAVIOR.SCORPIONFLY,
-	color = { 0.902, 0.176, 0.176 },
-	removeinventory = HD_REMOVEINVENTORY.SCORPIONFLY
-}
--- Devil Behavior:
-	-- when the octopi is in it's run state, use get_entities_overlapping() to detect the block {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK} it runs into.
-		-- then kill block, set octopi stuntimer.
--- DEVIL = {
-	-- tospawn = ENT_TYPE.MONS_OCTOPUS,
-	-- toreplace = ?,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- sprint_factor = 7.0
-	-- max_speed = 7.0
--- },
--- MAMMOTH = { -- # TODO: Frozen Immunity: if set, set on frame `as_movable().frozen_timer = 0`
-	-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-	-- toreplace = ?,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- entitydb = ENT_TYPE.MONS_GIANTFLY,
-	-- behavior = HD_BEHAVIOR.MAMMOTH,
-	-- health_db = 8,
-	-- itemdrop = {
-		-- item = {HD_ENT.ITEM_FREEZERAY},
-		-- chance = 1.0
-	-- },
-	-- treasuredrop = {
-		-- item = {HD_ENT.ITEM_SAPPHIRE},
-		-- chance = 1.0
-	-- }
--- },
--- HAWKMAN = {
-	-- tospawn = ENT_TYPE.MONS_SHOPKEEPERCLONE, -- Maybe.
-	-- toreplace = ENT_TYPE.MONS_CAVEMAN,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- entitydb = ENT_TYPE.MONS_SHOPKEEPERCLONE,
-	-- behavior = HD_BEHAVIOR.HAWKMAN
--- },
--- GREENKNIGHT = {
-	-- tospawn = ENT_TYPE.MONS_OLMITE_BODYARMORED,
-	-- toreplace = ENT_TYPE.MONS_CAVEMAN,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- entitydb = ENT_TYPE.MONS_OLMITE_BODYARMORED,
-	-- behavior = HD_BEHAVIOR.GREENKNIGHT,
-	-- stompdamage = false, -- (?)
--- },
--- NOTE: Shopkeeperclones are immune to whip damage, while the black knight in HD wasn't.
-	-- May be able to override this by syncing the stun of a duct-taped entity (ie, if caveman is stunned, shopkeeperclone.stun_timer = 10)
-		-- Might as well use a caveman for the master, considering that in HD when the blackknight drops his shield, he behaves like a green knight (so, a caveman)
--- BLACKKNIGHT = {
-	-- tospawn = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- entitydb = ENT_TYPE.MONS_CAVEMAN,--ENT_TYPE.MONS_SHOPKEEPERCLONE,
-	-- behavior = HD_BEHAVIOR.BLACKKNIGHT,
-	-- health = 3,
-	-- giveitem = ENT_TYPE.ITEM_METAL_SHIELD
--- },
--- SUCCUBUS = {
-	-- master: ENT_TYPE.MONS_MONKEY,
-	-- Skin: {ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}
-	-- abilities.agro = `master uid`
--- },
--- NOTE: ANUBIS II should be a reskin of MONS_ANUBIS, detecting the scepter shots and spawning red skeletons instead.
--- ANUBIS2 = {
-	-- master: ENT_TYPE.MONS_ANUBIS,
-	-- abilities.agro = `master uid`
--- }
--- 
--- # TODO: Succubus
-	-- Once at least 1 MASK.PLAYER is within a 2 block radius(? TOTEST: Investigate in HD.), change skin and set ability_state to agro.
-	-- cycle through players and if the player has the agro ability in its inventory(?), track it and deal one damage once it leaves.
-	-- Once :as_monkey() method is merged into the main branch, set jump_timer to 0 on every frame.
-	-- Once :as_leprechaun() method is merged into the main branch, set jump_timer to 0 on every frame.
-		-- Upside to using leprechaun is a good skin option
-		-- downside is no jump_timer and preventing the gold stealing and teleporting abilities
-	-- Once :as_pet() method is merged into the main branch, half its yell_counter field to 299 if it's higher than 300.
--- NOTES:
-	--She disguises herself as a Damsel to lure the Spelunker, then ambushes them once they are in range.
-	-- If she manages to pounce on the Spelunker, she will cling to them like a Monkey and take one hit point when she jumps off.
-	-- The Succubus mimics the appearance of the currently selected damsel type, disguising herself as a female, male, dog or sloth. Regardless of the disguise, she always transforms into a demonic woman upon attacking - there are no male, canine or sloth Succubus models.
-	-- The Succubus' attack is accompanied by a loud "scare chord" sound effect that persists until she is killed.  Her most dangerous ability is to stun and push the player when she jumps off (like a monkey), and she can continue attacking the player while they are unconscious.
-
--- For HD_ENTs that include references to other HD_ENTs:
-
--- # TODO: Test/Implement Giant Frog.
-	-- Creation
-		-- Use a regular frog for the behavior
-		-- Use a giant fly for the base
-				-- PROBLEM: MONS_GIANTFLY eats frogs when near them. Determine potential alternative.
-		-- Modify the behavior system to specify which ability uid is the visible one (make all other abilities invisible)
-			-- Furthermore, modify it so you can allow scenarios like the greenknight happen;
-				-- GreenKnight: once taken damage, remove abilities. If all abilities are removed, make caveman visible
-	-- Behavior:
-		-- On move_state == 6 (jump), run a random chance to spit out a frog instead. velocityx = 0 and velocityy = 0.
-		-- When it's within a short distance of the player and when d_mov.standing_on_uid ~= -1 and when not facing the player, flip_entity()
--- GIANTFROG = {
-	-- tospawn = ENT_TYPE.MONS_GIANTFLY,
-	-- dangertype = HD_DANGERTYPE.ENEMY,
-	-- health = 8,
-	-- entitydb = ENT_TYPE.MONS_GIANTFLY,
-	-- behavior = HD_BEHAVIOR.GIANTFROG,
-	-- dim = {2.5, 2.5},
-	-- itemdrop = {
-		-- item = {ENT_TYPE.ITEM_PICKUP_SPRINGSHOES},
-		-- chance = 0.15 -- 15% (1/6.7)
-	-- }
-	-- treasuredrop = {
-		-- item = {ENT_TYPE.ITEM_SAPPHIRE}, -- # TODO: Determine which gems.
-		-- chance = 1.0
-	-- }
--- },
-HD_ENT.OLDBITEY = {
-	tospawn = ENT_TYPE.MONS_GIANTFISH,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	collisiontype = HD_COLLISIONTYPE.GIANT_FISH,
-	itemdrop = {
-		item = {HD_ENT.ITEM_IDOL},--ENT_TYPE.ITEM_IDOL},
-		chance = 1
-	}
-}
-HD_ENT.OLMEC_SHOT = {
-	tospawn = ENT_TYPE.ITEM_TIAMAT_SHOT,
-	dangertype = HD_DANGERTYPE.ENEMY,
-	kill_on_standing = HD_KILL_ON.STANDING,
-	behavior = HD_BEHAVIOR.OLMEC_SHOT,
-	itemdrop = {
-		item = {
-			HD_ENT.FROG,--ENT_TYPE.MONS_FROG,
-			HD_ENT.FIREFROG,--ENT_TYPE.MONS_FIREFROG,
-			-- HD_ENT.,--ENT_TYPE.MONS_MONKEY,
-			-- HD_ENT.,--ENT_TYPE.MONS_SCORPION,
-			-- HD_ENT.,--ENT_TYPE.MONS_SNAKE,
-			-- HD_ENT.,--ENT_TYPE.MONS_BAT
-		},
-		chance = 1.0
-	},
-	-- Enable "collides walls", uncheck "No Gravity", uncheck "Passes through objects".
-	flags = {
-		{13},
-		{4, 10}
-	},
-}
-
-TRANSITION_CRITTERS = {
-	[THEME.DWELLING] = {
-		entity = HD_ENT.CRITTER_RAT
-	},
-	[THEME.JUNGLE] = {
-		entity = HD_ENT.CRITTER_FROG
-	},
-	-- Confirm if this is in HD level transitions
-	-- [THEME.EGGPLANT_WORLD] = {
-		-- entity = HD_ENT.CRITTER_MAGGOT
-	-- },
-	-- [THEME.ICE_CAVES] = {
-		-- entity = HD_ENT.CRITTER_PENGUIN
-	-- },
-	-- [THEME.TEMPLE] = {
-		-- entity = HD_ENT.CRITTER_LOCUST
-	-- },
-}
-
 -- # TODO: For development of the new scripted level gen system, move tables/variables into here from init_onlevel() as needed.
 function init_posttile_door()
 	global_levelassembly = {}
@@ -5824,7 +5391,7 @@ end
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
-		global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
+		feelingslib.init()
 		wormtonguelib.tongue_spawned = false
 		-- other stuff
 	end
@@ -5834,7 +5401,6 @@ end
 function init_onlevel()
 	idoltrap_blocks = {}
 	tombstone_blocks = {}
-	danger_tracker = {}
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	moai_veil = nil
 	FRAG_PREVENTION_UID = nil
@@ -5853,7 +5419,6 @@ function init_onlevel()
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 	DOOR_ENDGAME_OLMEC_UID = nil
 
-	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
 	CHUNKBOOL_IDOL = false
@@ -5873,8 +5438,10 @@ function init_onlevel()
 	BOSS_STATE = nil
 	OLMEC_STATE = 0
 	
+	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
+	ghostlib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -6115,7 +5682,7 @@ function get_unlock()
 			end
 			for id, unlock_properties in pairs(unlockconditions_feeling) do
 				if (
-					feeling_check(unlock_properties.feeling) == true
+					feelingslib.feeling_check(unlock_properties.feeling) == true
 					and unlock_properties.unlocked == false
 				) then
 					-- Probably won't be overridden by theme
@@ -6251,7 +5818,7 @@ function create_door_ending(x, y, l)
 	-- Olmec/Yama Win
 	if state.theme == THEME.OLMEC then
 		set_interval(exit_olmec, 1)
-	elseif feeling_check(feelingslib.FEELING_ID.YAMA) then
+	elseif feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
 		set_interval(exit_yama, 1)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -6260,7 +5827,7 @@ end
 function create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
 		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -6480,74 +6047,12 @@ function clear_dark_level()
 		or HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING
 		or state.theme == THEME.VOLCANA
 		or state.theme == THEME.NEO_BABYLON
-		or feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
-		or feeling_check(feelingslib.FEELING_ID.UDJAT) == true
-		or feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 	) then
 		state.level_flags = clr_flag(state.level_flags, 18)
 	end
-end
-
--- -- won't set if already set to the current level or a past level
--- function feeling_set_once_future(feeling, levels, use_chance)
-	-- if ( -- don't set it if it's on the correct theme and the level is set and it's set to the current level or a past level
-		-- detect_feeling_themes(feeling) == false or
-		-- (
-			-- global_feelings[feeling].load ~= nil and
-			-- global_feelings[feeling].load <= state.level
-		-- )
-	-- ) then return false
-	-- else
-		-- return feeling_set(feeling, levels, use_chance)
-	-- end
--- end
--- won't set if the current theme doesn't match and load has already been set
-function feeling_set_once(feeling, levels)
-	if (
-		detect_feeling_themes(feeling) == false or
-		global_feelings[feeling].load ~= nil
-	) then return false
-	else
-		return feeling_set(feeling, levels)
-	end
-end
-
--- if multiple levels are passed in, a random level in the table is set
-	-- NOTE: won't set to a past level
-function feeling_set(feeling, levels)
-	chance = 1
-	if global_feelings[feeling].chance ~= nil then
-		chance = global_feelings[feeling].chance
-	end
-	if chance ~= 0 then
-		if math.random(1, chance) == 1 then
-			levels_indexed = {}
-			for _, level in ipairs(levels) do
-				if level >= state.level then
-					levels_indexed[#levels_indexed+1] = level
-				end
-			end
-			global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
-			return true
-		else return false end
-	end
-end
-
-function detect_feeling_themes(feeling)
-	for _, feeling_theme in ipairs(global_feelings[feeling].themes) do
-		if state.theme == feeling_theme then
-			return true
-		end
-	end
-	return false
-end
-
-function feeling_check(feeling)
-	if (
-		detect_feeling_themes(feeling) == true and
-		state.level == global_feelings[feeling].load
-	) then return true end
-	return false
 end
 
 -- detect offset
@@ -6566,10 +6071,10 @@ function conflictdetection_giant(hdctype, x, y, l)
 	scan_width = 1 -- check 2 across
 	scan_height = 2 -- check 3 up
 	floor_level = 1 -- default to frog
-	-- if hdctype == HD_COLLISIONTYPE.GIANT_FROG then
+	-- if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG then
 		
 	-- end
-	if hdctype == HD_COLLISIONTYPE.GIANT_SPIDER then
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER then
 		floor_level = 2 -- check ceiling
 	end
 	x_leftside = x - 1
@@ -6605,10 +6110,10 @@ function conflictdetection_floortrap(hdctype, x, y, l)
 	conflict = false
 	scan_width = 1 -- check 1 across
 	scan_height = 1 -- check the space above
-	if hdctype == HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
 		scan_width = 1 -- check 1 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
-	elseif hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
+	elseif hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end
@@ -6649,14 +6154,14 @@ function conflictdetection(hd_type, x, y, l)
 	if (
 		hd_type.collisiontype ~= nil and
 		(
-			hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
-			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			hd_type.collisiontype >= hdtypelib.HD_COLLISIONTYPE.AIR_TILE_1
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
 		)
 	) then
 		if (
-			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
 		) then
 			conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
 			if conflict == true then
@@ -6665,8 +6170,8 @@ function conflictdetection(hd_type, x, y, l)
 				offset = { 0, 0 }
 			end
 		elseif (
-			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_FROG or
-			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_SPIDER
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER
 		) then
 			side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
 			if side > 0 then
@@ -6784,7 +6289,7 @@ function entrance_force_feeling(_feeling_to_force)
 					door_exit_ent:overlaps_with(get_entity(players[i].uid)) == true and
 					players[i].state == CHAR_STATE.ENTERING
 				) then
-					feeling_set_once(_feeling_to_force, {state.level+1})
+					feelingslib.feeling_set_once(_feeling_to_force, {state.level+1})
 					break;
 				end
 			end
@@ -6900,13 +6405,13 @@ function testroom_level_1()
 				There are more enemy textures I've prepared to get some ideas across. They'll probably see a lot of
 				changes so feel free to change them. The .ase files are in src/.
 	--]]
-	-- create_hd_type(HD_ENT.SCORPIONFLY, 24, 108, LAYER.FRONT, false, 0, 0)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.SCORPIONFLY, 24, 108, LAYER.FRONT, false, 0, 0)
 	
 	--[[
 		- now that I look back on it a lot of stuff like these HD_ENT fields:
 			
 				dangertype = HD_DANGERTYPE.FLOORTRAP,
-				collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
+				collisiontype = hdtypelib.HD_COLLISIONTYPE.FLOORTRAP,
 			
 			are just overcomplicating things so it might be better to just remove and start over with some things.
 			Dangertype isn't used for anything so that can be removed, but some things like the collisiontype
@@ -6914,8 +6419,8 @@ function testroom_level_1()
 			Both the tikitrap and hangspider need to use spawn_entity_over for their creation, so maybe make an
 			HD_ENT field for a method interacting with a passed-in uid.
 	--]]
-	-- create_hd_type(HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
-	-- create_hd_type(HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
 
 
 	--[[
@@ -6924,8 +6429,8 @@ function testroom_level_1()
 			backitem, set its health, and disable its corpse. The eggsac is a similar story: we're replacing the
 			S2 maggots with wormbabies, which also have one health and no corpse.
 	--]]
-	-- create_hd_type(HD_ENT.SNAIL, 24, 110, LAYER.FRONT, false, 0, 0)
-	-- create_hd_type(HD_ENT.EGGSAC, 28, 110, LAYER.FRONT, false, 0, 0)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.SNAIL, 24, 110, LAYER.FRONT, false, 0, 0)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.EGGSAC, 28, 110, LAYER.FRONT, false, 0, 0)
 
 	--[[
 		- I've set up a bunch of procedural spawn methods to fill under the prefix `global_procedural_spawn_*`
@@ -7523,7 +7028,7 @@ local function run_spiderlair_ground_enemy_chance()
 	]]
 	local current_ground_chance = get_procedural_spawn_chance(global_spawn_procedural_spiderlair_ground_enemy)
 	if (
-		feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (
 			current_ground_chance ~= 0
 			and math.random(current_ground_chance) == 1
@@ -7606,7 +7111,7 @@ end -- # TODO: Implement method for valid tikiman spawn
 local global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", create_tikiman, is_valid_tikiman_spawn)
 local global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", create_tikiman, is_valid_tikiman_spawn)
 
-local function create_snail(x, y, l) create_hd_type(HD_ENT.SNAIL, x, y, l, false, 0, 0) end
+local function create_snail(x, y, l) hdtypelib.create_hd_type(hdtypelib.HD_ENT.SNAIL, x, y, l, false, 0, 0) end
 local function is_valid_snail_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
@@ -8111,7 +7616,7 @@ set_callback(function(room_gen_ctx)
 							template_to_set = room_template_here
 						end
 					elseif (
-						feeling_check(feelingslib.FEELING_ID.YAMA) == true
+						feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 					) then
 						if (_template_hd == genlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
 							template_to_set = ROOM_TEMPLATE.ENTRANCE
@@ -8234,8 +7739,8 @@ set_callback(function(room_gen_ctx)
 	    end
 		
 		if (
-			feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
-			or feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
+			or feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			or state.theme == THEME.NEO_BABYLON
 		) then
 			for x = 0, level_w - 1, 1 do
@@ -8245,13 +7750,13 @@ set_callback(function(room_gen_ctx)
 
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
-				if feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 0, 0)
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
 				else
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
@@ -8266,19 +7771,19 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 0, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 0, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
@@ -8295,14 +7800,14 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_jiangshi, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.HIVE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hive_bee, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_piranha, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
@@ -8347,27 +7852,27 @@ set_callback(function(room_gen_ctx)
 				end
 				
 				-- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
-				-- if feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
+				-- if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
 				-- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				-- else
 				-- end
 
-				if feeling_check(feelingslib.FEELING_ID.UFO) == false then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_ufo_turret, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mshipentrance_turret, 0)
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.ANUBIS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 0, 0)
 				end
 
 				if state.theme == THEME.VOLCANA then
-					if feeling_check(feelingslib.FEELING_ID.YAMA) == true then
+					if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
 						room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_imp, 0)
@@ -8391,7 +7896,7 @@ set_callback(function(room_gen_ctx)
 				end
 
 				--[[ procedural/extra spawn assign template
-				if feeling_check(feelingslib.FEELING_ID.) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				else
@@ -8430,7 +7935,7 @@ set_callback(function()
 			if (
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
-				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					local block_uid = tombstone_blocks[math.random(#tombstone_blocks)]
 					local x, y, l = get_position(block_uid)
 					
@@ -8440,7 +7945,7 @@ set_callback(function()
 
 					embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
 				end
-				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
 					for _, shopkeeper_uid in pairs(shopkeeper_uids) do
 						get_entity(shopkeeper_uid).has_key = false
@@ -8479,7 +7984,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					local w, h = 30, 28
 					local x, y, l = 17.5, 104.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8491,7 +7996,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.YAMA) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
 					local w, h = 6, 8
 					local x, y, l = 22.5, 94.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8562,8 +8067,8 @@ set_callback(function()
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				if (
-					feeling_check(feelingslib.FEELING_ID.SNOW)
-					or feeling_check(feelingslib.FEELING_ID.SNOWING)
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
+					or feelingslib.feeling_check(feelingslib.FEELING_ID.SNOWING)
 				) then
 					local floors = get_entities_by_type(ENT_TYPE.FLOOR_GENERIC)
 					for _, floor_uid in pairs(floors) do
@@ -8621,7 +8126,6 @@ set_callback(function()
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
 	-- pre_tile ON.START stuff
-	global_feelings = nil
 	HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
 
 	set_interval(entrance_tutorial, 1)
@@ -8652,8 +8156,6 @@ end, ON.TITLE)
 -- ON.START
 set_callback(function()
 	onstart_init_options()
-	-- global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
-	
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
 	CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
@@ -8661,7 +8163,6 @@ end, ON.START)
 
 set_callback(function()
 	-- pre_tile ON.START stuff
-	global_feelings = nil
 	POSTTILE_STARTBOOL = false
 	-- HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
 	-- DOOR_TESTING_UID = nil
@@ -8682,9 +8183,16 @@ function levelcreation_init()
 	init_onlevel()
 	unlockslib.unlocks_load()
 	-- onlevel_levelrules()
-	onlevel_set_feelings()
+	
+	if (
+		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
+		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
+		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
+	) then
+		feelingslib.onlevel_set_feelings()
+	end
 	clear_dark_level()
-	onlevel_set_feelingToastMessage()
+	feelingslib.onlevel_set_feelingToastMessage()
 	-- Method to write override_path setrooms into path and levelcode
 	--ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 end
@@ -8722,7 +8230,7 @@ function assign_s2_level_height()
 		end
 	
 		-- set height for rushing water
-		if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
+		if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 			new_height = 5
 		end
 		state.width = new_width
@@ -8746,7 +8254,7 @@ end
 
 function set_blackmarket_shoprooms(room_gen_ctx)
 
-	if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
 		UNLOCK_WI, UNLOCK_HI = 0, 0
@@ -8821,12 +8329,10 @@ set_callback(function()
 	onlevel_testroom()
 
 	onlevel_boss_init()
-	onlevel_toastfeeling()
+	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
 
 set_callback(function()
-	onframe_manage_dangers()
-	onframe_ghosts()
 	onframe_idoltrap()
 	onframe_acidpoison()
 	onframe_boss()
@@ -8835,7 +8341,6 @@ end, ON.FRAME)
 set_callback(function()
 	onguiframe_ui_info_boss()			-- debug
 	onguiframe_ui_info_boulder()		--
-	onguiframe_ui_info_feelings()		--
 	onguiframe_ui_info_path()			--
 	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
@@ -8844,7 +8349,7 @@ end, ON.GUIFRAME)
 
 function onstart_init_options()	
 	botdlib.OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
-	if options.hd_og_ghost_time_disable == false then GHOST_TIME = 9000 end
+	if options.hd_og_ghost_time_disable == false then ghostlib.GHOST_TIME = 9000 end
 
 	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
 	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
@@ -8856,10 +8361,10 @@ function onstart_init_methods()
 	if (
 		HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 	) then
-		set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
+		ghostlib.set_spawn_times()
 	elseif(
 		HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL
-		or feeling_check(feelingslib.FEELING_ID.YAMA) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 	) then
 		set_ghost_spawn_times(-1, -1)
 	end
@@ -9186,7 +8691,7 @@ function onlevel_levelrules()
 end
 
 function onlevel_create_impostorlake()
-	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 		local x, y = 22.5, 88.5--80.5
 		local w, h = 40, 12
 		spawn_impostor_lake(
@@ -9310,7 +8815,7 @@ function onlevel_ankh_respawn()
 			local cb_moai_diamond = -1
 			local cb_moai_hedjet = -1
 			-- # TODO: Investigate if breaking/teleporting into the Moai in HD disables being able to get the hedjet.
-			if feeling_check(feelingslib.FEELING_ID.MOAI) == true then
+			if feelingslib.feeling_check(feelingslib.FEELING_ID.MOAI) == true then
 				cb_moai_diamond = set_interval(function()
 					if players_in_moai() then
 						kill_entity(moai_veil)
@@ -9426,8 +8931,8 @@ function onlevel_decorate_trees()
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
 			if (
-				feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
-				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+				feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
+				feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
 			) then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
@@ -9539,7 +9044,7 @@ local removed_embedded_currencies = {
 -- 		if (
 -- 			state.theme ~= THEME.NEO_BABYLON
 -- 			and state.theme ~= THEME.EGGPLANT_WORLD
--- 			-- and (feeling_check(feelingslib.FEELING_ID.YAMA) == false)
+-- 			-- and (feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false)
 -- 		) then
 -- 			return
 -- 		end
@@ -9686,201 +9191,6 @@ function cutscene_move_cavemen()
 	end
 end
 
--- Set level feelings (not to be confused with `feeling_set`)
-function onlevel_set_feelings()
-	if (
-		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
-		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
-		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
-	) then
-
-		if state.level == 1 then
-			global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
-		end
-
-		-- Vaults
-		if state.theme ~= THEME.VOLCANA then
-			feeling_set_once(feelingslib.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
-		elseif state.theme == THEME.TEMPLE then
-			feeling_set_once(feelingslib.FEELING_ID.VAULT, {1, 2, 3})
-		end
-		
-		--[[
-			Mines
-		--]]
-		if state.theme == THEME.DWELLING then
-			-- placing chest and key on levels 2..4
-			if state.level == 2 then
-				feeling_set_once(feelingslib.FEELING_ID.UDJAT, {2, 3, 4})
-			end
-
-			if (
-				state.level >= 3
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.SPIDERLAIR, {state.level})
-			end
-
-			-- spiderlair and snakepit cannot happen at the same time
-			if (
-				feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
-				and state.level ~= 1
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.SNAKEPIT, {state.level})
-			end
-		end
-		--[[
-			Jungle
-		--]]
-		if state.theme == THEME.JUNGLE then
-
-			if state.level == 1 then
-				feeling_set_once(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
-			end
-
-			-- Restless cannot happen on haunted castle
-			if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false then
-				feeling_set_once(feelingslib.FEELING_ID.RESTLESS, {state.level})
-			end
-
-			-- Haunted Castle and Black Market cannot have rushing water nor tikivillage
-			if (
-				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
-				and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.RUSHING_WATER, {state.level})
-				
-				-- tikivillage levels cannot be restless
-				-- tikivillage and rushing water cannot happen at the same time
-				if (
-					feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
-					feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
-				) then
-					feeling_set_once(feelingslib.FEELING_ID.TIKIVILLAGE, {state.level})
-				end
-			end
-		end
-		
-		-- Worm Tongue
-		if (
-			wormtonguelib.tongue_spawned == false
-			and state.level == 1
-			and (
-				state.theme == THEME.JUNGLE or
-				state.theme == THEME.ICE_CAVES
-			)
-			and feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
-		) then
-			feeling_set_once(feelingslib.FEELING_ID.WORMTONGUE, {1})
-			wormtonguelib.tongue_spawned = true
-		end
-
-		--[[
-			Ice Caves
-		--]]
-		if state.theme == THEME.ICE_CAVES then
-			
-			feeling_set_once(feelingslib.FEELING_ID.SNOW, {state.level})
-
-			-- # TODO: Exception for MOAI spawn:
-				-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
-			if state.level == 2 then
-				feeling_set_once(feelingslib.FEELING_ID.MOAI, {2, 3})
-			end
-			
-			if state.level == 4 then
-				if global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
-					feeling_set_once(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
-				else
-					global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-					feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
-				end
-				-- This level feeling only, and always, occurs on level 3-4.
-					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
-					-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
-					-- Only available once in a run
-			end
-			
-			if (
-				feeling_check(feelingslib.FEELING_ID.MOAI) == false
-				and state.level ~= 4
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
-			end
-			
-			-- # TODO: Verify exactly when UFO is allowed to spawn
-			if (
-				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
-				and state.level ~= 4
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.UFO, {state.level})
-			end
-			
-			-- # TODO: Verify exactly when pools are allowed to spawn
-			if (
-				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
-				and feeling_check(feelingslib.FEELING_ID.UFO) == false
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.ICE_CAVES_POOL, {state.level})
-			end
-		end
-		--[[
-			Temple
-		--]]
-		if state.theme == THEME.TEMPLE then
-			feeling_set_once(feelingslib.FEELING_ID.SACRIFICIALPIT, {state.level})
-		end
-		
-		-- Currently hardcoded but keeping this here just in case
-		--[[
-			Hell
-		--]]
-		-- if state.theme == THEME.VOLCANA and state.level == 1 then
-			-- feeling_set(feelingslib.FEELING_ID.VLAD, {state.level})
-		-- end
-	end
-end
-
-function onlevel_set_feelingToastMessage()
-	-- theme message priorities are here (ie; rushingwater over restless)
-	-- NOTES:
-		-- Black Market, COG and Beehive are currently handled by the game
-	
-	loadchecks = commonlib.TableCopy(global_feelings)
-	
-	n = #loadchecks
-	for feelingname, loadcheck in pairs(loadchecks) do
-		if (
-			-- detect_feeling_themes(feelingname) == false or
-			-- (
-				-- detect_feeling_themes(feelingname) == true and
-				-- (
-					-- (loadcheck.load == nil or loadcheck.message == nil) or
-					-- (feeling_check(feelingname))
-				-- )
-			-- )
-			feeling_check(feelingname) == false
-		) then loadchecks[feelingname] = nil end
-	end
-	loadchecks = commonlib.CompactList(loadchecks, n)
-	
-	MESSAGE_FEELING = nil
-	for feelingname, feeling in pairs(loadchecks) do
-		-- Message Overrides may happen here:
-		-- For example:
-			-- if feelingname == feelingslib.FEELING_ID.RUSHING_WATER and feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then break end
-		MESSAGE_FEELING = feeling.message
-	end
-end
-
-function onlevel_toastfeeling()
-	if (
-		MESSAGE_FEELING ~= nil and
-		options.hd_debug_feelingtoast_disable == false
-	) then
-		toast(MESSAGE_FEELING)
-	end
-end
-
 set_callback(function(text)
     if (
 		text == "Your voice echoes in here..."
@@ -9980,7 +9290,7 @@ function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
 		IDOLTRAP_TRIGGER = true
-		if feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
+		if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
 			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
@@ -9999,7 +9309,7 @@ function onframe_idoltrap()
 				end, idoltrap_timeout*2)
 			end
 		elseif state.theme == THEME.TEMPLE then
-			if feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
+			if feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
 				-- Break all 4 blocks under it at once
 				for i = 1, #idoltrap_blocks, 1 do
 					kill_entity(idoltrap_blocks[i])
@@ -10144,269 +9454,6 @@ function players_in_moai()
 	return #players_in_moai ~= 0
 end
 
--- Specific to jungle; replace any jungle danger currently submerged in water with a tadpole.
--- Used to be part of onlevel_dangers_replace().
-function enttype_replace_danger(enttypes, hd_type, _vx, _vy)
-	
-	dangers_uids = get_entities_by_type(enttypes)
-	for _, danger_uid in ipairs(dangers_uids) do
-		danger_replace(danger_uid, hd_type, false, _vx, _vy)
-	end
-end
-
--- DANGER MODIFICATIONS - ON.FRAME
--- Massive enemy behavior handling method
-function onframe_manage_dangers()
-	n = #danger_tracker
-	for i, danger in ipairs(danger_tracker) do
-		danger_mov = get_entity(danger.uid)
-		killbool = false
-		if danger_mov == nil then
-			killbool = true
-		elseif danger_mov ~= nil then
-			danger_mov = get_entity(danger.uid):as_movable()
-			danger.x, danger.y, danger.l = get_position(danger.uid)
-			if danger.behavior ~= nil then
-				-- # IDEA: Enemy Behavior Ideas
-				-- for i, enemy in ipairs(get_entities_by_type({ENT_TYPE.MONS_TADPOLE})) do
-				-- If enemy is tadpole
-					-- if haunted level then
-						-- - for each check what animation frame it's on and replace following frames:
-						-- - 209-213 -> 227-231
-						-- - 214 -> 215
-						-- - 106-111 -> 91-96
-						-- - 112 -> 127
-					-- end
-				-- elseif enemy is cloned_shopkeeper and theme == jungle (and haunted?) then
-					-- change frames to black knight
-					-- if weapon in inventory is shotgun(may use a set_timeout to let it spawn first)
-						-- kill shotgun
-						-- spawn shield
-						-- give shield
-					-- end
-				-- elseif enemy is caveman and theme == jungle (and haunted?) then
-					-- change frames to green_knight
-					-- if dead and uid is still on a global array (TODO)
-						-- spawn green gib effect
-						-- remove uid from global array
-					-- end
-				-- end
-				-- if danger.hd_type == HD_ENT.SCORPIONFLY then
-					-- if danger.behavior.abilities ~= nil then
-					
-						-- "ability_uid" is an entity that's "duct-taped" to the main entity to allow it to adopt it's abilities.
-						-- for _, ability_uid in ipairs(danger.behavior.abilities) do
-							-- message("#danger.behavior.abilities: " .. tostring(#danger.behavior.abilities))
-							-- if danger.behavior.abilities.agro ~= nil then
-								if danger.behavior.imp_uid ~= nil then--behavior.abilities.imp_uid ~= nil then
-									if danger_mov.health == 1 then
-										-- **If SCORPIONFLY is killed, kill all abilities
-											-- **Move this into its own method
-										-- kill all abilities
-										-- for _, behavior_tokill in ipairs(danger.behavior.abilities) do
-											-- if #behavior_tokill > 0 and behavior_tokill[1] ~= nil then
-												move_entity(danger.behavior.imp_uid, 0, 0, 0, 0)--move_entity(behavior_tokill[1], 0, 0, 0, 0)
-												danger.behavior.imp_uid = nil--behavior_tokill[1] = nil
-											-- end
-										-- end
-									else
-										-- permanent agro
-										-- **SCORPIONFLY -> Adopt S2's Monkey agro distance.
-											-- change the if statement below so it's detecting if the IMP is agro'd, not the scorpion.
-										-- **Use chased_target instead.
-											-- get_entity():as_chasingmonster chased_target_uid
-										if danger_mov.move_state == 5 and danger.behavior.agro == false then danger.behavior.agro = true end
-										-- if no idle ability, toggle between agro and default
-										-- if danger.behavior.abilities.idle == nil then
-											behavior_toggle(
-												danger.behavior.imp_uid,--behavior.abilities.agro[1],
-												danger.uid,
-												commonlib.TableConcat({danger.uid}, {danger.behavior.imp_uid}),--commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
-												danger.behavior.agro
-											)
-										-- end
-									end
-								end
-							-- end
-							-- if it has an idle behavior and agro == false then set it as agro
-							-- if danger.behavior.abilities.idle ~= nil then
-								-- -- WARNING: This doesn't consider the scenario of abilities.agro.imp_uid being nil.
-								-- -- However, this shouldn't be an issue, as neither is going to be nil when the other is not.
-								-- if danger.behavior.abilities.idle[1] ~= nil then
-									-- behavior_toggle(
-										-- danger.behavior.abilities.agro[1],
-										-- danger.behavior.abilities.idle[1],
-										-- commonlib.TableConcat({danger.uid}, commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
-										-- danger.behavior.agro
-									-- )
-								-- end	
-							-- end
-						-- end
-						
-					-- end
-				-- end
-				if danger.behavior.velocity_set ~= nil then
-					if danger.behavior.velocity_set.timer > 0 then
-						danger.behavior.velocity_set.timer = danger.behavior.velocity_set.timer - 1
-					else
-						if danger.behavior.velocity_set.velocityx ~= nil then
-							danger_mov.velocityx = danger.behavior.velocity_set.velocityx
-						end
-						if danger.behavior.velocity_set.velocityy ~= nil then
-							danger_mov.velocityy = danger.behavior.velocity_set.velocityy
-						end
-						-- message("Olmec behavior 'YEET' velocityx: " .. tostring(danger_mov.velocityx))
-						danger.behavior.velocity_set = nil
-					end
-				end
-			end
-
-			if (
-				danger.hd_type.kill_on_standing ~= nil and
-				(
-					danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING and
-					danger_mov.standing_on_uid ~= -1
-				) or
-				(
-					danger.hd_type.kill_on_standing == HD_KILL_ON.STANDING_OUTOFWATER and
-					danger_mov.standing_on_uid ~= -1 and
-					test_flag(danger_mov.more_flags, 11) == false
-				)
-			) then
-				killbool = true
-			end
-		end
-		if killbool == true then
-			-- if there's no script-enduced death and we're left with a nil response to uid, track entity coordinates with HD_BEHAVIOR and upon a nil response set killbool in the danger_mov == nil statement. That should allow spawning the item here.
-			-- This should also alow for removing all enemy behaviors.
-			if danger.behavior ~= nil then
-				if danger.behavior.imp_uid ~= nil then
-					move_entity(danger.behavior.imp_uid, 0, 0, 0, 0)
-				end
-			end
-			if danger.hd_type.itemdrop ~= nil then -- if dead and has possible item drops
-				if danger.hd_type.itemdrop.item ~= nil and #danger.hd_type.itemdrop.item > 0 then
-					if (
-						danger.hd_type.itemdrop.chance == nil or
-						(
-							danger.hd_type.itemdrop.chance ~= nil and
-							-- danger.itemdrop.chance > 0 and
-							math.random() <= danger.hd_type.itemdrop.chance
-						)
-					) then
-						itemdrop = danger.hd_type.itemdrop.item[math.random(1, #danger.hd_type.itemdrop.item)]
-						if itemdrop == HD_ENT.ITEM_CRYSTALSKULL then
-							create_ghost()
-						end
-						create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)--spawn(itemdrop, etc)
-					end
-				end
-			end
-			if danger.hd_type.treasuredrop ~= nil then -- if dead and has possible item drops
-				if danger.hd_type.treasuredrop.item ~= nil and #danger.hd_type.treasuredrop.item > 0 then
-					if (
-						danger.hd_type.treasuredrop.chance == nil or
-						(
-							danger.hd_type.treasuredrop.chance ~= nil and
-							-- danger.treasuredrop.chance > 0 and
-							math.random() <= danger.hd_type.treasuredrop.chance
-						)
-					) then
-						itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
-						create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
-					end
-				end
-			end
-			kill_entity(danger.uid)
-			danger_tracker[i] = nil
-		end
-	end
-	-- compact danger_tracker
-	commonlib.CompactList(danger_tracker, n)
-end
-
--- if enabled == true, enable target_uid and disable master
--- if enabled == false, enable master_uid and disable behavior
--- loop through and disable behavior_uids unless it happeneds to be the behavior or the master uid
-function behavior_toggle(target_uid, master_uid, behavior_uids, enabled)
-	master_mov = get_entity(master_uid)
-	if master_mov ~= nil then
-		behavior_e = get_entity(target_uid)
-		if behavior_e ~= nil then
-			if enabled == true then
-				-- behavior_e.flags = clr_flag(behavior_e.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)-- enable ai/physics of behavior
-				behavior_set_facing(target_uid, master_uid)
-				-- bx, by, _ = get_position(target_uid)
-				-- move_entity(master_uid, bx, by, 0, 0)
-				behavior_set_position(target_uid, master_uid)
-			else
-				-- behavior_e.flags = set_flag(behavior_e.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)-- disable ai/physics of behavior
-				-- x, y, _ = get_position(master_uid)
-				-- move_entity(target_uid, x, y, 0, 0)
-				behavior_set_position(master_uid, target_uid)
-			end
-			for _, other_uid in ipairs(behavior_uids) do
-				if other_uid ~= master_uid and other_uid ~= target_uid then
-					-- other_e = get_entity(other_uid)
-					-- if other_e ~= nil then
-						-- other_e.flags = set_flag(other_e.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)-- disable ai/physics of behavior
-					-- end
-					behavior_set_position(master_uid, other_uid)
-				end
-			end
-		else
-			message("behavior_toggle(): behavior is nil")
-		end
-	else
-		message("behavior_toggle(): master is nil")
-	end
-end
-
-function behavior_set_position(uid_toadopt, uid_toset)
-	x, y, _ = get_position(uid_toadopt)
-	move_entity(uid_toset, x, y, 0, 0)
-end
-
-function behavior_set_facing(behavior_uid, master_uid)
-	behavior_flags = get_entity_flags(behavior_uid)
-	master_mov = get_entity(master_uid)
-	if master_mov ~= nil then
-		if test_flag(behavior_flags, ENT_FLAG.FACING_LEFT) then
-			master_mov.flags = set_flag(master_mov.flags, ENT_FLAG.FACING_LEFT)
-		else
-			master_mov.flags = clr_flag(master_mov.flags, ENT_FLAG.FACING_LEFT)
-		end
-	else
-		message("behavior_set_facing(): master is nil")
-	end
-end
-
-function onframe_ghosts()
-	ghost_uids = get_entities_by_type({
-		ENT_TYPE.MONS_GHOST
-	})
-	ghosttoset_uid = 0
-	for _, found_ghost_uid in ipairs(ghost_uids) do
-		accounted = 0
-		for _, cur_ghost_uid in ipairs(DANGER_GHOST_UIDS) do
-			if found_ghost_uid == cur_ghost_uid then accounted = cur_ghost_uid end
-			
-			ghost = get_entity(found_ghost_uid):as_ghost()
-			-- message("timer: " .. tostring(ghost.split_timer) .. ", v_mult: " .. tostring(ghost.velocity_multiplier))
-			if (options.hd_og_ghost_nosplit_disable == false) then ghost.split_timer = 0 end
-		end
-		if accounted == 0 then ghosttoset_uid = found_ghost_uid end
-	end
-	if ghosttoset_uid ~= 0 then
-		ghost = get_entity(ghosttoset_uid):as_ghost()
-		
-		if (options.hd_og_ghost_slow_enable == true) then ghost.velocity_multiplier = GHOST_VELOCITY end
-		if (options.hd_og_ghost_nosplit_disable == false) then ghost.split_timer = 0 end
-		
-		DANGER_GHOST_UIDS[#DANGER_GHOST_UIDS+1] = ghosttoset_uid
-	end
-end
-
 function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later
 	c_logics = get_entities_by_type(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR)
 	if #c_logics > 0 then
@@ -10469,247 +9516,9 @@ function onframe_olmec_behavior()
 end
 
 function olmec_attack(x, y, l)
-	create_hd_type(HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
 end
 
-function danger_track(uid_to_track, x, y, l, hd_type)
-	danger_object = {
-		["uid"] = uid_to_track,
-		["x"] = x, ["y"] = y, ["l"] = l,
-		["hd_type"] = hd_type,
-		["behavior"] = create_hd_behavior(hd_type.behavior)
-	}
-	danger_tracker[#danger_tracker+1] = danger_object
-end
-
-function create_hd_behavior(behavior)
-	decorated_behavior = {}
-	if behavior ~= nil then
-		decorated_behavior = commonlib.TableCopy(behavior)
-		-- if behavior.abilities ~= nil then
-			if behavior == HD_BEHAVIOR.SCORPIONFLY then
-				-- **Ask the discord if it's actually possible to check if a variable exists even if it's set to nil
-				-- The solution is probably assigning ability parameters by setting the variable to -1
-					-- (which I CAN do in this situation considering it's a uid field)
-				-- ACTUALLYYYYYYYYYYYY The solution is probably using string indexes(I'm probably butchuring the terminology)
-					-- For instance; "for string, value in pairs(decorated_behavior.abilities) do if string == "imp_uid" then message("IMP!!") end end"
-				
-				-- if behavior.abilities.agro.imp_uid ~= nil then
-					
-					decorated_behavior.imp_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)--decorated_behavior.abilities.agro.imp_uid = spawn(ENT_TYPE.MONS_IMP, x, y, l, 0, 0)
-					applyflags_to_uid(decorated_behavior.imp_uid, {{ 1, 6, 25 }})
-				
-				-- end
-				-- if behavior.abilities.idle.mosquito_uid ~= nil then
-					
-					-- decorated_behavior.abilities.idle.mosquito_uid = spawn(ENT_TYPE.MONS_MOSQUITO, x, y, l, 0, 0)
-					-- ability_e = get_entity(decorated_behavior.abilities.idle.mosquito_uid)
-					-- if options.hd_debug_scripted_enemies_show == false then
-						-- ability_e.flags = set_flag(ability_e.flags, ENT_FLAG.INVISIBLE)
-					-- end
-					-- ability_e.flags = set_flag(ability_e.flags, ENT_FLAG.TAKE_NO_DAMAGE)
-					-- ability_e.flags = set_flag(ability_e.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
-					
-				-- end
-				
-					-- message("#decorated_behavior.abilities: " .. tostring(#decorated_behavior.abilities))
-			end
-			if behavior == HD_BEHAVIOR.OLMEC_SHOT then
-				xvel = math.random(7, 30)/100
-				yvel = math.random(5, 10)/100
-				if math.random() >= 0.5 then xvel = -1*xvel end
-				decorated_behavior.velocity_set.velocityx = xvel
-				decorated_behavior.velocity_set.velocityy = yvel
-			end
-		-- end
-	end
-	return decorated_behavior
-end
-
--- velocity defaults to 0
-function create_hd_type_notrack(hd_type, x, y, l, _vx, _vy)
-	vx = _vx or 0
-	vy = _vy or 0
-	uid = -1
-	if (hd_type.collisiontype ~= nil and (hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL)) then
-		floor_uid = detection_floor(x, y, l, 0, -1, 0.5)
-		if floor_uid ~= -1 then
-			uid = spawn_entity_over(hd_type.tospawn, floor_uid, 0, 1)
-			if hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL then
-				s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
-				if test_flag(state.level_flags, 18) == true then
-					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, 0.29, 0.26)
-					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, -0.29, 0.26)
-				end
-			end
-		end
-	else
-		uid = spawn(hd_type.tospawn, x, y, l, vx, vy)
-	end
-	return uid
-end
-
-function danger_applydb(uid, hd_type)
-	s_mov = get_entity(uid):as_movable()
-	x, y, l = get_position(uid)
-	
-	if hd_type.removeinventory ~= nil then
-		if hd_type.removeinventory == HD_REMOVEINVENTORY.SNAIL then
-			set_timeout(function()
-				hd_type = HD_ENT.SNAIL
-				remove_entitytype_inventory(
-					hd_type.removeinventory.inventory_ownertype,
-					hd_type.removeinventory.inventory_entities
-				)
-			end, 5)
-		elseif hd_type.removeinventory == HD_REMOVEINVENTORY.SCORPIONFLY then
-			set_timeout(function()
-				hd_type = HD_ENT.SCORPIONFLY
-				remove_entitytype_inventory(
-					hd_type.removeinventory.inventory_ownertype,
-					hd_type.removeinventory.inventory_entities
-				)
-			end, 5)
-		end
-	end
-	if hd_type.replaceoffspring ~= nil then
-		if hd_type.replaceoffspring == HD_REPLACE.EGGSAC then
-			set_interval(function() enttype_replace_danger({ ENT_TYPE.MONS_GRUB }, HD_ENT.WORMBABY, 0, 0) end, 1)
-		end
-	end
-	
-	if hd_type == HD_ENT.HANGSPIDER then
-		spawn(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0)
-		spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0)
-	end
-
-	if hd_type.color ~= nil and #hd_type.color == 3 then
-		s_mov.color.r = hd_type.color[1]
-		s_mov.color.g = hd_type.color[2]
-		s_mov.color.b = hd_type.color[3]
-	end
-	if hd_type.health ~= nil and hd_type.health > 0 then
-		s_mov.health = hd_type.health
-	end
-	if hd_type.dim ~= nil and #hd_type.dim == 2 then
-		s_mov.width = hd_type.dim[1]
-		s_mov.height = hd_type.dim[2]
-	end
-	if hd_type.hitbox ~= nil and #hd_type.hitbox == 2 then
-		s_mov.hitboxx = hd_type.hitbox[1]
-		s_mov.hitboxy = hd_type.hitbox[2]
-	end
-	-- # TODO: Move flags into a table of pairs(flagnumber, bool)
-	if hd_type.flags ~= nil then
-		applyflags_to_uid(uid, hd_type.flags)
-	end
-
-	-- DANGER DB MODIFICATIONS
-	-- Modifications that use methods that are only needed to be applied once
-	-- This includes:
-		-- EntityDB properties
-	if hd_type.entitydb ~= nil then
-		uid = spawn_entity(hd_type.entitydb, 0, 0, LAYER.FRONT, 0, 0)
-		s_mov = get_entity(uid)
-	end
-	if hd_type.health_db ~= nil and hd_type.health_db > 0 then
-		s_mov.type.life = hd_type.health_db
-	end
-	if hd_type.sprint_factor ~= nil and hd_type.sprint_factor >= 0 then
-		s_mov.type.sprint_factor = hd_type.sprint_factor
-	end
-	if hd_type.max_speed ~= nil and hd_type.max_speed >= 0 then
-		s_mov.type.max_speed = hd_type.max_speed
-	end
-	if hd_type.jump ~= nil and hd_type.jump >= 0 then
-		s_mov.type.jump = hd_type.jump
-	end
-	if hd_type.dim_db ~= nil and #hd_type.dim_db == 2 then
-		s_mov.type.width = hd_type.dim[1]
-		s_mov.type.height = hd_type.dim[2]
-	end
-	if hd_type.damage ~= nil and hd_type.damage >= 0 then
-		s_mov.type.damage = hd_type.damage
-	end
-	if hd_type.acceleration ~= nil and hd_type.acceleration >= 0 then
-		s_mov.type.acceleration = hd_type.acceleration
-	end
-	if hd_type.friction ~= nil and hd_type.friction >= 0 then
-		s_mov.type.friction = hd_type.friction
-	end
-	if hd_type.weight ~= nil and hd_type.weight >= 0 then
-		s_mov.type.weight = hd_type.weight
-	end
-	if hd_type.elasticity ~= nil and hd_type.elasticity >= 0 then
-		s_mov.type.elasticity = hd_type.elasticity
-	end
-	if hd_type.leaves_corpse_behind ~= nil then
-		s_mov.type.leaves_corpse_behind = hd_type.leaves_corpse_behind
-	end
-	
-	apply_entity_db(uid)
-end
-
--- velocity defaults to uid's
-function danger_replace(uid, hd_type, collision_detection, _vx, _vy)
-	uid_to_track = uid
-	d_mov = get_entity(uid_to_track):as_movable()
-	vx = _vx or d_mov.velocityx
-	vy = _vy or d_mov.velocityx
-	
-	x, y, l = get_position(uid_to_track)
-	
-	d_type = get_entity(uid_to_track).type.id
-	
-	offset_collision = conflictdetection(hd_type, x, y, l)
-	if collision_detection == true and offset_collision == nil then
-		offset_collision = nil
-		uid_to_track = -1
-		move_entity(uid, 0, 0, 0, 0)
-	elseif collision_detection == false then
-		offset_collision = { 0, 0 }
-	end
-	if offset_collision ~= nil then
-		if (hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type) then
-			offset_spawn_x, offset_spawn_y = 0, 0
-			if hd_type.offset_spawn ~= nil then
-				offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
-			end
-			uid_to_track = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, vx, vy)
-			
-			move_entity(uid, 0, 0, 0, 0)
-		else -- don't replace, apply velocities to and track what you normally would replace
-			d_mov.velocityx = vx
-			d_mov.velocityy = vy
-			uid_to_track = uid
-		end
-	end
-
-	if uid_to_track ~= -1 then 
-		danger_applydb(uid_to_track, hd_type)
-		danger_track(uid_to_track, x, y, l, hd_type)
-	end
-end
-
--- velocity defaults to 0 (by extension of `create_hd_type_notrack()`)
-function create_hd_type(hd_type, x, y, l, collision_detection, _vx, _vy)
-	offset_collision = { 0, 0 }
-	if collision_detection == true then
-		offset_collision = conflictdetection(hd_type, x, y, l)
-	end
-	if offset_collision ~= nil then
-		offset_spawn_x, offset_spawn_y = 0, 0
-		if hd_type.offset_spawn ~= nil then
-			offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
-		end
-		uid = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
-		if uid ~= -1 then
-			danger_applydb(uid, hd_type)
-			danger_track(uid, x, y, l, hd_type)
-			return uid
-		end
-	end
-end
 
 -- # TODO: Revise `applyflags_to_*` method's `flags` parameter.
 	-- From this:
@@ -10751,27 +9560,6 @@ function applyflags_to_quest(flags)
 			end
 		end
 	else message("No quest flags") end
-end
-
-function applyflags_to_uid(uid_assignto, flags)
-	if #flags > 0 then
-		ability_e = get_entity(uid_assignto)
-		flags_set = flags[1]
-		for _, flag in ipairs(flags_set) do
-			if (
-				flag ~= 1 or
-				(flag == 1 and options.hd_debug_scripted_enemies_show == false)
-			) then
-				ability_e.flags = set_flag(ability_e.flags, flag)
-			end
-		end
-		if #flags > 1 then
-			flags_clear = flags[2]
-			for _, flag in ipairs(flags_clear) do
-				ability_e.flags = clr_flag(ability_e.flags, flag)
-			end
-		end
-	else message("No flags") end
 end
 
 function onframe_boss_wincheck()
@@ -10868,47 +9656,6 @@ function onguiframe_ui_info_boulder()
 				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
 			end
 		end
-	end
-end
-
-function onguiframe_ui_info_feelings()
-	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		text_x = -0.95
-		text_y = -0.35
-		white = rgba(255, 255, 255, 255)
-		green = rgba(55, 200, 75, 255)
-		
-		text_levelfeelings = "No Level Feelings"
-		feelings = 0
-		
-		for feelingname, feeling in pairs(global_feelings) do
-			if feeling_check(feelingname) == true then
-				feelings = feelings + 1
-			end
-		end
-		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
-		
-		draw_text(text_x, text_y, 0, text_levelfeelings, white)
-		text_y = text_y-0.035
-		color = white
-		if MESSAGE_FEELING ~= nil then color = green end
-		text_message_feeling = ("MESSAGE_FEELING: " .. tostring(MESSAGE_FEELING))
-		draw_text(text_x, text_y, 0, text_message_feeling, color)
-		text_y = text_y-0.04
-		for feelingname, feeling in pairs(global_feelings) do
-			color = white
-			text_message = ""
-			
-			feeling_bool = feeling_check(feelingname)
-			if feeling.message ~= nil then text_message = (": \"" .. feeling.message .. "\"") end
-			if feeling_bool == true then color = green end
-			
-			text_feeling = (feelingname) .. text_message
-			
-			draw_text(text_x, text_y, 0, text_feeling, color)
-			text_y = text_y-0.032
-		end
-
 	end
 end
 
@@ -11017,7 +9764,7 @@ function level_generation_method_side()
 	-- feelings
 	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 		if (
-			feeling_check(feeling) == true and
+			feelingslib.feeling_check(feeling) == true and
 			feelingContent.rooms ~= nil and
 			feelingContent.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
 		) then
@@ -11045,7 +9792,7 @@ function level_generation_method_side()
 					end
 					for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 						if (
-							feeling_check(feeling) == true and
+							feelingslib.feeling_check(feeling) == true and
 							feelingContent.chunkRules ~= nil and
 							feelingContent.chunkRules.rooms ~= nil and
 							feelingContent.chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
@@ -11064,7 +9811,7 @@ function level_generation_method_side()
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
-										feeling_check(feeling) == true and
+										feelingslib.feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
 										feelingContent.rooms[genlib.HD_SUBCHUNKID.ALTAR] ~= nil
 									) then
@@ -11088,7 +9835,7 @@ function level_generation_method_side()
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
-										feeling_check(feeling) == true and
+										feelingslib.feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
 										feelingContent.rooms[genlib.HD_SUBCHUNKID.IDOL] ~= nil
 									) then
@@ -11100,11 +9847,11 @@ function level_generation_method_side()
 								end
 								levelcode_inject_roomcode(
 									(
-										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) and
 										genlib.HD_SUBCHUNKID.RESTLESS_IDOL or genlib.HD_SUBCHUNKID.IDOL
 									),
 									(
-										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) and
 										HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL] or
 										idol_roomcodes
 									),
@@ -11248,7 +9995,7 @@ end
 function detect_level_non_boss()
 	return (
 		state.theme ~= THEME.OLMEC
-		and feeling_check(feelingslib.FEELING_ID.YAMA) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
 	)
 end
 function detect_level_non_special()
@@ -11256,16 +10003,16 @@ function detect_level_non_special()
 		state.theme ~= THEME.EGGPLANT_WORLD and
 		state.theme ~= THEME.NEO_BABYLON and
 		state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 function detect_level_allow_path_gen()
 	return (
 		detect_level_non_boss() and
 		-- state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -11274,8 +10021,8 @@ function detect_level_allow_coop_coffin()
 		COOP_COFFIN == true
 		and detect_level_non_boss()
 		-- and state.theme ~= THEME.CITY_OF_GOLD
-		and feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
-		and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -11344,7 +10091,7 @@ function level_generation_method_coffin_coop()
 			-- feelings
 			for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 				if (
-					feeling_check(feeling) == true and
+					feelingslib.feeling_check(feeling) == true and
 					feelingContent.rooms ~= nil and
 					feelingContent.rooms[spot.id] ~= nil
 				) then
@@ -11506,7 +10253,7 @@ function gen_levelrooms_nonpath(prePath)
 	
 	-- feeling structures
 	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
-		if feeling_check(feeling) == true then
+		if feelingslib.feeling_check(feeling) == true then
 			if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
 				if feelingContent.method ~= nil then
 					-- message("gen_levelrooms_nonpath: Executing feeling spawning method:")
@@ -11593,7 +10340,7 @@ function levelcode_chunks(rowfive)
 				-- feelings
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.obstacleBlocks ~= nil and
 						feelingContent.obstacleBlocks[tilename] ~= nil
 					) then
@@ -11613,7 +10360,7 @@ function levelcode_chunks(rowfive)
 				-- feelings
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.chunkRules ~= nil and
 						feelingContent.chunkRules.obstacleBlocks ~= nil and
 						feelingContent.chunkRules.obstacleBlocks[tilename] ~= nil
@@ -11655,7 +10402,7 @@ function gen_levelcode_phase_1(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -11755,7 +10502,7 @@ function gen_levelcode_phase_2(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -11837,7 +10584,7 @@ function gen_levelcode_phase_3(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -11937,7 +10684,7 @@ function gen_levelcode_phase_4(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -12200,7 +10947,7 @@ function gen_levelrooms_path()
 			-- feelings
 			for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 				if (
-					feeling_check(feeling) == true and
+					feelingslib.feeling_check(feeling) == true and
 					feelingContent.rooms ~= nil and
 					feelingContent.rooms[pathid] ~= nil
 				) then
@@ -12226,7 +10973,7 @@ function gen_levelrooms_path()
 				check_feeling_content = nil
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.chunkRules ~= nil and
 						feelingContent.chunkRules.rooms ~= nil and
 						feelingContent.chunkRules.rooms[pathid] ~= nil
@@ -12422,7 +11169,7 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					-- if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true
+					-- if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true
 				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
 					-- Will need at least:
 						-- 

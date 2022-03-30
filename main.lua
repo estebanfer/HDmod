@@ -56,7 +56,6 @@ local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
-global_feelings = nil
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
@@ -105,10 +104,6 @@ HD_THEMEORDER = {
 	THEME.TEMPLE,
 	THEME.VOLCANA
 }
-
-MESSAGE_FEELING = nil
-
-
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -232,7 +227,7 @@ HD_TILENAME = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
 						if (
-							feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
+							feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
 						) then
 							if (math.random(6) == 1) then
 								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
@@ -2162,7 +2157,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
 						HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] ~= nil
 					) and HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.VAULT] or HD_ROOMOBJECT.GENERIC[genlib.HD_SUBCHUNKID.VAULT]
 				}
-				,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+				,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			)
 		end
 	end
@@ -2321,16 +2316,16 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].method = function()
 				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_TOMB,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_TOMB]
 			}
-			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
-	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
 		level_generation_method_nonaligned(
 			{
 				subchunk_id = genlib.HD_SUBCHUNKID.RESTLESS_IDOL,
 				roomcodes = HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL]
 			}
-			,feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
 	end
 end
@@ -3843,7 +3838,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				local range_start, range_end = 1, 12
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 11
@@ -3854,7 +3849,7 @@ HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				local range_start, range_end = 1, 8
 				local chunkpool_rand_index = math.random(range_start, range_end)
 				if (
-					feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 					and (chunkpool_rand_index > 1 and chunkpool_rand_index < 6)
 				) then
 					chunkpool_rand_index = chunkpool_rand_index + 7
@@ -4080,7 +4075,7 @@ HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 				elseif (
 					CHUNKBOOL_IDOL == false and
 					(
-						feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
+						feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
 					) and
 					math.random(10) == 1
 				) then
@@ -4815,7 +4810,7 @@ HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 						CHUNKBOOL_ALTAR = true
 						return {altar = true}
 					elseif (
-						feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
+						feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
 						and CHUNKBOOL_IDOL == false
 						and math.random(15) == 1
 					) then
@@ -5396,7 +5391,7 @@ end
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
-		global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
+		feelingslib.init()
 		wormtonguelib.tongue_spawned = false
 		-- other stuff
 	end
@@ -5687,7 +5682,7 @@ function get_unlock()
 			end
 			for id, unlock_properties in pairs(unlockconditions_feeling) do
 				if (
-					feeling_check(unlock_properties.feeling) == true
+					feelingslib.feeling_check(unlock_properties.feeling) == true
 					and unlock_properties.unlocked == false
 				) then
 					-- Probably won't be overridden by theme
@@ -5823,7 +5818,7 @@ function create_door_ending(x, y, l)
 	-- Olmec/Yama Win
 	if state.theme == THEME.OLMEC then
 		set_interval(exit_olmec, 1)
-	elseif feeling_check(feelingslib.FEELING_ID.YAMA) then
+	elseif feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
 		set_interval(exit_yama, 1)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -5832,7 +5827,7 @@ end
 function create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
 		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
@@ -6052,74 +6047,12 @@ function clear_dark_level()
 		or HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING
 		or state.theme == THEME.VOLCANA
 		or state.theme == THEME.NEO_BABYLON
-		or feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
-		or feeling_check(feelingslib.FEELING_ID.UDJAT) == true
-		or feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == true
 	) then
 		state.level_flags = clr_flag(state.level_flags, 18)
 	end
-end
-
--- -- won't set if already set to the current level or a past level
--- function feeling_set_once_future(feeling, levels, use_chance)
-	-- if ( -- don't set it if it's on the correct theme and the level is set and it's set to the current level or a past level
-		-- detect_feeling_themes(feeling) == false or
-		-- (
-			-- global_feelings[feeling].load ~= nil and
-			-- global_feelings[feeling].load <= state.level
-		-- )
-	-- ) then return false
-	-- else
-		-- return feeling_set(feeling, levels, use_chance)
-	-- end
--- end
--- won't set if the current theme doesn't match and load has already been set
-function feeling_set_once(feeling, levels)
-	if (
-		detect_feeling_themes(feeling) == false or
-		global_feelings[feeling].load ~= nil
-	) then return false
-	else
-		return feeling_set(feeling, levels)
-	end
-end
-
--- if multiple levels are passed in, a random level in the table is set
-	-- NOTE: won't set to a past level
-function feeling_set(feeling, levels)
-	chance = 1
-	if global_feelings[feeling].chance ~= nil then
-		chance = global_feelings[feeling].chance
-	end
-	if chance ~= 0 then
-		if math.random(1, chance) == 1 then
-			levels_indexed = {}
-			for _, level in ipairs(levels) do
-				if level >= state.level then
-					levels_indexed[#levels_indexed+1] = level
-				end
-			end
-			global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
-			return true
-		else return false end
-	end
-end
-
-function detect_feeling_themes(feeling)
-	for _, feeling_theme in ipairs(global_feelings[feeling].themes) do
-		if state.theme == feeling_theme then
-			return true
-		end
-	end
-	return false
-end
-
-function feeling_check(feeling)
-	if (
-		detect_feeling_themes(feeling) == true and
-		state.level == global_feelings[feeling].load
-	) then return true end
-	return false
 end
 
 -- detect offset
@@ -6138,10 +6071,10 @@ function conflictdetection_giant(hdctype, x, y, l)
 	scan_width = 1 -- check 2 across
 	scan_height = 2 -- check 3 up
 	floor_level = 1 -- default to frog
-	-- if hdctype == HD_COLLISIONTYPE.GIANT_FROG then
+	-- if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG then
 		
 	-- end
-	if hdctype == HD_COLLISIONTYPE.GIANT_SPIDER then
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER then
 		floor_level = 2 -- check ceiling
 	end
 	x_leftside = x - 1
@@ -6177,10 +6110,10 @@ function conflictdetection_floortrap(hdctype, x, y, l)
 	conflict = false
 	scan_width = 1 -- check 1 across
 	scan_height = 1 -- check the space above
-	if hdctype == HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
 		scan_width = 1 -- check 1 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
-	elseif hdctype == HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
+	elseif hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end
@@ -6221,14 +6154,14 @@ function conflictdetection(hd_type, x, y, l)
 	if (
 		hd_type.collisiontype ~= nil and
 		(
-			hd_type.collisiontype >= HD_COLLISIONTYPE.AIR_TILE_1
-			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-			-- hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			hd_type.collisiontype >= hdtypelib.HD_COLLISIONTYPE.AIR_TILE_1
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
 		)
 	) then
 		if (
-			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP or
-			hd_type.collisiontype == HD_COLLISIONTYPE.FLOORTRAP_TALL
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
 		) then
 			conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
 			if conflict == true then
@@ -6237,8 +6170,8 @@ function conflictdetection(hd_type, x, y, l)
 				offset = { 0, 0 }
 			end
 		elseif (
-			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_FROG or
-			hd_type.collisiontype == HD_COLLISIONTYPE.GIANT_SPIDER
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER
 		) then
 			side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
 			if side > 0 then
@@ -6356,7 +6289,7 @@ function entrance_force_feeling(_feeling_to_force)
 					door_exit_ent:overlaps_with(get_entity(players[i].uid)) == true and
 					players[i].state == CHAR_STATE.ENTERING
 				) then
-					feeling_set_once(_feeling_to_force, {state.level+1})
+					feelingslib.feeling_set_once(_feeling_to_force, {state.level+1})
 					break;
 				end
 			end
@@ -6478,7 +6411,7 @@ function testroom_level_1()
 		- now that I look back on it a lot of stuff like these HD_ENT fields:
 			
 				dangertype = HD_DANGERTYPE.FLOORTRAP,
-				collisiontype = HD_COLLISIONTYPE.FLOORTRAP,
+				collisiontype = hdtypelib.HD_COLLISIONTYPE.FLOORTRAP,
 			
 			are just overcomplicating things so it might be better to just remove and start over with some things.
 			Dangertype isn't used for anything so that can be removed, but some things like the collisiontype
@@ -7095,7 +7028,7 @@ local function run_spiderlair_ground_enemy_chance()
 	]]
 	local current_ground_chance = get_procedural_spawn_chance(global_spawn_procedural_spiderlair_ground_enemy)
 	if (
-		feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (
 			current_ground_chance ~= 0
 			and math.random(current_ground_chance) == 1
@@ -7683,7 +7616,7 @@ set_callback(function(room_gen_ctx)
 							template_to_set = room_template_here
 						end
 					elseif (
-						feeling_check(feelingslib.FEELING_ID.YAMA) == true
+						feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 					) then
 						if (_template_hd == genlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
 							template_to_set = ROOM_TEMPLATE.ENTRANCE
@@ -7806,8 +7739,8 @@ set_callback(function(room_gen_ctx)
 	    end
 		
 		if (
-			feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
-			or feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
+			or feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			or state.theme == THEME.NEO_BABYLON
 		) then
 			for x = 0, level_w - 1, 1 do
@@ -7817,13 +7750,13 @@ set_callback(function(room_gen_ctx)
 
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
-				if feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 0, 0)
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
 				else
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
@@ -7838,19 +7771,19 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 0, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 1, 0)
 				else -- unset
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 0, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
@@ -7867,14 +7800,14 @@ set_callback(function(room_gen_ctx)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_jiangshi, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.HIVE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hive_bee, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_piranha, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
@@ -7919,27 +7852,27 @@ set_callback(function(room_gen_ctx)
 				end
 				
 				-- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
-				-- if feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
+				-- if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
 				-- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				-- else
 				-- end
 
-				if feeling_check(feelingslib.FEELING_ID.UFO) == false then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_ufo_turret, 0)
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mshipentrance_turret, 0)
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.ANUBIS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 1, 0)
 				else
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 0, 0)
 				end
 
 				if state.theme == THEME.VOLCANA then
-					if feeling_check(feelingslib.FEELING_ID.YAMA) == true then
+					if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
 						room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
 						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_imp, 0)
@@ -7963,7 +7896,7 @@ set_callback(function(room_gen_ctx)
 				end
 
 				--[[ procedural/extra spawn assign template
-				if feeling_check(feelingslib.FEELING_ID.) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
 				else
@@ -8002,7 +7935,7 @@ set_callback(function()
 			if (
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
-				if feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					local block_uid = tombstone_blocks[math.random(#tombstone_blocks)]
 					local x, y, l = get_position(block_uid)
 					
@@ -8012,7 +7945,7 @@ set_callback(function()
 
 					embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
 				end
-				if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
 					for _, shopkeeper_uid in pairs(shopkeeper_uids) do
 						get_entity(shopkeeper_uid).has_key = false
@@ -8051,7 +7984,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 				
-				if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
 					local w, h = 30, 28
 					local x, y, l = 17.5, 104.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8063,7 +7996,7 @@ set_callback(function()
 					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 				end
 
-				if feeling_check(feelingslib.FEELING_ID.YAMA) then
+				if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
 					local w, h = 6, 8
 					local x, y, l = 22.5, 94.5, LAYER.FRONT
 					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -8134,8 +8067,8 @@ set_callback(function()
 				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				if (
-					feeling_check(feelingslib.FEELING_ID.SNOW)
-					or feeling_check(feelingslib.FEELING_ID.SNOWING)
+					feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
+					or feelingslib.feeling_check(feelingslib.FEELING_ID.SNOWING)
 				) then
 					local floors = get_entities_by_type(ENT_TYPE.FLOOR_GENERIC)
 					for _, floor_uid in pairs(floors) do
@@ -8193,7 +8126,6 @@ set_callback(function()
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
 	-- pre_tile ON.START stuff
-	global_feelings = nil
 	HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
 
 	set_interval(entrance_tutorial, 1)
@@ -8224,8 +8156,6 @@ end, ON.TITLE)
 -- ON.START
 set_callback(function()
 	onstart_init_options()
-	-- global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
-	
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
 	CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
@@ -8233,7 +8163,6 @@ end, ON.START)
 
 set_callback(function()
 	-- pre_tile ON.START stuff
-	global_feelings = nil
 	POSTTILE_STARTBOOL = false
 	-- HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
 	-- DOOR_TESTING_UID = nil
@@ -8254,9 +8183,16 @@ function levelcreation_init()
 	init_onlevel()
 	unlockslib.unlocks_load()
 	-- onlevel_levelrules()
-	onlevel_set_feelings()
+	
+	if (
+		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
+		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
+		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
+	) then
+		feelingslib.onlevel_set_feelings()
+	end
 	clear_dark_level()
-	onlevel_set_feelingToastMessage()
+	feelingslib.onlevel_set_feelingToastMessage()
 	-- Method to write override_path setrooms into path and levelcode
 	--ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 end
@@ -8294,7 +8230,7 @@ function assign_s2_level_height()
 		end
 	
 		-- set height for rushing water
-		if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
+		if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 			new_height = 5
 		end
 		state.width = new_width
@@ -8318,7 +8254,7 @@ end
 
 function set_blackmarket_shoprooms(room_gen_ctx)
 
-	if feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
 		UNLOCK_WI, UNLOCK_HI = 0, 0
@@ -8393,7 +8329,7 @@ set_callback(function()
 	onlevel_testroom()
 
 	onlevel_boss_init()
-	onlevel_toastfeeling()
+	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
 
 set_callback(function()
@@ -8405,7 +8341,6 @@ end, ON.FRAME)
 set_callback(function()
 	onguiframe_ui_info_boss()			-- debug
 	onguiframe_ui_info_boulder()		--
-	onguiframe_ui_info_feelings()		--
 	onguiframe_ui_info_path()			--
 	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
@@ -8429,7 +8364,7 @@ function onstart_init_methods()
 		ghostlib.set_spawn_times()
 	elseif(
 		HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL
-		or feeling_check(feelingslib.FEELING_ID.YAMA) == true
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 	) then
 		set_ghost_spawn_times(-1, -1)
 	end
@@ -8756,7 +8691,7 @@ function onlevel_levelrules()
 end
 
 function onlevel_create_impostorlake()
-	if feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 		local x, y = 22.5, 88.5--80.5
 		local w, h = 40, 12
 		spawn_impostor_lake(
@@ -8880,7 +8815,7 @@ function onlevel_ankh_respawn()
 			local cb_moai_diamond = -1
 			local cb_moai_hedjet = -1
 			-- # TODO: Investigate if breaking/teleporting into the Moai in HD disables being able to get the hedjet.
-			if feeling_check(feelingslib.FEELING_ID.MOAI) == true then
+			if feelingslib.feeling_check(feelingslib.FEELING_ID.MOAI) == true then
 				cb_moai_diamond = set_interval(function()
 					if players_in_moai() then
 						kill_entity(moai_veil)
@@ -8996,8 +8931,8 @@ function onlevel_decorate_trees()
 			branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 			branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
 			if (
-				feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
-				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+				feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
+				feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
 			) then
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
 				decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
@@ -9109,7 +9044,7 @@ local removed_embedded_currencies = {
 -- 		if (
 -- 			state.theme ~= THEME.NEO_BABYLON
 -- 			and state.theme ~= THEME.EGGPLANT_WORLD
--- 			-- and (feeling_check(feelingslib.FEELING_ID.YAMA) == false)
+-- 			-- and (feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false)
 -- 		) then
 -- 			return
 -- 		end
@@ -9256,201 +9191,6 @@ function cutscene_move_cavemen()
 	end
 end
 
--- Set level feelings (not to be confused with `feeling_set`)
-function onlevel_set_feelings()
-	if (
-		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
-		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
-		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
-	) then
-
-		if state.level == 1 then
-			global_feelings = commonlib.TableCopy(feelingslib.HD_FEELING_DEFAULTS)
-		end
-
-		-- Vaults
-		if state.theme ~= THEME.VOLCANA then
-			feeling_set_once(feelingslib.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
-		elseif state.theme == THEME.TEMPLE then
-			feeling_set_once(feelingslib.FEELING_ID.VAULT, {1, 2, 3})
-		end
-		
-		--[[
-			Mines
-		--]]
-		if state.theme == THEME.DWELLING then
-			-- placing chest and key on levels 2..4
-			if state.level == 2 then
-				feeling_set_once(feelingslib.FEELING_ID.UDJAT, {2, 3, 4})
-			end
-
-			if (
-				state.level >= 3
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.SPIDERLAIR, {state.level})
-			end
-
-			-- spiderlair and snakepit cannot happen at the same time
-			if (
-				feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
-				and state.level ~= 1
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.SNAKEPIT, {state.level})
-			end
-		end
-		--[[
-			Jungle
-		--]]
-		if state.theme == THEME.JUNGLE then
-
-			if state.level == 1 then
-				feeling_set_once(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, {1, 2, 3})
-			end
-
-			-- Restless cannot happen on haunted castle
-			if feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false then
-				feeling_set_once(feelingslib.FEELING_ID.RESTLESS, {state.level})
-			end
-
-			-- Haunted Castle and Black Market cannot have rushing water nor tikivillage
-			if (
-				feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
-				and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.RUSHING_WATER, {state.level})
-				
-				-- tikivillage levels cannot be restless
-				-- tikivillage and rushing water cannot happen at the same time
-				if (
-					feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and
-					feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
-				) then
-					feeling_set_once(feelingslib.FEELING_ID.TIKIVILLAGE, {state.level})
-				end
-			end
-		end
-		
-		-- Worm Tongue
-		if (
-			wormtonguelib.tongue_spawned == false
-			and state.level == 1
-			and (
-				state.theme == THEME.JUNGLE or
-				state.theme == THEME.ICE_CAVES
-			)
-			and feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
-		) then
-			feeling_set_once(feelingslib.FEELING_ID.WORMTONGUE, {1})
-			wormtonguelib.tongue_spawned = true
-		end
-
-		--[[
-			Ice Caves
-		--]]
-		if state.theme == THEME.ICE_CAVES then
-			
-			feeling_set_once(feelingslib.FEELING_ID.SNOW, {state.level})
-
-			-- # TODO: Exception for MOAI spawn:
-				-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
-			if state.level == 2 then
-				feeling_set_once(feelingslib.FEELING_ID.MOAI, {2, 3})
-			end
-			
-			if state.level == 4 then
-				if global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
-					feeling_set_once(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
-				else
-					global_feelings[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-					feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
-				end
-				-- This level feeling only, and always, occurs on level 3-4.
-					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
-					-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
-					-- Only available once in a run
-			end
-			
-			if (
-				feeling_check(feelingslib.FEELING_ID.MOAI) == false
-				and state.level ~= 4
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.YETIKINGDOM, {state.level})
-			end
-			
-			-- # TODO: Verify exactly when UFO is allowed to spawn
-			if (
-				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
-				and state.level ~= 4
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.UFO, {state.level})
-			end
-			
-			-- # TODO: Verify exactly when pools are allowed to spawn
-			if (
-				feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) == false
-				and feeling_check(feelingslib.FEELING_ID.UFO) == false
-			) then
-				feeling_set_once(feelingslib.FEELING_ID.ICE_CAVES_POOL, {state.level})
-			end
-		end
-		--[[
-			Temple
-		--]]
-		if state.theme == THEME.TEMPLE then
-			feeling_set_once(feelingslib.FEELING_ID.SACRIFICIALPIT, {state.level})
-		end
-		
-		-- Currently hardcoded but keeping this here just in case
-		--[[
-			Hell
-		--]]
-		-- if state.theme == THEME.VOLCANA and state.level == 1 then
-			-- feeling_set(feelingslib.FEELING_ID.VLAD, {state.level})
-		-- end
-	end
-end
-
-function onlevel_set_feelingToastMessage()
-	-- theme message priorities are here (ie; rushingwater over restless)
-	-- NOTES:
-		-- Black Market, COG and Beehive are currently handled by the game
-	
-	loadchecks = commonlib.TableCopy(global_feelings)
-	
-	n = #loadchecks
-	for feelingname, loadcheck in pairs(loadchecks) do
-		if (
-			-- detect_feeling_themes(feelingname) == false or
-			-- (
-				-- detect_feeling_themes(feelingname) == true and
-				-- (
-					-- (loadcheck.load == nil or loadcheck.message == nil) or
-					-- (feeling_check(feelingname))
-				-- )
-			-- )
-			feeling_check(feelingname) == false
-		) then loadchecks[feelingname] = nil end
-	end
-	loadchecks = commonlib.CompactList(loadchecks, n)
-	
-	MESSAGE_FEELING = nil
-	for feelingname, feeling in pairs(loadchecks) do
-		-- Message Overrides may happen here:
-		-- For example:
-			-- if feelingname == feelingslib.FEELING_ID.RUSHING_WATER and feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then break end
-		MESSAGE_FEELING = feeling.message
-	end
-end
-
-function onlevel_toastfeeling()
-	if (
-		MESSAGE_FEELING ~= nil and
-		options.hd_debug_feelingtoast_disable == false
-	) then
-		toast(MESSAGE_FEELING)
-	end
-end
-
 set_callback(function(text)
     if (
 		text == "Your voice echoes in here..."
@@ -9550,7 +9290,7 @@ function onframe_idoltrap()
 	-- Idol trap activation
 	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
 		IDOLTRAP_TRIGGER = true
-		if feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
+		if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
 			create_ghost()
 		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
 			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
@@ -9569,7 +9309,7 @@ function onframe_idoltrap()
 				end, idoltrap_timeout*2)
 			end
 		elseif state.theme == THEME.TEMPLE then
-			if feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
+			if feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
 				-- Break all 4 blocks under it at once
 				for i = 1, #idoltrap_blocks, 1 do
 					kill_entity(idoltrap_blocks[i])
@@ -9919,47 +9659,6 @@ function onguiframe_ui_info_boulder()
 	end
 end
 
-function onguiframe_ui_info_feelings()
-	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		text_x = -0.95
-		text_y = -0.35
-		white = rgba(255, 255, 255, 255)
-		green = rgba(55, 200, 75, 255)
-		
-		text_levelfeelings = "No Level Feelings"
-		feelings = 0
-		
-		for feelingname, feeling in pairs(global_feelings) do
-			if feeling_check(feelingname) == true then
-				feelings = feelings + 1
-			end
-		end
-		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
-		
-		draw_text(text_x, text_y, 0, text_levelfeelings, white)
-		text_y = text_y-0.035
-		color = white
-		if MESSAGE_FEELING ~= nil then color = green end
-		text_message_feeling = ("MESSAGE_FEELING: " .. tostring(MESSAGE_FEELING))
-		draw_text(text_x, text_y, 0, text_message_feeling, color)
-		text_y = text_y-0.04
-		for feelingname, feeling in pairs(global_feelings) do
-			color = white
-			text_message = ""
-			
-			feeling_bool = feeling_check(feelingname)
-			if feeling.message ~= nil then text_message = (": \"" .. feeling.message .. "\"") end
-			if feeling_bool == true then color = green end
-			
-			text_feeling = (feelingname) .. text_message
-			
-			draw_text(text_x, text_y, 0, text_feeling, color)
-			text_y = text_y-0.032
-		end
-
-	end
-end
-
 function onguiframe_ui_info_worldstate()
 	if (
 		options.hd_debug_info_worldstate == true
@@ -10065,7 +9764,7 @@ function level_generation_method_side()
 	-- feelings
 	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 		if (
-			feeling_check(feeling) == true and
+			feelingslib.feeling_check(feeling) == true and
 			feelingContent.rooms ~= nil and
 			feelingContent.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
 		) then
@@ -10093,7 +9792,7 @@ function level_generation_method_side()
 					end
 					for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 						if (
-							feeling_check(feeling) == true and
+							feelingslib.feeling_check(feeling) == true and
 							feelingContent.chunkRules ~= nil and
 							feelingContent.chunkRules.rooms ~= nil and
 							feelingContent.chunkRules.rooms[genlib.HD_SUBCHUNKID.SIDE] ~= nil
@@ -10112,7 +9811,7 @@ function level_generation_method_side()
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
-										feeling_check(feeling) == true and
+										feelingslib.feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
 										feelingContent.rooms[genlib.HD_SUBCHUNKID.ALTAR] ~= nil
 									) then
@@ -10136,7 +9835,7 @@ function level_generation_method_side()
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 									if (
-										feeling_check(feeling) == true and
+										feelingslib.feeling_check(feeling) == true and
 										feelingContent.rooms ~= nil and
 										feelingContent.rooms[genlib.HD_SUBCHUNKID.IDOL] ~= nil
 									) then
@@ -10148,11 +9847,11 @@ function level_generation_method_side()
 								end
 								levelcode_inject_roomcode(
 									(
-										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) and
 										genlib.HD_SUBCHUNKID.RESTLESS_IDOL or genlib.HD_SUBCHUNKID.IDOL
 									),
 									(
-										feeling_check(feelingslib.FEELING_ID.RESTLESS) and
+										feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) and
 										HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[genlib.HD_SUBCHUNKID.RESTLESS_IDOL] or
 										idol_roomcodes
 									),
@@ -10296,7 +9995,7 @@ end
 function detect_level_non_boss()
 	return (
 		state.theme ~= THEME.OLMEC
-		and feeling_check(feelingslib.FEELING_ID.YAMA) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
 	)
 end
 function detect_level_non_special()
@@ -10304,16 +10003,16 @@ function detect_level_non_special()
 		state.theme ~= THEME.EGGPLANT_WORLD and
 		state.theme ~= THEME.NEO_BABYLON and
 		state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 function detect_level_allow_path_gen()
 	return (
 		detect_level_non_boss() and
 		-- state.theme ~= THEME.CITY_OF_GOLD and
-		feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
-		feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
+		feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -10322,8 +10021,8 @@ function detect_level_allow_coop_coffin()
 		COOP_COFFIN == true
 		and detect_level_non_boss()
 		-- and state.theme ~= THEME.CITY_OF_GOLD
-		and feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
-		and feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
+		and feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
 	)
 end
 
@@ -10392,7 +10091,7 @@ function level_generation_method_coffin_coop()
 			-- feelings
 			for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 				if (
-					feeling_check(feeling) == true and
+					feelingslib.feeling_check(feeling) == true and
 					feelingContent.rooms ~= nil and
 					feelingContent.rooms[spot.id] ~= nil
 				) then
@@ -10554,7 +10253,7 @@ function gen_levelrooms_nonpath(prePath)
 	
 	-- feeling structures
 	for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
-		if feeling_check(feeling) == true then
+		if feelingslib.feeling_check(feeling) == true then
 			if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
 				if feelingContent.method ~= nil then
 					-- message("gen_levelrooms_nonpath: Executing feeling spawning method:")
@@ -10641,7 +10340,7 @@ function levelcode_chunks(rowfive)
 				-- feelings
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.obstacleBlocks ~= nil and
 						feelingContent.obstacleBlocks[tilename] ~= nil
 					) then
@@ -10661,7 +10360,7 @@ function levelcode_chunks(rowfive)
 				-- feelings
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.chunkRules ~= nil and
 						feelingContent.chunkRules.obstacleBlocks ~= nil and
 						feelingContent.chunkRules.obstacleBlocks[tilename] ~= nil
@@ -10703,7 +10402,7 @@ function gen_levelcode_phase_1(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -10803,7 +10502,7 @@ function gen_levelcode_phase_2(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -10885,7 +10584,7 @@ function gen_levelcode_phase_3(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -10985,7 +10684,7 @@ function gen_levelcode_phase_4(rowfive)
 		local check_feeling_content = nil
 		for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 			if (
-				feeling_check(feeling) == true and
+				feelingslib.feeling_check(feeling) == true and
 				feelingContent.rowfive ~= nil and
 				feelingContent.rowfive.offsety ~= nil
 			) then
@@ -11248,7 +10947,7 @@ function gen_levelrooms_path()
 			-- feelings
 			for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 				if (
-					feeling_check(feeling) == true and
+					feelingslib.feeling_check(feeling) == true and
 					feelingContent.rooms ~= nil and
 					feelingContent.rooms[pathid] ~= nil
 				) then
@@ -11274,7 +10973,7 @@ function gen_levelrooms_path()
 				check_feeling_content = nil
 				for feeling, feelingContent in pairs(HD_ROOMOBJECT.FEELINGS) do
 					if (
-						feeling_check(feeling) == true and
+						feelingslib.feeling_check(feeling) == true and
 						feelingContent.chunkRules ~= nil and
 						feelingContent.chunkRules.rooms ~= nil and
 						feelingContent.chunkRules.rooms[pathid] ~= nil
@@ -11470,7 +11169,7 @@ end
 						-- Prevents the black market from being accessed upon exiting the worm
 						-- Gives room for the next level to load as black market
 				-- script spawning LOGICAL_BLACKMARKET_DOOR
-					-- if feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true
+					-- if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true
 				-- In the roomcode generation, establish methods and parameters to make shop spawning possible
 					-- Will need at least:
 						-- 

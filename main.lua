@@ -7,6 +7,7 @@ hdtypelib = require 'lib.hdtype'
 
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
+ghostlib = require 'lib.entities.ghost'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -46,15 +47,12 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
-DEMO_MAX_WORLD = 6
+DEMO_MAX_WORLD = 1
 DEMO_TUTORIAL_AVAILABLE = false
 
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
-DANGER_GHOST_UIDS = {}
-GHOST_TIME = 10800
-GHOST_VELOCITY = 0.7
 IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 IDOLTRAP_JUNGLE_ACTIVATETIME = 15
@@ -5426,7 +5424,6 @@ function init_onlevel()
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 	DOOR_ENDGAME_OLMEC_UID = nil
 
-	DANGER_GHOST_UIDS = {}
 	IDOLTRAP_TRIGGER = false
 	
 	CHUNKBOOL_IDOL = false
@@ -5449,6 +5446,7 @@ function init_onlevel()
 	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
+	ghostlib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -8399,7 +8397,6 @@ set_callback(function()
 end, ON.LEVEL)
 
 set_callback(function()
-	onframe_ghosts()
 	onframe_idoltrap()
 	onframe_acidpoison()
 	onframe_boss()
@@ -8417,7 +8414,7 @@ end, ON.GUIFRAME)
 
 function onstart_init_options()	
 	botdlib.OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
-	if options.hd_og_ghost_time_disable == false then GHOST_TIME = 9000 end
+	if options.hd_og_ghost_time_disable == false then ghostlib.GHOST_TIME = 9000 end
 
 	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
 	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
@@ -8429,7 +8426,7 @@ function onstart_init_methods()
 	if (
 		HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
 	) then
-		set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
+		ghostlib.set_spawn_times()
 	elseif(
 		HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL
 		or feeling_check(feelingslib.FEELING_ID.YAMA) == true
@@ -9715,32 +9712,6 @@ function players_in_moai()
 		LAYER.FRONT
 	)
 	return #players_in_moai ~= 0
-end
-
-function onframe_ghosts()
-	ghost_uids = get_entities_by_type({
-		ENT_TYPE.MONS_GHOST
-	})
-	ghosttoset_uid = 0
-	for _, found_ghost_uid in ipairs(ghost_uids) do
-		accounted = 0
-		for _, cur_ghost_uid in ipairs(DANGER_GHOST_UIDS) do
-			if found_ghost_uid == cur_ghost_uid then accounted = cur_ghost_uid end
-			
-			ghost = get_entity(found_ghost_uid):as_ghost()
-			-- message("timer: " .. tostring(ghost.split_timer) .. ", v_mult: " .. tostring(ghost.velocity_multiplier))
-			if (options.hd_og_ghost_nosplit_disable == false) then ghost.split_timer = 0 end
-		end
-		if accounted == 0 then ghosttoset_uid = found_ghost_uid end
-	end
-	if ghosttoset_uid ~= 0 then
-		ghost = get_entity(ghosttoset_uid):as_ghost()
-		
-		if (options.hd_og_ghost_slow_enable == true) then ghost.velocity_multiplier = GHOST_VELOCITY end
-		if (options.hd_og_ghost_nosplit_disable == false) then ghost.split_timer = 0 end
-		
-		DANGER_GHOST_UIDS[#DANGER_GHOST_UIDS+1] = ghosttoset_uid
-	end
 end
 
 function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later

@@ -4,10 +4,11 @@ feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
 
-hdtypelib = require 'lib.engities.hdtype'
+hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
+olmeclib = require 'lib.entities.olmec'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -82,16 +83,10 @@ idoltrap_timeout = 0
 idoltrap_blocks = {}
 tombstone_blocks = {}
 moai_veil = nil
-OLMEC_UID = nil
-BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-BOSS_STATE = nil
-OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-OLMEC_STATE = 0
 BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_Y = 86
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
-DOOR_ENDGAME_OLMEC_UID = nil
 DOOR_TESTING_UID = nil
 DOOR_TUTORIAL_UID = nil
 HD_WORLDSTATE_STATUS = { ["NORMAL"] = 1, ["TUTORIAL"] = 2, ["TESTING"] = 3}
@@ -5417,7 +5412,6 @@ function init_onlevel()
 	BOULDER_DEBUG_PLAYERTOUCH = false
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
-	DOOR_ENDGAME_OLMEC_UID = nil
 
 	IDOLTRAP_TRIGGER = false
 	
@@ -5433,15 +5427,12 @@ function init_onlevel()
 	UNLOCK_WI, UNLOCK_HI = nil, nil
 
 	COOP_COFFIN = false
-
-	OLMEC_UID = nil
-	BOSS_STATE = nil
-	OLMEC_STATE = 0
 	
 	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
 	ghostlib.init()
+	olmeclib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -5809,8 +5800,8 @@ function create_door_ending(x, y, l)
 	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
 	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
 	-- # TOTEST: Test if the compass works for this. If not, use the method Mr Auto suggested (attatching the compass arrow entity to it)
-	DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	set_door_target(DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
+	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	set_door_target(olmeclib.DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock == false then
 		lock_door_at(x, y)
@@ -6312,7 +6303,7 @@ function exit_boss(yama)
 	for i = 1, #players, 1 do
 		x, y, l = get_position(players[i].uid)
 		if (
-			-- (get_entity(DOOR_ENDGAME_OLMEC_UID).entered == true)
+			-- (get_entity(olmeclib.DOOR_ENDGAME_OLMEC_UID).entered == true)
 			(players[i].state == CHAR_STATE.ENTERING)
 		) then
 			if yama == false then
@@ -8144,7 +8135,6 @@ set_callback(function()
 end, ON.CAMP)
 
 set_callback(function()
-	force_olmec_phase_0(true)
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
 
@@ -8328,19 +8318,22 @@ set_callback(function()
 
 	onlevel_testroom()
 
-	onlevel_boss_init()
+	olmeclib.onlevel_boss_init()
+	create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
+
+	botdlib.set_hell_x()
+	create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
+
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
 
 set_callback(function()
 	onframe_idoltrap()
 	onframe_acidpoison()
-	onframe_boss()
 end, ON.FRAME)
 
 set_callback(function()
-	onguiframe_ui_info_boss()			-- debug
-	onguiframe_ui_info_boulder()		--
+	onguiframe_ui_info_boulder()		-- debug
 	onguiframe_ui_info_path()			--
 	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
@@ -9153,44 +9146,6 @@ function onlevel_hide_yama()
 	end
 end
 
-function onlevel_boss_init()
-	if state.theme == THEME.OLMEC then
-		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		cutscene_move_olmec_pre()
-		cutscene_move_cavemen()
-		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
-		
-		botdlib.set_hell_x()
-		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
-	end
-end
-
-function cutscene_move_olmec_pre()
-	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
-	if #olmecs > 0 then
-		OLMEC_UID = olmecs[1]
-		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
-	end
-end
-
-function cutscene_move_olmec_post()
-	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
-end
-
-function cutscene_move_cavemen()
-	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
-	-- create a hawkman and disable his ai
-	-- set_timeout() to reenable his ai and set his stuntimer.
-	-- **does set_timeout() work during cutscenes?
-		-- if not, use set_global_timeout
-			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
-	-- **consider problems for skipping the cutscene
-	cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
-	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
-	end
-end
-
 set_callback(function(text)
     if (
 		text == "Your voice echoes in here..."
@@ -9454,71 +9409,6 @@ function players_in_moai()
 	return #players_in_moai ~= 0
 end
 
-function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later
-	c_logics = get_entities_by_type(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR)
-	if #c_logics > 0 then
-		c_logics_e = get_entity(c_logics[1]):as_movable()
-		dead = test_flag(c_logics_e.flags, ENT_FLAG.DEAD)
-		if dead == true then
-			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
-			-- kill the blocks olmec would normally smash.
-			for b = 1, 4, 1 do
-				local blocks = get_entities_at({ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, 0, 21+b, 97, LAYER.FRONT, 0.5)--98, LAYER.FRONT, 0.5)
-				if #blocks > 0 then
-					kill_entity(blocks[1])
-				end
-				b = b + 1
-			end
-			cutscene_move_olmec_post()
-			BOSS_STATE = BOSS_SEQUENCE.FIGHT
-		end
-	end
-end
-
-function onframe_boss()
-	if state.theme == THEME.OLMEC then
-		if OLMEC_UID then
-			if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then
-				onframe_olmec_cutscene()
-			elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-				onframe_olmec_behavior()
-				onframe_boss_wincheck()
-			end
-		end
-	end
-end
-
-function onframe_olmec_behavior()
-	olmec = get_entity(OLMEC_UID)
-	if olmec ~= nil then
-		olmec = get_entity(OLMEC_UID):as_olmec()
-		-- Ground Pound behavior:
-			-- # TODO: Shift OLMEC down enough blocks to match S2's OLMEC. Currently the spelunker is crushed between Olmec and the ceiling.
-			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
-			-- Decide whether or not we restore this behavior or if we raise the ceiling generation.
-		-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-		-- Enemy Spawning: Detect when olmec is about to smash down
-		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
-			OLMEC_STATE = OLMEC_SEQUENCE.STILL
-			x, y, l = get_position(OLMEC_UID)
-			-- random chance (maybe 20%?) each time olmec groundpounds, shoots 3 out in random directions upwards.
-			-- if math.random() >= 0.5 then
-				-- # TODO: Currently fires twice. Idea: Use a timeout variable to check time to refire.
-				olmec_attack(x, y+2, l)
-				-- olmec_attack(x, y+2.5, l)
-				-- olmec_attack(x, y+2.5, l)
-				
-			-- end
-		elseif olmec.velocityy < -0.400 then
-			OLMEC_STATE = OLMEC_SEQUENCE.FALL
-		end
-	end
-end
-
-function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
-end
-
 
 -- # TODO: Revise `applyflags_to_*` method's `flags` parameter.
 	-- From this:
@@ -9560,53 +9450,6 @@ function applyflags_to_quest(flags)
 			end
 		end
 	else message("No quest flags") end
-end
-
-function onframe_boss_wincheck()
-	if BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-		olmec = get_entity(OLMEC_UID):as_olmec()
-		if olmec ~= nil then
-			if olmec.attack_phase == 3 then
-				local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-				if sound ~= nil then sound:play() end
-				BOSS_STATE = BOSS_SEQUENCE.DEAD
-				local _olmec_door = get_entity(DOOR_ENDGAME_OLMEC_UID)
-				_olmec_door.flags = set_flag(_olmec_door.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-				_x, _y, _ = get_position(DOOR_ENDGAME_OLMEC_UID)
-				-- unlock_door_at(41, 99)
-				unlock_door_at(_x, _y)
-			end
-		end
-	end
-end
-
-function onguiframe_ui_info_boss()
-	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if state.theme == THEME.OLMEC and OLMEC_UID ~= nil then
-			olmec = get_entity(OLMEC_UID)
-			text_x = -0.95
-			text_y = -0.50
-			white = rgba(255, 255, 255, 255)
-			if olmec ~= nil then
-				olmec = get_entity(OLMEC_UID):as_olmec()
-				
-				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-				olmec_attack_state = "UNKNOWN"
-				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
-				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
-				
-				-- BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-				boss_attack_state = "UNKNOWN"
-				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then BOSS_attack_state = "CUTSCENE"
-				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then BOSS_attack_state = "FIGHT"
-				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then BOSS_attack_state = "DEAD" end
-				
-				draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
-				text_y = text_y - 0.1
-				draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
-			else draw_text(text_x, text_y, 0, "olmec is nil", white) end
-		end
-	end
 end
 
 function onguiframe_ui_info_boulder()

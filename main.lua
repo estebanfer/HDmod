@@ -8319,10 +8319,12 @@ set_callback(function()
 	onlevel_testroom()
 
 	olmeclib.onlevel_boss_init()
-	create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
+	if state.theme == THEME.OLMEC then
+		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
 
-	botdlib.set_hell_x()
-	create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
+		botdlib.set_hell_x()
+		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
+	end
 
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)

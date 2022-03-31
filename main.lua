@@ -1,5 +1,5 @@
 commonlib = require 'lib.common'
-genlib = require 'lib.gen'
+genlib = require 'lib.roomgen'
 feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'

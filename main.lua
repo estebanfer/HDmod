@@ -1,13 +1,18 @@
 commonlib = require 'lib.common'
-genlib = require 'lib.gen'
+demolib = require 'lib.demo'
+camplib = require 'lib.camp'
+genlib = require 'lib.roomgen'
 feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 locatelib = require 'lib.locate'
-hdtypelib = require 'lib.hdtype'
 
+hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
+olmeclib = require 'lib.entities.olmec'
+boulderlib = require 'lib.entities.boulder'
+idollib = require 'lib.entities.idol'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -47,15 +52,10 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
-DEMO_MAX_WORLD = 1
-DEMO_TUTORIAL_AVAILABLE = false
-
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
-IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
-IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
@@ -63,35 +63,12 @@ LEVEL_UNLOCK = nil
 UNLOCK_WI, UNLOCK_HI = nil, nil
 CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 COOP_COFFIN = false
-IDOL_X = nil
-IDOL_Y = nil
-IDOL_UID = nil
-BOULDER_UID = nil
-BOULDER_SX = nil
-BOULDER_SY = nil
-BOULDER_SX2 = nil
-BOULDER_SY2 = nil
-BOULDER_CRUSHPREVENTION_EDGE = 0.15
-BOULDER_CRUSHPREVENTION_HEIGHT = 0.3
-BOULDER_CRUSHPREVENTION_VELOCITY = 0.16
-BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
-BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 acid_tick = ACID_POISONTIME
-idoltrap_timeout = 0
-idoltrap_blocks = {}
 tombstone_blocks = {}
 moai_veil = nil
-OLMEC_UID = nil
-BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-BOSS_STATE = nil
-OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-OLMEC_STATE = 0
-BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_Y = 86
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
-DOOR_ENDGAME_OLMEC_UID = nil
 DOOR_TESTING_UID = nil
 DOOR_TUTORIAL_UID = nil
 HD_WORLDSTATE_STATUS = { ["NORMAL"] = 1, ["TUTORIAL"] = 2, ["TESTING"] = 3}
@@ -565,7 +542,7 @@ HD_TILENAME = {
 					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
 					texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
 					get_entity(block_uid):set_texture(define_texture(texture_def))
-					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+					idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
 				end,
 			},
 		},
@@ -579,7 +556,7 @@ HD_TILENAME = {
 					local block = get_entity(block_uid)
 					block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
 					block.more_flags = set_flag(block.more_flags, 17)
-					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+					idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
 				end,
 			},
 			alternate = {
@@ -5399,27 +5376,12 @@ function init_posttile_onstart()
 end
 
 function init_onlevel()
-	idoltrap_blocks = {}
 	tombstone_blocks = {}
-	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	moai_veil = nil
 	FRAG_PREVENTION_UID = nil
-	IDOL_X = nil
-	IDOL_Y = nil
-	IDOL_UID = nil
-	BOULDER_UID = nil
-	BOULDER_SX = nil
-	BOULDER_SY = nil
-	BOULDER_SX2 = nil
-	BOULDER_SY2 = nil
-	BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-	BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-	BOULDER_DEBUG_PLAYERTOUCH = false
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
-	DOOR_ENDGAME_OLMEC_UID = nil
 
-	IDOLTRAP_TRIGGER = false
 	
 	CHUNKBOOL_IDOL = false
 	CHUNKBOOL_ALTAR = false
@@ -5433,15 +5395,14 @@ function init_onlevel()
 	UNLOCK_WI, UNLOCK_HI = nil, nil
 
 	COOP_COFFIN = false
-
-	OLMEC_UID = nil
-	BOSS_STATE = nil
-	OLMEC_STATE = 0
 	
 	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
 	ghostlib.init()
+	olmeclib.init()
+	boulderlib.init()
+	idollib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -5809,8 +5770,8 @@ function create_door_ending(x, y, l)
 	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
 	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
 	-- # TOTEST: Test if the compass works for this. If not, use the method Mr Auto suggested (attatching the compass arrow entity to it)
-	DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	set_door_target(DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
+	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	set_door_target(olmeclib.DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
 	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock == false then
 		lock_door_at(x, y)
@@ -5851,7 +5812,7 @@ function create_door_testing(x, y, l)
 end
 
 function create_door_tutorial(x, y, l)
-	if DEMO_TUTORIAL_AVAILABLE == true then
+	if demolib.DEMO_TUTORIAL_AVAILABLE == true then
 		DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
 	else
 		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
@@ -5937,23 +5898,6 @@ function create_door_exit_to_hauntedcastle(x, y, l)
 	set_interval(entrance_hauntedcastle, 1)
 end
 
-function create_ghost()
-	xmin, _, xmax, _ = get_bounds()
-	-- message("xmin: " .. xmin .. " ymin: " .. ymin .. " xmax: " .. xmax .. " ymax: " .. ymax)
-	
-	if #players > 0 then
-		p_x, p_y, p_l = get_position(players[1].uid)
-		bx_mid = (xmax - xmin)/2
-		gx = 0
-		gy = p_y
-		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
-		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
-		toast("A terrible chill runs up your spine!")
-	-- else
-		-- toast("A terrible chill r- ...wait, where are the players?!?")
-	end
-end
-
 -- # TODO: Revise to a new pickup. 
 	-- IDEAS:
 		-- Replace with actual crysknife
@@ -6018,19 +5962,19 @@ function create_damsel(x, y, l)
 end
 
 function create_idol(x, y, l)
-	IDOL_X, IDOL_Y = x, y
-	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+	idollib.IDOL_X, idollib.IDOL_Y = x, y
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
 	if state.theme == THEME.ICE_CAVES then
 		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-		get_entity(IDOL_UID).trap_triggered = true
+		get_entity(idollib.IDOL_UID).trap_triggered = true
 	end
 end
 
 function create_idol_crystalskull(x, y, l)
-	IDOL_X, IDOL_Y = x, y
-	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+	idollib.IDOL_X, idollib.IDOL_Y = x, y
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
 
-	local entity = get_entity(IDOL_UID)
+	local entity = get_entity(idollib.IDOL_UID)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 	texture_def.texture_path = "res/items_dar_idol.png"
 	entity:set_texture(define_texture(texture_def))
@@ -6312,7 +6256,7 @@ function exit_boss(yama)
 	for i = 1, #players, 1 do
 		x, y, l = get_position(players[i].uid)
 		if (
-			-- (get_entity(DOOR_ENDGAME_OLMEC_UID).entered == true)
+			-- (get_entity(olmeclib.DOOR_ENDGAME_OLMEC_UID).entered == true)
 			(players[i].state == CHAR_STATE.ENTERING)
 		) then
 			if yama == false then
@@ -6498,8 +6442,6 @@ function test_bacterium()
 		-- **Get to the point where you can store a single bacterium in an array, get placed on a wall and toast the angle it's chosen to face.
 end
 
-define_tile_code("hd_shortcuts")
-define_tile_code("hd_tunnelman")
 define_tile_code("hd_door_tutorial")
 define_tile_code("hd_door_testing")
 
@@ -6543,21 +6485,6 @@ end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
 -- 	entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
 -- 	entity:destroy()
 -- end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, 0)
-
-set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
-	return 0
-end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
-
-set_pre_tile_code_callback(function(x, y, layer)
-	oncamp_tunnelman_spawn(x, y, layer)
-	return true
-end, "hd_tunnelman")
-
-set_post_tile_code_callback(function(x, y, layer)
-	oncamp_shortcuts(x, y, layer)
-	oncamp_fixes()
-	return true
-end, "hd_shortcuts")
 
 set_post_tile_code_callback(function(x, y, layer)
 	create_door_tutorial(x, y, layer)
@@ -8144,7 +8071,6 @@ set_callback(function()
 end, ON.CAMP)
 
 set_callback(function()
-	force_olmec_phase_0(true)
 	set_camp_camera_bounds_enabled(false)
 end, ON.LOGO)
 
@@ -8328,20 +8254,23 @@ set_callback(function()
 
 	onlevel_testroom()
 
-	onlevel_boss_init()
+	olmeclib.onlevel_boss_init()
+	if state.theme == THEME.OLMEC then
+		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
+
+		botdlib.set_hell_x()
+		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
+	end
+
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
 
 set_callback(function()
-	onframe_idoltrap()
 	onframe_acidpoison()
-	onframe_boss()
 end, ON.FRAME)
 
 set_callback(function()
-	onguiframe_ui_info_boss()			-- debug
-	onguiframe_ui_info_boulder()		--
-	onguiframe_ui_info_path()			--
+	onguiframe_ui_info_path()			-- debug
 	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
 
@@ -8517,7 +8446,7 @@ function onloading_levelrules()
 	-- Demo Handling
 	if (
 		state.level == 4
-		and state.world == DEMO_MAX_WORLD
+		and state.world == demolib.DEMO_MAX_WORLD
 		and state.screen_next ~= ON.DEATH
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
@@ -9153,44 +9082,6 @@ function onlevel_hide_yama()
 	end
 end
 
-function onlevel_boss_init()
-	if state.theme == THEME.OLMEC then
-		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		cutscene_move_olmec_pre()
-		cutscene_move_cavemen()
-		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
-		
-		botdlib.set_hell_x()
-		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
-	end
-end
-
-function cutscene_move_olmec_pre()
-	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
-	if #olmecs > 0 then
-		OLMEC_UID = olmecs[1]
-		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
-	end
-end
-
-function cutscene_move_olmec_post()
-	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
-end
-
-function cutscene_move_cavemen()
-	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
-	-- create a hawkman and disable his ai
-	-- set_timeout() to reenable his ai and set his stuntimer.
-	-- **does set_timeout() work during cutscenes?
-		-- if not, use set_global_timeout
-			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
-	-- **consider problems for skipping the cutscene
-	cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
-	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
-	end
-end
-
 set_callback(function(text)
     if (
 		text == "Your voice echoes in here..."
@@ -9207,213 +9098,6 @@ set_callback(function(text)
     end
 	return text
 end, ON.TOAST)
-
-function oncamp_tunnelman_spawn(x, y, l)
-	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
-	marla = get_entity(marla_uid)
-	marla.flags = clr_flag(marla.flags, ENT_FLAG.FACING_LEFT)
-	return marla_uid
-end
-
-function oncamp_shortcuts(x, y, l)
-
-	--loop once for door materials,
-	--once done, concatonate LOGIC_DOOR and ITEM_CONSTRUCTION_SIGN lists, make sure construction signs are last.
-	--loop to move logic_door and construction signs. If it's a logic_door, move its accessories as well.
-	--shortcut doors (if construction sign,  here too): LOGIC_DOOR, FLOOR_DOOR_STARTING_EXIT, BG_DOOR(when moving this, +0.31 to y) ENT_TYPE.ITEM_CONSTRUCTION_SIGN, 
-	--3: x=21.000,	y=90.000
-	--2: 			y-3=(87.000)
-	--1: 			y-6=(84.000)
-	--shortcut signs: ENT_TYPE.ITEM_SHORTCUT_SIGN
-	--(+2.0 to x)
-	
-	-- shortcut_signframes = {}
-	local shortcut_flagstocheck = {4, 7, 10}
-	local shortcut_worlds = {2, 3, 4}
-	local shortcut_levels = {1, 1, 1}
-	local shortcut_themes = {THEME.JUNGLE, THEME.ICE_CAVES, THEME.TEMPLE}
-	local shortcut_doortextures = {
-		TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1,
-		TEXTURE.DATA_TEXTURES_FLOOR_ICE_1,
-		TEXTURE.DATA_TEXTURES_FLOOR_TEMPLE_1
-	}
-	
-	-- hd-accurate x-placement of first shortcut door: 16
-	-- pre-camera fix x-placement of first shortcut door: 19
-	local new_x = x
-	local shortcut_available = false
-	for i, flagtocheck in ipairs(shortcut_flagstocheck) do
-		if (
-			shortcut_worlds[i] <= DEMO_MAX_WORLD
-			-- and savegame.shortcuts >= flagtocheck
-		) then
-			spawn_door(new_x, y, l, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])
-		else
-			local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, new_x, y, l, 0, 0))
-			construction_sign:set_draw_depth(40)
-		end
-		
-		local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, new_x, y+.31, l, 0, 0)
-		get_entity(door_bg):set_texture(shortcut_doortextures[i])
-		get_entity(door_bg).animation_frame = 1
-
-		-- local sign = get_entity(spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, y-0.5, LAYER.FRONT, 0, 0))
-		-- local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_1)
-		-- texture_def.texture_path = "res/deco_basecamp_shortcut_signs.png"
-		-- sign:set_texture(define_texture(texture_def))
-		-- sign.animation_frame = sign.animation_frame + (i-1)
-
-		-- hd-accurate space between shortcut doors: 4
-		-- pre-camera fix space between shortcut doors: 3
-		new_x = new_x + 4
-	end
-end
-
-function oncamp_fixes()
-	-- fix gap in floor where S2 shortcut would normally spawn
-	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
-
-	-- add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
-	
-end
-
-function idol_disturbance()
-	if IDOL_UID ~= nil then
-		x, y, l = get_position(IDOL_UID)
-		_entity = get_entity(IDOL_UID)
-		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
-
-	end
-end
-
-function onframe_idoltrap()
-	-- Idol trap activation
-	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
-		IDOLTRAP_TRIGGER = true
-		if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
-			create_ghost()
-		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
-			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
-		elseif state.theme == THEME.JUNGLE then
-			-- Break the 6 blocks under it in a row, starting with the outside 2 going in
-			if #idoltrap_blocks > 0 then
-				kill_entity(idoltrap_blocks[1])
-				kill_entity(idoltrap_blocks[6])
-				set_timeout(function()
-					kill_entity(idoltrap_blocks[2])
-					kill_entity(idoltrap_blocks[5])
-				end, idoltrap_timeout)
-				set_timeout(function()
-					kill_entity(idoltrap_blocks[3])
-					kill_entity(idoltrap_blocks[4])
-				end, idoltrap_timeout*2)
-			end
-		elseif state.theme == THEME.TEMPLE then
-			if feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
-				-- Break all 4 blocks under it at once
-				for i = 1, #idoltrap_blocks, 1 do
-					kill_entity(idoltrap_blocks[i])
-				end
-			else -- Normal temple trap
-				-- # TODO: Normal temple idol trap sliding doors
-				local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-				texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
-				for i = 1, #idoltrap_blocks, 1 do
-					local floor = get_entity(idoltrap_blocks[i])
-					-- Code provided by Dregu
-					if floor ~= -1 then
-						local cx, cy, cl = get_position(floor.uid)
-						kill_entity(floor.uid)
-						local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-						block.velocityy = -0.01
-						
-						block:set_texture(define_texture(texture_def))
-						block.animation_frame = 27
-					end
-				end
-			end
-
-			
-		end
-	elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
-		if BOULDER_UID == nil then -- boulder ownership
-			boulders = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_BOULDER)
-			if #boulders > 0 then
-				BOULDER_UID = boulders[1]
-				-- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
-				if options.hd_og_boulder_agro_disable == false then
-					boulder = get_entity(BOULDER_UID):as_movable()
-					
-					-- set texture
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
-					texture_def.texture_path = "res/deco_ice_boulder.png"
-					boulder:set_texture(define_texture(texture_def))
-
-					for i, player in ipairs(players) do
-						boulder.last_owner_uid = player.uid
-					end
-				end
-			end
-		else -- boulder crush prevention
-			boulder = get_entity(BOULDER_UID)
-			if boulder ~= nil then
-				boulder = get_entity(BOULDER_UID):as_movable()
-				x, y, l = get_position(BOULDER_UID)
-				BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-				BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-				if boulder.velocityx >= BOULDER_CRUSHPREVENTION_VELOCITY or boulder.velocityx <= -BOULDER_CRUSHPREVENTION_VELOCITY then
-					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE*BOULDER_CRUSHPREVENTION_MULTIPLIER
-					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT*BOULDER_CRUSHPREVENTION_MULTIPLIER
-				else 
-					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-				end
-				BOULDER_SX = ((x - boulder.hitboxx)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
-				local blocks = get_entities_overlapping(
-					ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-					0,
-					BOULDER_SX,
-					BOULDER_SY,
-					BOULDER_SX2,
-					BOULDER_SY2,
-					LAYER.FRONT
-				)
-				blocks = commonlib.TableConcat(
-					blocks, get_entities_overlapping(
-						ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-						0,
-						BOULDER_SX,
-						BOULDER_SY,
-						BOULDER_SX2,
-						BOULDER_SY2,
-						LAYER.FRONT
-					)
-				)
-				for _, block in ipairs(blocks) do
-					kill_entity(block)
-				end
-				if options.hd_debug_info_boulder == true then
-					touching = get_entities_overlapping(
-						0,
-						0x1,
-						BOULDER_SX,
-						BOULDER_SY,
-						BOULDER_SX2,
-						BOULDER_SY2,
-						LAYER.FRONT
-					)
-					if #touching > 0 then BOULDER_DEBUG_PLAYERTOUCH = true else BOULDER_DEBUG_PLAYERTOUCH = false end
-				end
-			-- else message("Boulder crushed :(")
-			end
-		end
-	end
-end
 
 function onframe_acidpoison()
 	-- Worm LEVEL
@@ -9452,71 +9136,6 @@ function players_in_moai()
 		LAYER.FRONT
 	)
 	return #players_in_moai ~= 0
-end
-
-function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later
-	c_logics = get_entities_by_type(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR)
-	if #c_logics > 0 then
-		c_logics_e = get_entity(c_logics[1]):as_movable()
-		dead = test_flag(c_logics_e.flags, ENT_FLAG.DEAD)
-		if dead == true then
-			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
-			-- kill the blocks olmec would normally smash.
-			for b = 1, 4, 1 do
-				local blocks = get_entities_at({ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, 0, 21+b, 97, LAYER.FRONT, 0.5)--98, LAYER.FRONT, 0.5)
-				if #blocks > 0 then
-					kill_entity(blocks[1])
-				end
-				b = b + 1
-			end
-			cutscene_move_olmec_post()
-			BOSS_STATE = BOSS_SEQUENCE.FIGHT
-		end
-	end
-end
-
-function onframe_boss()
-	if state.theme == THEME.OLMEC then
-		if OLMEC_UID then
-			if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then
-				onframe_olmec_cutscene()
-			elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-				onframe_olmec_behavior()
-				onframe_boss_wincheck()
-			end
-		end
-	end
-end
-
-function onframe_olmec_behavior()
-	olmec = get_entity(OLMEC_UID)
-	if olmec ~= nil then
-		olmec = get_entity(OLMEC_UID):as_olmec()
-		-- Ground Pound behavior:
-			-- # TODO: Shift OLMEC down enough blocks to match S2's OLMEC. Currently the spelunker is crushed between Olmec and the ceiling.
-			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
-			-- Decide whether or not we restore this behavior or if we raise the ceiling generation.
-		-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-		-- Enemy Spawning: Detect when olmec is about to smash down
-		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
-			OLMEC_STATE = OLMEC_SEQUENCE.STILL
-			x, y, l = get_position(OLMEC_UID)
-			-- random chance (maybe 20%?) each time olmec groundpounds, shoots 3 out in random directions upwards.
-			-- if math.random() >= 0.5 then
-				-- # TODO: Currently fires twice. Idea: Use a timeout variable to check time to refire.
-				olmec_attack(x, y+2, l)
-				-- olmec_attack(x, y+2.5, l)
-				-- olmec_attack(x, y+2.5, l)
-				
-			-- end
-		elseif olmec.velocityy < -0.400 then
-			OLMEC_STATE = OLMEC_SEQUENCE.FALL
-		end
-	end
-end
-
-function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
 end
 
 
@@ -9560,103 +9179,6 @@ function applyflags_to_quest(flags)
 			end
 		end
 	else message("No quest flags") end
-end
-
-function onframe_boss_wincheck()
-	if BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-		olmec = get_entity(OLMEC_UID):as_olmec()
-		if olmec ~= nil then
-			if olmec.attack_phase == 3 then
-				local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-				if sound ~= nil then sound:play() end
-				BOSS_STATE = BOSS_SEQUENCE.DEAD
-				local _olmec_door = get_entity(DOOR_ENDGAME_OLMEC_UID)
-				_olmec_door.flags = set_flag(_olmec_door.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-				_x, _y, _ = get_position(DOOR_ENDGAME_OLMEC_UID)
-				-- unlock_door_at(41, 99)
-				unlock_door_at(_x, _y)
-			end
-		end
-	end
-end
-
-function onguiframe_ui_info_boss()
-	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if state.theme == THEME.OLMEC and OLMEC_UID ~= nil then
-			olmec = get_entity(OLMEC_UID)
-			text_x = -0.95
-			text_y = -0.50
-			white = rgba(255, 255, 255, 255)
-			if olmec ~= nil then
-				olmec = get_entity(OLMEC_UID):as_olmec()
-				
-				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-				olmec_attack_state = "UNKNOWN"
-				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
-				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
-				
-				-- BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-				boss_attack_state = "UNKNOWN"
-				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then BOSS_attack_state = "CUTSCENE"
-				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then BOSS_attack_state = "FIGHT"
-				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then BOSS_attack_state = "DEAD" end
-				
-				draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
-				text_y = text_y - 0.1
-				draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
-			else draw_text(text_x, text_y, 0, "olmec is nil", white) end
-		end
-	end
-end
-
-function onguiframe_ui_info_boulder()
-	if options.hd_debug_info_boulder == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if (
-			state.theme == THEME.DWELLING and
-			(state.level == 2 or state.level == 3 or state.level == 4)
-		) then
-			text_x = -0.95
-			text_y = -0.45
-			green_rim = rgba(102, 108, 82, 255)
-			green_hitbox = rgba(153, 196, 19, 170)
-			white = rgba(255, 255, 255, 255)
-			if BOULDER_UID == nil then text_boulder_uid = "No Boulder Onscreen"
-			else text_boulder_uid = tostring(BOULDER_UID) end
-			
-			sx = BOULDER_SX
-			sy = BOULDER_SY
-			sx2 = BOULDER_SX2
-			sy2 = BOULDER_SY2
-			
-			draw_text(text_x, text_y, 0, "BOULDER_UID: " .. text_boulder_uid, white)
-			
-			if BOULDER_UID ~= nil and sx ~= nil and sy ~= nil and sx2 ~= nil and sy2 ~= nil then
-				text_y = text_y-0.1
-				sp_x, sp_y = screen_position(sx, sy)
-				sp_x2, sp_y2 = screen_position(sx2, sy2)
-				
-				-- draw_rect(sp_x, sp_y, sp_x2, sp_y2, 4, 0, green_rim)
-				draw_rect_filled(sp_x, sp_y, sp_x2, sp_y2, 0, green_hitbox)
-				
-				text_boulder_sx = tostring(sx)
-				text_boulder_sy = tostring(sy)
-				text_boulder_sx2 = tostring(sx2)
-				text_boulder_sy2 = tostring(sy2)
-				if BOULDER_DEBUG_PLAYERTOUCH == true then text_boulder_touching = "Touching!" else text_boulder_touching = "Not Touching." end
-				
-				draw_text(text_x, text_y, 0, "SX: " .. text_boulder_sx, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY: " .. text_boulder_sy, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SX2: " .. text_boulder_sx2, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY2: " .. text_boulder_sy2, white)
-				text_y = text_y-0.1
-				
-				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
-			end
-		end
-	end
 end
 
 function onguiframe_ui_info_worldstate()

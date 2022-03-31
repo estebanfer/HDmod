@@ -1,5 +1,5 @@
-commonlib = require 'common'
-wormtonguelib = require 'entities.wormtongue'
+-- commonlib = require 'common'
+-- wormtonguelib = require 'entities.wormtongue'
 
 local module = {}
 

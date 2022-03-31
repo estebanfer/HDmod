@@ -11,6 +11,7 @@ botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
 olmeclib = require 'lib.entities.olmec'
+boulderlib = require 'lib.entities.boulder'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -66,23 +67,11 @@ COOP_COFFIN = false
 IDOL_X = nil
 IDOL_Y = nil
 IDOL_UID = nil
-BOULDER_UID = nil
-BOULDER_SX = nil
-BOULDER_SY = nil
-BOULDER_SX2 = nil
-BOULDER_SY2 = nil
-BOULDER_CRUSHPREVENTION_EDGE = 0.15
-BOULDER_CRUSHPREVENTION_HEIGHT = 0.3
-BOULDER_CRUSHPREVENTION_VELOCITY = 0.16
-BOULDER_CRUSHPREVENTION_MULTIPLIER = 2.5
-BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
 acid_tick = ACID_POISONTIME
 idoltrap_timeout = 0
 idoltrap_blocks = {}
 tombstone_blocks = {}
 moai_veil = nil
-BOULDER_DEBUG_PLAYERTOUCH = false
 HELL_Y = 86
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
@@ -5401,14 +5390,6 @@ function init_onlevel()
 	IDOL_X = nil
 	IDOL_Y = nil
 	IDOL_UID = nil
-	BOULDER_UID = nil
-	BOULDER_SX = nil
-	BOULDER_SY = nil
-	BOULDER_SX2 = nil
-	BOULDER_SY2 = nil
-	BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-	BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-	BOULDER_DEBUG_PLAYERTOUCH = false
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 
@@ -5432,6 +5413,7 @@ function init_onlevel()
 	wormtonguelib.init()
 	ghostlib.init()
 	olmeclib.init()
+	boulderlib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -8317,8 +8299,7 @@ set_callback(function()
 end, ON.FRAME)
 
 set_callback(function()
-	onguiframe_ui_info_boulder()		-- debug
-	onguiframe_ui_info_path()			--
+	onguiframe_ui_info_path()			-- debug
 	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
 
@@ -9204,84 +9185,9 @@ function onframe_idoltrap()
 					end
 				end
 			end
-
-			
 		end
 	elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
-		if BOULDER_UID == nil then -- boulder ownership
-			boulders = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_BOULDER)
-			if #boulders > 0 then
-				BOULDER_UID = boulders[1]
-				-- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
-				if options.hd_og_boulder_agro_disable == false then
-					boulder = get_entity(BOULDER_UID):as_movable()
-					
-					-- set texture
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
-					texture_def.texture_path = "res/deco_ice_boulder.png"
-					boulder:set_texture(define_texture(texture_def))
-
-					for i, player in ipairs(players) do
-						boulder.last_owner_uid = player.uid
-					end
-				end
-			end
-		else -- boulder crush prevention
-			boulder = get_entity(BOULDER_UID)
-			if boulder ~= nil then
-				boulder = get_entity(BOULDER_UID):as_movable()
-				x, y, l = get_position(BOULDER_UID)
-				BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-				BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-				if boulder.velocityx >= BOULDER_CRUSHPREVENTION_VELOCITY or boulder.velocityx <= -BOULDER_CRUSHPREVENTION_VELOCITY then
-					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE*BOULDER_CRUSHPREVENTION_MULTIPLIER
-					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT*BOULDER_CRUSHPREVENTION_MULTIPLIER
-				else 
-					BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
-					BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
-				end
-				BOULDER_SX = ((x - boulder.hitboxx)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
-				BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
-				local blocks = get_entities_overlapping(
-					ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-					0,
-					BOULDER_SX,
-					BOULDER_SY,
-					BOULDER_SX2,
-					BOULDER_SY2,
-					LAYER.FRONT
-				)
-				blocks = commonlib.TableConcat(
-					blocks, get_entities_overlapping(
-						ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-						0,
-						BOULDER_SX,
-						BOULDER_SY,
-						BOULDER_SX2,
-						BOULDER_SY2,
-						LAYER.FRONT
-					)
-				)
-				for _, block in ipairs(blocks) do
-					kill_entity(block)
-				end
-				if options.hd_debug_info_boulder == true then
-					touching = get_entities_overlapping(
-						0,
-						0x1,
-						BOULDER_SX,
-						BOULDER_SY,
-						BOULDER_SX2,
-						BOULDER_SY2,
-						LAYER.FRONT
-					)
-					if #touching > 0 then BOULDER_DEBUG_PLAYERTOUCH = true else BOULDER_DEBUG_PLAYERTOUCH = false end
-				end
-			-- else message("Boulder crushed :(")
-			end
-		end
+		boulderlib.onframe_ownership_crush_prevention()
 	end
 end
 
@@ -9365,56 +9271,6 @@ function applyflags_to_quest(flags)
 			end
 		end
 	else message("No quest flags") end
-end
-
-function onguiframe_ui_info_boulder()
-	if options.hd_debug_info_boulder == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		if (
-			state.theme == THEME.DWELLING and
-			(state.level == 2 or state.level == 3 or state.level == 4)
-		) then
-			text_x = -0.95
-			text_y = -0.45
-			green_rim = rgba(102, 108, 82, 255)
-			green_hitbox = rgba(153, 196, 19, 170)
-			white = rgba(255, 255, 255, 255)
-			if BOULDER_UID == nil then text_boulder_uid = "No Boulder Onscreen"
-			else text_boulder_uid = tostring(BOULDER_UID) end
-			
-			sx = BOULDER_SX
-			sy = BOULDER_SY
-			sx2 = BOULDER_SX2
-			sy2 = BOULDER_SY2
-			
-			draw_text(text_x, text_y, 0, "BOULDER_UID: " .. text_boulder_uid, white)
-			
-			if BOULDER_UID ~= nil and sx ~= nil and sy ~= nil and sx2 ~= nil and sy2 ~= nil then
-				text_y = text_y-0.1
-				sp_x, sp_y = screen_position(sx, sy)
-				sp_x2, sp_y2 = screen_position(sx2, sy2)
-				
-				-- draw_rect(sp_x, sp_y, sp_x2, sp_y2, 4, 0, green_rim)
-				draw_rect_filled(sp_x, sp_y, sp_x2, sp_y2, 0, green_hitbox)
-				
-				text_boulder_sx = tostring(sx)
-				text_boulder_sy = tostring(sy)
-				text_boulder_sx2 = tostring(sx2)
-				text_boulder_sy2 = tostring(sy2)
-				if BOULDER_DEBUG_PLAYERTOUCH == true then text_boulder_touching = "Touching!" else text_boulder_touching = "Not Touching." end
-				
-				draw_text(text_x, text_y, 0, "SX: " .. text_boulder_sx, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY: " .. text_boulder_sy, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SX2: " .. text_boulder_sx2, white)
-				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY2: " .. text_boulder_sy2, white)
-				text_y = text_y-0.1
-				
-				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
-			end
-		end
-	end
 end
 
 function onguiframe_ui_info_worldstate()

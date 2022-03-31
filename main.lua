@@ -12,6 +12,7 @@ wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
+idollib = require 'lib.entities.idol'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -54,9 +55,7 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
 local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
-IDOLTRAP_TRIGGER = false
 ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
-IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
@@ -64,12 +63,7 @@ LEVEL_UNLOCK = nil
 UNLOCK_WI, UNLOCK_HI = nil, nil
 CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 COOP_COFFIN = false
-IDOL_X = nil
-IDOL_Y = nil
-IDOL_UID = nil
 acid_tick = ACID_POISONTIME
-idoltrap_timeout = 0
-idoltrap_blocks = {}
 tombstone_blocks = {}
 moai_veil = nil
 HELL_Y = 86
@@ -548,7 +542,7 @@ HD_TILENAME = {
 					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
 					texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
 					get_entity(block_uid):set_texture(define_texture(texture_def))
-					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+					idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
 				end,
 			},
 		},
@@ -562,7 +556,7 @@ HD_TILENAME = {
 					local block = get_entity(block_uid)
 					block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
 					block.more_flags = set_flag(block.more_flags, 17)
-					idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+					idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
 				end,
 			},
 			alternate = {
@@ -5382,18 +5376,12 @@ function init_posttile_onstart()
 end
 
 function init_onlevel()
-	idoltrap_blocks = {}
 	tombstone_blocks = {}
-	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	moai_veil = nil
 	FRAG_PREVENTION_UID = nil
-	IDOL_X = nil
-	IDOL_Y = nil
-	IDOL_UID = nil
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 
-	IDOLTRAP_TRIGGER = false
 	
 	CHUNKBOOL_IDOL = false
 	CHUNKBOOL_ALTAR = false
@@ -5414,6 +5402,7 @@ function init_onlevel()
 	ghostlib.init()
 	olmeclib.init()
 	boulderlib.init()
+	idollib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -5909,23 +5898,6 @@ function create_door_exit_to_hauntedcastle(x, y, l)
 	set_interval(entrance_hauntedcastle, 1)
 end
 
-function create_ghost()
-	xmin, _, xmax, _ = get_bounds()
-	-- message("xmin: " .. xmin .. " ymin: " .. ymin .. " xmax: " .. xmax .. " ymax: " .. ymax)
-	
-	if #players > 0 then
-		p_x, p_y, p_l = get_position(players[1].uid)
-		bx_mid = (xmax - xmin)/2
-		gx = 0
-		gy = p_y
-		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
-		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
-		toast("A terrible chill runs up your spine!")
-	-- else
-		-- toast("A terrible chill r- ...wait, where are the players?!?")
-	end
-end
-
 -- # TODO: Revise to a new pickup. 
 	-- IDEAS:
 		-- Replace with actual crysknife
@@ -5990,19 +5962,19 @@ function create_damsel(x, y, l)
 end
 
 function create_idol(x, y, l)
-	IDOL_X, IDOL_Y = x, y
-	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+	idollib.IDOL_X, idollib.IDOL_Y = x, y
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
 	if state.theme == THEME.ICE_CAVES then
 		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-		get_entity(IDOL_UID).trap_triggered = true
+		get_entity(idollib.IDOL_UID).trap_triggered = true
 	end
 end
 
 function create_idol_crystalskull(x, y, l)
-	IDOL_X, IDOL_Y = x, y
-	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, IDOL_X, IDOL_Y, l, 0, 0)
+	idollib.IDOL_X, idollib.IDOL_Y = x, y
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
 
-	local entity = get_entity(IDOL_UID)
+	local entity = get_entity(idollib.IDOL_UID)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 	texture_def.texture_path = "res/items_dar_idol.png"
 	entity:set_texture(define_texture(texture_def))
@@ -8294,7 +8266,6 @@ set_callback(function()
 end, ON.LEVEL)
 
 set_callback(function()
-	onframe_idoltrap()
 	onframe_acidpoison()
 end, ON.FRAME)
 
@@ -9127,69 +9098,6 @@ set_callback(function(text)
     end
 	return text
 end, ON.TOAST)
-
-function idol_disturbance()
-	if IDOL_UID ~= nil then
-		x, y, l = get_position(IDOL_UID)
-		_entity = get_entity(IDOL_UID)
-		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
-
-	end
-end
-
-function onframe_idoltrap()
-	-- Idol trap activation
-	if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
-		IDOLTRAP_TRIGGER = true
-		if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
-			create_ghost()
-		elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
-			spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
-		elseif state.theme == THEME.JUNGLE then
-			-- Break the 6 blocks under it in a row, starting with the outside 2 going in
-			if #idoltrap_blocks > 0 then
-				kill_entity(idoltrap_blocks[1])
-				kill_entity(idoltrap_blocks[6])
-				set_timeout(function()
-					kill_entity(idoltrap_blocks[2])
-					kill_entity(idoltrap_blocks[5])
-				end, idoltrap_timeout)
-				set_timeout(function()
-					kill_entity(idoltrap_blocks[3])
-					kill_entity(idoltrap_blocks[4])
-				end, idoltrap_timeout*2)
-			end
-		elseif state.theme == THEME.TEMPLE then
-			if feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
-				-- Break all 4 blocks under it at once
-				for i = 1, #idoltrap_blocks, 1 do
-					kill_entity(idoltrap_blocks[i])
-				end
-			else -- Normal temple trap
-				-- # TODO: Normal temple idol trap sliding doors
-				local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-				texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
-				for i = 1, #idoltrap_blocks, 1 do
-					local floor = get_entity(idoltrap_blocks[i])
-					-- Code provided by Dregu
-					if floor ~= -1 then
-						local cx, cy, cl = get_position(floor.uid)
-						kill_entity(floor.uid)
-						local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-						block.velocityy = -0.01
-						
-						block:set_texture(define_texture(texture_def))
-						block.animation_frame = 27
-					end
-				end
-			end
-		end
-	elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
-		boulderlib.onframe_ownership_crush_prevention()
-	end
-end
 
 function onframe_acidpoison()
 	-- Worm LEVEL

@@ -65,6 +65,22 @@ set_post_tile_code_callback(function(x, y, layer)
 	return true
 end, "hd_shortcuts")
 
+define_tile_code("hd_door_tutorial")
+define_tile_code("hd_door_testing")
+
+set_post_tile_code_callback(function(x, y, layer)
+	camplib.create_door_tutorial(x, y, layer)
+	return true
+end, "hd_door_tutorial")
+
+set_post_tile_code_callback(function(x, y, layer)
+	if options.hd_debug_testing_door == true then
+		camplib.create_door_testing(x, y, layer)
+	end
+	return true
+end, "hd_door_testing")
+
+
 function oncamp_tunnelman_spawn(x, y, l)
 	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
 	marla = get_entity(marla_uid)

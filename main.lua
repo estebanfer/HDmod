@@ -6035,9 +6035,6 @@ function exit_yama()
 	exit_boss(true)
 end
 
-define_tile_code("hd_door_tutorial")
-define_tile_code("hd_door_testing")
-
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
@@ -6047,18 +6044,6 @@ end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
 -- 	entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
 -- 	entity:destroy()
 -- end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, 0)
-
-set_post_tile_code_callback(function(x, y, layer)
-	camplib.create_door_tutorial(x, y, layer)
-	return true
-end, "hd_door_tutorial")
-
-set_post_tile_code_callback(function(x, y, layer)
-	if options.hd_debug_testing_door == true then
-		camplib.create_door_testing(x, y, layer)
-	end
-	return true
-end, "hd_door_testing")
 
 set_pre_tile_code_callback(function(x, y, layer)
 	local type_to_use = ENT_TYPE.FLOOR_GENERIC

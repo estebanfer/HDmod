@@ -16,6 +16,7 @@ ghostlib = require 'lib.entities.ghost'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
 idollib = require 'lib.entities.idol'
+acidlib = require 'lib.entities.acid'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -62,7 +63,6 @@ ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
-acid_tick = ACID_POISONTIME
 tombstone_blocks = {}
 moai_veil = nil
 HELL_Y = 86
@@ -5394,18 +5394,7 @@ function init_onlevel()
 	idollib.init()
 	unlockslib.init()
 	cooplib.init()
-	acid_tick = ACID_POISONTIME
-
-end
-
-function bubbles()
-	local fx = get_entities_by_type(ENT_TYPE.FX_WATER_SURFACE)
-	for i,v in ipairs(fx) do
-		local x, y, l = get_position(v)
-		if math.random() < 0.003 then
-			spawn_entity(ENT_TYPE.ITEM_ACIDBUBBLE, x, y, l, 0, 0)
-		end
-	end
+	acidlib.init()
 end
 
  -- Trix wrote this
@@ -7744,7 +7733,6 @@ set_callback(function()
 	onlevel_remove_mounts()
 
 	onlevel_hide_yama()
-	onlevel_acidbubbles()
 	onlevel_ankh_respawn()
 	onlevel_decorate_trees()
 	onlevel_replace_border()
@@ -7762,10 +7750,6 @@ set_callback(function()
 
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
-
-set_callback(function()
-	onframe_acidpoison()
-end, ON.FRAME)
 
 set_callback(function()
 	onguiframe_ui_info_path()			-- debug
@@ -8228,13 +8212,6 @@ function onlevel_remove_mounts()
 	end
 end
 
-function onlevel_acidbubbles()
-	if state.theme == THEME.EGGPLANT_WORLD then
-		set_interval(bubbles, 35) -- 15)
-	end
-end
-
-
 function onlevel_ankh_respawn()
 	if options.hd_debug_scripted_levelgen_disable == false then
 		set_timeout(function()
@@ -8595,29 +8572,6 @@ set_callback(function(text)
     end
 	return text
 end, ON.TOAST)
-
-function onframe_acidpoison()
-	-- Worm LEVEL
-	if state.theme == THEME.EGGPLANT_WORLD then
-		-- Acid damage
-		for i, player in ipairs(players) do
-			-- local spelunker_mov = get_entity(player):as_movable()
-			local spelunker_swimming = test_flag(player.more_flags, 11)
-			local poisoned = player:is_poisoned()
-			x, y, l = get_position(player.uid)
-			if spelunker_swimming and player.health ~= 0 and not poisoned then
-				if acid_tick <= 0 then
-					spawn(ENT_TYPE.ITEM_ACIDSPIT, x, y, l, 0, 0)
-					acid_tick = ACID_POISONTIME
-				else
-					acid_tick = acid_tick - 1
-				end
-			else
-				acid_tick = ACID_POISONTIME
-			end
-		end
-	end
-end
 
 function players_in_moai()
 	local moai_hollow_aabb = AABB:new(

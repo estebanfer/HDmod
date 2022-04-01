@@ -70,8 +70,6 @@ moai_veil = nil
 HELL_Y = 86
 DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
-DOOR_TESTING_UID = nil
-DOOR_TUTORIAL_UID = nil
 
 HD_THEMEORDER = {
 	THEME.DWELLING,
@@ -5803,24 +5801,6 @@ function create_door_entrance(x, y, l)
 	state.level_gen.spawn_x, state.level_gen.spawn_y = x, y
 end
 
-function create_door_testing(x, y, l)
-	DOOR_TESTING_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)--THEME.TIDE_POOL)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_3)
-	get_entity(door_bg).animation_frame = 1
-end
-
-function create_door_tutorial(x, y, l)
-	if demolib.DEMO_TUTORIAL_AVAILABLE == true then
-		DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
-	else
-		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
-		construction_sign:set_draw_depth(40)
-	end
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	get_entity(door_bg).animation_frame = 1
-end
-
 function create_door_exit(x, y, l)
 	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	spawn_entity_over(ENT_TYPE.FX_COMPASS, door_target, 0, 0)
@@ -6151,31 +6131,6 @@ function exit_yama()
 	exit_boss(true)
 end
 
-function entrance_force_worldstate(_worldstate, _entrance_uid)
-	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
-		door_entrance_ent = get_entity(_entrance_uid)
-		if door_entrance_ent ~= nil then
-			for i = 1, #players, 1 do
-				if (
-					door_entrance_ent:overlaps_with(get_entity(players[i].uid)) == true and
-					players[i].state == CHAR_STATE.ENTERING
-				) then
-					worldlib.HD_WORLDSTATE_STATE = _worldstate
-					break;
-				end
-			end
-		end
-	end
-end
-
-function entrance_testing()
-	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TESTING, DOOR_TESTING_UID)
-end
-
-function entrance_tutorial()
-	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TUTORIAL, DOOR_TUTORIAL_UID)
-end
-
 function testroom_level_1()
 	--[[
 		Coordinates of each floor:
@@ -6355,13 +6310,13 @@ end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
 -- end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, 0)
 
 set_post_tile_code_callback(function(x, y, layer)
-	create_door_tutorial(x, y, layer)
+	camplib.create_door_tutorial(x, y, layer)
 	return true
 end, "hd_door_tutorial")
 
 set_post_tile_code_callback(function(x, y, layer)
 	if options.hd_debug_testing_door == true then
-		create_door_testing(x, y, layer)
+		camplib.create_door_testing(x, y, layer)
 	end
 	return true
 end, "hd_door_testing")
@@ -7910,38 +7865,6 @@ end, ON.POST_LEVEL_GENERATION)
 -- 	message(F'ON.POST_LEVEL_GENERATION: {state.time_level}')
 
 
--- ON.CAMP
-set_callback(function()
-	-- oncamp_movetunnelman()
-	-- oncamp_shortcuts()
-	
-	
-	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
-	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
-	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
-	
-	-- pre_tile ON.START stuff
-	worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
-
-	set_interval(entrance_tutorial, 1)
-	if options.hd_debug_testing_door == true then
-		set_interval(entrance_testing, 1)
-	end
-
-	state.camera.bounds_top = 93.9
-	state.camera.bounds_bottom = 82.7
-	state.camera.bounds_left = 8.5
-	state.camera.bounds_right = 51.5
-
-	state.camera.adjusted_focus_x = 41.55
-	state.camera.adjusted_focus_y = 88.3
-
-end, ON.CAMP)
-
-set_callback(function()
-	set_camp_camera_bounds_enabled(false)
-end, ON.LOGO)
-
 set_callback(function()
 	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
 	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
@@ -7959,8 +7882,8 @@ set_callback(function()
 	-- pre_tile ON.START stuff
 	POSTTILE_STARTBOOL = false
 	-- worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
-	-- DOOR_TESTING_UID = nil
-	-- DOOR_TUTORIAL_UID = nil
+	-- camplib.DOOR_TESTING_UID = nil
+	-- camplib.DOOR_TUTORIAL_UID = nil
 end, ON.RESET)
 
 -- ON.LOADING
@@ -8139,7 +8062,6 @@ end, ON.FRAME)
 
 set_callback(function()
 	onguiframe_ui_info_path()			-- debug
-	onguiframe_ui_info_worldstate()		--
 end, ON.GUIFRAME)
 
 
@@ -9047,66 +8969,6 @@ function applyflags_to_quest(flags)
 			end
 		end
 	else message("No quest flags") end
-end
-
-function onguiframe_ui_info_worldstate()
-	if (
-		options.hd_debug_info_worldstate == true
-		and (state.pause == 0 and (state.screen == 11 or state.screen == 12))
-	) then
-		text_x = -0.95
-		text_y = -0.37
-		white = rgba(255, 255, 255, 255)
-		green = rgba(55, 200, 75, 255)
-
-		hd_worldstate_debugtext_status = "UNKNOWN"
-		color = white
-
-		-- worldlib.HD_WORLDSTATE_STATE
-		if worldlib.HD_WORLDSTATE_STATE ~= nil then
-			if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
-				hd_worldstate_debugtext_status = "NORMAL"
-			elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
-				hd_worldstate_debugtext_status = "TUTORIAL"
-				color = green
-			elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
-				hd_worldstate_debugtext_status = "TESTING"
-				color = green
-			end
-		end
-		draw_text(text_x, text_y, 0, "worldlib.HD_WORLDSTATE_STATE: " .. hd_worldstate_debugtext_status, color)
-
-		text_y = text_y-0.1
-		color = white
-
-		-- door uid
-		if DOOR_TUTORIAL_UID ~= nil and DOOR_TUTORIAL_UID >= 0 then color = green end
-		draw_text(text_x, text_y, 0, "DOOR_TUTORIAL_UID: " .. tostring(DOOR_TUTORIAL_UID), color)
-
-		text_y = text_y-0.1
-		color = white
-
-		-- overlaps with player 1
-		door_entrance_ent = get_entity(DOOR_TUTORIAL_UID)
-		door_testing_entered_text = "false"
-		if door_entrance_ent:overlaps_with(get_entity(players[1].uid)) == true then
-			door_testing_entered_text = "true"
-			color = green
-		else door_testing_entered_text = "false" end
-		draw_text(text_x, text_y, 0, "OVERLAPS_WITH: " .. door_testing_entered_text, color)
-		
-		text_y = text_y-0.1
-		color = white
-
-		-- if player 1 state is entering
-		player_entering_text = "false"
-		if players[1].state == CHAR_STATE.ENTERING then
-			player_entering_text = "true"
-			color = green
-		else door_testing_entered_text = "false" end
-		draw_text(text_x, text_y, 0, "players[1].state == CHAR_STATE.ENTERING: " .. player_entering_text, color)
-
-	end
 end
 
 function onguiframe_ui_info_path()

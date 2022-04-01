@@ -1,5 +1,6 @@
 commonlib = require 'lib.common'
 demolib = require 'lib.demo'
+worldlib = require 'lib.worldstate'
 camplib = require 'lib.camp'
 genlib = require 'lib.roomgen'
 feelingslib = require 'lib.feelings'
@@ -71,8 +72,6 @@ DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 DOOR_EXIT_TO_BLACKMARKET_POS = nil
 DOOR_TESTING_UID = nil
 DOOR_TUTORIAL_UID = nil
-HD_WORLDSTATE_STATUS = { ["NORMAL"] = 1, ["TUTORIAL"] = 2, ["TESTING"] = 3}
-HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
 
 HD_THEMEORDER = {
 	THEME.DWELLING,
@@ -5987,8 +5986,8 @@ end
 -- prevent dark levels for specific states
 function clear_dark_level()
 	if (
-		HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
-		or HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING
+		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
+		or worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING
 		or state.theme == THEME.VOLCANA
 		or state.theme == THEME.NEO_BABYLON
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
@@ -6178,7 +6177,7 @@ function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 			if t_b == THEME.BASE_CAMP then
 				state.screen_next = ON.CAMP
 			end
-			-- if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL then
+			-- if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
 			-- 	state.screen_next = ON.LEVEL
 			-- end
 		end
@@ -6284,7 +6283,7 @@ function exit_yama()
 end
 
 function entrance_force_worldstate(_worldstate, _entrance_uid)
-	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
 		door_entrance_ent = get_entity(_entrance_uid)
 		if door_entrance_ent ~= nil then
 			for i = 1, #players, 1 do
@@ -6292,7 +6291,7 @@ function entrance_force_worldstate(_worldstate, _entrance_uid)
 					door_entrance_ent:overlaps_with(get_entity(players[i].uid)) == true and
 					players[i].state == CHAR_STATE.ENTERING
 				) then
-					HD_WORLDSTATE_STATE = _worldstate
+					worldlib.HD_WORLDSTATE_STATE = _worldstate
 					break;
 				end
 			end
@@ -6301,11 +6300,11 @@ function entrance_force_worldstate(_worldstate, _entrance_uid)
 end
 
 function entrance_testing()
-	entrance_force_worldstate(HD_WORLDSTATE_STATUS.TESTING, DOOR_TESTING_UID)
+	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TESTING, DOOR_TESTING_UID)
 end
 
 function entrance_tutorial()
-	entrance_force_worldstate(HD_WORLDSTATE_STATUS.TUTORIAL, DOOR_TUTORIAL_UID)
+	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TUTORIAL, DOOR_TUTORIAL_UID)
 end
 
 function testroom_level_1()
@@ -6388,7 +6387,7 @@ function testroom_level_2()
 end
 
 function onlevel_testroom()
-	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING then
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
 		if state.level == 1 then
 			testroom_level_1()
 		elseif state.level == 2 then
@@ -7676,7 +7675,7 @@ set_callback(function(room_gen_ctx)
 		end
 
 		if options.hd_debug_scripted_levelgen_disable == false then
-			if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
+			if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
 				if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
 					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
 				else -- unset
@@ -7830,7 +7829,7 @@ set_callback(function(room_gen_ctx)
 				end
 				--]]
 			else -- remove every procedural/extra spawn that happends in world 1 for testing/tutorial
-				if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING then
+				if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
 					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_pushblock, 0)
 				end
 				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_arrowtrap, 0)
@@ -7860,7 +7859,7 @@ set_callback(function()
 		--]]
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if (
-				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
+				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 					local block_uid = tombstone_blocks[math.random(#tombstone_blocks)]
@@ -7886,7 +7885,7 @@ set_callback(function()
 		--]]
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if (
-				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
+				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				local backwalls = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, 0, LAYER.FRONT)
 				-- message("#backwalls: " .. tostring(#backwalls))
@@ -7991,7 +7990,7 @@ set_callback(function()
 		--]]
 		if options.hd_debug_scripted_levelgen_disable == false then
 			if (
-				HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
+				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				if (
 					feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
@@ -8053,7 +8052,7 @@ set_callback(function()
 	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
 	
 	-- pre_tile ON.START stuff
-	HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
+	worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
 
 	set_interval(entrance_tutorial, 1)
 	if options.hd_debug_testing_door == true then
@@ -8090,7 +8089,7 @@ end, ON.START)
 set_callback(function()
 	-- pre_tile ON.START stuff
 	POSTTILE_STARTBOOL = false
-	-- HD_WORLDSTATE_STATE = HD_WORLDSTATE_STATUS.NORMAL
+	-- worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
 	-- DOOR_TESTING_UID = nil
 	-- DOOR_TUTORIAL_UID = nil
 end, ON.RESET)
@@ -8111,9 +8110,9 @@ function levelcreation_init()
 	-- onlevel_levelrules()
 	
 	if (
-		(HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL)
-		-- (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TUTORIAL)
-		-- or (HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING)
+		(worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL)
+		-- (worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.TUTORIAL)
+		-- or (worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.TESTING)
 	) then
 		feelingslib.onlevel_set_feelings()
 	end
@@ -8288,11 +8287,11 @@ end
 
 function onstart_init_methods()
 	if (
-		HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL
+		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 	) then
 		ghostlib.set_spawn_times()
 	elseif(
-		HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.NORMAL
+		worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.NORMAL
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 	) then
 		set_ghost_spawn_times(-1, -1)
@@ -8335,7 +8334,7 @@ function onloading_levelrules()
 	--]]
 	
 	-- Tutorial 1-3 -> Camp
-	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL) then
+	if (worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL) then
 		changestate_onloading_targets(1,1,THEME.DWELLING,1,2,THEME.DWELLING)
 		changestate_onloading_targets(1,2,THEME.DWELLING,1,3,THEME.DWELLING)
 		changestate_onloading_targets(1,3,THEME.DWELLING,1,1,THEME.BASE_CAMP)
@@ -8347,7 +8346,7 @@ function onloading_levelrules()
 	--]]
 	
 	-- Testing 1-2 -> Camp
-	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING) then
+	if (worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING) then
 		changestate_onloading_targets(1,1,state.theme,1,2,state.theme)
 		changestate_onloading_targets(1,2,state.theme,1,1,THEME.BASE_CAMP)
 		return
@@ -8484,7 +8483,7 @@ function onlevel_generation_modification()
 			levelcode = levelcode_setn(levelw, 1),
 		},
 	}
-	if (HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL) then
+	if (worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL) then
 		
 		get_unlock()
 
@@ -8503,12 +8502,12 @@ function onlevel_generation_modification()
 		level_generation_method_side()
 	else
 		-- testing setrooms
-		if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING) and (HD_ROOMOBJECT.TESTING[state.level].setRooms ~= nil)) then
+		if ((worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING) and (HD_ROOMOBJECT.TESTING[state.level].setRooms ~= nil)) then
 			level_generation_method_setrooms(HD_ROOMOBJECT.TESTING[state.level].setRooms)
 		end
 	
 		-- tutorial setrooms
-		if ((HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL) and (HD_ROOMOBJECT.TUTORIAL[state.level].setRooms ~= nil)) then
+		if ((worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL) and (HD_ROOMOBJECT.TUTORIAL[state.level].setRooms ~= nil)) then
 			level_generation_method_setrooms(HD_ROOMOBJECT.TUTORIAL[state.level].setRooms)
 		end
 	end
@@ -8969,7 +8968,7 @@ local removed_embedded_currencies = {
     ENT_TYPE.ITEM_EMERALD,
 }
 -- set_post_entity_spawn(function(entity, spawn_flags)
--- 	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
+-- 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
 -- 		if (
 -- 			state.theme ~= THEME.NEO_BABYLON
 -- 			and state.theme ~= THEME.EGGPLANT_WORLD
@@ -8977,14 +8976,14 @@ local removed_embedded_currencies = {
 -- 		) then
 -- 			return
 -- 		end
--- 	elseif HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL then
+-- 	elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
 -- 		if (
 -- 			entity.type.id == ENT_TYPE.EMBED_GOLD
 -- 			or entity.type.id == ENT_TYPE.EMBED_GOLD_BIG
 -- 		) then
 -- 			return
 -- 		end
--- 	elseif HD_WORLDSTATE_STATE ~= HD_WORLDSTATE_STATUS.TESTING then
+-- 	elseif worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.TESTING then
 -- 		return
 -- 	end
 -- 	-- Do not remove spawns from a script.
@@ -8995,7 +8994,7 @@ local removed_embedded_currencies = {
 -- end, SPAWN_TYPE.LEVEL_GEN, 0, removed_embedded_currencies)
 
 -- set_post_entity_spawn(function(entity, spawn_flags) -- remove embedded items from tutorial/testing
--- 	if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then return end
+-- 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then return end
 -- 	-- Do not remove spawns from a script.
 -- 	if (spawn_flags & SPAWN_TYPE.SCRIPT) ~= 0 then return end
 -- 	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
@@ -9194,19 +9193,19 @@ function onguiframe_ui_info_worldstate()
 		hd_worldstate_debugtext_status = "UNKNOWN"
 		color = white
 
-		-- HD_WORLDSTATE_STATE
-		if HD_WORLDSTATE_STATE ~= nil then
-			if HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.NORMAL then
+		-- worldlib.HD_WORLDSTATE_STATE
+		if worldlib.HD_WORLDSTATE_STATE ~= nil then
+			if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
 				hd_worldstate_debugtext_status = "NORMAL"
-			elseif HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL then
+			elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
 				hd_worldstate_debugtext_status = "TUTORIAL"
 				color = green
-			elseif HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TESTING then
+			elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
 				hd_worldstate_debugtext_status = "TESTING"
 				color = green
 			end
 		end
-		draw_text(text_x, text_y, 0, "HD_WORLDSTATE_STATE: " .. hd_worldstate_debugtext_status, color)
+		draw_text(text_x, text_y, 0, "worldlib.HD_WORLDSTATE_STATE: " .. hd_worldstate_debugtext_status, color)
 
 		text_y = text_y-0.1
 		color = white
@@ -9974,7 +9973,7 @@ function gen_levelcode_phase_1(rowfive)
 						entity_type_pool = hd_tiletype.phase_1.alternate[state.theme]
 					elseif (
 						hd_tiletype.phase_1.tutorial ~= nil and
-						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
 					) then
 						entity_type_pool = hd_tiletype.phase_1.tutorial
 					end
@@ -10071,7 +10070,7 @@ function gen_levelcode_phase_2(rowfive)
 						entity_type_pool = hd_tiletype.phase_2.alternate[state.theme]
 					elseif (
 						hd_tiletype.phase_2.tutorial ~= nil and
-						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
 					) then
 						entity_type_pool = hd_tiletype.phase_2.tutorial
 					end
@@ -10156,7 +10155,7 @@ function gen_levelcode_phase_3(rowfive)
 						entity_type_pool = hd_tiletype.phase_3.alternate[state.theme]
 					elseif (
 						hd_tiletype.phase_3.tutorial ~= nil and
-						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
 					) then
 						entity_type_pool = hd_tiletype.phase_3.tutorial
 					end
@@ -10256,7 +10255,7 @@ function gen_levelcode_phase_4(rowfive)
 						entity_type_pool = hd_tiletype.phase_4.alternate[state.theme]
 					elseif (
 						hd_tiletype.phase_4.tutorial ~= nil and
-						HD_WORLDSTATE_STATE == HD_WORLDSTATE_STATUS.TUTORIAL
+						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
 					) then
 						entity_type_pool = hd_tiletype.phase_4.tutorial
 					end

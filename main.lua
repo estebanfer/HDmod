@@ -891,7 +891,7 @@ HD_TILENAME = {
 						end
 					end
 					create_door_exit_moai(x+1, y-3, l)
-					ankhmoailib.create_moai_veil()
+					ankhmoailib.create_moai_veil(x, y, l)
 				end,
 			},
 		},

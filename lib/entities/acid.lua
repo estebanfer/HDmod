@@ -1,5 +1,6 @@
 local module = {}
 
+ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 acid_tick = ACID_POISONTIME
 
 function module.init()

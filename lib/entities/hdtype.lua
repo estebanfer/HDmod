@@ -935,4 +935,135 @@ function behavior_set_facing(behavior_uid, master_uid)
 end
 
 
+-- detect offset
+function detection_floor(x, y, l, offsetx, offsety, _radius)
+	_radius = _radius or 0.1
+	local blocks = get_entities_at(0, MASK.FLOOR, x+offsetx, y+offsety, l, _radius)
+	if (#blocks > 0) then
+		return blocks[1]
+	end
+	return -1
+end
+
+-- return status: 1 for conflict, 0 for right side, -1 for left.
+function conflictdetection_giant(hdctype, x, y, l)
+	conflict_rightside = false
+	scan_width = 1 -- check 2 across
+	scan_height = 2 -- check 3 up
+	floor_level = 1 -- default to frog
+	-- if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG then
+		
+	-- end
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER then
+		floor_level = 2 -- check ceiling
+	end
+	x_leftside = x - 1
+	y_scanbase = y - 1
+	for sides_xi = x, x_leftside, -1 do
+		for block_yi = y_scanbase, y_scanbase+scan_height, 1 do
+			for block_xi = sides_xi, sides_xi+scan_width, 1 do
+				avoidair = true
+				if block_yi == y_scanbase + floor_level then
+					avoidair = false
+				end
+				if (
+					(avoidair == false and (detection_floor(block_xi, block_yi, l, 0, 0) ~= -1)) or
+					(avoidair == true and (detection_floor(block_xi, block_yi, l, 0, 0) == -1))
+				) then
+					conflict_rightside = true
+				end
+			end
+		end
+		if conflict_rightside == false then
+			if sides_xi == x_leftside then
+				return -1
+			else
+				return 0
+			end
+		end
+	end
+	return 1
+end
+
+-- detect blocks above and to the sides
+function conflictdetection_floortrap(hdctype, x, y, l)
+	conflict = false
+	scan_width = 1 -- check 1 across
+	scan_height = 1 -- check the space above
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
+		scan_width = 1 -- check 1 across (1 on each side)
+		scan_height = 0 -- check the space above + 1 more
+	elseif hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
+		scan_width = 3 -- check 3 across (1 on each side)
+		scan_height = 2 -- check the space above + 1 more
+	end
+	ey_above = y
+	for block_yi = ey_above, ey_above+scan_height, 1 do
+		-- skip sides when y == 1
+		if block_yi < ey_above+scan_height then
+			block_xi_min, block_xi_max = x, x
+		else
+			block_xi_min = x - math.floor(scan_width/2)
+			block_xi_max = x + math.floor(scan_width/2)
+		end
+		for block_xi = block_xi_min, block_xi_max, 1 do
+			conflict = (detection_floor(block_xi, block_yi, l, 0, 0) ~= -1)
+			-- test `return conflict` here instead (I know it will work -_- but just to be safe, test it first)
+			if conflict == true then
+				break
+			end
+		end
+		if conflict == true then break end
+	end
+	return conflict
+end
+
+-- returns: optimal offset for conflicts
+function conflictdetection(hd_type, x, y, l)
+	offset = { 0, 0 }
+	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
+	-- HD_COLLISIONTYPE = {
+		-- AIR_TILE_1 = 1,
+		-- AIR_TILE_2 = 2,
+		-- FLOORTRAP = 3,
+		-- FLOORTRAP_TALL = 4,
+		-- GIANT_FROG = 5,
+		-- GIANT_SPIDER = 6,
+		-- -- GIANT_FISH = 7
+	-- } and
+	if (
+		hd_type.collisiontype ~= nil and
+		(
+			hd_type.collisiontype >= hdtypelib.HD_COLLISIONTYPE.AIR_TILE_1
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			-- hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
+		)
+	) then
+		if (
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
+		) then
+			conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
+			if conflict == true then
+				offset = nil
+			else
+				offset = { 0, 0 }
+			end
+		elseif (
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG or
+			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER
+		) then
+			side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
+			if side > 0 then
+				offset = nil
+			else
+				offset = { side, 0 }
+			end
+		end
+	end
+	return offset
+end
+
+
+
 return module

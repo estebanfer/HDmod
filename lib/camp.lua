@@ -1,5 +1,52 @@
 local module = {}
 
+module.DOOR_TESTING_UID = nil
+module.DOOR_TUTORIAL_UID = nil
+
+function module.create_door_testing(x, y, l)
+	module.DOOR_TESTING_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)--THEME.TIDE_POOL)
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_3)
+	get_entity(door_bg).animation_frame = 1
+end
+
+function module.create_door_tutorial(x, y, l)
+	if demolib.DEMO_TUTORIAL_AVAILABLE == true then
+		module.DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
+	else
+		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
+		construction_sign:set_draw_depth(40)
+	end
+	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	get_entity(door_bg).animation_frame = 1
+end
+
+function entrance_force_worldstate(_worldstate, _entrance_uid)
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+		door_entrance_ent = get_entity(_entrance_uid)
+		if door_entrance_ent ~= nil then
+			for i = 1, #players, 1 do
+				if (
+					door_entrance_ent:overlaps_with(get_entity(players[i].uid)) == true and
+					players[i].state == CHAR_STATE.ENTERING
+				) then
+					worldlib.HD_WORLDSTATE_STATE = _worldstate
+					break;
+				end
+			end
+		end
+	end
+end
+
+function entrance_testing()
+	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TESTING, camplib.DOOR_TESTING_UID)
+end
+
+function entrance_tutorial()
+	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TUTORIAL, camplib.DOOR_TUTORIAL_UID)
+end
+
+
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
@@ -17,6 +64,22 @@ set_post_tile_code_callback(function(x, y, layer)
 	oncamp_fixes()
 	return true
 end, "hd_shortcuts")
+
+define_tile_code("hd_door_tutorial")
+define_tile_code("hd_door_testing")
+
+set_post_tile_code_callback(function(x, y, layer)
+	camplib.create_door_tutorial(x, y, layer)
+	return true
+end, "hd_door_tutorial")
+
+set_post_tile_code_callback(function(x, y, layer)
+	if options.hd_debug_testing_door == true then
+		camplib.create_door_testing(x, y, layer)
+	end
+	return true
+end, "hd_door_testing")
+
 
 function oncamp_tunnelman_spawn(x, y, l)
 	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
@@ -84,7 +147,40 @@ function oncamp_fixes()
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 
 	-- add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
-	
+
 end
+
+
+-- ON.CAMP
+set_callback(function()
+	-- oncamp_movetunnelman()
+	-- oncamp_shortcuts()
+	
+	
+	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
+	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
+	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
+	
+	-- pre_tile ON.START stuff
+	worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
+
+	set_interval(entrance_tutorial, 1)
+	if options.hd_debug_testing_door == true then
+		set_interval(entrance_testing, 1)
+	end
+
+	state.camera.bounds_top = 93.9
+	state.camera.bounds_bottom = 82.7
+	state.camera.bounds_left = 8.5
+	state.camera.bounds_right = 51.5
+
+	state.camera.adjusted_focus_x = 41.55
+	state.camera.adjusted_focus_y = 88.3
+
+end, ON.CAMP)
+
+set_callback(function()
+	set_camp_camera_bounds_enabled(false)
+end, ON.LOGO)
 
 return module

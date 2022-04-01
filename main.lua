@@ -60,9 +60,6 @@ ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
-LEVEL_UNLOCK = nil
-UNLOCK_WI, UNLOCK_HI = nil, nil
-CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 COOP_COFFIN = false
 acid_tick = ACID_POISONTIME
 tombstone_blocks = {}
@@ -2196,12 +2193,12 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].method = function()
 	local path_to_replace = global_levelassembly.modification.levelrooms[room_l_y][room_l_x]
 	local path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE
 
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK
 	end
 
 	if path_to_replace == genlib.HD_SUBCHUNKID.PATH_NOTOP then
-		if LEVEL_UNLOCK ~= nil then
+		if unlockslib.LEVEL_UNLOCK ~= nil then
 			path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP
 		else
 			path_to_replace_with = genlib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP
@@ -2849,7 +2846,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].method = function()
 	local levelh_start, levelh_end = 2, levelh-1
 	local levelw_start, levelw_end = 1, levelw
 
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		local spots = {}
 		-- build a collection of potential spots
 		for room_y = levelh_start, levelh_end, 1 do
@@ -3022,7 +3019,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].method = function()
 		end
 	end
 	local struct_x_pool = {1, 2, 3, 4}
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		struct_x_pool = {1, 4}
 
 		levelcode_inject_roomcode_rowfive(
@@ -3362,7 +3359,7 @@ HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = function()
 	levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 	
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		level_generation_method_aligned(
 			{
 				left = {
@@ -4345,7 +4342,7 @@ HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 	local unlock_location_x, unlock_location_y = nil, nil
 
 	-- Coffin
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		-- Select room coordinates between x = 1..2 and y = 11
 		local unlock_location_x, unlock_location_y = math.random(1, levelw), 11
 	
@@ -4753,7 +4750,7 @@ HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 	end
 	
 
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		level_generation_method_aligned(
 			{
 				left = {
@@ -5379,7 +5376,6 @@ function init_onlevel()
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 
-	
 	CHUNKBOOL_IDOL = false
 	CHUNKBOOL_ALTAR = false
 	CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = false
@@ -5387,9 +5383,6 @@ function init_onlevel()
 
 	GIANTSPIDER_SPAWNED = false
 	LOCKEDCHEST_KEY_SPAWNED = false
-	
-	LEVEL_UNLOCK = nil
-	UNLOCK_WI, UNLOCK_HI = nil, nil
 
 	COOP_COFFIN = false
 	
@@ -5400,6 +5393,7 @@ function init_onlevel()
 	olmeclib.init()
 	boulderlib.init()
 	idollib.init()
+	unlockslib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -5565,96 +5559,6 @@ end
     -- end
 -- end, "minewood_floor")
 
---[[
-	Run the chance for an area coffin to spawn.
-	1 / (X - deaths), chance can't go better than 1/9
-]]
-function run_unlock_area_chance()
-	if (
-		state.world < 5
-	) then
-		area_and_deaths = 301 - savegame.deaths
-		if state.world == 1 then
-			area_and_deaths = 51 - savegame.deaths
-		elseif state.world == 2 then
-			area_and_deaths = 101 - savegame.deaths
-		elseif state.world == 3 then
-			area_and_deaths = 201 - savegame.deaths
-		end
-
-		chance = (area_and_deaths < 9) and 9 or area_and_deaths
-
-		if math.random(chance) == 1 then
-			return true
-		end
-	end
-	return false
-end
-
--- Set LEVEL_UNLOCK
-function get_unlock()
-	local unlock = nil
-	if (
-		CHARACTER_UNLOCK_SPAWNED_DURING_RUN == false
-		and state.items.player_count == 1
-	) then
-		if (
-			unlockslib.detect_if_area_unlock_not_unlocked_yet()
-			and run_unlock_area_chance()
-		) then -- AREA_RAND* unlocks
-			rand_pool = {
-				unlockslib.HD_UNLOCK_ID.AREA_RAND1,
-				unlockslib.HD_UNLOCK_ID.AREA_RAND2,
-				unlockslib.HD_UNLOCK_ID.AREA_RAND3,
-				unlockslib.HD_UNLOCK_ID.AREA_RAND4
-			}
-			coffin_rand_pool = {}
-			chunkPool_rand_index = 1
-			n = #rand_pool
-			for rand_index = 1, #rand_pool, 1 do
-				if unlockslib.HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
-					rand_pool[rand_index] = nil
-				end
-			end
-			rand_pool = commonlib.CompactList(rand_pool, n)
-			chunkPool_rand_index = math.random(1, #rand_pool)
-			unlock = rand_pool[chunkPool_rand_index]
-		else -- feeling/theme-based unlocks
-			local unlockconditions_feeling = {}
-			local unlockconditions_theme = {}
-			for id, unlock_properties in pairs(unlockslib.HD_UNLOCKS) do
-				if unlock_properties.feeling ~= nil then
-					unlockconditions_feeling[id] = unlock_properties
-				elseif unlock_properties.unlock_theme ~= nil then
-					unlockconditions_theme[id] = unlock_properties
-				end
-			end
-			
-			for id, unlock_properties in pairs(unlockconditions_theme) do
-				if (
-					unlock_properties.unlock_theme == state.theme
-					and unlock_properties.unlocked == false
-				) then
-					unlock = id
-				end
-			end
-			for id, unlock_properties in pairs(unlockconditions_feeling) do
-				if (
-					feelingslib.feeling_check(unlock_properties.feeling) == true
-					and unlock_properties.unlocked == false
-				) then
-					-- Probably won't be overridden by theme
-					unlock = id
-				end
-			end
-		end
-	end
-	LEVEL_UNLOCK = unlock
-	if LEVEL_UNLOCK ~= nil then
-		CHARACTER_UNLOCK_SPAWNED_DURING_RUN = true
-	end
-end
-
 function create_coffin_coop(x, y, l)
 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	the_coffin = get_entity(coffin_uid)
@@ -5665,9 +5569,9 @@ end
 -- # TODO: determining character unlock for coffin creation
 function create_coffin_unlock(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	if LEVEL_UNLOCK ~= nil then
+	if unlockslib.LEVEL_UNLOCK ~= nil then
 		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
+		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id)
 	end
 
 	set_post_statemachine(coffin_uid, function()
@@ -5675,12 +5579,12 @@ function create_coffin_unlock(x, y, l)
 		if (
 			coffin.animation_frame == 1
 			and (
-				LEVEL_UNLOCK ~= nil
+				unlockslib.LEVEL_UNLOCK ~= nil
 				and (
-					LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
-					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
-					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
-					or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
+					unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 				)
 			)
 		) then
@@ -6272,37 +6176,6 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
 
-set_pre_entity_spawn(function(type, x, y, l, _)
-	local rx, ry = get_room_index(x, y)
-	if (
-		LEVEL_UNLOCK ~= nil
-		and (
-			(UNLOCK_WI ~= nil and UNLOCK_WI == rx+1)
-			and (UNLOCK_HI ~= nil and UNLOCK_HI == ry+1)
-		)
-	) then
-		local uid = spawn_grid_entity(193 + unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id, x, y, l)
-		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
-		--[[
-			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
-			You'll have to suppress the unlock dialog since it'll be pointing to wherever the coffin was out of bounds."
-			
-			local coffin_id = spawn_entity(ENT_TYPE.ITEM_COFFIN, -100, -100, LAYER.FRONT, 0, 0)
-			get_entity(coffin_id).inside = ENT_TYPE.CHAR_GREEN_GIRL
-		]]
-		-- set_post_statemachine(uid, function()
-		-- 	local ent = get_entity(uid)
-		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
-		-- 		-- Can't manually unlock characters this way
-		-- 		-- savegame.characters = set_flag(savegame.characters, unlockslib.HD_UNLOCKS[LEVEL_UNLOCK].unlock_id)
-
-		-- 		return false
-		-- 	end
-		-- end)
-		return uid
-	end
-	-- return spawn_grid_entity(ENT_TYPE.CHAR_HIREDHAND, x, y, l)
-end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
 
 -- set_post_entity_spawn(function(entity)
 -- 	entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
@@ -7875,7 +7748,6 @@ set_callback(function()
 	onstart_init_options()
 	-- Enable S2 udjat eye, S2 black market, and drill spawns to prevent them from spawning.
 	changestate_samelevel_applyquestflags(state.world, state.level, state.theme, {17, 18, 19}, {})
-	CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 end, ON.START)
 
 set_callback(function()
@@ -7974,17 +7846,17 @@ function set_blackmarket_shoprooms(room_gen_ctx)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		local levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
-		UNLOCK_WI, UNLOCK_HI = 0, 0
-		if LEVEL_UNLOCK ~= nil then
-			UNLOCK_WI = math.random(minw, maxw)
-			UNLOCK_HI = math.random(minh, (UNLOCK_WI ~= maxw and maxh or maxh-1))
+		unlockslib.UNLOCK_WI, unlockslib.UNLOCK_HI = 0, 0
+		if unlockslib.LEVEL_UNLOCK ~= nil then
+			unlockslib.UNLOCK_WI = math.random(minw, maxw)
+			unlockslib.UNLOCK_HI = math.random(minh, (unlockslib.UNLOCK_WI ~= maxw and maxh or maxh-1))
 		end
-		-- message("wi, hi: " .. UNLOCK_WI .. ", " .. UNLOCK_HI)
+		-- message("wi, hi: " .. unlockslib.UNLOCK_WI .. ", " .. unlockslib.UNLOCK_HI)
 		for hi = minh, maxh, 1 do
 			for wi = minw, maxw, 1 do
 				if (hi == maxh and wi == maxw) then
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
-				elseif (hi == UNLOCK_HI and wi == UNLOCK_WI) then
+				elseif (hi == unlockslib.UNLOCK_HI and wi == unlockslib.UNLOCK_WI) then
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
 				else
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, math.random(0, 5))
@@ -8276,7 +8148,7 @@ function onlevel_generation_modification()
 	}
 	if (worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL) then
 		
-		get_unlock()
+		unlockslib.get_unlock()
 
 		gen_levelrooms_nonpath(true)
 		if detect_level_allow_path_gen() then
@@ -9280,12 +9152,12 @@ end
 
 function level_generation_method_world_coffin()
 	if (
-		LEVEL_UNLOCK ~= nil
+		unlockslib.LEVEL_UNLOCK ~= nil
 		and (
-			LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
-			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
-			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
-			or LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
+			unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
+			or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
+			or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
+			or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 		)
 	) then
 		level_generation_method_aligned(

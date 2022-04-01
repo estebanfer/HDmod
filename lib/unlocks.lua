@@ -81,6 +81,15 @@ module.RUN_UNLOCK_AREA[#module.RUN_UNLOCK_AREA+1] = { theme = THEME.ICE_CAVES, u
 module.RUN_UNLOCK_AREA[#module.RUN_UNLOCK_AREA+1] = { theme = THEME.TEMPLE, unlocked = false }
 
 
+module.LEVEL_UNLOCK = nil
+module.UNLOCK_WI, module.UNLOCK_HI = nil, nil
+module.CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
+
+function module.init()
+	module.LEVEL_UNLOCK = nil
+	module.UNLOCK_WI, module.UNLOCK_HI = nil, nil
+end
+
 -- # TODO: When placing an AREA_RAND* character coffin in the level, set an ON.FRAME check for unlocking it; if check passes, set RUN_UNLOCK_AREA[state.theme] = true
 set_callback(function(save_ctx)
 	local save_areaUnlocks_str = json.encode(module.RUN_UNLOCK_AREA)
@@ -113,7 +122,7 @@ end
 	- When it's in one of the four areas.
 	- Any exceptions to this, such as special areas? Not that I'm aware of.
 ]]
-function module.detect_if_area_unlock_not_unlocked_yet()
+function detect_if_area_unlock_not_unlocked_yet()
 	-- module.RUN_UNLOCK_AREA[state.theme] ~= nil and module.RUN_UNLOCK_AREA[state.theme] == false
 	for i = 1, #module.RUN_UNLOCK_AREA, 1 do
 		if module.RUN_UNLOCK_AREA[i].theme == state.theme and module.RUN_UNLOCK_AREA[i].unlocked == false then
@@ -122,5 +131,133 @@ function module.detect_if_area_unlock_not_unlocked_yet()
 	end
 	return false
 end
+
+
+--[[
+	Run the chance for an area coffin to spawn.
+	1 / (X - deaths), chance can't go better than 1/9
+]]
+function run_unlock_area_chance()
+	if (
+		state.world < 5
+	) then
+		area_and_deaths = 301 - savegame.deaths
+		if state.world == 1 then
+			area_and_deaths = 51 - savegame.deaths
+		elseif state.world == 2 then
+			area_and_deaths = 101 - savegame.deaths
+		elseif state.world == 3 then
+			area_and_deaths = 201 - savegame.deaths
+		end
+
+		chance = (area_and_deaths < 9) and 9 or area_and_deaths
+
+		if math.random(chance) == 1 then
+			return true
+		end
+	end
+	return false
+end
+
+-- Set module.LEVEL_UNLOCK
+function module.get_unlock()
+	local unlock = nil
+	if (
+		module.CHARACTER_UNLOCK_SPAWNED_DURING_RUN == false
+		and state.items.player_count == 1
+	) then
+		if (
+			detect_if_area_unlock_not_unlocked_yet()
+			and run_unlock_area_chance()
+		) then -- AREA_RAND* unlocks
+			rand_pool = {
+				module.HD_UNLOCK_ID.AREA_RAND1,
+				module.HD_UNLOCK_ID.AREA_RAND2,
+				module.HD_UNLOCK_ID.AREA_RAND3,
+				module.HD_UNLOCK_ID.AREA_RAND4
+			}
+			coffin_rand_pool = {}
+			chunkPool_rand_index = 1
+			n = #rand_pool
+			for rand_index = 1, #rand_pool, 1 do
+				if module.HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
+					rand_pool[rand_index] = nil
+				end
+			end
+			rand_pool = commonlib.CompactList(rand_pool, n)
+			chunkPool_rand_index = math.random(1, #rand_pool)
+			unlock = rand_pool[chunkPool_rand_index]
+		else -- feeling/theme-based unlocks
+			local unlockconditions_feeling = {}
+			local unlockconditions_theme = {}
+			for id, unlock_properties in pairs(module.HD_UNLOCKS) do
+				if unlock_properties.feeling ~= nil then
+					unlockconditions_feeling[id] = unlock_properties
+				elseif unlock_properties.unlock_theme ~= nil then
+					unlockconditions_theme[id] = unlock_properties
+				end
+			end
+			
+			for id, unlock_properties in pairs(unlockconditions_theme) do
+				if (
+					unlock_properties.unlock_theme == state.theme
+					and unlock_properties.unlocked == false
+				) then
+					unlock = id
+				end
+			end
+			for id, unlock_properties in pairs(unlockconditions_feeling) do
+				if (
+					feelingslib.feeling_check(unlock_properties.feeling) == true
+					and unlock_properties.unlocked == false
+				) then
+					-- Probably won't be overridden by theme
+					unlock = id
+				end
+			end
+		end
+	end
+	module.LEVEL_UNLOCK = unlock
+	if module.LEVEL_UNLOCK ~= nil then
+		module.CHARACTER_UNLOCK_SPAWNED_DURING_RUN = true
+	end
+end
+
+-- black market unlock
+set_pre_entity_spawn(function(type, x, y, l, _)
+	local rx, ry = get_room_index(x, y)
+	if (
+		module.LEVEL_UNLOCK ~= nil
+		and (
+			(module.UNLOCK_WI ~= nil and module.UNLOCK_WI == rx+1)
+			and (module.UNLOCK_HI ~= nil and module.UNLOCK_HI == ry+1)
+		)
+	) then
+		local uid = spawn_grid_entity(193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id, x, y, l)
+		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
+		--[[
+			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
+			You'll have to suppress the unlock dialog since it'll be pointing to wherever the coffin was out of bounds."
+			
+			local coffin_id = spawn_entity(ENT_TYPE.ITEM_COFFIN, -100, -100, LAYER.FRONT, 0, 0)
+			get_entity(coffin_id).inside = ENT_TYPE.CHAR_GREEN_GIRL
+		]]
+		-- set_post_statemachine(uid, function()
+		-- 	local ent = get_entity(uid)
+		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+		-- 		-- Can't manually unlock characters this way
+		-- 		-- savegame.characters = set_flag(savegame.characters, module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
+
+		-- 		return false
+		-- 	end
+		-- end)
+		return uid
+	end
+	-- return spawn_grid_entity(ENT_TYPE.CHAR_HIREDHAND, x, y, l)
+end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
+
+set_callback(function()
+	module.CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
+end, ON.START)
 
 return module

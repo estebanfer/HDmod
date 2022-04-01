@@ -5,6 +5,7 @@ camplib = require 'lib.camp'
 genlib = require 'lib.roomgen'
 feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
+cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 
 hdtypelib = require 'lib.entities.hdtype'
@@ -60,7 +61,6 @@ ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 global_levelassembly = nil
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
-COOP_COFFIN = false
 acid_tick = ACID_POISONTIME
 tombstone_blocks = {}
 moai_veil = nil
@@ -5383,8 +5383,6 @@ function init_onlevel()
 
 	GIANTSPIDER_SPAWNED = false
 	LOCKEDCHEST_KEY_SPAWNED = false
-
-	COOP_COFFIN = false
 	
 	hdtypelib.init()
 	botdlib.init()
@@ -5394,6 +5392,7 @@ function init_onlevel()
 	boulderlib.init()
 	idollib.init()
 	unlockslib.init()
+	cooplib.init()
 	acid_tick = ACID_POISONTIME
 
 end
@@ -7197,7 +7196,7 @@ set_callback(function(room_gen_ctx)
 
 		if options.hd_debug_scripted_levelgen_disable == false then
 			
-			detect_coop_coffin(room_gen_ctx)
+			cooplib.detect_coop_coffin(room_gen_ctx)
 
 			if state.theme == THEME.DWELLING and state.level == 4 then
 				for x = 0, state.width - 1 do
@@ -7824,20 +7823,6 @@ function assign_s2_level_height()
 		end
 		state.width = new_width
 		state.height = new_height
-	end
-end
-
-function detect_coop_coffin(room_gen_ctx)
-	for y = 0, state.height - 1 do
-		for x = 0, state.width - 1 do
-			local room_template_here = get_room_template(x, y, 0)
-			if (
-				room_template_here == ROOM_TEMPLATE.COFFIN_PLAYER
-				or room_template_here == ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
-			) then
-				COOP_COFFIN = true
-			end
-		end
 	end
 end
 
@@ -9140,16 +9125,6 @@ function detect_level_allow_path_gen()
 	)
 end
 
-function detect_level_allow_coop_coffin()
-	return (
-		COOP_COFFIN == true
-		and detect_level_non_boss()
-		-- and state.theme ~= THEME.CITY_OF_GOLD
-		and feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
-		and feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
-	)
-end
-
 function level_generation_method_world_coffin()
 	if (
 		unlockslib.LEVEL_UNLOCK ~= nil
@@ -9176,7 +9151,7 @@ function level_generation_method_world_coffin()
 end
 
 function level_generation_method_coffin_coop()
-	if detect_level_allow_coop_coffin() then
+	if cooplib.detect_level_allow_coop_coffin() then
 		levelw, levelh = #global_levelassembly.modification.levelrooms[1], #global_levelassembly.modification.levelrooms
 		
 		spots = {}

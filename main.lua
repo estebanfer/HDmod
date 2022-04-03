@@ -65,7 +65,6 @@ local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 tombstone_blocks = {}
-HELL_Y = 86
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -7512,13 +7511,7 @@ set_callback(function()
 	onlevel_create_impostorlake()
 	onlevel_remove_boulderstatue()
 
-	olmeclib.onlevel_boss_init()
-	if state.theme == THEME.OLMEC then
-		doorslib.create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
-
-		botdlib.set_hell_x()
-		doorslib.create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
-	end
+	olmeclib.onlevel_olmec_init()
 
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)

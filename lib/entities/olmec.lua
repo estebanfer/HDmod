@@ -1,6 +1,8 @@
 -- hdtypelib = require 'entities.hdtype'
 local module = {}
 
+HELL_Y = 86
+
 BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
 BOSS_STATE = nil
 
@@ -19,11 +21,16 @@ function module.init()
 	module.DOOR_ENDGAME_OLMEC_UID = nil
 end
 
-function module.onlevel_boss_init()
+function module.onlevel_olmec_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
 		cutscene_move_olmec_pre()
 		cutscene_move_cavemen()
+		
+		doorslib.create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
+
+		botdlib.set_hell_x()
+		doorslib.create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
 	end
 end
 

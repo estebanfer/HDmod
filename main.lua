@@ -7500,7 +7500,6 @@ set_callback(function()
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
-	onstart_init_methods()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
 
@@ -7530,19 +7529,6 @@ function onstart_init_options()
 	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
 	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
 	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
-end
-
-function onstart_init_methods()
-	if (
-		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
-	) then
-		ghostlib.set_spawn_times()
-	elseif(
-		worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.NORMAL
-		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
-	) then
-		set_ghost_spawn_times(-1, -1)
-	end
 end
 
 -- LEVEL HANDLING

@@ -8,10 +8,18 @@ function module.init()
 	DANGER_GHOST_UIDS = {}
 end
 
-function module.set_spawn_times()
-    set_ghost_spawn_times(module.GHOST_TIME, module.GHOST_TIME-1800)
-end
-
+set_callback(function()
+	if (
+		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
+	) then
+		set_ghost_spawn_times(module.GHOST_TIME, module.GHOST_TIME-1800)
+	elseif(
+		worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.NORMAL
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
+	) then
+		set_ghost_spawn_times(-1, -1)
+	end
+end, ON.LEVEL)
 
 set_callback(function()
 	ghost_uids = get_entities_by_type({

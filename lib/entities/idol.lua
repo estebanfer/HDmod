@@ -27,7 +27,7 @@ function idol_disturbance()
 	end
 end
 
-function create_ghost()
+function create_ghost_at_border()
 	xmin, _, xmax, _ = get_bounds()
 	-- message("xmin: " .. xmin .. " ymin: " .. ymin .. " xmax: " .. xmax .. " ymax: " .. ymax)
 	

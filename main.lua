@@ -19,6 +19,7 @@ idollib = require 'lib.entities.idol'
 acidlib = require 'lib.entities.acid'
 treelib = require 'lib.entities.tree'
 ankhmoailib = require 'lib.entities.ankhmoai'
+doorslib = require 'lib.entities.doors'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -64,17 +65,6 @@ local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 tombstone_blocks = {}
-HELL_Y = 86
-DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
-DOOR_EXIT_TO_BLACKMARKET_POS = nil
-
-HD_THEMEORDER = {
-	THEME.DWELLING,
-	THEME.JUNGLE,
-	THEME.ICE_CAVES,
-	THEME.TEMPLE,
-	THEME.VOLCANA
-}
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -405,9 +395,9 @@ HD_TILENAME = {
 						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.ENTRANCE)
 						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.ENTRANCE_DROP)
 					) then
-						create_door_entrance(x, y, l)
+						doorslib.create_door_entrance(x, y, l)
 					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
-						create_door_entrance(x+0.5, y, l)
+						doorslib.create_door_entrance(x+0.5, y, l)
 					elseif (
 						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.EXIT)
 						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.EXIT_NOTOP)
@@ -416,9 +406,9 @@ HD_TILENAME = {
 						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP)
 					) then
 						-- spawn an exit door to the next level. Spawn a shopkeeper if agro.
-						create_door_exit(x, y, l)
+						doorslib.create_door_exit(x, y, l)
 					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
-						create_door_exit_to_mothership(x, y, l)
+						doorslib.create_door_exit_to_mothership(x, y, l)
 					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 						-- Spawn king's tombstone
 						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
@@ -446,9 +436,9 @@ HD_TILENAME = {
 
 						-- 4 tiles down
 						-- Spawn hidden entrance
-						create_door_exit_to_hauntedcastle(x, y-4, l)
+						doorslib.create_door_exit_to_hauntedcastle(x, y-4, l)
 					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_EXIT) then
-						create_door_ending(x, y, l)
+						doorslib.create_door_ending(x, y, l)
 					end
 				end
 			},
@@ -890,7 +880,7 @@ HD_TILENAME = {
 							end
 						end
 					end
-					create_door_exit_moai(x+1, y-3, l)
+					doorslib.create_door_exit_moai(x+1, y-3, l)
 					ankhmoailib.create_moai_veil(x, y, l)
 				end,
 			},
@@ -5356,8 +5346,6 @@ end
 function init_onlevel()
 	tombstone_blocks = {}
 	FRAG_PREVENTION_UID = nil
-	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
-	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 
 	CHUNKBOOL_IDOL = false
 	CHUNKBOOL_ALTAR = false
@@ -5378,6 +5366,7 @@ function init_onlevel()
 	cooplib.init()
 	acidlib.init()
 	ankhmoailib.init()
+	doorslib.init()
 end
 
  -- Trix wrote this
@@ -5638,121 +5627,6 @@ function create_embedded(ent_toembedin, entity_type)
 	end
 end
 
-function create_door_ending(x, y, l)
-	-- # TODO: Remove exit door from the editor and spawn it manually here.
-	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
-	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
-	-- # TOTEST: Test if the compass works for this. If not, use the method Mr Auto suggested (attatching the compass arrow entity to it)
-	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	set_door_target(olmeclib.DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if options.hd_debug_boss_exits_unlock == false then
-		lock_door_at(x, y)
-	end
-	-- Olmec/Yama Win
-	if state.theme == THEME.OLMEC then
-		set_interval(exit_olmec, 1)
-	elseif feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
-		set_interval(exit_yama, 1)
-	end
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-end
-
-function create_door_entrance(x, y, l)
-	-- # create the entrance door at the specified game coordinates.
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
-		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
-	end
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	if (
-		test_flag(state.level_flags, 18) == true
-		and state.theme ~= THEME.VOLCANA
-	) then
-		ent = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_TORCH, x, y, l, 0, 0))
-		ent:light_up(true)
-	end
-	-- assign coordinates to a global variable to define the game coordinates the player needs to be
-	roomgenlib.global_levelassembly.entrance = {x = x, y = y}
-	state.level_gen.spawn_x, state.level_gen.spawn_y = x, y
-end
-
-function create_door_exit(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	spawn_entity_over(ENT_TYPE.FX_COMPASS, door_target, 0, 0)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	get_entity(door_bg).animation_frame = 1
-	local _w, _l, _t = hd_exit_levelhandling()
-	set_door_target(door_target, _w, _l, _t)
-	-- spawn_door(x, y, l, state.world_next, state.level_next, state.theme_next)
-
-	-- state.level_gen.exits.door1_x, state.level_gen.exits.door1_y = x, y
-	
-	-- local format_name = F'levelcode_bake_spawn(): Created Exit Door with targets: {state.world_next}, {state.level_next}, {state.theme_next}'
-	-- message(format_name)
-	if state.shoppie_aggro_next > 0 then
-		local shopkeeper = get_entity(spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x, y, l, 0, 0))
-		shopkeeper.is_patrolling = true
-		-- shopkeeper.room_index(get_room_index(x, y)) -- fix this. Room index of shopkeeper value isn't in the same format as the value that get_rom_index outputs.
-	end
-end
-
-function create_door_exit_moai(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	-- spawn_entity_over(ENT_TYPE.FX_COMPASS, door_target, 0, 0)
-	-- spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	get_entity(door_bg).animation_frame = 1
-	local _w, _l, _t = hd_exit_levelhandling()
-	set_door_target(door_target, _w, _l, _t)
-	roomgenlib.global_levelassembly.moai_exit = {x = x, y = y}
-end
-
-function create_door_exit_to_hell(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
-	set_door_target(door_target, 5, 1, THEME.VOLCANA)
-	
-	if botdlib.OBTAINED_BOOKOFDEAD == true then
-		helldoor_e = get_entity(door_target):as_movable()
-		helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-		helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
-	end
-end
-
--- creates mothership entrance
-function create_door_exit_to_mothership(x, y, l)
-	-- _door_uid = spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_BABYLON_1)
-	get_entity(door_bg).animation_frame = 1
-	set_door_target(door_target, 3, 3, THEME.NEO_BABYLON)
-end
-
--- creates blackmarket entrance
-function create_door_exit_to_blackmarket(x, y, l)
-	spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
-	get_entity(door_bg).animation_frame = 1
-	DOOR_EXIT_TO_BLACKMARKET_POS = {x = x, y = y}
-	set_interval(entrance_blackmarket, 1)
-end
-
-function create_door_exit_to_hauntedcastle(x, y, l)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
-	texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
-	get_entity(door_bg):set_texture(define_texture(texture_def))
-	get_entity(door_bg).animation_frame = 1
-	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = {x = x, y = y}
-	set_interval(entrance_hauntedcastle, 1)
-end
-
 -- # TODO: Revise to a new pickup. 
 	-- IDEAS:
 		-- Replace with actual crysknife
@@ -5926,87 +5800,6 @@ function changestate_samelevel_applyquestflags(w_a, l_a, t_a, flags_set, flags_c
 	end
 end
 
-function entrance_force_feeling(_feeling_to_force)
-	local x, y = nil, nil
-	if _feeling_to_force == feelingslib.FEELING_ID.BLACKMARKET and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
-		x, y = DOOR_EXIT_TO_BLACKMARKET_POS.x, DOOR_EXIT_TO_BLACKMARKET_POS.y
-	elseif _feeling_to_force == feelingslib.FEELING_ID.HAUNTEDCASTLE and DOOR_EXIT_TO_HAUNTEDCASTLE_POS ~= nil then
-		x, y = DOOR_EXIT_TO_HAUNTEDCASTLE_POS.x, DOOR_EXIT_TO_HAUNTEDCASTLE_POS.y
-	end
-
-	if x ~= nil and y ~= nil then
-		local door_exits_here = get_entities_at(0, ENT_TYPE.FLOOR_DOOR_EXIT, x, y, LAYER.FRONT, 0.5)
-		local door_spawned =  #door_exits_here ~= 0
-		local door_exit_ent = door_spawned == true and get_entity(door_exits_here[1]) or nil
-		local floor_removed = #get_entities_at(0, MASK.FLOOR, x, y, LAYER.FRONT, 0.5) == 0
-
-		if floor_removed == true and door_spawned == false then
-			local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, LAYER.FRONT, 0, 0)
-			local _w, _l, _t = hd_exit_levelhandling()
-			set_door_target(door_target, _w, _l, _t)
-
-			local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-			if sound ~= nil then sound:play() end
-
-			local door_spawned = true -- for those who can frame-perfect :spelunkoid:
-			local door_exit_ent = get_entity(door_target)
-		end
-		if door_spawned == true then
-			for i = 1, #players, 1 do
-				if (
-					door_exit_ent:overlaps_with(get_entity(players[i].uid)) == true and
-					players[i].state == CHAR_STATE.ENTERING
-				) then
-					feelingslib.feeling_set_once(_feeling_to_force, {state.level+1})
-					break;
-				end
-			end
-		end
-	end
-end
-
-function entrance_blackmarket()
-	entrance_force_feeling(feelingslib.FEELING_ID.BLACKMARKET)
-end
-
-function entrance_hauntedcastle()
-	entrance_force_feeling(feelingslib.FEELING_ID.HAUNTEDCASTLE)
-end
-
--- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
-function exit_boss(yama)
-	local yama = false or yama
-	local win_state = WIN_STATE.NO_WIN
-	for i = 1, #players, 1 do
-		x, y, l = get_position(players[i].uid)
-		if (
-			-- (get_entity(olmeclib.DOOR_ENDGAME_OLMEC_UID).entered == true)
-			(players[i].state == CHAR_STATE.ENTERING)
-		) then
-			if yama == false then
-				if (y > 95) then
-					win_state = WIN_STATE.TIAMAT_WIN
-					-- state.theme = THEME.TIAMAT
-					break
-				end
-			else
-				win_state = WIN_STATE.HUNDUN_WIN
-				-- state.theme = THEME.HUNDUN
-				break
-			end
-		end
-	end
-	state.win_state = win_state
-end
-
-function exit_olmec()
-	exit_boss()
-end
-
-function exit_yama()
-	exit_boss(true)
-end
-
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
@@ -6145,7 +5938,7 @@ set_post_tile_code_callback(function(x, y, layer)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+1, y-4, layer, 0, 0)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+2, y-4, layer, 0, 0)
 		
-		create_door_exit(x+2, y, layer)
+		doorslib.create_door_exit(x+2, y, layer)
 	end
 end, "door")
 
@@ -6435,7 +6228,7 @@ end
 	Extra spawns use the prefix `global_spawn_extra_*`
 --]]
 
-local global_spawn_extra_blackmarket = define_extra_spawn(create_door_exit_to_blackmarket, is_valid_blackmarket_spawn, 0, 0)
+local global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, is_valid_blackmarket_spawn, 0, 0)
 
 local global_spawn_extra_locked_chest_and_key = define_extra_spawn(function(x, y, l)
 	if LOCKEDCHEST_KEY_SPAWNED == false then
@@ -7707,7 +7500,6 @@ set_callback(function()
 	
 --ONLEVEL_PRIORITY: 4 - Set up dangers (LEVEL_DANGERS)
 --ONLEVEL_PRIORITY: 5 - Remaining ON.LEVEL methods (ie, IDOL_UID)
-	onstart_init_methods()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
 
@@ -7718,13 +7510,7 @@ set_callback(function()
 	onlevel_create_impostorlake()
 	onlevel_remove_boulderstatue()
 
-	olmeclib.onlevel_boss_init()
-	if state.theme == THEME.OLMEC then
-		create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
-
-		botdlib.set_hell_x()
-		create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)
-	end
+	olmeclib.onlevel_olmec_init()
 
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
@@ -7743,47 +7529,6 @@ function onstart_init_options()
 	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
 	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
 	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
-end
-
-function onstart_init_methods()
-	if (
-		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
-	) then
-		ghostlib.set_spawn_times()
-	elseif(
-		worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.NORMAL
-		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
-	) then
-		set_ghost_spawn_times(-1, -1)
-	end
-end
-
-function hd_exit_levelhandling()
-	-- local next_world, next_level, next_theme = state.world or 1, state.level or 1, state.theme or THEME.DWELLING
-	local next_world, next_level, next_theme = state.world, state.level, state.theme
-
-	if state.level < 4 then
-		
-		next_level = state.level + 1
-
-		if state.theme == THEME.EGGPLANT_WORLD then
-			next_level = 4
-		elseif state.level == 3 then
-			-- -- fake 1-4
-			-- if state.theme == THEME.DWELLING then
-			-- 	next_level = 5
-			-- elseif
-			if state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD then
-				return 4, 4, THEME.OLMEC
-			end
-		end
-	else
-		next_world = state.world + 1
-		next_level = 1
-	end
-	next_theme = HD_THEMEORDER[next_world]
-
-	return next_world, next_level, next_theme
 end
 
 -- LEVEL HANDLING

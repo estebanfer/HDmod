@@ -9,6 +9,9 @@ unlockslib = require 'lib.unlocks'
 cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 
+createlib = require 'lib.spawning.create'
+removelib = require 'lib.spawning.remove'
+embedlib = require 'lib.spawning.embed'
 hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
@@ -97,17 +100,17 @@ HD_TILENAME = {
 	["&"] = { -- 50% chance to spawn # TOTEST probably wrong
 		phase_1 = {
 			default = {
-				function(x, y, l) create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
+				function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
 			},
 			alternate = {
 				[THEME.CITY_OF_GOLD] = {
-					function(x, y, l) create_liquidfall(x, y-3, l, "res/floorstyled_gold_fountain.png", true) end,
+					function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_gold_fountain.png", true) end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) create_liquidfall(x, y-3, l, "res/floorstyled_temple_fountain.png", true) end,
+					function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_temple_fountain.png", true) end,
 				},
 				[THEME.VOLCANA] = {
-					function(x, y, l) create_liquidfall(x, y-3, l, "res/hell_fountain.png", true) end,
+					function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/hell_fountain.png", true) end,
 				},
 			},
 		},
@@ -219,7 +222,7 @@ HD_TILENAME = {
 					function(x, y, l)
 						if math.random(2) == 1 then
 							if math.random(10) == 1 then
-								create_regenblock(x, y, l)
+								createlib.create_regenblock(x, y, l)
 							else
 								spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0)
 							end
@@ -468,8 +471,8 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					create_damsel(x, y, l)
-					create_idol(x+1, y, l)
+					createlib.create_damsel(x, y, l)
+					createlib.create_idol(x+1, y, l)
 				end,
 			},
 			alternate = {
@@ -579,7 +582,7 @@ HD_TILENAME = {
 
 			end},
 			tutorial = {
-				function(x, y, l) create_damsel(x, y, l) end,
+				function(x, y, l) createlib.create_damsel(x, y, l) end,
 			},
 		},
 		--#TOTEST: Also used in tutorial level 3 placement {3, 4} as Damsel
@@ -722,7 +725,7 @@ HD_TILENAME = {
 					) then
 						-- SORRY NOTHING 
 					else
-						create_idol(x+0.5, y, l)
+						createlib.create_idol(x+0.5, y, l)
 					end
 				end,
 			},
@@ -759,7 +762,7 @@ HD_TILENAME = {
 		phase_3 = {
 			alternate = {
 				[THEME.VOLCANA] = {
-					function(x, y, l) create_ceiling_chain(x, y, l) end,
+					function(x, y, l) createlib.create_ceiling_chain(x, y, l) end,
 				},
 			}
 		},
@@ -797,13 +800,13 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 128)
+					embedlib.embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 128)
 				end,
 			},
 			alternate = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
-						embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 41)
+						embedlib.embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 41)
 					end
 				},
 			}
@@ -907,7 +910,7 @@ HD_TILENAME = {
 	["Q"] = {
 		phase_3 = {
 			alternate = {
-				[THEME.VOLCANA] = {function(x, y, l) create_ceiling_chain_growable(x, y, l) end},
+				[THEME.VOLCANA] = {function(x, y, l) createlib.create_ceiling_chain_growable(x, y, l) end},
 			}
 		},
 		phase_1 = {
@@ -988,7 +991,7 @@ HD_TILENAME = {
 				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
 				[THEME.VOLCANA] = {
-					function(x, y, l) create_yama(x, y, l) end
+					function(x, y, l) createlib.create_yama(x, y, l) end
 				},
 			},
 		},
@@ -1045,7 +1048,7 @@ HD_TILENAME = {
 	["c"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) create_idol_crystalskull(x+0.5, y, l) end,
+				function(x, y, l) createlib.create_idol_crystalskull(x+0.5, y, l) end,
 			},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {
@@ -1053,7 +1056,7 @@ HD_TILENAME = {
 						if (math.random(2) == 2) then
 							x = x + 10
 						end
-						create_crysknife(x, y, l)
+						createlib.create_crysknife(x, y, l)
 					end
 				},
 			}
@@ -1065,7 +1068,7 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.EGGPLANT_WORLD] = {function(x, y, l) create_regenblock(x, y, l) end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) createlib.create_regenblock(x, y, l) end,},
 			},
 		},
 		description = "Jungle Terrain",
@@ -1102,9 +1105,9 @@ HD_TILENAME = {
 						or _subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
 						or _subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 					) then
-						coffin_uid = create_coffin_coop(x+0.35, y, l)
+						coffin_uid = createlib.create_coffin_coop(x+0.35, y, l)
 					else
-						coffin_uid = create_coffin_unlock(x+0.35, y, l)
+						coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
 					end
 					if coffin_uid ~= nil then
 						if state.theme == THEME.EGGPLANT_WORLD then
@@ -1416,18 +1419,18 @@ HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
 				end
 			},
 			alternate = {
 				[THEME.TEMPLE] = {
 					function(x, y, l)
-						embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0))
+						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0))
 					end
 				},
 				[THEME.VOLCANA] = {
 					function(x, y, l)
-						embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0))
+						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0))
 					end
 				}
 			}
@@ -5386,115 +5389,6 @@ function replace(ent1, ent2, x_mod, y_mod)
 	end
 end
 
-function remove_damsel_spawn_item(x, y, l)
-    local entity_uids = get_entities_at({
-		ENT_TYPE.ITEM_CHEST,
-		ENT_TYPE.ITEM_CRATE,
-		ENT_TYPE.ITEM_RUBY,
-		ENT_TYPE.ITEM_SAPPHIRE,
-		ENT_TYPE.ITEM_EMERALD,
-		ENT_TYPE.ITEM_GOLDBAR,
-		ENT_TYPE.ITEM_GOLDBARS
-	}, 0, x, y, l, 0.5)
-	if #entity_uids ~= 0 then
-		move_entity(entity_uids[1], 1000, 0, 0, 0)
-	end
-end
-
-function remove_embedded_at(x, y, l)
-	local entity_uids = get_entities_at({
-		ENT_TYPE.EMBED_GOLD,
-		ENT_TYPE.EMBED_GOLD_BIG,
-		ENT_TYPE.ITEM_RUBY,
-		ENT_TYPE.ITEM_SAPPHIRE,
-		ENT_TYPE.ITEM_EMERALD,
-
-		ENT_TYPE.ITEM_ALIVE_EMBEDDED_ON_ICE,
-		ENT_TYPE.ITEM_PICKUP_ROPEPILE,
-		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
-		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
-		ENT_TYPE.ITEM_PICKUP_SPECTACLES,
-		ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
-		ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
-		ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
-		ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
-		ENT_TYPE.ITEM_PICKUP_PASTE,
-		ENT_TYPE.ITEM_PICKUP_COMPASS,
-		ENT_TYPE.ITEM_PICKUP_PARACHUTE,
-		ENT_TYPE.ITEM_CAPE,
-		ENT_TYPE.ITEM_JETPACK,
-		ENT_TYPE.ITEM_TELEPORTER_BACKPACK,
-		ENT_TYPE.ITEM_HOVERPACK,
-		ENT_TYPE.ITEM_POWERPACK,
-		ENT_TYPE.ITEM_WEBGUN,
-		ENT_TYPE.ITEM_SHOTGUN,
-		ENT_TYPE.ITEM_FREEZERAY,
-		ENT_TYPE.ITEM_CROSSBOW,
-		ENT_TYPE.ITEM_CAMERA,
-		ENT_TYPE.ITEM_TELEPORTER,
-		ENT_TYPE.ITEM_MATTOCK,
-		ENT_TYPE.ITEM_BOOMERANG,
-		ENT_TYPE.ITEM_MACHETE
-	}, 0, x, y, l, 0.5)
-	if #entity_uids ~= 0 then
-		-- message("Bye bye, embed! " .. x .. " " .. y)
-		local entity = get_entity(entity_uids[1])
-		-- entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
-		entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
-		-- move_entity(entity.uid, 1000, 0, 0, 0)
-		entity:destroy()
-	end
-end
-
-function remove_floor_and_embedded_at(x, y, l)
-    local floor = get_grid_entity_at(x, y, l)
-    if floor ~= -1 then
-		remove_embedded_at(x, y, l)
-        -- get_entity(floor):destroy()
-		kill_entity(floor)
-    end
-end
-
-function embed_item(enum, uid, frame)
-	local x, y, l = get_position(uid)
-	-- local ents = get_entities_at(0, 0, x, y, l, 0.1)
-	-- if (#ents > 1) then return end
-	remove_embedded_at(x, y, l)
-
-	local entity = get_entity(spawn_entity_over(ENT_TYPE.ITEM_ALIVE_EMBEDDED_ON_ICE, uid, 0, 0))
-	entity.inside = enum
-	entity.animation_frame = frame
-	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
-	return 0;
-end
-
--- ha wrote this
-	-- Break "3278409" up into setting/clearing specific flags.
-	-- In testing, the mattock I embedded couldn't be picked up because it had ENT_FLAG.PASSES_THROUGH_OBJECTS enabled.
-	
-function embed_nonitem(enum, uid)
-	local x, y, l = get_position(uid)
-	-- local ents = get_entities_at(0, 0, x, y, l, 0.1)
-	-- if (#ents > 1) then return end
-	remove_embedded_at(x, y, l)
-
-	local entitydb = get_type(enum)
-	local previousdraw, previousflags = entitydb.draw_depth, entitydb.default_flags
-	entitydb.draw_depth = 9
-	entitydb.default_flags = 3278409 -- don't really need some flags for other things that dont explode, example is for jetpack
-	-- entitydb.default_flags = set_flag(entitydb.default_flags, ENT_FLAG.INVISIBLE)
-	-- entitydb.default_flags = set_flag(entitydb.default_flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-	-- entitydb.default_flags = set_flag(entitydb.default_flags, ENT_FLAG.NO_GRAVITY)
-	-- entitydb.default_flags = clr_flag(entitydb.default_flags, ENT_FLAG.COLLIDES_WALLS)
-
-	local entity = get_entity(spawn_entity_over(enum, uid, 0, 0))
-	entitydb.draw_depth = previousdraw
-	entitydb.default_flags = previousflags
---   apply_entity_db(entity.uid)
-  
---   message("Spawned " .. tostring(entity.uid))
-	return 0;
-end
 -- Example:
 -- register_option_button('button', "Attempt to embed a Jetpack", function()
   -- first_level_entity = get_entities()[1] -- probably a floor
@@ -5520,194 +5414,6 @@ end
     -- end
 -- end, "minewood_floor")
 
-function create_coffin_coop(x, y, l)
-	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	the_coffin = get_entity(coffin_uid)
-	the_coffin.player_respawn = true
-	return coffin_uid
-end
-
--- # TODO: determining character unlock for coffin creation
-function create_coffin_unlock(x, y, l)
-	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	if unlockslib.LEVEL_UNLOCK ~= nil then
-		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id)
-	end
-
-	set_post_statemachine(coffin_uid, function()
-		local coffin = get_entity(coffin_uid)
-		if (
-			coffin.animation_frame == 1
-			and (
-				unlockslib.LEVEL_UNLOCK ~= nil
-				and (
-					unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
-				)
-			)
-		) then
-			for i = 1, #unlockslib.RUN_UNLOCK_AREA, 1 do
-				if unlockslib.RUN_UNLOCK_AREA[i].theme == state.theme then
-					unlockslib.RUN_UNLOCK_AREA[i].unlocked = true 
-					break
-				end
-			end
-		end
-	end)
-
-	return coffin_uid
-end
-
-function create_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	if (
-		ent_to_spawn_over ~= nil
-	) then
-		local ent = get_entity(ent_to_spawn_over)
-
-		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-		if (
-			ent.type.id == ENT_TYPE.FLOOR_GENERIC
-			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-		) then
-			get_entity(ent_to_spawn_over).animation_frame = 4
-		end
-	end
-end
-
-function create_ceiling_chain_growable(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-	
-	local yi = y
-	while true do
-		if (
-			ent_to_spawn_over ~= nil
-		) then
-			local ent = get_entity(ent_to_spawn_over)
-
-			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-			if (
-				ent.type.id == ENT_TYPE.FLOOR_GENERIC
-				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-			) then
-				get_entity(ent_to_spawn_over).animation_frame = 4
-			end
-			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)
-			floors_at_offset = commonlib.TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
-			if #floors_at_offset > 0 then break end
-		else break end
-	end
-end
-
-function create_embedded(ent_toembedin, entity_type)
-	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
-		local entity_db = get_type(entity_type)
-		local previous_draw, previous_flags = entity_db.draw_depth, entity_db.default_flags
-		entity_db.draw_depth = 9
-		entity_db.default_flags = set_flag(entity_db.default_flags, ENT_FLAG.INVISIBLE)
-		entity_db.default_flags = set_flag(entity_db.default_flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-		entity_db.default_flags = set_flag(entity_db.default_flags, ENT_FLAG.NO_GRAVITY)
-		entity_db.default_flags = clr_flag(entity_db.default_flags, ENT_FLAG.COLLIDES_WALLS)
-		local entity = get_entity(spawn_entity_over(entity_type, ent_toembedin, 0, 0))
-		entity_db.draw_depth = previous_draw
-		entity_db.default_flags = previous_flags
-	else
-		spawn_entity_over(entity_type, ent_toembedin, 0, 0)
-	end
-end
-
--- # TODO: Revise to a new pickup. 
-	-- IDEAS:
-		-- Replace with actual crysknife
-			-- Upgrade player whip damage?
-			-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
-			-- Can't make player whip invisible, apparently, so that might be hard to do
-		-- Permanent firewhip
-		-- Just spawn a powerpack
-			-- It's the spiritual successor to the crysknife, so its a fitting replacement
-			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, so allowing them to break with firewhip would play into HDs feature of being able to kill them.
-			-- In HD a good way of dispatching bacterium was with bombs, but they moved fast and went up walls so it was hard to time correctly.
-				-- So the powerpack would naturally balance things out by making bombs more effective against them.
-function create_crysknife(x, y, l)
-	spawn_entity(ENT_TYPE.ITEM_POWERPACK, x, y, l, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
-end
-
-function create_liquidfall(x, y, l, texture_path, is_lava)
-	local is_lava = is_lava or false
-	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
-	if is_lava == true then
-		type = ENT_TYPE.LOGICAL_LAVA_DRAIN
-	end
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
-	texture_def.texture_path = texture_path
-	drain_texture = define_texture(texture_def)
-	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
-	get_entity(drain_uid):set_texture(drain_texture)
-
-	local backgrounds = entity_get_items_by(drain_uid, ENT_TYPE.BG_WATER_FOUNTAIN, 0)
-	if #backgrounds ~= 0 then
-		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
-		texture_def2.texture_path = texture_path
-		fountain_texture = define_texture(texture_def2)
-
-		local fountain = get_entity(backgrounds[1])
-		fountain:set_texture(fountain_texture)
-	end
-end
-
-function create_regenblock(x, y, l)
-	spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l, 0, 0)
-	local regen_bg = get_entity(spawn_entity(ENT_TYPE.MIDBG, x, y, l, 0, 0))
-	regen_bg:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_SUNKEN_0)
-	regen_bg.animation_frame = 137
-	regen_bg:set_draw_depth(47)
-	regen_bg.width, regen_bg.height = 1, 1
-	-- regen_bg.tile_width, regen_bg.tile_height = regen_bg.width/10, regen_bg.height/10
-	regen_bg.hitboxx, regen_bg.hitboxy = regen_bg.width/2, regen_bg.height/2
-end
-
-function create_damsel(x, y, l)
-	local pet_setting = get_setting(GAME_SETTING.PET_STYLE)
-	local pet_type = math.random(ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_CAT+2)
-	if pet_setting == 0 then
-		pet_type = ENT_TYPE.MONS_PET_DOG
-	elseif pet_setting == 1 then
-		pet_type = ENT_TYPE.MONS_PET_CAT
-	elseif pet_setting == 2 then
-		pet_type = ENT_TYPE.MONS_PET_HAMSTER
-	end
-	spawn_grid_entity(pet_type, x, y, l, 0, 0)
-end
-
-function create_idol(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
-	if state.theme == THEME.ICE_CAVES then
-		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-		get_entity(idollib.IDOL_UID).trap_triggered = true
-	end
-end
-
-function create_idol_crystalskull(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
-
-	local entity = get_entity(idollib.IDOL_UID)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-	texture_def.texture_path = "res/items_dar_idol.png"
-	entity:set_texture(define_texture(texture_def))
-end
 
 function detect_same_levelstate(t_a, l_a, w_a)
 	if state.theme == t_a and state.level == l_a and state.world == w_a then return true else return false end
@@ -5942,10 +5648,6 @@ set_post_tile_code_callback(function(x, y, layer)
 	end
 end, "door")
 
-
-function create_yama(x, y, l)-- 20, 117 = 22.5 117.5
-	spawn_entity(ENT_TYPE.MONS_YAMA, x+2.5, y+.5, l, 0, 0)
-end
 
 --[[
 	START PROCEDURAL/EXTRA SPAWN DEF
@@ -6237,20 +5939,16 @@ local global_spawn_extra_locked_chest_and_key = define_extra_spawn(function(x, y
 	else
 		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
 	end
-	remove_damsel_spawn_item(x, y, l)
+	removelib.remove_damsel_spawn_item(x, y, l)
 end, is_valid_damsel_spawn, 0, 0)
 
-local function create_succubus(x, y, l) end
-local global_spawn_extra_succubus = define_extra_spawn(create_succubus, is_valid_damsel_spawn, 0, 0)
+local global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, is_valid_damsel_spawn, 0, 0)
 
 local global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x, y, l, 0, 0) end, nil, 0, 0)
 
 local global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_wormtongue, is_valid_wormtongue_spawn, 0, 0)
 
-local function create_anubis(x, y, l)
-	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
-end
-local global_spawn_extra_anubis = define_extra_spawn(create_anubis, is_valid_anubis_spawn, 0, 0)
+local global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, is_valid_anubis_spawn, 0, 0)
 
 -- cog door(?) -- # TOFIX: Currently using S2 COG door implementation. If it ends up spawning in lava, will need to manually prevent that and do it here.  
 
@@ -6284,7 +5982,6 @@ local global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_
 local function is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
 local global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, is_valid_bouncetrap_spawn)
 
-local function create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
 local function is_valid_caveman_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
@@ -6293,8 +5990,8 @@ local function is_valid_caveman_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid caveman spawn
-local global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", create_caveman, is_valid_caveman_spawn)
-local global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", create_caveman, is_valid_caveman_spawn)
+local global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", createlib.create_caveman, is_valid_caveman_spawn)
+local global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", createlib.create_caveman, is_valid_caveman_spawn)
 
 local function is_valid_scorpion_spawn(x, y, l)
 	return (
@@ -6326,7 +6023,6 @@ local function is_valid_snake_spawn(x, y, l)
 end -- # TODO: Implement method for valid snake spawn
 local global_spawn_procedural_snake = define_procedural_spawn("hd_procedural_snake", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end, is_valid_snake_spawn)
 
-local function create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 local function is_valid_mantrap_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
@@ -6335,11 +6031,10 @@ local function is_valid_mantrap_spawn(x, y, l)
 		and detect_floor_below(x, y, l) == true
 	)
 end -- # TODO: Implement method for valid mantrap spawn
-local global_spawn_procedural_mantrap = define_procedural_spawn("hd_procedural_mantrap", create_mantrap, is_valid_mantrap_spawn)
-local global_spawn_procedural_hcastle_mantrap = define_procedural_spawn("hd_procedural_hcastle_mantrap", create_mantrap, is_valid_mantrap_spawn)
-local global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd_procedural_worm_jungle_mantrap", create_mantrap, is_valid_mantrap_spawn)
+local global_spawn_procedural_mantrap = define_procedural_spawn("hd_procedural_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
+local global_spawn_procedural_hcastle_mantrap = define_procedural_spawn("hd_procedural_hcastle_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
+local global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd_procedural_worm_jungle_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
 
-local function create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 local function is_valid_tikiman_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
@@ -6347,10 +6042,9 @@ local function is_valid_tikiman_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid tikiman spawn
-local global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", create_tikiman, is_valid_tikiman_spawn)
-local global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", create_tikiman, is_valid_tikiman_spawn)
+local global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", createlib.create_tikiman, is_valid_tikiman_spawn)
+local global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", createlib.create_tikiman, is_valid_tikiman_spawn)
 
-local function create_snail(x, y, l) hdtypelib.create_hd_type(hdtypelib.HD_ENT.SNAIL, x, y, l, false, 0, 0) end
 local function is_valid_snail_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
@@ -6358,11 +6052,10 @@ local function is_valid_snail_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid snail spawn
-local global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", create_snail, is_valid_snail_spawn)
-local global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", create_snail, is_valid_snail_spawn)
-local global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", create_snail, is_valid_snail_spawn)
+local global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", createlib.create_snail, is_valid_snail_spawn)
+local global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", createlib.create_snail, is_valid_snail_spawn)
+local global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", createlib.create_snail, is_valid_snail_spawn)
 
-local function create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 local function is_valid_firefrog_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
@@ -6370,11 +6063,10 @@ local function is_valid_firefrog_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid firefrog spawn
-local global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", create_firefrog, is_valid_firefrog_spawn)
-local global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", create_firefrog, is_valid_firefrog_spawn)
-local global_spawn_procedural_worm_jungle_firefrog = define_procedural_spawn("hd_procedural_worm_jungle_firefrog", create_firefrog, is_valid_firefrog_spawn)
+local global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
+local global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
+local global_spawn_procedural_worm_jungle_firefrog = define_procedural_spawn("hd_procedural_worm_jungle_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
 
-local function create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
 local function is_valid_frog_spawn(x, y, l)
 	return (
 		detect_floor_at(x, y, l) == false
@@ -6382,27 +6074,23 @@ local function is_valid_frog_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid frog spawn
-local global_spawn_procedural_frog = define_procedural_spawn("hd_procedural_frog", create_frog, is_valid_frog_spawn)
-local global_spawn_procedural_hcastle_frog = define_procedural_spawn("hd_procedural_hcastle_frog", create_frog, is_valid_frog_spawn)
-local global_spawn_procedural_worm_jungle_frog = define_procedural_spawn("hd_procedural_worm_jungle_frog", create_frog, is_valid_frog_spawn)
+local global_spawn_procedural_frog = define_procedural_spawn("hd_procedural_frog", createlib.create_frog, is_valid_frog_spawn)
+local global_spawn_procedural_hcastle_frog = define_procedural_spawn("hd_procedural_hcastle_frog", createlib.create_frog, is_valid_frog_spawn)
+local global_spawn_procedural_worm_jungle_frog = define_procedural_spawn("hd_procedural_worm_jungle_frog", createlib.create_frog, is_valid_frog_spawn)
 
-local function create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
 local function is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
-local global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yeti", create_yeti, is_valid_yeti_spawn)
-local global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", create_yeti, is_valid_yeti_spawn)
+local global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yeti", createlib.create_yeti, is_valid_yeti_spawn)
+local global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, is_valid_yeti_spawn)
 
-local function create_hawkman(x, y, l) end
 local function is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
-local global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", create_hawkman, is_valid_hawkman_spawn)
+local global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, is_valid_hawkman_spawn)
 
 local function is_valid_crocman_spawn(x, y, l) return false end -- # TODO: Implement method for valid crocman spawn
 local global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, is_valid_crocman_spawn)
 
-local function create_scorpionfly(x, y, l) end
 local function is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
-local global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", create_scorpionfly, is_valid_scorpionfly_spawn)
+local global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, is_valid_scorpionfly_spawn)
 
-local function create_critter_rat(x, y, l) end
 local function is_valid_critter_rat_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
@@ -6411,15 +6099,13 @@ local function is_valid_critter_rat_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid critter_rat spawn
-local global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", create_critter_rat, is_valid_critter_rat_spawn)
+local global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", createlib.create_critter_rat, is_valid_critter_rat_spawn)
 
-local function create_critter_frog(x, y, l) end
 local function is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
-local global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", create_critter_frog, is_valid_critter_frog_spawn)
+local global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, is_valid_critter_frog_spawn)
 
-local function create_critter_maggot(x, y, l) end
 local function is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
-local global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", create_critter_maggot, is_valid_critter_maggot_spawn)
+local global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, is_valid_critter_maggot_spawn)
 
 local function is_valid_critter_penguin_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_penguin spawn
 local global_spawn_procedural_critter_penguin = define_procedural_spawn("hd_procedural_critter_penguin", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERPENGUIN, x, y, l) end, is_valid_critter_penguin_spawn)
@@ -6427,45 +6113,32 @@ local global_spawn_procedural_critter_penguin = define_procedural_spawn("hd_proc
 local function is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 local global_spawn_procedural_critter_locust = define_procedural_spawn("hd_procedural_critter_locust", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERLOCUST, x, y, l) end, is_valid_critter_locust_spawn)
 
-local function create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
 local function is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Implement method for valid jiangshi spawn
-local global_spawn_procedural_jiangshi = define_procedural_spawn("hd_procedural_jiangshi", create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_restless_jiangshi = define_procedural_spawn("hd_procedural_restless_jiangshi", create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_hcastle_jiangshi = define_procedural_spawn("hd_procedural_hcastle_jiangshi", create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_procedural_yama_jiangshi", create_jiangshi, is_valid_jiangshi_spawn)
+local global_spawn_procedural_jiangshi = define_procedural_spawn("hd_procedural_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
+local global_spawn_procedural_restless_jiangshi = define_procedural_spawn("hd_procedural_restless_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
+local global_spawn_procedural_hcastle_jiangshi = define_procedural_spawn("hd_procedural_hcastle_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
+local global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_procedural_yama_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
 
-local function create_devil(x, y, l) end
 local function is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
-local global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", create_devil, is_valid_devil_spawn)
-local global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", create_devil, is_valid_devil_spawn)
+local global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", createlib.create_devil, is_valid_devil_spawn)
+local global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", createlib.create_devil, is_valid_devil_spawn)
 
-local function create_greenknight(x, y, l) end
 local function is_valid_greenknight_spawn(x, y, l) return false end -- # TODO: Implement method for valid greenknight spawn
-local global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", create_greenknight, is_valid_greenknight_spawn)
+local global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", createlib.create_greenknight, is_valid_greenknight_spawn)
 
-local function create_alientank(x, y, l) end
 local function is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
-local global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", create_alientank, is_valid_alientank_spawn)
-
+local global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", createlib.create_alientank, is_valid_alientank_spawn)
 
 local function is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_fish spawn
 local global_spawn_procedural_critter_fish = define_procedural_spawn("hd_procedural_critter_fish", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERFISH, x, y, l) end, is_valid_critter_fish_spawn)
 
-local function create_piranha(x, y, l) end
 local function is_valid_piranha_spawn(x, y, l) return false end -- # TODO: Implement method for valid piranha spawn
-local global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", create_piranha, is_valid_piranha_spawn)
-local global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", create_piranha, is_valid_piranha_spawn)
-
+local global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", createlib.create_piranha, is_valid_piranha_spawn)
+local global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", createlib.create_piranha, is_valid_piranha_spawn)
 
 local function is_valid_monkey_spawn(x, y, l) return false end -- # TODO: Implement method for valid monkey spawn
 local global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MONKEY, x, y, l) end, is_valid_monkey_spawn)
 
-
-local function create_hangspider(x, y, l)
-	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)
-	spawn_entity(ENT_TYPE.ITEM_WEB, x, y, l, 0, 0)
-	spawn_entity_over(ENT_TYPE.ITEM_HANGSTRAND, uid, 0, 0)
-end
 local function is_valid_hangspider_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	local floor_three_below = get_grid_entity_at(x, y-3, l)
@@ -6478,12 +6151,11 @@ local function is_valid_hangspider_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid hangspider spawn
-local global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_spiderlair_hangspider = define_procedural_spawn("hd_procedural_spiderlair_hangspider", create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_restless_hangspider = define_procedural_spawn("hd_procedural_restless_hangspider", create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_hcastle_hangspider = define_procedural_spawn("hd_procedural_hcastle_hangspider", create_hangspider, is_valid_hangspider_spawn)
+local global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
+local global_spawn_procedural_spiderlair_hangspider = define_procedural_spawn("hd_procedural_spiderlair_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
+local global_spawn_procedural_restless_hangspider = define_procedural_spawn("hd_procedural_restless_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
+local global_spawn_procedural_hcastle_hangspider = define_procedural_spawn("hd_procedural_hcastle_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
 
-local function create_bat(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BAT, x, y, l) end
 local function is_valid_bat_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
@@ -6494,12 +6166,11 @@ local function is_valid_bat_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid bat spawn
-local global_spawn_procedural_bat = define_procedural_spawn("hd_procedural_bat", create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_hcastle_bat = define_procedural_spawn("hd_procedural_hcastle_bat", create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_worm_jungle_bat = define_procedural_spawn("hd_procedural_worm_jungle_bat", create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_yama_bat = define_procedural_spawn("hd_procedural_yama_bat", create_bat, is_valid_bat_spawn)
+local global_spawn_procedural_bat = define_procedural_spawn("hd_procedural_bat", createlib.create_bat, is_valid_bat_spawn)
+local global_spawn_procedural_hcastle_bat = define_procedural_spawn("hd_procedural_hcastle_bat", createlib.create_bat, is_valid_bat_spawn)
+local global_spawn_procedural_worm_jungle_bat = define_procedural_spawn("hd_procedural_worm_jungle_bat", createlib.create_bat, is_valid_bat_spawn)
+local global_spawn_procedural_yama_bat = define_procedural_spawn("hd_procedural_yama_bat", createlib.create_bat, is_valid_bat_spawn)
 
-local function create_spider(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SPIDER, x, y, l) end
 local function is_valid_spider_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
@@ -6510,15 +6181,14 @@ local function is_valid_spider_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid spider spawn
-local global_spawn_procedural_spider = define_procedural_spawn("hd_procedural_spider", create_spider, is_valid_spider_spawn)
-local global_spawn_procedural_spiderlair_spider = define_procedural_spawn("hd_procedural_spiderlair_spider", create_spider, is_valid_spider_spawn)
+local global_spawn_procedural_spider = define_procedural_spawn("hd_procedural_spider", createlib.create_spider, is_valid_spider_spawn)
+local global_spawn_procedural_spiderlair_spider = define_procedural_spawn("hd_procedural_spiderlair_spider", createlib.create_spider, is_valid_spider_spawn)
 
-local function create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE, x, y, l) end
 local function is_valid_vampire_spawn(x, y, l) return false end -- # TODO: Implement method for valid vampire spawn
-local global_spawn_procedural_vampire = define_procedural_spawn("hd_procedural_vampire", create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_restless_vampire = define_procedural_spawn("hd_procedural_restless_vampire", create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_hcastle_vampire = define_procedural_spawn("hd_procedural_hcastle_vampire", create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_yama_vampire = define_procedural_spawn("hd_procedural_yama_vampire", create_vampire, is_valid_vampire_spawn)
+local global_spawn_procedural_vampire = define_procedural_spawn("hd_procedural_vampire", createlib.create_vampire, is_valid_vampire_spawn)
+local global_spawn_procedural_restless_vampire = define_procedural_spawn("hd_procedural_restless_vampire", createlib.create_vampire, is_valid_vampire_spawn)
+local global_spawn_procedural_hcastle_vampire = define_procedural_spawn("hd_procedural_hcastle_vampire", createlib.create_vampire, is_valid_vampire_spawn)
+local global_spawn_procedural_yama_vampire = define_procedural_spawn("hd_procedural_yama_vampire", createlib.create_vampire, is_valid_vampire_spawn)
 
 local function is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
 local global_spawn_procedural_imp = define_procedural_spawn("hd_procedural_imp", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_IMP, x, y, l) end, is_valid_imp_spawn)
@@ -6527,9 +6197,8 @@ local global_spawn_procedural_yama_imp = define_procedural_spawn("hd_procedural_
 local function is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Implement method for valid scarab spawn
 local global_spawn_procedural_scarab = define_procedural_spawn("hd_procedural_scarab", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCARAB, x, y, l) end, is_valid_scarab_spawn)
 
-local function create_mshiplight(x, y, l) end
 local function is_valid_mshiplight_spawn(x, y, l) return false end -- # TODO: Implement method for valid mshiplight spawn
-local global_spawn_procedural_mshiplight = define_procedural_spawn("hd_procedural_mshiplight", create_mshiplight, is_valid_mshiplight_spawn)
+local global_spawn_procedural_mshiplight = define_procedural_spawn("hd_procedural_mshiplight", createlib.create_mshiplight, is_valid_mshiplight_spawn)
 
 local function is_valid_lantern_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
@@ -6543,28 +6212,10 @@ local function is_valid_lantern_spawn(x, y, l)
 end -- # TODO: Implement method for valid lantern spawn
 local global_spawn_procedural_dark_lantern = define_procedural_spawn("hd_procedural_dark_lantern", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end, is_valid_lantern_spawn)
 
-local function create_turret(x, y, l) end
 local function is_valid_turret_spawn(x, y, l) return false end -- # TODO: Implement method for valid turret spawn
-local global_spawn_procedural_ufo_turret = define_procedural_spawn("hd_procedural_ufo_turret", create_turret, is_valid_turret_spawn)
-local global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", create_turret, is_valid_turret_spawn)
+local global_spawn_procedural_ufo_turret = define_procedural_spawn("hd_procedural_ufo_turret", createlib.create_turret, is_valid_turret_spawn)
+local global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", createlib.create_turret, is_valid_turret_spawn)
 
-local function create_webnest(x, y, l)
-	local block_uid = get_grid_entity_at(x, y+1, l)
-	if block_uid ~= -1 then
-		local lantern_uid = spawn_entity_over(ENT_TYPE.ITEM_REDLANTERN, block_uid, 0, -1)
-		-- local lantern_flames = get_entities_by_type(ENT_TYPE.ITEM_REDLANTERNFLAME)
-		-- if #lantern_flames ~= 0 then
-		-- 	-- local lantern_flame = get_entity(lantern_flames[1])
-		-- 	-- lantern_flame.flags = set_flag(lantern_flame, ENT_FLAG.DEAD)
-
-		-- 	-- move_entity(lantern_flames[1].uid, 1000, 0, 0, 0)
-		-- end
-		local entity = get_entity(lantern_uid)
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-		texture_def.texture_path = "res/items_spiderlair_spidernest.png"
-		entity:set_texture(define_texture(texture_def))
-	end
-end -- spawn_entity_over(ENT_TYPE.ITEM_REDLANTERN) the floor above (I think?)
 local function is_valid_webnest_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
@@ -6575,7 +6226,7 @@ local function is_valid_webnest_spawn(x, y, l)
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid webnest spawn
-local global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", create_webnest, is_valid_webnest_spawn)
+local global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", createlib.create_webnest, is_valid_webnest_spawn)
 
 
 -- powderkeg / pushblock
@@ -6586,7 +6237,7 @@ local function create_pushblock_powderkeg(x, y, l)
     --     -- get_entity(entity_here):destroy()
 	-- 	kill_entity(entity_here)
 	-- end
-	remove_floor_and_embedded_at(x, y, l)
+	removelib.remove_floor_and_embedded_at(x, y, l)
 
 	local current_powderkeg_chance = get_procedural_spawn_chance(global_spawn_procedural_powderkeg)
 	if (
@@ -6614,44 +6265,11 @@ local function is_valid_pushblock_spawn(x, y, l)
 end
 local global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedural_pushblock", create_pushblock_powderkeg, is_valid_pushblock_spawn)
 
-local function create_spikeball(x, y, l) end
 local function is_valid_spikeball_spawn(x, y, l) return false end -- # TODO: Implement method for valid spikeball spawn
-local global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", create_spikeball, is_valid_spikeball_spawn)
-local global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", create_spikeball, is_valid_spikeball_spawn)
+local global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, is_valid_spikeball_spawn)
+local global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, is_valid_spikeball_spawn)
 
-local function create_arrowtrap(x, y, l)
-	-- local entity_here = get_grid_entity_at(x, y, l)
-	-- if entity_here ~= -1 then
-    --     -- get_entity(entity_here):destroy()
-	-- 	kill_entity(entity_here)
-	-- end
-	remove_floor_and_embedded_at(x, y, l)
-    local uid = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
-    local left = get_grid_entity_at(x-1, y, l)
-    local right = get_grid_entity_at(x+1, y, l)
-	local flip = false
-	if left == -1 and right == -1 then
-		--math.randomseed(read_prng()[5])
-		if prng:random() < 0.5 then
-			flip = true
-		end
-	elseif left == -1 then
-		flip = true
-	end
-	if flip == true then
-		flip_entity(uid)
-	end
-	if test_flag(state.level_flags, 18) == true then
-		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, uid, 0, 0.35)
-	end
-	
-	if state.theme == THEME.CITY_OF_GOLD then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-		texture_def.texture_path = "res/floormisc_gold_trap.png"
-		get_entity(uid):set_texture(define_texture(texture_def))
-	end
 
-end
 local function is_valid_arrowtrap_spawn(x, y, l)
 	local rx, ry = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
@@ -6669,9 +6287,8 @@ local function is_valid_arrowtrap_spawn(x, y, l)
     end
     return false
 end -- # TODO: Implement method for valid arrowtrap spawn
-local global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", create_arrowtrap, is_valid_arrowtrap_spawn)
+local global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, is_valid_arrowtrap_spawn)
 
-local function create_tikitrap(x, y, l) end -- spawn_entity_over the floor above
 local function is_valid_tikitrap_spawn(x, y, l)
 	
 	--[[
@@ -6683,7 +6300,7 @@ local function is_valid_tikitrap_spawn(x, y, l)
 	]]
 	return false
 end
-local global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", create_tikitrap, is_valid_tikitrap_spawn)
+local global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", createlib.create_tikitrap, is_valid_tikitrap_spawn)
 
 local function is_valid_crushtrap_spawn(x, y, l)
 	--[[
@@ -6696,7 +6313,7 @@ local function is_valid_crushtrap_spawn(x, y, l)
 end
 local global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, is_valid_crushtrap_spawn)
 
-local function create_tombstone(x, y, l)
+function create_tombstone(x, y, l)
 	local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
 	texture_def.texture_path = "res/floormisc_tombstone_rip.png"
@@ -6721,17 +6338,14 @@ local function is_valid_tombstone_spawn(x, y, l)
 end
 local global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", create_tombstone, is_valid_tombstone_spawn)
 
-
-local function create_giantfrog(x, y, l) end
 local function is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
-local global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", create_giantfrog, is_valid_giantfrog_spawn)
+local global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, is_valid_giantfrog_spawn)
 
 local function create_mammoth(x, y, l) end
 local function is_valid_mammoth_spawn(x, y, l) return false end -- # TODO: Implement method for valid mammoth spawn
 local global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", create_mammoth, is_valid_mammoth_spawn)
 
-
-local function is_valid_giantspider_spawn(x, y, l)
+function is_valid_giantspider_spawn(x, y, l)
 	local floor_above_right = get_grid_entity_at(x+1, y+1, l)
 	local cx, cy = x+.5, y-.5
 	local w, h = 2, 2
@@ -6760,22 +6374,19 @@ local function is_valid_bee_spawn(x, y, l) return false end -- # TODO: Implement
 local global_spawn_procedural_hive_bee = define_procedural_spawn("hd_procedural_hive_bee", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BEE, x, y, l) end, is_valid_bee_spawn)
 
 
-local function create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l) end
 local function is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
-local global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", create_ufo, is_valid_ufo_spawn)
-local global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", create_ufo, is_valid_ufo_spawn)
+local global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", createlib.create_ufo, is_valid_ufo_spawn)
+local global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", createlib.create_ufo, is_valid_ufo_spawn)
 
 
-local function create_bacterium(x, y, l) end
 local function is_valid_bacterium_spawn(x, y, l) return false end -- # TODO: Implement method for valid bacterium spawn
-local global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", create_bacterium, is_valid_bacterium_spawn)
-local global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", create_bacterium, is_valid_bacterium_spawn)
+local global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", createlib.create_bacterium, is_valid_bacterium_spawn)
+local global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", createlib.create_bacterium, is_valid_bacterium_spawn)
 
 
-local function create_eggsac(x, y, l) end
 local function is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn
-local global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", create_eggsac, is_valid_eggsac_spawn)
-local global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", create_eggsac, is_valid_eggsac_spawn)
+local global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", createlib.create_eggsac, is_valid_eggsac_spawn)
+local global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", createlib.create_eggsac, is_valid_eggsac_spawn)
 
 
 --[[ Template for defining procedural spawns:
@@ -7182,7 +6793,7 @@ set_callback(function()
 					texture_def.texture_path = "res/floormisc_tombstone_ash.png"
 					get_entity(block_uid):set_texture(define_texture(texture_def))
 
-					embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
+					embedlib.embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
 				end
 				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
@@ -7952,148 +7563,6 @@ set_post_entity_spawn(function(_entity)
 		kill_entity(_spike)
 	end
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP)
-
-
---[[
-	SPAWN EXCEPTIONS
-	Several areas in HD shouldn't spawn certain entities. The following code should fix that.
-	Code adapted from JayTheBusinessGoose: https://github.com/jaythebusinessgoose/CustomLevels/blob/master/custom_levels.lua
---]]
-
-
-local removed_procedural_spawns = {
-	ENT_TYPE.ITEM_TORCH,
-	ENT_TYPE.MONS_PET_DOG,
-	ENT_TYPE.ITEM_BONES,
-	ENT_TYPE.EMBED_GOLD,
-	ENT_TYPE.EMBED_GOLD_BIG,
-	ENT_TYPE.ITEM_POT,
-	ENT_TYPE.ITEM_NUGGET,
-	ENT_TYPE.ITEM_NUGGET_SMALL,
-	ENT_TYPE.ITEM_SKULL,
-	ENT_TYPE.ITEM_CHEST,
-	ENT_TYPE.ITEM_CRATE,
-	ENT_TYPE.MONS_PET_CAT,
-	ENT_TYPE.MONS_PET_HAMSTER,
-	ENT_TYPE.ITEM_ROCK,
-	ENT_TYPE.ITEM_RUBY,
-	ENT_TYPE.ITEM_CURSEDPOT,
-	ENT_TYPE.ITEM_SAPPHIRE,
-	ENT_TYPE.ITEM_EMERALD,
-	ENT_TYPE.ITEM_WALLTORCH,
-	ENT_TYPE.MONS_SCARAB,
-	ENT_TYPE.ITEM_AUTOWALLTORCH,
-	ENT_TYPE.ITEM_WEB,
-	ENT_TYPE.ITEM_GOLDBAR,
-	ENT_TYPE.ITEM_GOLDBARS,
-	ENT_TYPE.ITEM_SKULL,
-	ENT_TYPE.MONS_SKELETON,
-}
-
-local removed_embedded_items = {
-    ENT_TYPE.ITEM_ALIVE_EMBEDDED_ON_ICE,
-    ENT_TYPE.ITEM_PICKUP_ROPEPILE,
-    ENT_TYPE.ITEM_PICKUP_BOMBBAG,
-    ENT_TYPE.ITEM_PICKUP_BOMBBOX,
-    ENT_TYPE.ITEM_PICKUP_SPECTACLES,
-    ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
-    ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
-    ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
-    ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
-    ENT_TYPE.ITEM_PICKUP_PASTE,
-    ENT_TYPE.ITEM_PICKUP_COMPASS,
-    ENT_TYPE.ITEM_PICKUP_PARACHUTE,
-    ENT_TYPE.ITEM_CAPE,
-    ENT_TYPE.ITEM_JETPACK,
-    ENT_TYPE.ITEM_TELEPORTER_BACKPACK,
-    ENT_TYPE.ITEM_HOVERPACK,
-    ENT_TYPE.ITEM_POWERPACK,
-    ENT_TYPE.ITEM_WEBGUN,
-    ENT_TYPE.ITEM_SHOTGUN,
-    ENT_TYPE.ITEM_FREEZERAY,
-    ENT_TYPE.ITEM_CROSSBOW,
-    ENT_TYPE.ITEM_CAMERA,
-    ENT_TYPE.ITEM_TELEPORTER,
-    ENT_TYPE.ITEM_MATTOCK,
-    ENT_TYPE.ITEM_BOOMERANG,
-    ENT_TYPE.ITEM_MACHETE,
-}
-
-
--- custom_level_state.procedural_spawn_callback = set_post_entity_spawn(function(entity, spawn_flags)
--- 	if (
-
--- 	) then return end
--- 	-- Do not remove spawns from a script.
--- 	if (spawn_flags & SPAWN_TYPE.SCRIPT) ~= 0 then return end
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
--- 	move_entity(entity.uid, 1000, 0, 0, 0)
--- 	entity:destroy()
--- end, SPAWN_TYPE.LEVEL_GEN_GENERAL, 0, removed_procedural_spawns)
-
-local removed_embedded_currencies = {
-    ENT_TYPE.EMBED_GOLD,
-    ENT_TYPE.EMBED_GOLD_BIG,
-    ENT_TYPE.ITEM_RUBY,
-    ENT_TYPE.ITEM_SAPPHIRE,
-    ENT_TYPE.ITEM_EMERALD,
-}
--- set_post_entity_spawn(function(entity, spawn_flags)
--- 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
--- 		if (
--- 			state.theme ~= THEME.NEO_BABYLON
--- 			and state.theme ~= THEME.EGGPLANT_WORLD
--- 			-- and (feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false)
--- 		) then
--- 			return
--- 		end
--- 	elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
--- 		if (
--- 			entity.type.id == ENT_TYPE.EMBED_GOLD
--- 			or entity.type.id == ENT_TYPE.EMBED_GOLD_BIG
--- 		) then
--- 			return
--- 		end
--- 	elseif worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.TESTING then
--- 		return
--- 	end
--- 	-- Do not remove spawns from a script.
--- 	if (spawn_flags & SPAWN_TYPE.SCRIPT) ~= 0 then return end
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
--- 	move_entity(entity.uid, 1000, 0, 0, 0)
--- 	entity:destroy()
--- end, SPAWN_TYPE.LEVEL_GEN, 0, removed_embedded_currencies)
-
--- set_post_entity_spawn(function(entity, spawn_flags) -- remove embedded items from tutorial/testing
--- 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then return end
--- 	-- Do not remove spawns from a script.
--- 	if (spawn_flags & SPAWN_TYPE.SCRIPT) ~= 0 then return end
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
--- 	move_entity(entity.uid, 1000, 0, 0, 0)
--- 	entity:destroy()
--- end, SPAWN_TYPE.LEVEL_GEN, 0, removed_embedded_items)
-
-
---[[
-	/SPAWN EXCEPTIONS
---]]
-
-
--- prevent tilecode entrance door entities from spawning
-function remove_entrance_door_entity(_entity)
-	if
-		state.screen == ON.LEVEL
-		and
-		options.hd_debug_scripted_levelgen_disable == false
-		and state.theme ~= THEME.OLMEC
-	then
-		kill_entity(_entity.uid)
-	end
-end
-set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.BG_DOOR)
-set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.FLOOR_DOOR_ENTRANCE)
-set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_DOOR)
-set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_PLATFORM_SPAWNER)
 
 
 -- # TODO: Fix the following method. For some godforsaken reason it won't move the player.

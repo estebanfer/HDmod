@@ -23,6 +23,7 @@ acidlib = require 'lib.entities.acid'
 treelib = require 'lib.entities.tree'
 ankhmoailib = require 'lib.entities.ankhmoai'
 doorslib = require 'lib.entities.doors'
+tombstonelib = require 'lib.entities.tombstone'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"
@@ -67,7 +68,6 @@ local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
-tombstone_blocks = {}
 
 -- retains HD tilenames
 HD_TILENAME = {
@@ -5347,7 +5347,6 @@ function init_posttile_onstart()
 end
 
 function init_onlevel()
-	tombstone_blocks = {}
 	FRAG_PREVENTION_UID = nil
 
 	CHUNKBOOL_IDOL = false
@@ -5370,6 +5369,7 @@ function init_onlevel()
 	acidlib.init()
 	ankhmoailib.init()
 	doorslib.init()
+	tombstonelib.init()
 end
 
  -- Trix wrote this
@@ -6313,13 +6313,6 @@ local function is_valid_crushtrap_spawn(x, y, l)
 end
 local global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, is_valid_crushtrap_spawn)
 
-function create_tombstone(x, y, l)
-	local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-	texture_def.texture_path = "res/floormisc_tombstone_rip.png"
-	get_entity(block_uid):set_texture(define_texture(texture_def))
-	tombstone_blocks[#tombstone_blocks+1] = block_uid
-end
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
 local function is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
@@ -6336,7 +6329,7 @@ local function is_valid_tombstone_spawn(x, y, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
 	)
 end
-local global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", create_tombstone, is_valid_tombstone_spawn)
+local global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, is_valid_tombstone_spawn)
 
 local function is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
 local global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, is_valid_giantfrog_spawn)
@@ -6785,16 +6778,8 @@ set_callback(function()
 			if (
 				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-					local block_uid = tombstone_blocks[math.random(#tombstone_blocks)]
-					local x, y, l = get_position(block_uid)
-					
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-					texture_def.texture_path = "res/floormisc_tombstone_ash.png"
-					get_entity(block_uid):set_texture(define_texture(texture_def))
+				tombstonelib.set_ash_tombstone()
 
-					embedlib.embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
-				end
 				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 					local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
 					for _, shopkeeper_uid in pairs(shopkeeper_uids) do

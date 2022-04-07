@@ -132,7 +132,7 @@ local function run_spiderlair_ground_enemy_chance()
 		if not spiderlair
 		or 1/3 chance passes
 	]]
-	local current_ground_chance = get_procedural_spawn_chance(global_spawn_procedural_spiderlair_ground_enemy)
+	local current_ground_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_spiderlair_ground_enemy)
 	if (
 		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (

@@ -9,6 +9,8 @@ unlockslib = require 'lib.unlocks'
 cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 
+validlib = require 'lib.spawning.valid'
+-- spawndeflib = require 'lib.spawning.spawndef'
 createlib = require 'lib.spawning.create'
 removelib = require 'lib.spawning.remove'
 embedlib = require 'lib.spawning.embed'
@@ -63,8 +65,6 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
-local floor_types = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE}
-local valid_floors = commonlib.TableConcat(floor_types, {ENT_TYPE.FLOOR_ICE})
 
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
@@ -5353,10 +5353,8 @@ function init_onlevel()
 	CHUNKBOOL_ALTAR = false
 	CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = false
 	CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = false
-
-	GIANTSPIDER_SPAWNED = false
-	LOCKEDCHEST_KEY_SPAWNED = false
 	
+	createlib.init()
 	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
@@ -5649,306 +5647,17 @@ set_post_tile_code_callback(function(x, y, layer)
 end, "door")
 
 
---[[
-	START PROCEDURAL/EXTRA SPAWN DEF
---]]
+global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, validlib.is_valid_blackmarket_spawn, 0, 0)
 
---[[
-	-- Notes:
-		-- kays:
-			-- "I believe it's a 1/N chance that any possible place for that enemy to spawn, it spawns. so in your example, for level 2 about 1/20 of the possible tiles for that enemy to spawn will actually spawn it"
-	
-		-- Dr.BaconSlices (regarding the S2 screenshot with all dwelling enemies set to max spawn rates):
-			--[[
-				"Yup, all it does is roll that chance on any viable tile. There are a couple more quirks, or so I've heard,
-				like enemies spawning with more air around them rather than in enclosed areas, whereas treasure is
-				more likely to be in cramped places. And of course, it checks for viable tiles instead of any tile,
-				so it won't place things inside of floors or other solids, within a liquid it isn't supposed to be in, etc.
-				There's also stuff like bats generating along celiengs instead of the ground,
-				but I don't think I need to explain that haha"
-				"Oh yeah, I forgot to mention that. The priority is determined based on the list,
-				which you can see here with 50 million bats but 0 spiders. I'm assuming both of
-				their chances are set to 1,1,1,1 but you're still only seeing bats, and that's
-				because they're generating in all of the places that spiders are able to."
-			--]]
-	-- Spawn requirements:
-		-- Traps
-			-- Notes:
-				-- replaces FLOOR_* and FLOORSTYLED_* (so platforms count as spaces)
-				-- don't spawn in place of gold/rocks/pots
-			-- Arrow Trap:
-				-- Notes:
-					-- are the only damaging entity to spawn in the entrance 
-				-- viable tiles:
-					-- if there are two blocks and two spaces, mark the inside block for replacement, unless the trigger hitbox would touch the entrance door
-				-- while spawning:
-					-- don't spawn if it would result in its back touching another arrow trap
-				
-			-- Tiki Traps:
-				-- Notes:
-					-- Spawn after arrow traps
-					-- are the only damaging entity to spawn in the entrance 
-				-- viable space to place:
-					-- Require a block on both sides of the block it's standing on
-					-- Require a 3x2 space above the spawn
-				-- viable tile to replace:
-					-- 
-				-- while spawning:
-					-- don't spawn if it would result in its sides touching another tiki trap 
-						-- HD doesn't check for this
---]]
+global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_damsel_spawn, 0, 0)
 
-local function detect_floor_at(x, y, l)
-	local floor = get_grid_entity_at(x, y, l)
-	return floor ~= -1
-end
+global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_damsel_spawn, 0, 0)
 
-local function detect_floor_below(x, y, l)
-	local floor = get_grid_entity_at(x, y-1, l)
-	return floor ~= -1
-end
+global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x, y, l, 0, 0) end, nil, 0, 0)
 
-local function detect_floor_above(x, y, l)
-	local floor = get_grid_entity_at(x, y+1, l)
-	return floor ~= -1
-end
+global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_wormtongue, validlib.is_valid_wormtongue_spawn, 0, 0)
 
-local function detect_floor_left(x, y, l)
-	local floor = get_grid_entity_at(x-1, y, l)
-	return floor ~= -1
-end
-
-local function detect_floor_right(x, y, l)
-	local floor = get_grid_entity_at(x+1, y, l)
-	return floor ~= -1
-end
-
-local function detect_empty_nodoor(x, y, l)
-	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
-	local entity_uids = get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y, l, 0.5)
-	local door_not_here = #entity_uids == 0
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and door_not_here
-	)
-end
-
-local function detect_shop_room_template(x, y, l) -- is this position inside an entrance room?
-	local rx, ry = get_room_index(x, y)
-	return (
-		get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP_LEFT
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP_LEFT
-	)
-end
-
-local function detect_entrance_room_template(x, y, l) -- is this position inside an entrance room?
-	local rx, ry = get_room_index(x, y)
-	return (
-		get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE_DROP
-	)
-end
-
-local function detect_solid_nonshop_nontree(x, y, l)
-    local entity_here = get_grid_entity_at(x, y, l)
-	if entity_here ~= -1 then
-		entity_here = get_entity(entity_here)
-		return (
-			test_flag(entity_here.flags, ENT_FLAG.SOLID) == true
-			and test_flag(entity_here.flags, ENT_FLAG.SHOP_FLOOR) == false
-			and test_flag(entity_here.flags, ENT_FLAG.SHOP_FLOOR) == false
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_ALTAR
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_BASE
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_TRUNK
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_TOP
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_IDOL_BLOCK
-		)
-	end
-	return false
-end
-
--- Only spawn in a space that has floor above, below, and at least one left or right of it
-local function is_valid_damsel_spawn(x, y, l)
-    local entity_uids = get_entities_at({
-		ENT_TYPE.FLOOR_GENERIC,
-		ENT_TYPE.FLOOR_BORDERTILE,
-		ENT_TYPE.FLOORSTYLED_MINEWOOD,
-		ENT_TYPE.FLOORSTYLED_STONE,
-		ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-		ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-		ENT_TYPE.FLOOR_LADDER,
-		ENT_TYPE.FLOOR_LADDER_PLATFORM,
-		ENT_TYPE.MONS_PET_DOG,
-		ENT_TYPE.MONS_PET_CAT,
-		ENT_TYPE.MONS_PET_HAMSTER,
-		ENT_TYPE.ITEM_BONES,
-		ENT_TYPE.ITEM_POT,
-		ENT_TYPE.ITEM_SKULL,
-		ENT_TYPE.ITEM_ROCK,
-		ENT_TYPE.ITEM_CURSEDPOT,
-		ENT_TYPE.ITEM_WEB,
-		ENT_TYPE.MONS_SKELETON,
-
-		ENT_TYPE.ITEM_LOCKEDCHEST_KEY,
-		ENT_TYPE.ITEM_LOCKEDCHEST,
-	}, 0, x, y, l, 0.5)
-	local not_entity_here = #entity_uids == 0
-    if not_entity_here == true then
-		local entity_uid = get_grid_entity_at(x, y - 1, l)
-        local entity_below = entity_uid ~= -1 and (
-			test_flag(get_entity_flags(entity_uid), ENT_FLAG.IS_PLATFORM) == false
-			and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-		)
-
-		local entity_uid = get_grid_entity_at(x, y + 1, l)
-        local entity_above = entity_uid ~= -1 and (
-			test_flag(get_entity_flags(entity_uid), ENT_FLAG.IS_PLATFORM) == false
-			and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-		)
-        if entity_below == true and entity_above == true then
-			local entity_uid = get_grid_entity_at(x - 1, y, l)
-            local entity_left = entity_uid ~= -1 and (
-				test_flag(get_entity_flags(entity_uid), ENT_FLAG.IS_PLATFORM) == false
-				and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-			)
-
-			entity_uid = get_grid_entity_at(x + 1, y, l)
-            local entity_right = entity_uid ~= -1 and (
-				test_flag(get_entity_flags(entity_uid), ENT_FLAG.IS_PLATFORM) == false
-				and test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-			)
-            if (
-				(entity_left == true or entity_right == true)
-				and detect_shop_room_template(x, y, l) == false
-			) then
-				return true
-			end
-        end
-    end
-    return false
-end
-
--- 4 spaces available
-local function is_valid_anubis_spawn(x, y, l)
-	local cx, cy = x+.5, y-.5
-	local w, h = 2, 2
-    local entity_uids = get_entities_overlapping_hitbox(
-		0, MASK.FLOOR,
-		AABB:new(
-			cx-(w/2),
-			cy+(h/2),
-			cx+(w/2),
-			cy-(h/2)
-		),
-		l
-	)
-	return (
-		#entity_uids == 0
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end
-
--- in path room
--- space available: 3x4 for jungle, 3x3 for icecaves
-local function is_valid_wormtongue_spawn(x, y, l)
-	-- if (
-	-- 	roomgenlib.global_levelassembly ~= nil
-	-- 	and roomgenlib.global_levelassembly.modification ~= nil
-	-- 	and roomgenlib.global_levelassembly.modification.levelrooms ~= nil
-	-- ) then
-
-	-- end
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	-- local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-	if roomy < 5 then
-
-		local cx, cy = x, y
-		local w, h = 3, state.theme == THEME.JUNGLE and 3 or 4
-		local entity_uids = get_entities_overlapping_hitbox(
-			0, MASK.FLOOR,
-			AABB:new(
-				cx-(w/2),
-				cy+(h/2),
-				cx+(w/2),
-				cy-((h/2)+(state.theme == THEME.JUNGLE and 1 or 0))
-			),
-			l
-		)
-		return (
-			#entity_uids == 0
-			and detect_shop_room_template(x, y, l) == false
-		)
-	end
-	return false
-end
-
-local function is_valid_blackmarket_spawn(x, y, l)
-	local floor_uid = get_grid_entity_at(x, y, l)
-	local floor_uid2 = get_grid_entity_at(x, y-1, l)
-	if (
-		floor_uid ~= -1
-		and floor_uid2 ~= -1
-	) then
-		local floor = get_entity(floor_uid)
-		local floor_type = get_entity_type(floor_uid)
-
-		local floor2 = get_entity(floor_uid2)
-		local floor_type2 = get_entity_type(floor_uid2)
-		return (
-			(
-				test_flag(floor.flags, ENT_FLAG.SOLID) == true
-				and test_flag(floor.flags, ENT_FLAG.SHOP_FLOOR) == false
-				and floor_type ~= ENT_TYPE.FLOOR_BORDERTILE
-				and floor_type ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
-				and floor_type ~= ENT_TYPE.FLOORSTYLED_STONE
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_BASE
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_TOP
-				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER
-				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
-			)
-			and (
-				test_flag(floor2.flags, ENT_FLAG.SOLID) == true
-				and test_flag(floor2.flags, ENT_FLAG.SHOP_FLOOR) == false
-				and floor_type2 ~= ENT_TYPE.FLOOR_BORDERTILE
-				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
-				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_STONE
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_BASE
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TRUNK
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TOP
-				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER
-				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
-			)
-		)
-	end
-	return false
-end
-
---[[
-	Extra spawns use the prefix `global_spawn_extra_*`
---]]
-
-local global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, is_valid_blackmarket_spawn, 0, 0)
-
-local global_spawn_extra_locked_chest_and_key = define_extra_spawn(function(x, y, l)
-	if LOCKEDCHEST_KEY_SPAWNED == false then
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST_KEY, x, y, l)
-		LOCKEDCHEST_KEY_SPAWNED = true
-	else
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
-	end
-	removelib.remove_damsel_spawn_item(x, y, l)
-end, is_valid_damsel_spawn, 0, 0)
-
-local global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, is_valid_damsel_spawn, 0, 0)
-
-local global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x, y, l, 0, 0) end, nil, 0, 0)
-
-local global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_wormtongue, is_valid_wormtongue_spawn, 0, 0)
-
-local global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, is_valid_anubis_spawn, 0, 0)
+global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, validlib.is_valid_anubis_spawn, 0, 0)
 
 -- cog door(?) -- # TOFIX: Currently using S2 COG door implementation. If it ends up spawning in lava, will need to manually prevent that and do it here.  
 
@@ -5957,442 +5666,141 @@ local global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, is
 	Procedural spawns use the prefix `global_spawn_procedural_*`
 --]]
 
-local global_spawn_procedural_spiderlair_ground_enemy = define_procedural_spawn("hd_procedural_spiderlair_ground_enemy", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use it for ground enemy spawns
-local function run_spiderlair_ground_enemy_chance()
-	--[[
-		if not spiderlair
-		or 1/3 chance passes
-	]]
-	local current_ground_chance = get_procedural_spawn_chance(global_spawn_procedural_spiderlair_ground_enemy)
-	if (
-		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
-		or (
-			current_ground_chance ~= 0
-			and math.random(current_ground_chance) == 1
-		)
-	) then
-		return true
-	end
-	return false
-end
+global_spawn_procedural_spiderlair_ground_enemy = define_procedural_spawn("hd_procedural_spiderlair_ground_enemy", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use it for ground enemy spawns
 
-local function is_valid_landmine_spawn(x, y, l) return false end -- # TODO: Implement method for valid landmine spawn
-local global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, is_valid_landmine_spawn)
+global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
 
-local function is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
-local global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, is_valid_bouncetrap_spawn)
+global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
 
-local function is_valid_caveman_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid caveman spawn
-local global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", createlib.create_caveman, is_valid_caveman_spawn)
-local global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", createlib.create_caveman, is_valid_caveman_spawn)
+global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)
+global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)
 
-local function is_valid_scorpion_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid scorpion spawn
-local global_spawn_procedural_scorpion = define_procedural_spawn("hd_procedural_scorpion", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l) end, is_valid_scorpion_spawn)
+global_spawn_procedural_scorpion = define_procedural_spawn("hd_procedural_scorpion", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l) end, validlib.is_valid_scorpion_spawn)
 
-local function is_valid_cobra_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-	)
-end -- # TODO: Implement method for valid cobra spawn
-local global_spawn_procedural_cobra = define_procedural_spawn("hd_procedural_cobra", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_COBRA, x, y, l) end, is_valid_cobra_spawn)
+global_spawn_procedural_cobra = define_procedural_spawn("hd_procedural_cobra", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_COBRA, x, y, l) end, validlib.is_valid_cobra_spawn)
 
-local function is_valid_snake_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-	)
-end -- # TODO: Implement method for valid snake spawn
-local global_spawn_procedural_snake = define_procedural_spawn("hd_procedural_snake", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end, is_valid_snake_spawn)
+global_spawn_procedural_snake = define_procedural_spawn("hd_procedural_snake", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end, validlib.is_valid_snake_spawn)
 
-local function is_valid_mantrap_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-	)
-end -- # TODO: Implement method for valid mantrap spawn
-local global_spawn_procedural_mantrap = define_procedural_spawn("hd_procedural_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
-local global_spawn_procedural_hcastle_mantrap = define_procedural_spawn("hd_procedural_hcastle_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
-local global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd_procedural_worm_jungle_mantrap", createlib.create_mantrap, is_valid_mantrap_spawn)
+global_spawn_procedural_mantrap = define_procedural_spawn("hd_procedural_mantrap", createlib.create_mantrap, validlib.is_valid_mantrap_spawn)
+global_spawn_procedural_hcastle_mantrap = define_procedural_spawn("hd_procedural_hcastle_mantrap", createlib.create_mantrap, validlib.is_valid_mantrap_spawn)
+global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd_procedural_worm_jungle_mantrap", createlib.create_mantrap, validlib.is_valid_mantrap_spawn)
 
-local function is_valid_tikiman_spawn(x, y, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid tikiman spawn
-local global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", createlib.create_tikiman, is_valid_tikiman_spawn)
-local global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", createlib.create_tikiman, is_valid_tikiman_spawn)
+global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
+global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
 
-local function is_valid_snail_spawn(x, y, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid snail spawn
-local global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", createlib.create_snail, is_valid_snail_spawn)
-local global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", createlib.create_snail, is_valid_snail_spawn)
-local global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", createlib.create_snail, is_valid_snail_spawn)
+global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
+global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
+global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
 
-local function is_valid_firefrog_spawn(x, y, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid firefrog spawn
-local global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
-local global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
-local global_spawn_procedural_worm_jungle_firefrog = define_procedural_spawn("hd_procedural_worm_jungle_firefrog", createlib.create_firefrog, is_valid_firefrog_spawn)
+global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
+global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
+global_spawn_procedural_worm_jungle_firefrog = define_procedural_spawn("hd_procedural_worm_jungle_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
 
-local function is_valid_frog_spawn(x, y, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid frog spawn
-local global_spawn_procedural_frog = define_procedural_spawn("hd_procedural_frog", createlib.create_frog, is_valid_frog_spawn)
-local global_spawn_procedural_hcastle_frog = define_procedural_spawn("hd_procedural_hcastle_frog", createlib.create_frog, is_valid_frog_spawn)
-local global_spawn_procedural_worm_jungle_frog = define_procedural_spawn("hd_procedural_worm_jungle_frog", createlib.create_frog, is_valid_frog_spawn)
+global_spawn_procedural_frog = define_procedural_spawn("hd_procedural_frog", createlib.create_frog, validlib.is_valid_frog_spawn)
+global_spawn_procedural_hcastle_frog = define_procedural_spawn("hd_procedural_hcastle_frog", createlib.create_frog, validlib.is_valid_frog_spawn)
+global_spawn_procedural_worm_jungle_frog = define_procedural_spawn("hd_procedural_worm_jungle_frog", createlib.create_frog, validlib.is_valid_frog_spawn)
 
-local function is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
-local global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yeti", createlib.create_yeti, is_valid_yeti_spawn)
-local global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, is_valid_yeti_spawn)
+global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
+global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 
-local function is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
-local global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, is_valid_hawkman_spawn)
+global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, validlib.is_valid_hawkman_spawn)
 
-local function is_valid_crocman_spawn(x, y, l) return false end -- # TODO: Implement method for valid crocman spawn
-local global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, is_valid_crocman_spawn)
+global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, validlib.is_valid_crocman_spawn)
 
-local function is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
-local global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, is_valid_scorpionfly_spawn)
+global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, validlib.is_valid_scorpionfly_spawn)
 
-local function is_valid_critter_rat_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid critter_rat spawn
-local global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", createlib.create_critter_rat, is_valid_critter_rat_spawn)
+global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", createlib.create_critter_rat, validlib.is_valid_critter_rat_spawn)
 
-local function is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
-local global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, is_valid_critter_frog_spawn)
+global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, validlib.is_valid_critter_frog_spawn)
 
-local function is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
-local global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, is_valid_critter_maggot_spawn)
+global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, validlib.is_valid_critter_maggot_spawn)
 
-local function is_valid_critter_penguin_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_penguin spawn
-local global_spawn_procedural_critter_penguin = define_procedural_spawn("hd_procedural_critter_penguin", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERPENGUIN, x, y, l) end, is_valid_critter_penguin_spawn)
+global_spawn_procedural_critter_penguin = define_procedural_spawn("hd_procedural_critter_penguin", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERPENGUIN, x, y, l) end, validlib.is_valid_critter_penguin_spawn)
 
-local function is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
-local global_spawn_procedural_critter_locust = define_procedural_spawn("hd_procedural_critter_locust", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERLOCUST, x, y, l) end, is_valid_critter_locust_spawn)
+global_spawn_procedural_critter_locust = define_procedural_spawn("hd_procedural_critter_locust", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERLOCUST, x, y, l) end, validlib.is_valid_critter_locust_spawn)
 
-local function is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Implement method for valid jiangshi spawn
-local global_spawn_procedural_jiangshi = define_procedural_spawn("hd_procedural_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_restless_jiangshi = define_procedural_spawn("hd_procedural_restless_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_hcastle_jiangshi = define_procedural_spawn("hd_procedural_hcastle_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
-local global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_procedural_yama_jiangshi", createlib.create_jiangshi, is_valid_jiangshi_spawn)
+global_spawn_procedural_jiangshi = define_procedural_spawn("hd_procedural_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
+global_spawn_procedural_restless_jiangshi = define_procedural_spawn("hd_procedural_restless_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
+global_spawn_procedural_hcastle_jiangshi = define_procedural_spawn("hd_procedural_hcastle_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
+global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_procedural_yama_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
 
-local function is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
-local global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", createlib.create_devil, is_valid_devil_spawn)
-local global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", createlib.create_devil, is_valid_devil_spawn)
+global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
+global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
 
-local function is_valid_greenknight_spawn(x, y, l) return false end -- # TODO: Implement method for valid greenknight spawn
-local global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", createlib.create_greenknight, is_valid_greenknight_spawn)
+global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", createlib.create_greenknight, validlib.is_valid_greenknight_spawn)
 
-local function is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
-local global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", createlib.create_alientank, is_valid_alientank_spawn)
+global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", createlib.create_alientank, validlib.is_valid_alientank_spawn)
 
-local function is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_fish spawn
-local global_spawn_procedural_critter_fish = define_procedural_spawn("hd_procedural_critter_fish", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERFISH, x, y, l) end, is_valid_critter_fish_spawn)
+global_spawn_procedural_critter_fish = define_procedural_spawn("hd_procedural_critter_fish", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERFISH, x, y, l) end, validlib.is_valid_critter_fish_spawn)
 
-local function is_valid_piranha_spawn(x, y, l) return false end -- # TODO: Implement method for valid piranha spawn
-local global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", createlib.create_piranha, is_valid_piranha_spawn)
-local global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", createlib.create_piranha, is_valid_piranha_spawn)
+global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
+global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
 
-local function is_valid_monkey_spawn(x, y, l) return false end -- # TODO: Implement method for valid monkey spawn
-local global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MONKEY, x, y, l) end, is_valid_monkey_spawn)
+global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MONKEY, x, y, l) end, validlib.is_valid_monkey_spawn)
 
-local function is_valid_hangspider_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	local floor_three_below = get_grid_entity_at(x, y-3, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
-		and floor_two_below == -1
-		and floor_three_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid hangspider spawn
-local global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_spiderlair_hangspider = define_procedural_spawn("hd_procedural_spiderlair_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_restless_hangspider = define_procedural_spawn("hd_procedural_restless_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
-local global_spawn_procedural_hcastle_hangspider = define_procedural_spawn("hd_procedural_hcastle_hangspider", createlib.create_hangspider, is_valid_hangspider_spawn)
+global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
+global_spawn_procedural_spiderlair_hangspider = define_procedural_spawn("hd_procedural_spiderlair_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
+global_spawn_procedural_restless_hangspider = define_procedural_spawn("hd_procedural_restless_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
+global_spawn_procedural_hcastle_hangspider = define_procedural_spawn("hd_procedural_hcastle_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
 
-local function is_valid_bat_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid bat spawn
-local global_spawn_procedural_bat = define_procedural_spawn("hd_procedural_bat", createlib.create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_hcastle_bat = define_procedural_spawn("hd_procedural_hcastle_bat", createlib.create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_worm_jungle_bat = define_procedural_spawn("hd_procedural_worm_jungle_bat", createlib.create_bat, is_valid_bat_spawn)
-local global_spawn_procedural_yama_bat = define_procedural_spawn("hd_procedural_yama_bat", createlib.create_bat, is_valid_bat_spawn)
+global_spawn_procedural_bat = define_procedural_spawn("hd_procedural_bat", createlib.create_bat, validlib.is_valid_bat_spawn)
+global_spawn_procedural_hcastle_bat = define_procedural_spawn("hd_procedural_hcastle_bat", createlib.create_bat, validlib.is_valid_bat_spawn)
+global_spawn_procedural_worm_jungle_bat = define_procedural_spawn("hd_procedural_worm_jungle_bat", createlib.create_bat, validlib.is_valid_bat_spawn)
+global_spawn_procedural_yama_bat = define_procedural_spawn("hd_procedural_yama_bat", createlib.create_bat, validlib.is_valid_bat_spawn)
 
-local function is_valid_spider_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid spider spawn
-local global_spawn_procedural_spider = define_procedural_spawn("hd_procedural_spider", createlib.create_spider, is_valid_spider_spawn)
-local global_spawn_procedural_spiderlair_spider = define_procedural_spawn("hd_procedural_spiderlair_spider", createlib.create_spider, is_valid_spider_spawn)
+global_spawn_procedural_spider = define_procedural_spawn("hd_procedural_spider", createlib.create_spider, validlib.is_valid_spider_spawn)
+global_spawn_procedural_spiderlair_spider = define_procedural_spawn("hd_procedural_spiderlair_spider", createlib.create_spider, validlib.is_valid_spider_spawn)
 
-local function is_valid_vampire_spawn(x, y, l) return false end -- # TODO: Implement method for valid vampire spawn
-local global_spawn_procedural_vampire = define_procedural_spawn("hd_procedural_vampire", createlib.create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_restless_vampire = define_procedural_spawn("hd_procedural_restless_vampire", createlib.create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_hcastle_vampire = define_procedural_spawn("hd_procedural_hcastle_vampire", createlib.create_vampire, is_valid_vampire_spawn)
-local global_spawn_procedural_yama_vampire = define_procedural_spawn("hd_procedural_yama_vampire", createlib.create_vampire, is_valid_vampire_spawn)
+global_spawn_procedural_vampire = define_procedural_spawn("hd_procedural_vampire", createlib.create_vampire, validlib.is_valid_vampire_spawn)
+global_spawn_procedural_restless_vampire = define_procedural_spawn("hd_procedural_restless_vampire", createlib.create_vampire, validlib.is_valid_vampire_spawn)
+global_spawn_procedural_hcastle_vampire = define_procedural_spawn("hd_procedural_hcastle_vampire", createlib.create_vampire, validlib.is_valid_vampire_spawn)
+global_spawn_procedural_yama_vampire = define_procedural_spawn("hd_procedural_yama_vampire", createlib.create_vampire, validlib.is_valid_vampire_spawn)
 
-local function is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
-local global_spawn_procedural_imp = define_procedural_spawn("hd_procedural_imp", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_IMP, x, y, l) end, is_valid_imp_spawn)
-local global_spawn_procedural_yama_imp = define_procedural_spawn("hd_procedural_yama_imp", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_IMP, x, y, l) end, is_valid_imp_spawn)
+global_spawn_procedural_imp = define_procedural_spawn("hd_procedural_imp", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_IMP, x, y, l) end, validlib.is_valid_imp_spawn)
+global_spawn_procedural_yama_imp = define_procedural_spawn("hd_procedural_yama_imp", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_IMP, x, y, l) end, validlib.is_valid_imp_spawn)
 
-local function is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Implement method for valid scarab spawn
-local global_spawn_procedural_scarab = define_procedural_spawn("hd_procedural_scarab", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCARAB, x, y, l) end, is_valid_scarab_spawn)
+global_spawn_procedural_scarab = define_procedural_spawn("hd_procedural_scarab", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCARAB, x, y, l) end, validlib.is_valid_scarab_spawn)
 
-local function is_valid_mshiplight_spawn(x, y, l) return false end -- # TODO: Implement method for valid mshiplight spawn
-local global_spawn_procedural_mshiplight = define_procedural_spawn("hd_procedural_mshiplight", createlib.create_mshiplight, is_valid_mshiplight_spawn)
+global_spawn_procedural_mshiplight = define_procedural_spawn("hd_procedural_mshiplight", createlib.create_mshiplight, validlib.is_valid_mshiplight_spawn)
 
-local function is_valid_lantern_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid lantern spawn
-local global_spawn_procedural_dark_lantern = define_procedural_spawn("hd_procedural_dark_lantern", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end, is_valid_lantern_spawn)
+global_spawn_procedural_dark_lantern = define_procedural_spawn("hd_procedural_dark_lantern", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end, validlib.is_valid_lantern_spawn)
 
-local function is_valid_turret_spawn(x, y, l) return false end -- # TODO: Implement method for valid turret spawn
-local global_spawn_procedural_ufo_turret = define_procedural_spawn("hd_procedural_ufo_turret", createlib.create_turret, is_valid_turret_spawn)
-local global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", createlib.create_turret, is_valid_turret_spawn)
+global_spawn_procedural_ufofeeling_turret = define_procedural_spawn("hd_procedural_ufofeeling_turret", createlib.create_turret, validlib.is_valid_turret_spawn)
+global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", createlib.create_turret, validlib.is_valid_turret_spawn)
 
-local function is_valid_webnest_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid webnest spawn
-local global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", createlib.create_webnest, is_valid_webnest_spawn)
+global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", createlib.create_webnest, validlib.is_valid_webnest_spawn)
 
+global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
+global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)
 
--- powderkeg / pushblock
-local global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
-local function create_pushblock_powderkeg(x, y, l)
-	-- local entity_here = get_grid_entity_at(x, y, l)
-	-- if entity_here ~= -1 then
-    --     -- get_entity(entity_here):destroy()
-	-- 	kill_entity(entity_here)
-	-- end
-	removelib.remove_floor_and_embedded_at(x, y, l)
+global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
+global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-	local current_powderkeg_chance = get_procedural_spawn_chance(global_spawn_procedural_powderkeg)
-	if (
-		current_powderkeg_chance ~= 0
-		and math.random(current_powderkeg_chance) == 1
-	) then
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0)
-	else
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
-	end
-end
-local function is_valid_pushblock_spawn(x, y, l)
-	-- Replaces floor with spawn where it has floor underneath
-    local above = get_grid_entity_at(x, y+1, l)
-	if above ~= -1 then
-		above = get_entity(above)
-		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
-			return false
-		end
-	end
-    return (
-		detect_solid_nonshop_nontree(x, y, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
-end
-local global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedural_pushblock", create_pushblock_powderkeg, is_valid_pushblock_spawn)
+global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
-local function is_valid_spikeball_spawn(x, y, l) return false end -- # TODO: Implement method for valid spikeball spawn
-local global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, is_valid_spikeball_spawn)
-local global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, is_valid_spikeball_spawn)
+global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", createlib.create_tikitrap, validlib.is_valid_tikitrap_spawn)
 
-
-local function is_valid_arrowtrap_spawn(x, y, l)
-	local rx, ry = get_room_index(x, y)
-    if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
-    local floor = get_grid_entity_at(x, y, l)
-    local left = get_grid_entity_at(x-1, y, l)
-    local left2 = get_grid_entity_at(x-2, y, l)
-    local right = get_grid_entity_at(x+1, y, l)
-    local right2 = get_grid_entity_at(x+2, y, l)
-    if floor ~= -1 and (
-		(left == -1 and left2 == -1 and right ~= -1)
-		or (left ~= -1 and right == -1 and right2 == -1)
-	) then
-        floor = get_entity(floor)
-        return commonlib.has(valid_floors, floor.type.id)
-    end
-    return false
-end -- # TODO: Implement method for valid arrowtrap spawn
-local global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, is_valid_arrowtrap_spawn)
-
-local function is_valid_tikitrap_spawn(x, y, l)
-	
-	--[[
-		-- # TODO: Implement method for valid tikitrap spawn
-		-- Does it have a block underneith?
-		-- Does it have at least 3 spaces across unoccupied above it?
-		-- Does it have at least one tile unoccupied next to it? (not counting tiki trap tiles)
-		-- Is the top tiki part placed over an unoccupied space?
-	]]
-	return false
-end
-local global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", createlib.create_tikitrap, is_valid_tikitrap_spawn)
-
-local function is_valid_crushtrap_spawn(x, y, l)
-	--[[
-		-- # TODO: Implement method for valid crushtrap spawn
-		-- Replace air
-		-- Needs at least one block open on one side of it
-		-- Needs at least one block occupide on one side of it
-	]]
-	return false
-end
-local global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, is_valid_crushtrap_spawn)
+global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
-local function is_valid_tombstone_spawn(x, y, l)
-	-- need subchunkid of what room we're in
-	-- # TOFIX: Prevent tombstones from spawning in RESTLESS_TOMB.
-	--[[ the following code returns as nil, though it should be showing up at this point...
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-	--]]
-	
-    return (
-		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and
-		detect_empty_nodoor(x, y, l)
-		and detect_empty_nodoor(x, y+1, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
-end
-local global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, is_valid_tombstone_spawn)
+global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, validlib.is_valid_tombstone_spawn)
 
-local function is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
-local global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, is_valid_giantfrog_spawn)
+global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
-local function create_mammoth(x, y, l) end
-local function is_valid_mammoth_spawn(x, y, l) return false end -- # TODO: Implement method for valid mammoth spawn
-local global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", create_mammoth, is_valid_mammoth_spawn)
+global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", createlib.create_mammoth, validlib.is_valid_mammoth_spawn)
 
-function is_valid_giantspider_spawn(x, y, l)
-	local floor_above_right = get_grid_entity_at(x+1, y+1, l)
-	local cx, cy = x+.5, y-.5
-	local w, h = 2, 2
-	local entity_uids = get_entities_overlapping_hitbox(
-		0, MASK.FLOOR,
-		AABB:new(
-			cx-(w/2),
-			cy+(h/2),
-			cx+(w/2),
-			cy-(h/2)
-		),
-		l
-	)
-	return (
-		#entity_uids == 0
-		and detect_floor_above(x, y, l) == true
-		and floor_above_right ~= -1
-		and GIANTSPIDER_SPAWNED == false
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid giantspider spawn
-local global_spawn_procedural_giantspider = define_procedural_spawn("hd_procedural_giantspider", function(x, y, l) spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0) GIANTSPIDER_SPAWNED = true end, is_valid_giantspider_spawn)
+global_spawn_procedural_giantspider = define_procedural_spawn("hd_procedural_giantspider", createlib.create_giantspider, validlib.is_valid_giantspider_spawn)
 
+global_spawn_procedural_hive_bee = define_procedural_spawn("hd_procedural_hive_bee", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BEE, x, y, l) end, validlib.is_valid_bee_spawn)
 
-local function is_valid_bee_spawn(x, y, l) return false end -- # TODO: Implement method for valid bee spawn
-local global_spawn_procedural_hive_bee = define_procedural_spawn("hd_procedural_hive_bee", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BEE, x, y, l) end, is_valid_bee_spawn)
+global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
+global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
 
+global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", createlib.create_bacterium, validlib.is_valid_bacterium_spawn)
+global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", createlib.create_bacterium, validlib.is_valid_bacterium_spawn)
 
-local function is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
-local global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", createlib.create_ufo, is_valid_ufo_spawn)
-local global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", createlib.create_ufo, is_valid_ufo_spawn)
-
-
-local function is_valid_bacterium_spawn(x, y, l) return false end -- # TODO: Implement method for valid bacterium spawn
-local global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", createlib.create_bacterium, is_valid_bacterium_spawn)
-local global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", createlib.create_bacterium, is_valid_bacterium_spawn)
-
-
-local function is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn
-local global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", createlib.create_eggsac, is_valid_eggsac_spawn)
-local global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", createlib.create_eggsac, is_valid_eggsac_spawn)
-
-
---[[ Template for defining procedural spawns:
-
-	local function create_*(x, y, l) end
-	local function is_valid_*_spawn(x, y, l) return false end -- # TODO: Implement method for valid * spawn
-	local global_spawn_procedural_* = define_procedural_spawn("hd_procedural_*", create_*, is_valid_*_spawn)
---]]
-
-
---[[
-	END PROCEDURAL SPAWN DEF
---]]
+global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)
+global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
 
 local s2_room_template_blackmarket_ankh = define_room_template("hdmod_blackmarket_ankh", ROOM_TEMPLATE_TYPE.SHOP)
@@ -6590,183 +5998,190 @@ set_callback(function(room_gen_ctx)
 				room_gen_ctx:set_room_template(x, level_h, 0, ROOM_TEMPLATE.SIDE)
 			end
 		end
+		
+		-- spawndeflib.set_chances(room_gen_ctx)
+		set_chances(room_gen_ctx)
 
-		if options.hd_debug_scripted_levelgen_disable == false then
-			if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
-				else -- unset
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 0, 0)
-				end
-				
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
-				else
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_spider, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_webnest, 0)
-				end
-
-				if (
-					test_flag(state.level_flags, 18) == false
-					or state.theme ~= THEME.DWELLING
-				) then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 1, 0)
-				else -- unset
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 0, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 1, 0)
-				else -- unset
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 0, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikiman, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snail, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_firefrog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_frog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_monkey, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_frog, 0)
-				else
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_tombstone, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_hangspider, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_vampire, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_jiangshi, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 1, 0)
-				else
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 0, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hive_bee, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_piranha, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikiman, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snail, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_firefrog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_frog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_frog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_fish, 0)
-				else
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_piranha, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_bat, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_hangspider, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_vampire, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_jiangshi, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_mantrap, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_greenknight, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_snail, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_firefrog, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_frog, 0)
-				end
-
-				if state.theme == THEME.EGGPLANT_WORLD then
-					if state.world ~= 2 then
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_bacterium, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_eggsac, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_mantrap, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_caveman, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_tikiman, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_snail, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_firefrog, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_frog, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_bat, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_critter_maggot, 0)
-					elseif state.world ~= 3 then
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_bacterium, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_eggsac, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_yeti, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_ufo, 0)
-					end
-				end
-				
-				-- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
-				-- if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
-				-- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
-				-- else
-				-- end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_ufo_turret, 0)
-				end
-
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mshipentrance_turret, 0)
-				end
-				
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 1, 0)
-				else
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 0, 0)
-				end
-
-				if state.theme == THEME.VOLCANA then
-					if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
-						room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_imp, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_jiangshi, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_vampire, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_devil, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikitrap, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spikeball, 0)
-					else
-						room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 1, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_bat, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_imp, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_jiangshi, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_vampire, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_devil, 0)
-						-- room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_tikitrap, 0)
-						room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_spikeball, 0)
-					end
-				else
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
-				end
-
-				--[[ procedural/extra spawn assign template
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
-					room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
-				else
-				end
-				--]]
-			else -- remove every procedural/extra spawn that happends in world 1 for testing/tutorial
-				if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
-					room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_pushblock, 0)
-				end
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_arrowtrap, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hangspider, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spider, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_scorpion, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_cobra, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snake, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_rat, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_spider, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_webnest, 0)
-				room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
-			end
-		end
 	end
 end, ON.POST_ROOM_GENERATION)
+
+
+function set_chances(room_gen_ctx)
+    if options.hd_debug_scripted_levelgen_disable == false then
+        if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 2, 0)
+            else -- unset
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_locked_chest_and_key, 0, 0)
+            end
+            
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
+            else
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_spider, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_webnest, 0)
+            end
+
+            if (
+                test_flag(state.level_flags, 18) == false
+                or state.theme ~= THEME.DWELLING
+            ) then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 1, 0)
+            else -- unset
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_wormtongue, 0, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 1, 0)
+            else -- unset
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_blackmarket, 0, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikiman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snail, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_firefrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_monkey, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_frog, 0)
+            else
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_tombstone, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_hangspider, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_vampire, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_restless_jiangshi, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 1, 0)
+            else
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_hive_queenbee, 0, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hive_bee, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_piranha, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantfrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mantrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikiman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snail, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_firefrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_fish, 0)
+            else
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_piranha, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_bat, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_hangspider, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_vampire, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_jiangshi, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_mantrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_greenknight, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_snail, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_firefrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hcastle_frog, 0)
+            end
+
+            if state.theme == THEME.EGGPLANT_WORLD then
+                if state.world ~= 2 then
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_bacterium, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_eggsac, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_mantrap, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_caveman, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_tikiman, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_snail, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_firefrog, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_frog, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_bat, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_jungle_critter_maggot, 0)
+                elseif state.world ~= 3 then
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_bacterium, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_eggsac, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_yeti, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_worm_icecaves_ufo, 0)
+                end
+            end
+            
+            -- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
+            -- if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
+            -- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
+            -- else
+            -- end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_ufofeeling_turret, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_mshipentrance_turret, 0)
+            end
+            
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 1, 0)
+            else
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_anubis, 0, 0)
+            end
+
+            if state.theme == THEME.VOLCANA then
+                if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
+                    room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_imp, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_jiangshi, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_vampire, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_devil, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_tikitrap, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spikeball, 0)
+                else
+                    room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 1, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_bat, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_imp, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_jiangshi, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_vampire, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_devil, 0)
+                    -- room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_tikitrap, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_spikeball, 0)
+                end
+            else
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_succubus, 0, 0)
+            end
+
+            --[[ procedural/extra spawn assign template
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
+                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
+            else
+            end
+            --]]
+        else -- remove every procedural/extra spawn that happends in world 1 for testing/tutorial
+            if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
+                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_pushblock, 0)
+            end
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_arrowtrap, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_giantspider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_hangspider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_bat, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_caveman, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_scorpion, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_cobra, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_snake, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_critter_rat, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_hangspider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_spider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_spiderlair_webnest, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_dark_lantern, 0)
+        end
+    end
+end
 
 set_callback(function()
 	if state.screen == SCREEN.LEVEL then

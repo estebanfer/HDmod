@@ -1,5 +1,13 @@
 local module = {}
 
+module.GIANTSPIDER_SPAWNED = false
+module.LOCKEDCHEST_KEY_SPAWNED = false
+
+function module.init()
+	module.GIANTSPIDER_SPAWNED = false
+	module.LOCKEDCHEST_KEY_SPAWNED = false
+end
+
 function module.create_coffin_coop(x, y, l)
 	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	the_coffin = get_entity(coffin_uid)
@@ -197,6 +205,16 @@ function module.create_anubis(x, y, l)
 	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
 end
 
+function module.create_locked_chest_and_key(x, y, l)
+	if module.LOCKEDCHEST_KEY_SPAWNED == false then
+		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST_KEY, x, y, l)
+		module.LOCKEDCHEST_KEY_SPAWNED = true
+	else
+		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
+	end
+	removelib.remove_damsel_spawn_item(x, y, l)
+end
+
 function module.create_succubus(x, y, l) end
 
 function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
@@ -267,6 +285,26 @@ function module.create_webnest(x, y, l)
 	end
 end -- spawn_entity_over(ENT_TYPE.ITEM_REDLANTERN) the floor above (I think?)
 
+-- powderkeg / pushblock
+function module.create_pushblock_powderkeg(x, y, l)
+	-- local entity_here = get_grid_entity_at(x, y, l)
+	-- if entity_here ~= -1 then
+    --     -- get_entity(entity_here):destroy()
+	-- 	kill_entity(entity_here)
+	-- end
+	removelib.remove_floor_and_embedded_at(x, y, l)
+
+	local current_powderkeg_chance = get_procedural_spawn_chance(global_spawn_procedural_powderkeg)
+	if (
+		current_powderkeg_chance ~= 0
+		and math.random(current_powderkeg_chance) == 1
+	) then
+		spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0)
+	else
+		spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+	end
+end
+
 function module.create_spikeball(x, y, l) end
 
 function module.create_arrowtrap(x, y, l)
@@ -306,6 +344,13 @@ end
 function module.create_tikitrap(x, y, l) end -- spawn_entity_over the floor above
 
 function module.create_giantfrog(x, y, l) end
+
+function module.create_mammoth(x, y, l) end
+
+function module.create_giantspider(x, y, l)
+    spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0)
+    module.GIANTSPIDER_SPAWNED = true
+end
 
 function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l) end
 

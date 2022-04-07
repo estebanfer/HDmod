@@ -89,11 +89,6 @@ end
 function init_onlevel()
 	FRAG_PREVENTION_UID = nil
 
-	CHUNKBOOL_IDOL = false
-	CHUNKBOOL_ALTAR = false
-	CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = false
-	CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = false
-	
 	createlib.init()
 	hdtypelib.init()
 	botdlib.init()
@@ -108,6 +103,7 @@ function init_onlevel()
 	ankhmoailib.init()
 	doorslib.init()
 	tombstonelib.init()
+	roomdeflib.init()
 end
 
  -- Trix wrote this

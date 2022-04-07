@@ -4,6 +4,13 @@ unlockslib = require 'lib.unlocks'
 
 local module = {}
 
+function module.init()
+	module.CHUNKBOOL_IDOL = false
+	module.CHUNKBOOL_ALTAR = false
+	module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = false
+	module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = false
+end
+
 
 -- Subchunkid terminology
 	-- 00 -- side				-- Empty/unassigned
@@ -1896,10 +1903,10 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (
-					CHUNKBOOL_ALTAR == false and
+					module.CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
 				) then
-					CHUNKBOOL_ALTAR = true
+					module.CHUNKBOOL_ALTAR = true
 					return {altar = true}
 				end
 				
@@ -2489,19 +2496,19 @@ module.HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 				if state.level == 1 then
 					chunkPool_rand_index = math.random(9)
 				elseif (
-					CHUNKBOOL_ALTAR == false and
+					module.CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
 				) then
-					CHUNKBOOL_ALTAR = true
+					module.CHUNKBOOL_ALTAR = true
 					return {altar = true}
 				elseif (
-					CHUNKBOOL_IDOL == true or
+					module.CHUNKBOOL_IDOL == true or
 					_chunk_coords.hi == levelh
 				) then
 					chunkPool_rand_index = math.random(9)
 				else
 					if math.random(10) == 1 then
-						CHUNKBOOL_IDOL = true
+						module.CHUNKBOOL_IDOL = true
 						return {idol = true}
 					else
 						chunkPool_rand_index = math.random(9)
@@ -2744,19 +2751,19 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (
-					CHUNKBOOL_ALTAR == false and
+					module.CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
 				) then
-					CHUNKBOOL_ALTAR = true
+					module.CHUNKBOOL_ALTAR = true
 					return {altar = true}
 				elseif (
-					CHUNKBOOL_IDOL == false and
+					module.CHUNKBOOL_IDOL == false and
 					(
 						feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false and feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
 					) and
 					math.random(10) == 1
 				) then
-					CHUNKBOOL_IDOL = true
+					module.CHUNKBOOL_IDOL = true
 					return {idol = true}
 				else
 					chunkPool_rand_index = math.random(8)
@@ -3134,16 +3141,16 @@ module.HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
 				if (math.random(2) == 2) then
 					if (
-						CHUNKBOOL_ALTAR == false and
+						module.CHUNKBOOL_ALTAR == false and
 						math.random(14) == 1
 					) then
-						CHUNKBOOL_ALTAR = true
+						module.CHUNKBOOL_ALTAR = true
 						return {altar = true}
 					elseif (
-						CHUNKBOOL_IDOL == false and
+						module.CHUNKBOOL_IDOL == false and
 						math.random(10) == 1
 					) then
-						CHUNKBOOL_IDOL = true
+						module.CHUNKBOOL_IDOL = true
 						return {idol = true}
 					else
 						chunkPool_rand_index = math.random(8)
@@ -3438,12 +3445,12 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 
 
 			if pathid == module.HD_SUBCHUNKID.SIDE then
-				if CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
+				if module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
 					spawn_alienlord = true
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
-				elseif CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
+					module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true
+				elseif module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 == false then
 					spawn_alienlord = true
-					CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
+					module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = true
 				else
 					break
 				end
@@ -3481,17 +3488,17 @@ module.HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 					chunkPool_rand_index = math.random(15, 24) -- use path roomcodes
 				else
 					if (
-						CHUNKBOOL_ALTAR == false
+						module.CHUNKBOOL_ALTAR == false
 						and math.random(14) == 1
 					) then
-						CHUNKBOOL_ALTAR = true
+						module.CHUNKBOOL_ALTAR = true
 						return {altar = true}
 					elseif (
 						feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
-						and CHUNKBOOL_IDOL == false
+						and module.CHUNKBOOL_IDOL == false
 						and math.random(15) == 1
 					) then
-						CHUNKBOOL_IDOL = true
+						module.CHUNKBOOL_IDOL = true
 						return {idol = true}
 					else
 						chunkPool_rand_index = math.random(14)
@@ -3865,16 +3872,16 @@ module.HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 				_, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 				if (
-					CHUNKBOOL_ALTAR == false and
+					module.CHUNKBOOL_ALTAR == false and
 					math.random(14) == 1
 				) then
-					CHUNKBOOL_ALTAR = true
+					module.CHUNKBOOL_ALTAR = true
 					return {altar = true}
 				elseif (
-					CHUNKBOOL_IDOL == false and
+					module.CHUNKBOOL_IDOL == false and
 					_chunk_coords.hi ~= levelh
 				) and math.random(10) == 1 then
-					CHUNKBOOL_IDOL = true
+					module.CHUNKBOOL_IDOL = true
 					return {idol = true}
 				else
 					chunkPool_rand_index = math.random(9)

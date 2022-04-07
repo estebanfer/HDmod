@@ -327,24 +327,24 @@ module.HD_TILENAME = {
 					local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.ENTRANCE)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.ENTRANCE_DROP)
+						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.ENTRANCE)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.ENTRANCE_DROP)
 					) then
 						doorslib.create_door_entrance(x, y, l)
-					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
+					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
 						doorslib.create_door_entrance(x+0.5, y, l)
 					elseif (
-						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.EXIT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.EXIT_NOTOP)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.RUSHING_WATER_EXIT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP)
+						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT_NOTOP)
 					) then
 						-- spawn an exit door to the next level. Spawn a shopkeeper if agro.
 						doorslib.create_door_exit(x, y, l)
-					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
+					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
 						doorslib.create_door_exit_to_mothership(x, y, l)
-					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.RESTLESS_TOMB) then
+					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 						-- Spawn king's tombstone
 						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
@@ -372,7 +372,7 @@ module.HD_TILENAME = {
 						-- 4 tiles down
 						-- Spawn hidden entrance
 						doorslib.create_door_exit_to_hauntedcastle(x, y-4, l)
-					elseif (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_EXIT) then
+					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_EXIT) then
 						doorslib.create_door_ending(x, y, l)
 					end
 				end
@@ -610,12 +610,12 @@ module.HD_TILENAME = {
 					local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
+						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
 					) then
 						hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
 					elseif (
-						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
+						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
 						-- or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						for i = 0, 10, 2 do
@@ -646,14 +646,14 @@ module.HD_TILENAME = {
 					local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 					
 					if (
-						(_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_DROP)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
-						or (_subchunk_id == roomgenlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
+						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
+						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						-- SORRY NOTHING 
 					else
@@ -1032,10 +1032,10 @@ module.HD_TILENAME = {
 					end
 					local coffin_uid = nil
 					if (
-						_subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP
-						or _subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_DROP
-						or _subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-						or _subchunk_id == roomgenlib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
+						_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP
+						or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
+						or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
+						or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 					) then
 						coffin_uid = createlib.create_coffin_coop(x+0.35, y, l)
 					else
@@ -1168,7 +1168,7 @@ module.HD_TILENAME = {
 						_subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 						if (
-							(_subchunk_id == roomgenlib.HD_SUBCHUNKID.ENTRANCE_DROP)
+							(_subchunk_id == roomdeflib.HD_SUBCHUNKID.ENTRANCE_DROP)
 						) then
 							spawn_entity(ENT_TYPE.FLOOR_DOOR_PLATFORM, x, y-1, l, 0, 0)
 						end
@@ -1278,9 +1278,9 @@ module.HD_TILENAME = {
 							local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 							local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 							if (
-								_subchunk_id == roomgenlib.HD_SUBCHUNKID.VLAD_TOP
-								or _subchunk_id == roomgenlib.HD_SUBCHUNKID.VLAD_MIDSECTION
-								or _subchunk_id == roomgenlib.HD_SUBCHUNKID.VLAD_BOTTOM
+								_subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+								or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+								or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
 							) then
 								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
 								texture_def.texture_path = "res/vladspikes.png"

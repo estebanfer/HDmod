@@ -294,7 +294,7 @@ function module.create_pushblock_powderkeg(x, y, l)
 	-- end
 	removelib.remove_floor_and_embedded_at(x, y, l)
 
-	local current_powderkeg_chance = get_procedural_spawn_chance(global_spawn_procedural_powderkeg)
+	local current_powderkeg_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_powderkeg)
 	if (
 		current_powderkeg_chance ~= 0
 		and math.random(current_powderkeg_chance) == 1

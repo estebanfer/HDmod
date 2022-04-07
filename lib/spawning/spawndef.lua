@@ -1,3 +1,12 @@
+commonlib = require 'lib.common'
+worldlib = require 'lib.worldstate'
+feelingslib = require 'lib.feelings'
+doorslib = require 'lib.entities.doors'
+validlib = require 'lib.spawning.valid'
+createlib = require 'lib.spawning.create'
+wormtonguelib = require 'lib.entities.wormtongue'
+tombstonelib = require 'lib.entities.tombstone'
+
 local module = {}
 
 

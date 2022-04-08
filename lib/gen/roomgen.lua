@@ -473,7 +473,7 @@ function level_generation_method_nonaligned(_nonaligned_room_type, _avoid_bottom
 	end
 
 	-- pick random place to fill
-	spot = commonlib.TableRandomElement(spots)
+	spot = commonlib.TableCopyRandomElement(spots)
 
 	levelcode_inject_roomcode(_nonaligned_room_type.subchunk_id, _nonaligned_room_type.roomcodes, spot.y, spot.x)
 end
@@ -990,7 +990,7 @@ function gen_levelcode_phase_1(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -1087,7 +1087,7 @@ function gen_levelcode_phase_2(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 				end
 			end
@@ -1172,7 +1172,7 @@ function gen_levelcode_phase_3(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -1272,7 +1272,7 @@ function gen_levelcode_phase_4(rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or

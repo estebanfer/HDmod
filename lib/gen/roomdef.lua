@@ -2277,7 +2277,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].method = fu
 	end
 
 	-- pick random place to fill
-	spot = commonlib.TableRandomElement(spots)
+	spot = commonlib.TableCopyRandomElement(spots)
 	
 	if (
 		math.random(4) <= 3

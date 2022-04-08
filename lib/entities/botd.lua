@@ -36,6 +36,14 @@ function module.init()
 	bookofdead_frames_index = 1
 end
 
+set_callback(function()
+	module.OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
+	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
+	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
+	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
+	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
+end, ON.START)
+
 -- removes all types of an entity from any player that has it.
 function remove_player_item(powerup, player)
 	local powerup_uids = get_entities_by_type(powerup)

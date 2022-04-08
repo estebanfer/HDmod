@@ -40,7 +40,7 @@ module.HD_UNLOCKS = {
         unlock_theme = THEME.EGGPLANT_WORLD,
         unlock_id = 16,													--ENT_TYPE.CHAR_PILOT
         unlocked = false
-    },				
+    },
     [module.HD_UNLOCK_ID.SPIDERLAIR] = {
         feeling = feelingslib.FEELING_ID.SPIDERLAIR,
         unlock_id = 13, unlocked = false },								--ENT_TYPE.CHAR_VALERIE_CRUMP

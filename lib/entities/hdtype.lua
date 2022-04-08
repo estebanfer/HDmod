@@ -934,6 +934,30 @@ function behavior_set_facing(behavior_uid, master_uid)
 	end
 end
 
+function remove_entitytype_inventory(entity_type, inventory_entities)
+	-- items = get_entities_by_type(inventory_entities)
+	-- for r, inventoryitem in ipairs(items) do
+	-- 	local mount = get_entity(inventoryitem):topmost()
+	-- 	if mount ~= -1 and mount:as_container().type.id == entity_type then
+	-- 		move_entity(inventoryitem, -r, 0, 0, 0)
+	-- 		-- message("Should be hermitcrab: ".. mount.uid)
+	-- 	end
+	-- end
+	for r, _uid in ipairs(get_entities_by_type(entity_type)) do
+		for _, inventoryitem in ipairs(inventory_entities) do
+			local items = entity_get_items_by(_uid, inventoryitem, 0)
+			for _, _to_remove_uid in ipairs(items) do
+				move_entity(_to_remove_uid, -r, 0, 0, 0)
+				--[[
+					-- # TODO: Find a better way to remove powderkegs and pushblocks. The following uncommented code does not remove it propperly.
+					local entity = get_entity(_to_remove_uid)
+					entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
+					kill_entity(_to_remove_uid)
+				]]
+			end
+		end
+	end
+end
 
 -- detect offset
 function detection_floor(x, y, l, offsetx, offsety, _radius)

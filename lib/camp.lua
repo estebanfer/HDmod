@@ -146,21 +146,13 @@ function oncamp_fixes()
 	-- fix gap in floor where S2 shortcut would normally spawn
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 
-	-- add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
+	-- # TODO: add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
 
 end
 
 
 -- ON.CAMP
 set_callback(function()
-	-- oncamp_movetunnelman()
-	-- oncamp_shortcuts()
-	
-	
-	-- signs_back = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_BACK)
-	-- signs_front = get_entities_by_type(ENT_TYPE.BG_TUTORIAL_SIGN_FRONT)
-	-- x, y, l = 49, 90, LAYER.FRONT -- next to entrance
-	
 	-- pre_tile ON.START stuff
 	worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
 

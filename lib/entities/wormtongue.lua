@@ -245,13 +245,6 @@ function tongue_exit()
 	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
 	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 	
-	-- TESTING OVERRIDE
-	-- if #ensnaredplayers > 0 then
-		-- set_timeout(function()
-			-- warp(state.world, state.level+1, THEME.EGGPLANT_WORLD)
-		-- end, 20)
-	-- end
-	
 	exits_doors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)
 	-- exits_worm = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 1)
 	-- worm_exit_uid = exits_worm[1]

@@ -412,6 +412,24 @@ function module.onlevel_toastfeeling()
 	end
 end
 
+-- prevent hardcoded levelfeeling messages from occurring, also handle construction sign messages
+set_callback(function(text)
+    if (
+		text == "Your voice echoes in here..."
+		or text == "You hear the beating of drums..."
+		or text == "You hear the sounds of revelry!"
+		or text == "You feel strangely at peace."
+	) then -- this will only work when chosen language is English, unless you add all variants for all languages
+        text = "" -- message won't be shown
+	elseif (
+		text == "Shortcut Station: Coming Soon! -Mama Tunnel"
+		or text == "New shortcut coming soon! -Mama Tunnel"
+	) then
+		text = "Feature in development!"
+    end
+	return text
+end, ON.TOAST)
+
 
 set_callback(function()
 	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then

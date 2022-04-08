@@ -29,7 +29,7 @@ module.HD_TILENAME = {
 	["%"] = {
 		description = "Roulette Door",
 	},
-	["&"] = { -- 50% chance to spawn # TOTEST probably wrong
+	["&"] = {
 		phase_1 = {
 			default = {
 				function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
@@ -46,12 +46,6 @@ module.HD_TILENAME = {
 				},
 			},
 		},
-		-- offset = { 0, -2.5 },
-		-- alternate_offset = {
-		-- 	[THEME.CITY_OF_GOLD] = { 0, 0 },
-		-- 	[THEME.TEMPLE] = { 0, 0 },
-		-- 	[THEME.VOLCANA] = { 0, 0 },
-		-- },
 		description = "Waterfall",
 	},
 	["*"] = {
@@ -848,8 +842,6 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 			alternate = {
-				-- [THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
-				-- [THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
 			},
@@ -884,7 +876,7 @@ module.HD_TILENAME = {
 				[THEME.JUNGLE] = {function(x, y, l) return 0 end},
 			}
 		},
-		description = "Vlad",
+		description = "Vlad/Black Knight",
 	},
 	["V"] = {
 		description = "Vines Obstacle Block",

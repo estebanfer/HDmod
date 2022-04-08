@@ -11,18 +11,6 @@ function module.init()
 	module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_2 = false
 end
 
-
--- Subchunkid terminology
-	-- 00 -- side				-- Empty/unassigned
-	-- 01 -- path				-- Standard room (horizontal exit)
-	-- 02 -- path_drop			-- Path to exit (vertical exit)
-	-- 03 -- path_notop			-- Path to exit (horizontal exit)
-	-- 04 -- path_drop_notop	-- Path to exit (vertical exit)
-	-- 05 -- entrance			-- Player start (horizontal exit)
-	-- 06 -- entrance_drop		-- Player start (vertical exit)
-	-- 07 -- exit				-- Exit door (horizontal entrance)
-	-- 08 -- exit_notop			-- Exit door (vertical entrance)
-
 module.HD_SUBCHUNKID = {
     SIDE = 0,
     PATH = 1,

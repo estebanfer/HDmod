@@ -35,15 +35,6 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 				end
 			end
 		end
-		-- room_gen_ctx:set_shop_type(1, 0, LAYER.FRONT, math.random(0, 5))
-		-- room_gen_ctx:set_shop_type(2, 0, LAYER.FRONT, math.random(0, 5))
-
-		-- room_gen_ctx:set_shop_type(1, 1, LAYER.FRONT, math.random(0, 5))
-		-- room_gen_ctx:set_shop_type(2, 1, LAYER.FRONT, math.random(0, 5))
-
-		-- room_gen_ctx:set_shop_type(1, 2, LAYER.FRONT, math.random(0, 5))
-		-- room_gen_ctx:set_shop_type(2, 2, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
-
 		-- room_gen_ctx:set_shop_type(3, 2, LAYER.FRONT, SHOP_TYPE.HEDJET_SHOP)--unneeded
 	end
 end

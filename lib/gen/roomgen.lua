@@ -32,15 +32,18 @@ function init_onlevel()
 	roomdeflib.init()
 end
 
--- post_tile-sensitive ON.START initializations
-	-- Since ON.START runs on the first ON.SCREEN of a run, it runs after post_tile runs.
-	-- Run this in post_tile to circumvent the issue.
+--[[
+	post_tile-sensitive ON.START initializations
+
+	Since ON.START runs on the first ON.SCREEN of a run, it runs after post_tile runs.
+	Run this in post_tile to circumvent the issue.
+]]
 function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
+
 		feelingslib.init()
 		wormtonguelib.tongue_spawned = false
-		-- other stuff
 	end
 	-- message("wormtonguelib.tongue_spawned: " .. tostring(wormtonguelib.tongue_spawned))
 end
@@ -58,18 +61,16 @@ function levelcreation_init()
 	end
 	flagslib.clear_dark_level()
 	feelingslib.onlevel_set_feelingToastMessage()
-	-- Method to write override_path setrooms into path and levelcode
-	--ONLEVEL_PRIORITY: 2 - Misc ON.LEVEL methods applied to the level in its unmodified form
 end
 
 
 set_callback(function(room_gen_ctx)
 	if state.screen == SCREEN.LEVEL then
 		init_posttile_onstart()
+
 		if options.hd_debug_scripted_levelgen_disable == false then
 			roomgenlib.init_posttile_door()
 			levelcreation_init()
-			
 			assign_s2_level_height()
 		end
 	end
@@ -78,47 +79,6 @@ end, ON.PRE_LEVEL_GENERATION)
 
 set_post_tile_code_callback(function(x, y, layer)
 	if options.hd_debug_scripted_levelgen_disable == false then
-
-		-- leveldoor_sx = x-1
-		-- leveldoor_sy = y
-		-- leveldoor_sx2 = x+1
-		-- leveldoor_sy2 = y+3
-		-- door_ents_masks = {
-			-- MASK.PLAYER,	-- players (duh)
-			-- MASK.MOUNT,		-- player mounts
-			-- MASK.MONSTER,	-- exit-aggroed shopkeepers
-			-- MASK.ITEM,		-- player-held items; entrance-spawned pots, skulls, torches;
-			-- MASK.LOGICAL,
-		-- }
-		-- door_ents_uids = {}
-		-- for _, door_ent_mask in ipairs(door_ents_masks) do
-			-- door_ents_uids = commonlib.TableConcat(door_ents_uids, get_entities_overlapping(
-				-- 0,
-				-- door_ent_mask,
-				-- leveldoor_sx,
-				-- leveldoor_sy,
-				-- leveldoor_sx2,
-				-- leveldoor_sy2,
-				-- LAYER.FRONT
-			-- ))
-		-- end
-		
-		-- TEMPORARY: Remove floor to avoid telefragging the player.
-		
-		-- if (
-		-- 	state.theme ~= THEME.OLMEC
-		-- ) then
-		-- 	-- door_ents_uids = get_entities_at(0, MASK.FLOOR, x, y, layer, 1)
-		-- 	-- for _, door_ents_uid in ipairs(door_ents_uids) do
-		-- 	-- 	kill_entity(door_ents_uid)
-		-- 	-- end
-		-- 	FRAG_PREVENTION_UID = get_grid_entity_at(x, y, layer)
-		-- 	local entity = get_entity(FRAG_PREVENTION_UID)
-		-- 	if entity ~= nil then
-		-- 		entity.flags = clr_flag(entity.flags, ENT_FLAG.SOLID)
-		-- 	end
-		-- end
-
 		-- message("post-door: " .. tostring(state.time_level))
 	else
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x, y+1, layer, 0, 0)
@@ -126,7 +86,6 @@ set_post_tile_code_callback(function(x, y, layer)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+1, y, layer, 0, 0)
 
 		spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, layer, 0, 0)
-
 		
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x, y-1, layer, 0, 0)
 		spawn_entity(ENT_TYPE.FLOOR_GENERIC, x+1, y-1, layer, 0, 0)
@@ -203,11 +162,7 @@ function module.detect_same_levelstate(t_a, l_a, w_a)
 end
 
 set_callback(function()
-	-- pre_tile ON.START stuff
 	POSTTILE_STARTBOOL = false
-	-- worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
-	-- camplib.DOOR_TESTING_UID = nil
-	-- camplib.DOOR_TUTORIAL_UID = nil
 end, ON.RESET)
 
 
@@ -216,12 +171,13 @@ end, ON.RESET)
 -- end, ON.TRANSITION)
 
 
+--[[
+	CHUNK GENERATION - ON.LEVEL
 
-
-
--- CHUNK GENERATION - ON.LEVEL
--- Script-based roomcode and chunk generation
+	Script-based roomcode and chunk generation
+]]
 function module.onlevel_generation_modification()
+	-- Initialize global_levelassembly
 	levelw, levelh = 4, 4
 	if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim ~= nil then
 		levelw, levelh = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim.w, roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim.h
@@ -234,6 +190,7 @@ function module.onlevel_generation_modification()
 			levelcode = levelcode_setn(levelw, 1),
 		},
 	}
+
 	if (worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL) then
 		
 		unlockslib.get_unlock()
@@ -263,7 +220,7 @@ function module.onlevel_generation_modification()
 		end
 	end
 
-	gen_levelcode_fill() -- roomgenlib.global_levelassembly.modification.levelcode adjusting (obstacle chunks)
+	gen_levelcode_fill() -- fills in obstacle blocks
 
 end
 
@@ -329,7 +286,6 @@ function levelcode_setn(levelw, levelh)
 
 	return levelcode
 end
-
 
 
 function level_generation_method_side()
@@ -870,7 +826,9 @@ function gen_levelrooms_nonpath(prePath)
 --]]
 end
 
--- Edits to the levelcode
+--[[
+	Obstacle chunk edits to the levelcode
+]]
 function gen_levelcode_fill()
 	levelcode_chunks()
 	levelcode_chunks(true)

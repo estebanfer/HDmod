@@ -4,6 +4,8 @@ worldlib = require 'lib.worldstate'
 camplib = require 'lib.camp'
 testlib = require 'lib.test'
 touchupslib = require 'lib.gen.touchups'
+backwalllib = require 'lib.gen.backwall'
+lutlib = require 'lib.gen.lut'
 s2roomctxlib = require 'lib.gen.s2roomctx'
 roomdeflib = require 'lib.gen.roomdef'
 roomgenlib = require 'lib.gen.roomgen'
@@ -22,6 +24,7 @@ hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
+snowlib = require 'lib.entities.snow'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
 idollib = require 'lib.entities.idol'
@@ -75,11 +78,6 @@ set_callback(function()
 	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
 	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
 end, ON.TITLE)
-
--- ON.START
-set_callback(function()
-	onstart_init_options()
-end, ON.START)
 
  -- Trix wrote this
 function replace(ent1, ent2, x_mod, y_mod)
@@ -150,7 +148,6 @@ set_callback(function(room_gen_ctx)
 	end
 end, ON.POST_ROOM_GENERATION)
 
-
 set_callback(function()
 	if state.screen == SCREEN.LEVEL then
 		roomgenlib.onlevel_generation_execution_phase_three()
@@ -162,152 +159,14 @@ set_callback(function()
 				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				tombstonelib.set_ash_tombstone()
-				
+
 				s2roomctxlib.remove_bm_shopkeyp()
-			end
-		end
-		
-		--[[
-			Level Background stuff
-		--]]
-		if options.hd_debug_scripted_levelgen_disable == false then
-			if (
-				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
-			) then
-				local backwalls = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, 0, LAYER.FRONT)
-				-- message("#backwalls: " .. tostring(#backwalls))
-				
-				--[[
-					Room-Specific
-				--]]
-				if state.theme == THEME.NEO_BABYLON then
-					-- ice caves bg
-					local backwall = get_entity(backwalls[1])
-					backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_ICE_0)
 
-					-- mothership bg
-					local w, h = 40, 32
-					local x, y, l = 22.5, 106.5, LAYER.FRONT
-					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-					backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
-					backwall.animation_frame = 0
-					backwall:set_draw_depth(49)
-					backwall.width, backwall.height = w, h
-					backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
-					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-				end
-				
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
-					local w, h = 30, 28
-					local x, y, l = 17.5, 104.5, LAYER.FRONT
-					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-					backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_STONE_0)
-					backwall.animation_frame = 0
-					backwall:set_draw_depth(49)
-					backwall.width, backwall.height = w, h
-					backwall.tile_width, backwall.tile_height = backwall.width/4, backwall.height/4 -- divide by 4 for normal-sized brick
-					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-				end
+				backwalllib.set_backwall_bg()
 
-				if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
-					local w, h = 6, 8
-					local x, y, l = 22.5, 94.5, LAYER.FRONT
-					local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-					backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_VLAD_0)
-					backwall.animation_frame = 0
-					backwall:set_draw_depth(49)
-					backwall.width, backwall.height = w, h
-					backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
-					backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-				end
+				lutlib.add_lut()
 
-				--[[
-					Room-Specific
-				--]]
-				level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-				for y = 1, level_h, 1 do
-					for x = 1, level_w, 1 do
-						_template_hd = roomgenlib.global_levelassembly.modification.levelrooms[y][x]
-						local corner_x, corner_y = locatelib.locate_game_corner_position_from_levelrooms_position(x, y)
-						if _template_hd == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM then
-							
-							-- main tower
-							local w, h = 10, (8*3)+3
-							local x, y, l = corner_x+4.5, corner_y+6, LAYER.FRONT
-							local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-							backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_VLAD_0)
-							backwall.animation_frame = 0
-							backwall:set_draw_depth(49)
-							backwall.width, backwall.height = w, h
-							backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
-							backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-
-							-- vlad alcove
-							local w, h = 2, 2
-							local x, y, l = corner_x+4.5, corner_y+20.5, LAYER.FRONT
-							local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-							backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_VLAD_0)
-							backwall.animation_frame = 0
-							backwall:set_draw_depth(49)
-							backwall.width, backwall.height = w, h
-							backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
-							backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-
-							-- mother statue
-							spawn_entity(ENT_TYPE.BG_CROWN_STATUE, corner_x+4.5, corner_y+(8*3)-7, l, 0, 0)
-
-						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP then
-							local w, h = 10, 8
-							local x, y, l = corner_x+4.5, corner_y-3.5, LAYER.FRONT
-							local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
-							backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
-							backwall.animation_frame = 0
-							backwall:set_draw_depth(49)
-							backwall.width, backwall.height = w, h
-							backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
-							backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
-						end
-					end
-				end
-			end
-		end
-
-		if options.hd_debug_scripted_levelgen_disable == false then
-			--[[
-				Tile Decorations
-			]]
-			if (
-				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
-			) then
-				if (
-					feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
-					or feelingslib.feeling_check(feelingslib.FEELING_ID.SNOWING)
-				) then
-					local floors = get_entities_by_type(ENT_TYPE.FLOOR_GENERIC)
-					for _, floor_uid in pairs(floors) do
-						local floor = get_entity(floor_uid)
-						if floor.deco_top ~= -1 then
-							local deco_top = get_entity(floor.deco_top)
-							if (
-								deco_top.animation_frame ~= 101
-								and deco_top.animation_frame ~= 102
-								and deco_top.animation_frame ~= 103
-							) then
-								deco_top.animation_frame = deco_top.animation_frame - 24
-							end
-						end
-					end
-				end
-			end
-			--[[
-				Lut Settings
-			]]
-			
-			if state.theme == THEME.VOLCANA then
-				local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_LUT_ORIGINAL_0)
-				texture_def.texture_path = "res/lut_hell.png"
-				local vlad_atmos_id = define_texture(texture_def)
-				set_lut(vlad_atmos_id, LAYER.FRONT)
+				snowlib.add_snow_to_floor()
 			end
 		end
 	end
@@ -357,16 +216,6 @@ set_callback(function()
 
 	feelingslib.onlevel_toastfeeling()
 end, ON.LEVEL)
-
-function onstart_init_options()
-	botdlib.OBTAINED_BOOKOFDEAD = options.hd_debug_item_botd_give
-	if options.hd_og_ghost_time_disable == false then ghostlib.GHOST_TIME = 9000 end
-
-	-- UI_BOTD_PLACEMENT_W = options.hd_ui_botd_a_w
-	-- UI_BOTD_PLACEMENT_H = options.hd_ui_botd_b_h
-	-- UI_BOTD_PLACEMENT_X = options.hd_ui_botd_c_x
-	-- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
-end
 
 
 -- # TODO: Fix the following method. For some godforsaken reason it won't move the player.

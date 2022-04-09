@@ -283,7 +283,7 @@ module.HD_TILENAME = {
 		phase_2 = {
 			default = {
 				function(x, y, l)
-					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
+					local floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
 					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
 					
 					if #floorsAtOffset > 0 then
@@ -527,7 +527,7 @@ module.HD_TILENAME = {
 					elseif math.random(5) == 1 then
 						spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
 					elseif math.random(2) == 2 then
-						tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
+						local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
 						if state.theme == THEME.OLMEC then
 							tile_to_spawn = ENT_TYPE.FLOORSTYLED_STONE
 						elseif state.theme == THEME.CITY_OF_GOLD then
@@ -935,10 +935,10 @@ module.HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					local shopkeeper = spawn_shopkeeper(x+3, y, l, ROOM_TEMPLATE.SHOP_LEFT)
-					ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
+					local ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
 					add_item_to_shop(ankh_uid, shopkeeper)
 					add_custom_name(ankh_uid, "Ankh")
-					ankh_mov = get_entity(ankh_uid)
+					local ankh_mov = get_entity(ankh_uid)
 					ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
 					ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 					spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
@@ -1018,9 +1018,10 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+					local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+					local _subchunk_id
 					if roomgenlib.global_levelassembly.modification.levelrooms[roomy] ~= nil then
-						local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+						_subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 					end
 					local coffin_uid = nil
 					if (
@@ -1035,7 +1036,7 @@ module.HD_TILENAME = {
 					end
 					if coffin_uid ~= nil then
 						if state.theme == THEME.EGGPLANT_WORLD then
-							coffin_e = get_entity(coffin_uid)
+							local coffin_e = get_entity(coffin_uid)
 							coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
 							coffin_e.velocityx = 0
 							coffin_e.velocityy = 0
@@ -1156,8 +1157,8 @@ module.HD_TILENAME = {
 					function(x, y, l)
 						spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_ELEVATOR, x, y, l)
 						-- need subchunkid of what room we're in
-						roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-						_subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+						local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+						local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 						
 						if (
 							(_subchunk_id == roomdeflib.HD_SUBCHUNKID.ENTRANCE_DROP)
@@ -1247,16 +1248,17 @@ module.HD_TILENAME = {
 		phase_2 = {
 			default = {
 				function(x, y, l)
-					floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
+					local floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
 					-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
 					
 					if #floorsAtOffset > 0 then
 						local floor_uid = floorsAtOffset[1]
+						---@type Floor
 						local floor = get_entity(floor_uid)
 						local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
 						if state.theme == THEME.EGGPLANT_WORLD then
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0)
-							deco_texture = define_texture(texture_def)
+							local deco_texture = define_texture(texture_def)
 
 							floor:add_decoration(FLOOR_SIDE.TOP)
 							

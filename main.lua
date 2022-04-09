@@ -5,7 +5,7 @@ camplib = require 'lib.camp'
 testlib = require 'lib.test'
 touchupslib = require 'lib.gen.touchups'
 backwalllib = require 'lib.gen.backwall'
-lutlib = require 'lib.gen.lut'
+require 'lib.gen.lut'
 s2roomctxlib = require 'lib.gen.s2roomctx'
 roomdeflib = require 'lib.gen.roomdef'
 roomgenlib = require 'lib.gen.roomgen'
@@ -123,8 +123,6 @@ set_callback(function()
 				s2roomctxlib.remove_bm_shopkeyp()
 
 				backwalllib.set_backwall_bg()
-
-				lutlib.add_lut()
 
 				snowlib.add_snow_to_floor()
 			end

@@ -774,7 +774,7 @@ set_callback(function()
 											behavior_toggle(
 												danger.behavior.imp_uid,--behavior.abilities.agro[1],
 												danger.uid,
-												commonlib.TableConcat({danger.uid}, {danger.behavior.imp_uid}),--commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
+												{danger.uid, danger.behavior.imp_uid},--commonlib.map(danger.behavior.abilities, function(ability) return ability[1] end)),--{ danger.behavior.abilities.agro[1], danger.behavior.abilities.idle[1], danger.uid },
 												danger.behavior.agro
 											)
 										-- end

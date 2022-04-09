@@ -62,24 +62,13 @@ function module.onframe_ownership_crush_prevention()
             BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
             BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
             local blocks = get_entities_overlapping(
-                ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
+                {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
                 0,
                 BOULDER_SX,
                 BOULDER_SY,
                 BOULDER_SX2,
                 BOULDER_SY2,
                 LAYER.FRONT
-            )
-            blocks = commonlib.TableConcat(
-                blocks, get_entities_overlapping(
-                    ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-                    0,
-                    BOULDER_SX,
-                    BOULDER_SY,
-                    BOULDER_SX2,
-                    BOULDER_SY2,
-                    LAYER.FRONT
-                )
             )
             for _, block in ipairs(blocks) do
                 kill_entity(block)

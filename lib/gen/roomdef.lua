@@ -3070,12 +3070,9 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 			path_to_replace_with = -1
 			
 			if (
-				path_to_replace == module.HD_SUBCHUNKID.PATH_DROP
-				or path_to_replace == module.HD_SUBCHUNKID.PATH_NOTOP_DROP
-				and (
-					unlock_location_x ~= nil and unlock_location_y ~= nil
-					and unlock_location_x ~= room_x and unlock_location_y ~= room_y
-				)
+				(path_to_replace == module.HD_SUBCHUNKID.PATH_DROP
+				or path_to_replace == module.HD_SUBCHUNKID.PATH_DROP_NOTOP)
+				and ( unlock_location_x ~= room_x and unlock_location_y ~= room_y )
 			) then
 				table.insert(spots, {x = room_x, y = room_y})
 			end

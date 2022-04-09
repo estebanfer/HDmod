@@ -9,7 +9,7 @@ module.HD_TILENAME = {
 	["#"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0) end
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l) end
 			},
 			alternate = {
 				[THEME.CITY_OF_GOLD] = {
@@ -51,11 +51,11 @@ module.HD_TILENAME = {
 	["*"] = {
 		phase_1 = {
 			default = {
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l) end,
 			},
 			alternate = {
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PLASMACANNON, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PLASMACANNON, x, y, l) end,
 				},
 			},
 		},
@@ -68,7 +68,7 @@ module.HD_TILENAME = {
 			default = { function(x, y, l) return 0 end },--ENT_TYPE.BG_LEVEL_BACKWALL},
 			alternate = {
 				[THEME.ICE_CAVES] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,
 				},
 			},
 		},
@@ -77,15 +77,15 @@ module.HD_TILENAME = {
 	[","] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l) end,
 			},
 		},
 		description = "Terrain/Wood",
 	},
 	["-"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_THINICE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_THINICE, x, y, l) end,},
 		},
 		description = "Cracking Ice",
 	},
@@ -94,14 +94,14 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l))
 					entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
 				end,
 			},
 			alternate = {
 				[THEME.TEMPLE] = {
 					function(x, y, l)
-						local entity = get_entity(spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0))
+						local entity = get_entity(spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l))
 						entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
 					end,
 				}
@@ -111,28 +111,28 @@ module.HD_TILENAME = {
 	},
 	["1"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,},
 			alternate = {
-				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0) end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l) end,},
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
 						if (
 							feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
 						) then
 							if (math.random(6) == 1) then
-								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 							else
-								spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0)
+								spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l)
 							end
 						else
-							spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+							spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 						end
 					end,
 				},
-				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,},
-				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,},
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0) end,},
-				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,},
+				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,},
+				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
 			},
 		},
 		description = "Terrain",
@@ -140,7 +140,7 @@ module.HD_TILENAME = {
 	["2"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
 				function(x, y, l) return 0 end,
 			},
 			alternate = {
@@ -150,25 +150,25 @@ module.HD_TILENAME = {
 							if math.random(10) == 1 then
 								createlib.create_regenblock(x, y, l)
 							else
-								spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0)
+								spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l)
 							end
 						else return 0 end
 					end,
 				},
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.OLMEC] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.CITY_OF_GOLD] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 			},
@@ -228,7 +228,7 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local uid = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+					local uid = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					-- get_entity(uid):fix_decorations(true, true)
 				end,
 				function(x, y, l)
@@ -237,28 +237,28 @@ module.HD_TILENAME = {
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {
 					function(x, y, l)
-						local uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l, 0, 0)
+						local uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l)
 						-- get_entity(uid):fix_decorations(true, true)
 					end,
 					function(x, y, l) return ENT_TYPE.LIQUID_WATER end,
 				},
 				[THEME.TEMPLE] = {
 					function(x, y, l)
-						local uid = spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0)
+						local uid = spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
 						-- get_entity(uid):fix_decorations(true, true)
 					end,
 					function(x, y, l) return ENT_TYPE.LIQUID_LAVA end,
 				},
 				[THEME.CITY_OF_GOLD] = {
 					function(x, y, l)
-						local uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0)
+						local uid = spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l)
 						-- get_entity(uid):fix_decorations(true, true)
 					end,
 					function(x, y, l) return ENT_TYPE.LIQUID_LAVA end,
 				},
 				[THEME.VOLCANA] = {
 					function(x, y, l)
-						local uid = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+						local uid = spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 						-- get_entity(uid):fix_decorations(true, true)
 					end,
 					function(x, y, l) return ENT_TYPE.LIQUID_LAVA end,
@@ -269,7 +269,7 @@ module.HD_TILENAME = {
 	},
 	["4"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l) end,},
 		},
 		description = "Pushblock",
 	},
@@ -340,19 +340,19 @@ module.HD_TILENAME = {
 						doorslib.create_door_exit_to_mothership(x, y, l)
 					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 						-- Spawn king's tombstone
-						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
+						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l)
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
 						texture_def.texture_path = "res/floormisc_tombstone_king.png"
 						get_entity(block_uid):set_texture(define_texture(texture_def))
 						
 						-- 2 tiles down
 						-- Spawn skeleton
-						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l, 0, 0)
-						local skull_uid = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l, 0, 0)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l)
+						local skull_uid = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l)
 						flip_entity(skull_uid)
 
 						-- Spawn Crown
-						-- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l, 0, 0))
+						-- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l))
 						local dar_crown_uid = spawn_entity_over(ENT_TYPE.ITEM_DIAMOND, skull_uid, -0.15, 0.42)
 						local dar_crown = get_entity(dar_crown_uid)
 						-- # TODO: Setting the crown angled results in it staying angled when knocked off.
@@ -377,17 +377,17 @@ module.HD_TILENAME = {
 	[":"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SCORPION, x, y, l) end,
 			},
 			alternate = {
 				[THEME.JUNGLE] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end,
 				},
-				[THEME.ICE_CAVES] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l, 0, 0) end,},
+				[THEME.ICE_CAVES] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end,},
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l, 0, 0) end,
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end,
 				}
 			},
 		},
@@ -415,10 +415,10 @@ module.HD_TILENAME = {
 	},
 	["="] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l) end,},
 			alternate = {
 				[THEME.VOLCANA] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l) end,
 				}
 			},
 		},
@@ -428,8 +428,8 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l, 0, 0))
-					local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l, 0, 0))
+					local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l))
+					local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l))
 
 					if state.theme ~= THEME.VOLCANA then
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
@@ -451,7 +451,7 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
+					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l)
 					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
 					texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
 					get_entity(block_uid):set_texture(define_texture(texture_def))
@@ -473,7 +473,7 @@ module.HD_TILENAME = {
 				end,
 			},
 			alternate = {
-				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end},
+				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end},
 			},
 		},
 		description = "Temple Idol Trap Ceiling Block",--"Nonmovable Pushblock", -- also idol trap ceiling blocks
@@ -518,14 +518,14 @@ module.HD_TILENAME = {
 	["E"] = {
 		phase_1 = {
 			tutorial = {
-				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBAR, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBAR, x, y, l) end,
 			},
 			default = {
 				function(x, y, l)
 					if math.random(10) == 1 then
-						spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
 					elseif math.random(5) == 1 then
-						spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
 					elseif math.random(2) == 2 then
 						tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
 						if state.theme == THEME.OLMEC then
@@ -535,33 +535,33 @@ module.HD_TILENAME = {
 						elseif state.theme == THEME.TEMPLE then
 							tile_to_spawn = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE)
 						end
-						spawn_grid_entity(tile_to_spawn, x, y, l, 0, 0)
+						spawn_grid_entity(tile_to_spawn, x, y, l)
 					else
 						return 0
 					end
 				end,
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l) end,
 				-- function(x, y, l) return 0 end,
 			},
 			-- alternate = {
 			-- 	[THEME.OLMEC] = {
-			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
-			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end,
+			-- 		function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l) end,
 			-- 		function(x, y, l) return 0 end,
 			-- 	},
 			-- [THEME.TEMPLE] = {
-			-- 	function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0) end,
-			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+			-- 	function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,
+			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end,
+			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l) end,
 			-- 	function(x, y, l) return 0 end,
 			-- },
 			-- [THEME.CITY_OF_GOLD] = {
-			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,
-			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0) end,
-			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,
+			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end,
+			-- 	function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l) end,
 			-- 	function(x, y, l) return 0 end,
 			-- },
 			-- },
@@ -574,7 +574,7 @@ module.HD_TILENAME = {
 	["G"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,
 			},
 		},
 		description = "Ladder (Strict)",
@@ -582,7 +582,7 @@ module.HD_TILENAME = {
 	["H"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,
 			},
 		},
 		description = "Ladder Platform (Strict)",
@@ -679,7 +679,7 @@ module.HD_TILENAME = {
 		-- 	alternate = {
 		-- 		[THEME.NEO_BABYLON] = {
 		-- 			function(x, y, l)
-		-- 				spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_SHIELD, x, y, l, 0, 0)
+		-- 				spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_SHIELD, x, y, l)
 		-- 				return 0
 		-- 			end,
 		-- 		},
@@ -700,10 +700,10 @@ module.HD_TILENAME = {
 			}
 		},
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,},
 			alternate = {
-				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
-				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l, 0, 0) end,},
+				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
 
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l) return 0 end,
@@ -726,13 +726,13 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					embedlib.embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 128)
+					embedlib.embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 128)
 				end,
 			},
 			alternate = {
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)
-						embedlib.embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0), 41)
+						embedlib.embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 41)
 					end
 				},
 			}
@@ -742,13 +742,13 @@ module.HD_TILENAME = {
 	["N"] = {
 		phase_1 = {
 			-- # TODO: In HD this seems to be a chance of either a snake or a cobra
-			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0) end,},
+			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end,},
 			default = {
 				function(x, y, l)
 					if math.random(4) == 1 then
-						spawn_grid_entity(ENT_TYPE.MONS_COBRA, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.MONS_COBRA, x, y, l)
 					else
-						spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l)
 					end
 				end,
 			},
@@ -805,7 +805,7 @@ module.HD_TILENAME = {
 							if (yi ~= 0 and xi == 1) then
 								-- SORRY NOTHING
 							else
-								spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x+xi, y+yi, l, 0, 0)
+								spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x+xi, y+yi, l)
 							end
 						end
 					end
@@ -818,7 +818,7 @@ module.HD_TILENAME = {
 	},
 	["P"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
 			alternate = {
 				[THEME.CITY_OF_GOLD] = {
 					function(x, y, l)
@@ -840,7 +840,7 @@ module.HD_TILENAME = {
 			}
 		},
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l) end,},
 			alternate = {
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
@@ -850,7 +850,7 @@ module.HD_TILENAME = {
 	},
 	["R"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l) end,},
 		},
 		description = "Ruby from Snakepit",
 	},
@@ -912,8 +912,8 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_YETIKING, x, y, l, 0, 0) end,},
 			alternate = {
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
-				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l, 0, 0) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l) end,},
+				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MUMMY, x, y, l) end,},
 				[THEME.VOLCANA] = {
 					function(x, y, l) createlib.create_yama(x, y, l) end
 				},
@@ -923,7 +923,7 @@ module.HD_TILENAME = {
 	},
 	["Z"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l) end,},
 		},
 		description = "Beehive Tile with Background",
 	},
@@ -951,7 +951,7 @@ module.HD_TILENAME = {
 					-- end
 				end,
 			},
-			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l, 0, 0) end,},
+			tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l) end,},
 		},
 		description = "Ankh/Pot",
 	},
@@ -962,7 +962,7 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0))
+					local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l))
 					entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
 				end,
 			},
@@ -990,7 +990,7 @@ module.HD_TILENAME = {
 	["d"] = {
 		-- HD may spawn this as wood at times. The solution is to replace that tilecode with "v"
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE, x, y, l) end,},
 			alternate = {
 				[THEME.EGGPLANT_WORLD] = {function(x, y, l) createlib.create_regenblock(x, y, l) end,},
 			},
@@ -999,10 +999,10 @@ module.HD_TILENAME = {
 	},
 	["e"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l) end,},
 			tutorial = {
 				function(x, y, l)
-					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0), ENT_TYPE.ITEM_PICKUP_BOMBBAG)
+					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l), ENT_TYPE.ITEM_PICKUP_BOMBBAG)
 				end,
 			},
 		},
@@ -1010,7 +1010,7 @@ module.HD_TILENAME = {
 	},
 	["f"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, x, y, l) end,},
 		},
 		description = "Falling Platform",
 	},
@@ -1051,10 +1051,10 @@ module.HD_TILENAME = {
 	},
 	["h"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l) end,},
 			tutorial = {
 				function(x, y, l)
-					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l, 0, 0), ENT_TYPE.ITEM_PICKUP_ROPEPILE)
+					set_contents(spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l), ENT_TYPE.ITEM_PICKUP_ROPEPILE)
 				end,
 			},
 			alternate = {
@@ -1074,13 +1074,13 @@ module.HD_TILENAME = {
 						get_entity(ent_uid).width = 5.0--5.600
 						get_entity(ent_uid).height = 5.0--7.000
 
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y-1, l, 0, 0)
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y-1, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y-1, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y-1, l)
 
-						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y, l, 0, 0)
-						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y-1, l, 0, 0)
-						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y, l, 0, 0)
-						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y-1, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y-1, l)
+						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y-1, l)
 					end,
 				}
 			},
@@ -1090,7 +1090,7 @@ module.HD_TILENAME = {
 	},
 	["i"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l) end,},
 			alternate = {
 				[THEME.JUNGLE] = {
 					function(x, y, l)
@@ -1104,7 +1104,7 @@ module.HD_TILENAME = {
 	["j"] = {
 		phase_1 = {
 			default = {
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l, 0, 0) end,
+				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l) end,
 				function(x, y, l) return 0 end,
 			},
 		},
@@ -1145,7 +1145,7 @@ module.HD_TILENAME = {
 	},
 	["l"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end,},
 		},
 		description = "Shop Lantern",
 	},
@@ -1189,9 +1189,9 @@ module.HD_TILENAME = {
 			default = {
 				function(x, y, l)
 					if math.random(10) == 1 then
-						spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l)
 					elseif math.random(2) == 1 then
-						spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0)
+						spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					else
 						return 0
 					end
@@ -1202,7 +1202,7 @@ module.HD_TILENAME = {
 	},
 	["o"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ROCK, x, y, l) end,},
 		},
 		description = "Rock",
 	},
@@ -1215,11 +1215,11 @@ module.HD_TILENAME = {
 	["q"] = {
 		-- # TODO: Trap Prevention.
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,},
 			alternate = {
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0) end,},
-				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,},
-				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
+				[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l) end,},
 			},
 		},
 		description = "Obstacle-Resistant Terrain",
@@ -1230,13 +1230,13 @@ module.HD_TILENAME = {
 		-- From 
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
 				-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 			},
 			alternate = {
 				[THEME.VOLCANA] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l) end,
 					function(x, y, l) return 0 end,
 				}
 			},
@@ -1288,15 +1288,15 @@ module.HD_TILENAME = {
 	["t"] = {
 		phase_1 = {
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
 			},
 			alternate = {
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.CITY_OF_GOLD] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l, 0, 0) end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,
 					function(x, y, l) return 0 end,
 				},
 			}
@@ -1313,7 +1313,7 @@ module.HD_TILENAME = {
 	},
 	["v"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MINEWOOD, x, y, l) end,},
 		},
 		description = "Wood",
 	},
@@ -1332,8 +1332,8 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y, l, 0, 0)
-					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y, l, 0, 0)
+					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y, l)
 				end,
 			},
 		},
@@ -1343,18 +1343,18 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l, 0, 0))
+					embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l))
 				end
 			},
 			alternate = {
 				[THEME.TEMPLE] = {
 					function(x, y, l)
-						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l, 0, 0))
+						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l))
 					end
 				},
 				[THEME.VOLCANA] = {
 					function(x, y, l)
-						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l, 0, 0))
+						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l))
 					end
 				}
 			}
@@ -1364,10 +1364,10 @@ module.HD_TILENAME = {
 	["z"] = {
 		phase_1 = {
 			tutorial = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l) end,
 			},
 			default = {
-				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l, 0, 0) end,
+				function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_BEEHIVE, x, y, l) end,
 				function(x, y, l) return 0 end,
 			},
 			alternate = {
@@ -1388,7 +1388,7 @@ module.HD_TILENAME = {
 							if (yi == -1 and (xi == 1 or xi == 2)) or (yi == -2 and (xi == 1 or xi == 2)) then
 								-- SORRY NOTHING
 							else
-								local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+xi, y+yi, l, 0, 0))
+								local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+xi, y+yi, l))
 								entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
 							end
 						end
@@ -1410,7 +1410,7 @@ module.HD_TILENAME = {
 	},
 	["~"] = {
 		phase_1 = {
-			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l, 0, 0) end,},
+			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end,},
 		},
 		description = "Bounce Trap",
 	},

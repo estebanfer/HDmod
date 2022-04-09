@@ -1,3 +1,5 @@
+blackknightlib = require 'lib.entities.black_knight.black_knight'
+
 local module = {}
 
 
@@ -873,7 +875,9 @@ module.HD_TILENAME = {
 			default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_VLAD, x+.5, y, l, 0, 0) end,},
 			alternate = {
 				-- Black Knight
-				[THEME.JUNGLE] = {function(x, y, l) return 0 end},
+				[THEME.JUNGLE] = {function(x, y, l)
+					blackknightlib.create_black_knight(x, y, l)
+				end},
 			}
 		},
 		description = "Vlad/Black Knight",

@@ -91,9 +91,9 @@ function module.create_ceiling_chain_growable(x, y, l)
 				get_entity(ent_to_spawn_over).animation_frame = 4
 			end
 			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)
-			floors_at_offset = commonlib.TableConcat(floors_at_offset, get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5))
-			if #floors_at_offset > 0 then break end
+			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)[1] ~= nil
+			floors_at_offset = floors_at_offset or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5)[1] ~= nil
+			if floors_at_offset then break end
 		else break end
 	end
 end

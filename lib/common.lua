@@ -1,6 +1,6 @@
 local module = {}
 
-bool_to_number={ [true]=1, [false]=0 }
+module.bool_to_number = { [true]=1, [false]=0 }
 
 function module.teleport_mount(ent, x, y)
     if ent.overlay ~= nil then
@@ -9,14 +9,16 @@ function module.teleport_mount(ent, x, y)
         move_entity(ent.uid, x, y, 0, 0)
     end
     -- ent.more_flags = clr_flag(ent.more_flags, 16)
-    set_camera_position(x, y)--wow this looks wrong, i think this auto-corrected at some point :/
+    --set_camera_position(x, y)--wow this looks wrong, i think this auto-corrected at some point :/ (it was deprecated)
+    state.camera.adjusted_focus_x = x
+    state.camera.adjusted_focus_y = y
 end
 
 function module.rotate(cx, cy, x, y, degrees)
-	radians = degrees * (math.pi/180)
-	rx = math.cos(radians) * (x - cx) - math.sin(radians) * (y - cy) + cx
-	ry = math.sin(radians) * (x - cx) + math.cos(radians) * (y - cy) + cy
-	result = {rx, ry}
+	local radians = degrees * (math.pi/180)
+	local rx = math.cos(radians) * (x - cx) - math.sin(radians) * (y - cy) + cx
+	local ry = math.sin(radians) * (x - cx) + math.cos(radians) * (y - cy) + cy
+	local result = {rx, ry}
 	return result
 end
 
@@ -29,8 +31,8 @@ end
 -- get all lines from a file, returns an empty 
 -- list/table if the file does not exist
 function module.lines_from(file)
-  if not file_exists(file) then return {} end
-  lines = {}
+  if not module.file_exists(file) then return {} end
+  local lines = {}
   for line in io.lines(file) do 
     lines[#lines + 1] = line
   end
@@ -57,27 +59,17 @@ function module.TableLength(t)
   return count
 end
 
-function module.TableFirstKey(t)
-  local count = 0
-  for k,_ in pairs(t) do return k end
-  return nil
+--Use key = next(t)
+--function module.TableFirstKey(t)
+
+--Use _, value = next(t)
+--function module.TableFirstValue(t)
+
+function module.TableCopyRandomElement(tbl)
+	return module.TableCopy(tbl[math.random(#tbl)])
 end
 
-function module.TableFirstValue(t)
-  local count = 0
-  for _,v in pairs(t) do return v end
-  return nil
-end
-
-function module.TableRandomElement(tbl)
-	local t = {}
-	if #tbl == 0 then return nil end
-	for _, v in ipairs(tbl) do
-		t[#t+1] = v
-	end
-	return t[math.random(1, #t)]
-end
-
+---appends elements of t2 to t1 and returns t1
 function module.TableConcat(t1, t2)
 	for i=1,#t2 do
         t1[#t1+1] = t2[i]
@@ -86,7 +78,7 @@ function module.TableConcat(t1, t2)
 end
 
 function module.has(arr, item)
-    for i, v in pairs(arr) do
+    for _, v in pairs(arr) do
         if v == item then
             return true
         end

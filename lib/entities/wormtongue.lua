@@ -92,9 +92,7 @@ function onframe_tonguetimeout()
 		
 		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
 			if TONGUE_STATE == TONGUE_SEQUENCE.READY then
-				damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-				damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
+				local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
 				if #damsels > 0 then
 					damsel = get_entity(damsels[1])
 					stuck_in_web = test_flag(damsel.more_flags, 8)
@@ -240,9 +238,7 @@ end
 function tongue_exit()
 	x, y, l = get_position(WORMTONGUE_UID)
 	checkradius = 1.5
-	local damsels = get_entities_at(ENT_TYPE.MONS_PET_DOG, 0, x, y, l, checkradius)
-	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_CAT, 0, x, y, l, checkradius))
-	damsels = commonlib.TableConcat(damsels, get_entities_at(ENT_TYPE.MONS_PET_HAMSTER, 0, x, y, l, checkradius))
+	local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
 	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 	
 	exits_doors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)

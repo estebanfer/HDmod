@@ -31,7 +31,7 @@ function module.onframe_ownership_crush_prevention()
             BOULDER_UID = boulders[1]
             -- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
             if options.hd_og_boulder_agro_disable == false then
-                boulder = get_entity(BOULDER_UID):as_movable()
+                local boulder = get_entity(BOULDER_UID):as_movable()
                 
                 -- set texture
                 local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
@@ -115,8 +115,8 @@ set_callback(function()
 			
 			if BOULDER_UID ~= nil and sx ~= nil and sy ~= nil and sx2 ~= nil and sy2 ~= nil then
 				text_y = text_y-0.1
-				sp_x, sp_y = screen_position(sx, sy)
-				sp_x2, sp_y2 = screen_position(sx2, sy2)
+				local sp_x, sp_y = screen_position(sx, sy)
+				local sp_x2, sp_y2 = screen_position(sx2, sy2)
 				
 				-- draw_rect(sp_x, sp_y, sp_x2, sp_y2, 4, 0, green_rim)
 				draw_rect_filled(sp_x, sp_y, sp_x2, sp_y2, 0, green_hitbox)

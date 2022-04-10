@@ -346,8 +346,6 @@ function module.create_tikitrap(x, y, l) end -- spawn_entity_over the floor abov
 
 function module.create_giantfrog(x, y, l) end
 
-function module.create_mammoth(x, y, l) end
-
 function module.create_giantspider(x, y, l)
     spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0)
     module.GIANTSPIDER_SPAWNED = true

@@ -8,6 +8,7 @@ wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
 turrentlib = require 'lib.entities.turrent.laser_turrent'
 greenknightlib = require 'lib.entities.green_knight.green_knight'
+mammothlib = require 'lib.entities.mammoth.mammoth'
 
 local module = {}
 
@@ -157,7 +158,7 @@ module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_
 
 module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
-module.global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", createlib.create_mammoth, validlib.is_valid_mammoth_spawn)
+module.global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", mammothlib.create_mammoth, validlib.is_valid_mammoth_spawn)
 
 module.global_spawn_procedural_giantspider = define_procedural_spawn("hd_procedural_giantspider", createlib.create_giantspider, validlib.is_valid_giantspider_spawn)
 

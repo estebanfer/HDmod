@@ -593,7 +593,26 @@ end
 
 function module.is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
 
-function module.is_valid_mammoth_spawn(x, y, l) return false end -- # TODO: Implement method for valid mammoth spawn
+function module.is_valid_mammoth_spawn(x, y, l)
+	local cx, cy = x-1.5, y+1.5
+	local w, h = 4, 2
+    local entity_uids = get_entities_overlapping_hitbox(
+		0, MASK.FLOOR,
+		AABB:new(
+			cx-(w/2),
+			cy+(h/2),
+			cx+(w/2),
+			cy-(h/2)
+		),
+		l
+	)
+	return (
+		#entity_uids == 0
+		and detect_floor_at(x, y, l) == false
+		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
+	)
+end -- # TODO: Implement method for valid mammoth spawn
 
 function module.is_valid_giantspider_spawn(x, y, l)
 	local floor_above_right = get_grid_entity_at(x+1, y+1, l)

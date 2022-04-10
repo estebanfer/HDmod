@@ -1,4 +1,5 @@
 blackknightlib = require 'lib.entities.black_knight.black_knight'
+turrentlib = require 'lib.entities.turrent.laser_turrent'
 
 local module = {}
 
@@ -1375,7 +1376,9 @@ module.HD_TILENAME = {
 				function(x, y, l) return 0 end,
 			},
 			alternate = {
-				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end,}, -- # TODO: spawn method for turret
+				[THEME.NEO_BABYLON] = {function(x, y, l)
+					turrentlib.spawn_turrent(x, y, l)
+				end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) return 0 end,},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end,} -- bg columns
 			},

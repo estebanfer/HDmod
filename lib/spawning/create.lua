@@ -265,8 +265,6 @@ function module.create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE,
 
 function module.create_mshiplight(x, y, l) end
 
-function module.create_turret(x, y, l) end
-
 function module.create_webnest(x, y, l)
 	local block_uid = get_grid_entity_at(x, y+1, l)
 	if block_uid ~= -1 then

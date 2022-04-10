@@ -6,6 +6,7 @@ validlib = require 'lib.spawning.valid'
 createlib = require 'lib.spawning.create'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
+turrentlib = require 'lib.entities.turrent.laser_turrent'
 
 local module = {}
 
@@ -132,8 +133,9 @@ module.global_spawn_procedural_mshiplight = define_procedural_spawn("hd_procedur
 
 module.global_spawn_procedural_dark_lantern = define_procedural_spawn("hd_procedural_dark_lantern", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LAMP, x, y, l) end, validlib.is_valid_lantern_spawn)
 
-module.global_spawn_procedural_ufofeeling_turret = define_procedural_spawn("hd_procedural_ufofeeling_turret", createlib.create_turret, validlib.is_valid_turret_spawn)
-module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", createlib.create_turret, validlib.is_valid_turret_spawn)
+module.global_spawn_procedural_turret = define_procedural_spawn("hd_procedural_turret", turrentlib.spawn_turrent, validlib.is_valid_turret_spawn)
+module.global_spawn_procedural_ufofeeling_turret = define_procedural_spawn("hd_procedural_ufofeeling_turret", turrentlib.spawn_turrent, validlib.is_valid_turret_spawn)
+module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", turrentlib.spawn_turrent, validlib.is_valid_turret_spawn)
 
 module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", createlib.create_webnest, validlib.is_valid_webnest_spawn)
 

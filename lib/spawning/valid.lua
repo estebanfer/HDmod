@@ -125,6 +125,9 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
+local function is_solid_grid_entity(x, y, l)
+    return test_flag(get_entity_flags(get_grid_entity_at(x, y, l)), ENT_FLAG.SOLID)
+end
 
 
 local function run_spiderlair_ground_enemy_chance()
@@ -476,7 +479,17 @@ function module.is_valid_lantern_spawn(x, y, l)
 	)
 end -- # TODO: Implement method for valid lantern spawn
 
-function module.is_valid_turret_spawn(x, y, l) return false end -- # TODO: Implement method for valid turret spawn
+function module.is_valid_turret_spawn(x, y, l)
+	if (
+		get_grid_entity_at(x, y, l) == -1
+		and is_solid_grid_entity(x, y+1, l)
+		and get_entity(get_grid_entity_at(x, y+1, l)).type.id == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
+		and get_grid_entity_at(x, y-1, l) == -1
+	) then
+		return true
+    end
+    return false
+end -- # TODO: Implement method for valid turret spawn
 
 function module.is_valid_webnest_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)

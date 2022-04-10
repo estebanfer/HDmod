@@ -27,11 +27,11 @@ end
 function module.onframe_ownership_crush_prevention()
     if BOULDER_UID == nil then -- boulder ownership
         local boulders = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_BOULDER)
-        if #boulders > 0 then
+        if boulders[1] then
             BOULDER_UID = boulders[1]
             -- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
             if options.hd_og_boulder_agro_disable == false then
-                local boulder = get_entity(BOULDER_UID):as_movable()
+                local boulder = get_entity(BOULDER_UID)
                 
                 -- set texture
                 local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
@@ -47,7 +47,7 @@ function module.onframe_ownership_crush_prevention()
         ---@type Boulder
         local boulder = get_entity(BOULDER_UID)
         if boulder ~= nil then
-            boulder = get_entity(BOULDER_UID):as_movable()
+            boulder = get_entity(BOULDER_UID)
             local x, y, l = get_position(BOULDER_UID)
             BOULDER_CRUSHPREVENTION_EDGE_CUR = BOULDER_CRUSHPREVENTION_EDGE
             BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
@@ -59,39 +59,44 @@ function module.onframe_ownership_crush_prevention()
                 BOULDER_CRUSHPREVENTION_HEIGHT_CUR = BOULDER_CRUSHPREVENTION_HEIGHT
             end
             BOULDER_SX = ((x - boulder.hitboxx)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
-            BOULDER_SY = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
+            BOULDER_SY = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
             BOULDER_SX2 = ((x + boulder.hitboxx)+BOULDER_CRUSHPREVENTION_EDGE_CUR)
-            BOULDER_SY2 = ((y + boulder.hitboxy)+BOULDER_CRUSHPREVENTION_HEIGHT_CUR)
-            local blocks = get_entities_overlapping(
+            BOULDER_SY2 = ((y + boulder.hitboxy)-BOULDER_CRUSHPREVENTION_EDGE_CUR)
+            local blocks = get_entities_overlapping_hitbox(
                 {ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, ENT_TYPE.ACTIVEFLOOR_POWDERKEG},
                 0,
-                BOULDER_SX,
-                BOULDER_SY,
-                BOULDER_SX2,
-                BOULDER_SY2,
+                AABB:new(
+                    BOULDER_SX,
+                    BOULDER_SY,
+                    BOULDER_SX2,
+                    BOULDER_SY2
+                ),
                 LAYER.FRONT
             )
             for _, block in ipairs(blocks) do
                 kill_entity(block)
             end
             if options.hd_debug_info_boulder == true then
-                local touching = get_entities_overlapping(
+                local touching = get_entities_overlapping_hitbox(
                     0,
                     0x1,
-                    BOULDER_SX,
-                    BOULDER_SY,
-                    BOULDER_SX2,
-                    BOULDER_SY2,
+                    AABB:new(
+                        BOULDER_SX,
+                        BOULDER_SY,
+                        BOULDER_SX2,
+                        BOULDER_SY2
+                    ),
                     LAYER.FRONT
                 )
-                if #touching > 0 then BOULDER_DEBUG_PLAYERTOUCH = true else BOULDER_DEBUG_PLAYERTOUCH = false end
+                if touching[1] then BOULDER_DEBUG_PLAYERTOUCH = true else BOULDER_DEBUG_PLAYERTOUCH = false end
             end
         -- else message("Boulder crushed :(")
         end
     end
 end
 
-set_callback(function()
+---@param draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if options.hd_debug_info_boulder == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if (
 			state.theme == THEME.DWELLING and
@@ -99,7 +104,6 @@ set_callback(function()
 		) then
 			local text_x = -0.95
 			local text_y = -0.45
-			local green_rim = rgba(102, 108, 82, 255)
 			local green_hitbox = rgba(153, 196, 19, 170)
 			local white = rgba(255, 255, 255, 255)
             local text_boulder_uid
@@ -111,15 +115,12 @@ set_callback(function()
 			local sx2 = BOULDER_SX2
 			local sy2 = BOULDER_SY2
 			
-			draw_text(text_x, text_y, 0, "BOULDER_UID: " .. text_boulder_uid, white)
+			draw_ctx:draw_text(text_x, text_y, 0, "BOULDER_UID: " .. text_boulder_uid, white)
 			
 			if BOULDER_UID ~= nil and sx ~= nil and sy ~= nil and sx2 ~= nil and sy2 ~= nil then
 				text_y = text_y-0.1
-				local sp_x, sp_y = screen_position(sx, sy)
-				local sp_x2, sp_y2 = screen_position(sx2, sy2)
-				
-				-- draw_rect(sp_x, sp_y, sp_x2, sp_y2, 4, 0, green_rim)
-				draw_rect_filled(sp_x, sp_y, sp_x2, sp_y2, 0, green_hitbox)
+
+				draw_ctx:draw_rect_filled(screen_aabb(AABB:new(sx, sy, sx2, sy2)), 0, green_hitbox)
 				
 				local text_boulder_sx = tostring(sx)
 				local text_boulder_sy = tostring(sy)
@@ -128,16 +129,16 @@ set_callback(function()
                 local text_boulder_touching
 				if BOULDER_DEBUG_PLAYERTOUCH == true then text_boulder_touching = "Touching!" else text_boulder_touching = "Not Touching." end
 				
-				draw_text(text_x, text_y, 0, "SX: " .. text_boulder_sx, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "SX: " .. text_boulder_sx, white)
 				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY: " .. text_boulder_sy, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "SY: " .. text_boulder_sy, white)
 				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SX2: " .. text_boulder_sx2, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "SX2: " .. text_boulder_sx2, white)
 				text_y = text_y-0.1
-				draw_text(text_x, text_y, 0, "SY2: " .. text_boulder_sy2, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "SY2: " .. text_boulder_sy2, white)
 				text_y = text_y-0.1
 				
-				draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "Player touching top of hitbox: " .. text_boulder_touching, white)
 			end
 		end
 	end

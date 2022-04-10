@@ -1,3 +1,7 @@
+blackknightlib = require 'lib.entities.black_knight'
+turrentlib = require 'lib.entities.laser_turrent'
+spikeballlib = require 'lib.entities.spikeball_trap'
+
 local module = {}
 
 
@@ -51,7 +55,7 @@ module.HD_TILENAME = {
 	["*"] = {
 		phase_1 = {
 			default = {
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,
+				function(x, y, l) spikeballlib.create_spikeball_trap(x, y, l) end,
 			},
 			alternate = {
 				[THEME.NEO_BABYLON] = {
@@ -858,7 +862,7 @@ module.HD_TILENAME = {
 		description = "Shop Items",
 	},
 	["T"] = {
-		phase_1 = {
+		phase_3 = {
 			default = {
 				function(x, y, l)
 					spawn_tree(x, y, l)
@@ -873,7 +877,9 @@ module.HD_TILENAME = {
 			default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_VLAD, x+.5, y, l, 0, 0) end,},
 			alternate = {
 				-- Black Knight
-				[THEME.JUNGLE] = {function(x, y, l) return 0 end},
+				[THEME.JUNGLE] = {function(x, y, l)
+					blackknightlib.create_black_knight(x, y, l)
+				end},
 			}
 		},
 		description = "Vlad/Black Knight",
@@ -1371,7 +1377,9 @@ module.HD_TILENAME = {
 				function(x, y, l) return 0 end,
 			},
 			alternate = {
-				[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end,}, -- # TODO: spawn method for turret
+				[THEME.NEO_BABYLON] = {function(x, y, l)
+					turrentlib.spawn_turrent(x, y, l)
+				end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) return 0 end,},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end,} -- bg columns
 			},

@@ -54,8 +54,8 @@ module.HD_FEELING_DEFAULTS = {
 		message = "I hear snakes... I hate snakes!"
 	},
 	[module.FEELING_ID.RESTLESS] = {
-		-- chance = 12,
-		chance = 1,
+		chance = 12,
+		-- chance = 1,
 		themes = { THEME.JUNGLE },
 		message = "The dead are restless!"
 	},

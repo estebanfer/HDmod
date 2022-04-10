@@ -1,4 +1,4 @@
-spikeballlib = require 'lib.entities.spikeball_trap.spikeball_trap'
+spikeballlib = require 'lib.entities.spikeball_trap'
 
 local module = {}
 

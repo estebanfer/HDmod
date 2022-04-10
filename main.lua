@@ -34,7 +34,6 @@ ankhmoailib = require 'lib.entities.ankhmoai'
 doorslib = require 'lib.entities.doors'
 tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
-blackknightlib = require 'lib.entities.black_knight.black_knight'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.02"

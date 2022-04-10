@@ -6,9 +6,9 @@ validlib = require 'lib.spawning.valid'
 createlib = require 'lib.spawning.create'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
-turrentlib = require 'lib.entities.turrent.laser_turrent'
-greenknightlib = require 'lib.entities.green_knight.green_knight'
-mammothlib = require 'lib.entities.mammoth.mammoth'
+turrentlib = require 'lib.entities.laser_turrent'
+greenknightlib = require 'lib.entities.green_knight'
+mammothlib = require 'lib.entities.mammoth'
 
 local module = {}
 

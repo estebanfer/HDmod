@@ -861,7 +861,7 @@ module.HD_TILENAME = {
 		description = "Shop Items",
 	},
 	["T"] = {
-		phase_1 = {
+		phase_3 = {
 			default = {
 				function(x, y, l)
 					spawn_tree(x, y, l)

@@ -247,8 +247,6 @@ function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSH
 
 function module.create_devil(x, y, l) end
 
-function module.create_greenknight(x, y, l) end
-
 function module.create_alientank(x, y, l) end
 
 function module.create_piranha(x, y, l) end

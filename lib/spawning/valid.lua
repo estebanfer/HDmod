@@ -415,7 +415,13 @@ function module.is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Imp
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
-function module.is_valid_greenknight_spawn(x, y, l) return false end -- # TODO: Implement method for valid greenknight spawn
+function module.is_valid_greenknight_spawn(x, y, l)
+	return (
+		detect_floor_at(x, y, l) == false
+		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
+	)
+end -- # TODO: Implement method for valid greenknight spawn
 
 function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
 

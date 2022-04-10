@@ -7,6 +7,7 @@ createlib = require 'lib.spawning.create'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
 turrentlib = require 'lib.entities.turrent.laser_turrent'
+greenknightlib = require 'lib.entities.green_knight.green_knight'
 
 local module = {}
 
@@ -95,7 +96,7 @@ module.global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_proce
 module.global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
 module.global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
 
-module.global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", createlib.create_greenknight, validlib.is_valid_greenknight_spawn)
+module.global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", greenknightlib.create_greenknight, validlib.is_valid_greenknight_spawn)
 
 module.global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", createlib.create_alientank, validlib.is_valid_alientank_spawn)
 

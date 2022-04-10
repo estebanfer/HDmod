@@ -174,17 +174,17 @@ end
 local turrent_id = celib.new_custom_entity(set_func, update_func, celib.CARRY_TYPE.HELD, ENT_TYPE.ITEM_ROCK)
 celib.init()
 
-register_option_button("spawn_trap", "spawn turrent", "spawn turrent", function ()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    local over
-    repeat
-        over = get_grid_entity_at(x, y+1, l)
-        y = y + 1
-    until over ~= -1
-    local uid = spawn_over(ENT_TYPE.ITEM_ROCK, over, 0, -1)
-    celib.set_custom_entity(uid, turrent_id)
-end)
+-- register_option_button("spawn_trap", "spawn turrent", "spawn turrent", function ()
+--     local x, y, l = get_position(players[1].uid)
+--     x, y = math.floor(x), math.floor(y)
+--     local over
+--     repeat
+--         over = get_grid_entity_at(x, y+1, l)
+--         y = y + 1
+--     until over ~= -1
+--     local uid = spawn_over(ENT_TYPE.ITEM_ROCK, over, 0, -1)
+--     celib.set_custom_entity(uid, turrent_id)
+-- end)
 
 function module.spawn_turrent(x, y, l)
     local over, uid = get_grid_entity_at(x, y+1, l)

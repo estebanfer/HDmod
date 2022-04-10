@@ -100,9 +100,9 @@ function module.create_mammoth(x, y, l)
     end)
 end
 
-register_option_button("spawn_mammoth", "spawn_mammoth", 'spawn_mammoth', function ()
-    local x, y, l = get_position(players[1].uid)
-    module.create_mammoth(x-3, y, l)
-end)
+-- register_option_button("spawn_mammoth", "spawn_mammoth", 'spawn_mammoth', function ()
+--     local x, y, l = get_position(players[1].uid)
+--     module.create_mammoth(x-3, y, l)
+-- end)
 
 return module

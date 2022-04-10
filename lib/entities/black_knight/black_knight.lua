@@ -77,9 +77,9 @@ function module.create_black_knight(x, y, l)
     set_on_damage(black_knight, black_knight_death)
 end
 
-register_option_button("spawn_black_knight", "spawn_black_knight", 'spawn_black_knight', function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_black_knight(x-5, y, l)
-end)
+-- register_option_button("spawn_black_knight", "spawn_black_knight", 'spawn_black_knight', function()
+--     local x, y, l = get_position(players[1].uid)
+--     module.create_black_knight(x-5, y, l)
+-- end)
 
 return module

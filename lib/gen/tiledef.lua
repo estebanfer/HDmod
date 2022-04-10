@@ -1,5 +1,6 @@
 blackknightlib = require 'lib.entities.black_knight.black_knight'
 turrentlib = require 'lib.entities.turrent.laser_turrent'
+spikeballlib = require 'lib.entities.spikeball_trap.spikeball_trap'
 
 local module = {}
 
@@ -54,7 +55,7 @@ module.HD_TILENAME = {
 	["*"] = {
 		phase_1 = {
 			default = {
-				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0) end,
+				function(x, y, l) spikeballlib.create_spikeball_trap(x, y, l) end,
 			},
 			alternate = {
 				[THEME.NEO_BABYLON] = {

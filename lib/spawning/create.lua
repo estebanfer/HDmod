@@ -1,3 +1,5 @@
+spikeballlib = require 'lib.entities.spikeball_trap.spikeball_trap'
+
 local module = {}
 
 module.GIANTSPIDER_SPAWNED = false
@@ -303,7 +305,10 @@ function module.create_pushblock_powderkeg(x, y, l)
 	end
 end
 
-function module.create_spikeball(x, y, l) end
+function module.create_spikeball(x, y, l)
+	removelib.remove_floor_and_embedded_at(x, y, l)
+	spikeballlib.create_spikeball_trap(x, y, l)
+end
 
 function module.create_arrowtrap(x, y, l)
 	-- local entity_here = get_grid_entity_at(x, y, l)

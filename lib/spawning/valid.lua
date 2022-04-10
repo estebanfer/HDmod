@@ -517,7 +517,19 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	)
 end
 
-function module.is_valid_spikeball_spawn(x, y, l) return false end -- # TODO: Implement method for valid spikeball spawn
+function module.is_valid_spikeball_spawn(x, y, l)
+	local above = get_grid_entity_at(x, y+1, l)
+	if above ~= -1 then
+		above = get_entity(above)
+		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
+			return false
+		end
+	end
+    return (
+		detect_solid_nonshop_nontree(x, y, l)
+		and detect_solid_nonshop_nontree(x, y - 1, l)
+	)
+end -- # TODO: Implement method for valid spikeball spawn
 
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, ry = get_room_index(x, y)

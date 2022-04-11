@@ -19,7 +19,7 @@ local function level_specific()
         -- mothership bg
         local w, h = 40, 32
         local x, y, l = 22.5, 106.5, LAYER.FRONT
-        local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
+        backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
         backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
         backwall.animation_frame = 0
         backwall:set_draw_depth(49)
@@ -57,17 +57,17 @@ end
     Room-Specific
 --]]
 local function room_specific()
-    level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+    local level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
     for y = 1, level_h, 1 do
         for x = 1, level_w, 1 do
-            _template_hd = roomgenlib.global_levelassembly.modification.levelrooms[y][x]
+            local _template_hd = roomgenlib.global_levelassembly.modification.levelrooms[y][x]
             local corner_x, corner_y = locatelib.locate_game_corner_position_from_levelrooms_position(x, y)
             if _template_hd == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM then
                 
                 -- main tower
                 local w, h = 10, (8*3)+3
-                local x, y, l = corner_x+4.5, corner_y+6, LAYER.FRONT
-                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
+                local _x, _y, _l = corner_x+4.5, corner_y+6, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
                 backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_VLAD_0)
                 backwall.animation_frame = 0
                 backwall:set_draw_depth(49)
@@ -76,9 +76,9 @@ local function room_specific()
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 
                 -- vlad alcove
-                local w, h = 2, 2
-                local x, y, l = corner_x+4.5, corner_y+20.5, LAYER.FRONT
-                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
+                w, h = 2, 2
+                _x, _y, _l = corner_x+4.5, corner_y+20.5, LAYER.FRONT
+                backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
                 backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_VLAD_0)
                 backwall.animation_frame = 0
                 backwall:set_draw_depth(49)
@@ -87,12 +87,12 @@ local function room_specific()
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 
                 -- mother statue
-                spawn_entity(ENT_TYPE.BG_CROWN_STATUE, corner_x+4.5, corner_y+(8*3)-7, l, 0, 0)
+                spawn_entity(ENT_TYPE.BG_CROWN_STATUE, corner_x+4.5, corner_y+(8*3)-7, _l, 0, 0)
 
             elseif _template_hd == roomdeflib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP then
                 local w, h = 10, 8
-                local x, y, l = corner_x+4.5, corner_y-3.5, LAYER.FRONT
-                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
+                local _x, _y, _l = corner_x+4.5, corner_y-3.5, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
                 backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
                 backwall.animation_frame = 0
                 backwall:set_draw_depth(49)

@@ -1,14 +1,14 @@
 -- hdtypelib = require 'entities.hdtype'
 local module = {}
 
-HELL_Y = 86
+local HELL_Y = 86
 
-BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-BOSS_STATE = nil
+local BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
+local BOSS_STATE = nil
 
-OLMEC_UID = nil
-OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-OLMEC_STATE = 0
+local OLMEC_UID = nil
+local OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
+local OLMEC_STATE = 0
 
 module.DOOR_ENDGAME_OLMEC_UID = nil
 
@@ -19,6 +19,32 @@ function module.init()
 	OLMEC_STATE = 0
 
 	module.DOOR_ENDGAME_OLMEC_UID = nil
+end
+
+local function cutscene_move_olmec_pre()
+	local olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
+	if #olmecs > 0 then
+		OLMEC_UID = olmecs[1]
+		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
+	end
+end
+
+local function cutscene_move_olmec_post()
+	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
+end
+
+local function cutscene_move_cavemen()
+	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
+	-- create a hawkman and disable his ai
+	-- set_timeout() to reenable his ai and set his stuntimer.
+	-- **does set_timeout() work during cutscenes?
+		-- if not, use set_global_timeout
+			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
+	-- **consider problems for skipping the cutscene
+	local cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
+	for i, caveman in ipairs(cavemen) do
+		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+	end
 end
 
 function module.onlevel_olmec_init()
@@ -34,37 +60,11 @@ function module.onlevel_olmec_init()
 	end
 end
 
-function cutscene_move_olmec_pre()
-	olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
-	if #olmecs > 0 then
-		OLMEC_UID = olmecs[1]
-		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
-	end
-end
-
-function cutscene_move_olmec_post()
-	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
-end
-
-function cutscene_move_cavemen()
-	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
-	-- create a hawkman and disable his ai
-	-- set_timeout() to reenable his ai and set his stuntimer.
-	-- **does set_timeout() work during cutscenes?
-		-- if not, use set_global_timeout
-			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
-	-- **consider problems for skipping the cutscene
-	cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
-	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
-	end
-end
-
-function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later
-	c_logics = get_entities_by_type(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR)
+local function onframe_olmec_cutscene() -- **Move to set_interval() that you can close later
+	local c_logics = get_entities_by_type(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR)
 	if #c_logics > 0 then
-		c_logics_e = get_entity(c_logics[1]):as_movable()
-		dead = test_flag(c_logics_e.flags, ENT_FLAG.DEAD)
+		local c_logics_e = get_entity(c_logics[1])
+		local dead = test_flag(c_logics_e.flags, ENT_FLAG.DEAD)
 		if dead == true then
 			-- If you skip the cutscene before olmec smashes the blocks, this will teleport him outside of the map and crash.
 			-- kill the blocks olmec would normally smash.
@@ -81,10 +81,14 @@ function onframe_olmec_cutscene() -- **Move to set_interval() that you can close
 	end
 end
 
-function onframe_olmec_behavior()
-	olmec = get_entity(OLMEC_UID)
+local function olmec_attack(x, y, l)
+	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+end
+
+local function onframe_olmec_behavior()
+	---@type Olmec
+	local olmec = get_entity(OLMEC_UID)
 	if olmec ~= nil then
-		olmec = get_entity(OLMEC_UID):as_olmec()
 		-- Ground Pound behavior:
 			-- # TODO: Shift OLMEC down enough blocks to match S2's OLMEC. Currently the spelunker is crushed between Olmec and the ceiling.
 			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
@@ -93,7 +97,7 @@ function onframe_olmec_behavior()
 		-- Enemy Spawning: Detect when olmec is about to smash down
 		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
-			x, y, l = get_position(OLMEC_UID)
+			local x, y, l = get_position(OLMEC_UID)
 			-- random chance (maybe 20%?) each time olmec groundpounds, shoots 3 out in random directions upwards.
 			-- if math.random() >= 0.5 then
 				-- # TODO: Currently fires twice. Idea: Use a timeout variable to check time to refire.
@@ -108,13 +112,10 @@ function onframe_olmec_behavior()
 	end
 end
 
-function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
-end
-
-function onframe_boss_wincheck()
+local function onframe_boss_wincheck()
 	if BOSS_STATE == BOSS_SEQUENCE.FIGHT then
-		olmec = get_entity(OLMEC_UID):as_olmec()
+		---@type Olmec
+		local olmec = get_entity(OLMEC_UID)
 		if olmec ~= nil then
 			if olmec.attack_phase == 3 then
 				local sound = get_sound(VANILLA_SOUND.UI_SECRET)
@@ -122,7 +123,7 @@ function onframe_boss_wincheck()
 				BOSS_STATE = BOSS_SEQUENCE.DEAD
 				local _olmec_door = get_entity(module.DOOR_ENDGAME_OLMEC_UID)
 				_olmec_door.flags = set_flag(_olmec_door.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-				_x, _y, _ = get_position(module.DOOR_ENDGAME_OLMEC_UID)
+				local _x, _y, _ = get_position(module.DOOR_ENDGAME_OLMEC_UID)
 				-- unlock_door_at(41, 99)
 				unlock_door_at(_x, _y)
 			end
@@ -143,31 +144,33 @@ set_callback(function()
 	end
 end, ON.FRAME)
 
-set_callback(function()
+---@param draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.theme == THEME.OLMEC and OLMEC_UID ~= nil then
-			olmec = get_entity(OLMEC_UID)
-			text_x = -0.95
-			text_y = -0.50
-			white = rgba(255, 255, 255, 255)
+			local olmec = get_entity(OLMEC_UID)
+			local text_x = -0.95
+			local text_y = -0.50
+			local white = rgba(255, 255, 255, 255)
 			if olmec ~= nil then
-				olmec = get_entity(OLMEC_UID):as_olmec()
+				---@type Olmec
+				olmec = get_entity(OLMEC_UID)
 				
 				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
-				olmec_attack_state = "UNKNOWN"
+				local olmec_attack_state = "UNKNOWN"
 				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
 				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
 				
 				-- BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
-				boss_attack_state = "UNKNOWN"
+				local boss_attack_state = "UNKNOWN"
 				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then BOSS_attack_state = "CUTSCENE"
 				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then BOSS_attack_state = "FIGHT"
 				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then BOSS_attack_state = "DEAD" end
 				
-				draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
+				draw_ctx:draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
 				text_y = text_y - 0.1
-				draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
-			else draw_text(text_x, text_y, 0, "olmec is nil", white) end
+				draw_ctx:draw_text(text_x, text_y, 0, "BOSS_STATE: " .. boss_attack_state, white)
+			else draw_ctx:draw_text(text_x, text_y, 0, "olmec is nil", white) end
 		end
 	end
 end, ON.GUIFRAME)

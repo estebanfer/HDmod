@@ -434,19 +434,21 @@ function module.init()
     module.danger_tracker = {}
 end
 
+local create_hd_behavior, applyflags_to_uid, behavior_toggle, remove_entitytype_inventory
+local detection_floor, conflictdetection
 
-function danger_track(uid_to_track, x, y, l, hd_type)
-	danger_object = {
+local function danger_track(uid_to_track, x, y, l, hd_type)
+	local danger_object = {
 		["uid"] = uid_to_track,
 		["x"] = x, ["y"] = y, ["l"] = l,
 		["hd_type"] = hd_type,
-		["behavior"] = create_hd_behavior(hd_type.behavior)
+		["behavior"] = create_hd_behavior(hd_type.behavior, x, y, l)
 	}
 	module.danger_tracker[#module.danger_tracker+1] = danger_object
 end
 
-function create_hd_behavior(behavior)
-	decorated_behavior = {}
+function create_hd_behavior(behavior, x, y, l)
+	local decorated_behavior = {}
 	if behavior ~= nil then
 		decorated_behavior = commonlib.TableCopy(behavior)
 		-- if behavior.abilities ~= nil then
@@ -478,8 +480,8 @@ function create_hd_behavior(behavior)
 					-- message("#decorated_behavior.abilities: " .. tostring(#decorated_behavior.abilities))
 			end
 			if behavior == module.HD_BEHAVIOR.OLMEC_SHOT then
-				xvel = math.random(7, 30)/100
-				yvel = math.random(5, 10)/100
+				local xvel = math.random(7, 30)/100
+				local yvel = math.random(5, 10)/100
 				if math.random() >= 0.5 then xvel = -1*xvel end
 				decorated_behavior.velocity_set.velocityx = xvel
 				decorated_behavior.velocity_set.velocityy = yvel
@@ -491,8 +493,8 @@ end
 
 function applyflags_to_uid(uid_assignto, flags)
 	if #flags > 0 then
-		ability_e = get_entity(uid_assignto)
-		flags_set = flags[1]
+		local ability_e = get_entity(uid_assignto)
+		local flags_set = flags[1]
 		for _, flag in ipairs(flags_set) do
 			if (
 				flag ~= 1 or
@@ -502,7 +504,7 @@ function applyflags_to_uid(uid_assignto, flags)
 			end
 		end
 		if #flags > 1 then
-			flags_clear = flags[2]
+			local flags_clear = flags[2]
 			for _, flag in ipairs(flags_clear) do
 				ability_e.flags = clr_flag(ability_e.flags, flag)
 			end
@@ -511,16 +513,16 @@ function applyflags_to_uid(uid_assignto, flags)
 end
 
 
-function enttype_replace_danger(enttypes, hd_type, _vx, _vy)
-	dangers_uids = get_entities_by_type(enttypes)
+local function enttype_replace_danger(enttypes, hd_type, _vx, _vy)
+	local dangers_uids = get_entities_by_type(enttypes)
 	for _, danger_uid in ipairs(dangers_uids) do
 		hdtypelib.danger_replace(danger_uid, hd_type, false, _vx, _vy)
 	end
 end
 
-function danger_applydb(uid, hd_type)
-	s_mov = get_entity(uid):as_movable()
-	x, y, l = get_position(uid)
+local function danger_applydb(uid, hd_type)
+	local s_mov = get_entity(uid)
+	local x, y, l = get_position(uid)
 	
 	if hd_type.removeinventory ~= nil then
 		if hd_type.removeinventory == module.HD_REMOVEINVENTORY.SNAIL then
@@ -621,16 +623,16 @@ end
 
 
 -- velocity defaults to 0
-function create_hd_type_notrack(hd_type, x, y, l, _vx, _vy)
-	vx = _vx or 0
-	vy = _vy or 0
-	uid = -1
+local function create_hd_type_notrack(hd_type, x, y, l, _vx, _vy)
+	local vx = _vx or 0
+	local vy = _vy or 0
+	local uid = -1
 	if (hd_type.collisiontype ~= nil and (hd_type.collisiontype == module.HD_COLLISIONTYPE.FLOORTRAP or hd_type.collisiontype == module.HD_COLLISIONTYPE.FLOORTRAP_TALL)) then
-		floor_uid = detection_floor(x, y, l, 0, -1, 0.5)
+		local floor_uid = detection_floor(x, y, l, 0, -1, 0.5)
 		if floor_uid ~= -1 then
 			uid = spawn_entity_over(hd_type.tospawn, floor_uid, 0, 1)
 			if hd_type.collisiontype == module.HD_COLLISIONTYPE.FLOORTRAP_TALL then
-				s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
+				local s_head = spawn_entity_over(hd_type.tospawn, uid, 0, 1)
 				if test_flag(state.level_flags, 18) == true then
 					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, 0.29, 0.26)
 					spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, -0.29, 0.26)
@@ -645,16 +647,16 @@ end
 
 -- velocity defaults to 0 (by extension of `create_hd_type_notrack()`)
 function module.create_hd_type(hd_type, x, y, l, collision_detection, _vx, _vy)
-	offset_collision = { 0, 0 }
+	local offset_collision = { 0, 0 }
 	if collision_detection == true then
 		offset_collision = conflictdetection(hd_type, x, y, l)
 	end
 	if offset_collision ~= nil then
-		offset_spawn_x, offset_spawn_y = 0, 0
+		local offset_spawn_x, offset_spawn_y = 0, 0
 		if hd_type.offset_spawn ~= nil then
 			offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
 		end
-		uid = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
+		local uid = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, _vx, _vy)
 		if uid ~= -1 then
 			danger_applydb(uid, hd_type)
 			danger_track(uid, x, y, l, hd_type)
@@ -666,16 +668,16 @@ end
 
 -- velocity defaults to uid's
 function module.danger_replace(uid, hd_type, collision_detection, _vx, _vy)
-	uid_to_track = uid
-	d_mov = get_entity(uid_to_track):as_movable()
-	vx = _vx or d_mov.velocityx
-	vy = _vy or d_mov.velocityx
+	local uid_to_track = uid
+	local d_mov = get_entity(uid_to_track)
+	local vx = _vx or d_mov.velocityx
+	local vy = _vy or d_mov.velocityx
 	
-	x, y, l = get_position(uid_to_track)
+	local x, y, l = get_position(uid_to_track)
 	
-	d_type = get_entity(uid_to_track).type.id
+	local d_type = get_entity(uid_to_track).type.id
 	
-	offset_collision = conflictdetection(hd_type, x, y, l)
+	local offset_collision = conflictdetection(hd_type, x, y, l)
 	if collision_detection == true and offset_collision == nil then
 		offset_collision = nil
 		uid_to_track = -1
@@ -685,9 +687,9 @@ function module.danger_replace(uid, hd_type, collision_detection, _vx, _vy)
 	end
 	if offset_collision ~= nil then
 		if (hd_type.tospawn ~= nil and hd_type.tospawn ~= d_type) then
-			offset_spawn_x, offset_spawn_y = 0, 0
+			local offset_spawn_x, offset_spawn_y = 0, 0
 			if hd_type.offset_spawn ~= nil then
-				offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
+				local offset_spawn_x, offset_spawn_y = hd_type.offset_spawn[1], hd_type.offset_spawn[2]
 			end
 			uid_to_track = create_hd_type_notrack(hd_type, x+offset_spawn_x+offset_collision[1], y+offset_spawn_y+offset_collision[2], l, vx, vy)
 			
@@ -710,14 +712,14 @@ end
 -- Massive enemy behavior handling method
 set_callback(function()
 
-	n = # module.danger_tracker
+	local n = # module.danger_tracker
 	for i, danger in ipairs( module.danger_tracker) do
-		danger_mov = get_entity(danger.uid)
-		killbool = false
+		---@type Movable
+		local danger_mov = get_entity(danger.uid)
+		local killbool = false
 		if danger_mov == nil then
 			killbool = true
 		elseif danger_mov ~= nil then
-			danger_mov = get_entity(danger.uid):as_movable()
 			danger.x, danger.y, danger.l = get_position(danger.uid)
 			if danger.behavior ~= nil then
 				-- # IDEA: Enemy Behavior Ideas
@@ -847,7 +849,7 @@ set_callback(function()
 							math.random() <= danger.hd_type.itemdrop.chance
 						)
 					) then
-						itemdrop = danger.hd_type.itemdrop.item[math.random(1, #danger.hd_type.itemdrop.item)]
+						local itemdrop = danger.hd_type.itemdrop.item[math.random(1, #danger.hd_type.itemdrop.item)]
 						if itemdrop == module.HD_ENT.ITEM_CRYSTALSKULL then
 							create_ghost()
 						end
@@ -865,7 +867,7 @@ set_callback(function()
 							math.random() <= danger.hd_type.treasuredrop.chance
 						)
 					) then
-						itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
+						local itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
 						hdtypelib.create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
 					end
 				end
@@ -878,13 +880,15 @@ set_callback(function()
 	commonlib.CompactList( module.danger_tracker, n)
 end, ON.FRAME)
 
+local behavior_set_facing, behavior_set_position
+
 -- if enabled == true, enable target_uid and disable master
 -- if enabled == false, enable master_uid and disable behavior
 -- loop through and disable behavior_uids unless it happeneds to be the behavior or the master uid
 function behavior_toggle(target_uid, master_uid, behavior_uids, enabled)
-	master_mov = get_entity(master_uid)
+	local master_mov = get_entity(master_uid)
 	if master_mov ~= nil then
-		behavior_e = get_entity(target_uid)
+		local behavior_e = get_entity(target_uid)
 		if behavior_e ~= nil then
 			if enabled == true then
 				-- behavior_e.flags = clr_flag(behavior_e.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)-- enable ai/physics of behavior
@@ -916,13 +920,13 @@ function behavior_toggle(target_uid, master_uid, behavior_uids, enabled)
 end
 
 function behavior_set_position(uid_toadopt, uid_toset)
-	x, y, _ = get_position(uid_toadopt)
+	local x, y, _ = get_position(uid_toadopt)
 	move_entity(uid_toset, x, y, 0, 0)
 end
 
 function behavior_set_facing(behavior_uid, master_uid)
-	behavior_flags = get_entity_flags(behavior_uid)
-	master_mov = get_entity(master_uid)
+	local behavior_flags = get_entity_flags(behavior_uid)
+	local master_mov = get_entity(master_uid)
 	if master_mov ~= nil then
 		if test_flag(behavior_flags, ENT_FLAG.FACING_LEFT) then
 			master_mov.flags = set_flag(master_mov.flags, ENT_FLAG.FACING_LEFT)
@@ -970,23 +974,23 @@ function detection_floor(x, y, l, offsetx, offsety, _radius)
 end
 
 -- return status: 1 for conflict, 0 for right side, -1 for left.
-function conflictdetection_giant(hdctype, x, y, l)
-	conflict_rightside = false
-	scan_width = 1 -- check 2 across
-	scan_height = 2 -- check 3 up
-	floor_level = 1 -- default to frog
+local function conflictdetection_giant(hdctype, x, y, l)
+	local conflict_rightside = false
+	local scan_width = 1 -- check 2 across
+	local scan_height = 2 -- check 3 up
+	local floor_level = 1 -- default to frog
 	-- if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG then
 		
 	-- end
 	if hdctype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER then
 		floor_level = 2 -- check ceiling
 	end
-	x_leftside = x - 1
-	y_scanbase = y - 1
+	local x_leftside = x - 1
+	local y_scanbase = y - 1
 	for sides_xi = x, x_leftside, -1 do
 		for block_yi = y_scanbase, y_scanbase+scan_height, 1 do
 			for block_xi = sides_xi, sides_xi+scan_width, 1 do
-				avoidair = true
+				local avoidair = true
 				if block_yi == y_scanbase + floor_level then
 					avoidair = false
 				end
@@ -1010,10 +1014,10 @@ function conflictdetection_giant(hdctype, x, y, l)
 end
 
 -- detect blocks above and to the sides
-function conflictdetection_floortrap(hdctype, x, y, l)
-	conflict = false
-	scan_width = 1 -- check 1 across
-	scan_height = 1 -- check the space above
+local function conflictdetection_floortrap(hdctype, x, y, l)
+	local conflict = false
+	local scan_width = 1 -- check 1 across
+	local scan_height = 1 -- check the space above
 	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
 		scan_width = 1 -- check 1 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
@@ -1021,9 +1025,10 @@ function conflictdetection_floortrap(hdctype, x, y, l)
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end
-	ey_above = y
+	local ey_above = y
 	for block_yi = ey_above, ey_above+scan_height, 1 do
 		-- skip sides when y == 1
+		local block_xi_min, block_xi_max
 		if block_yi < ey_above+scan_height then
 			block_xi_min, block_xi_max = x, x
 		else
@@ -1044,7 +1049,7 @@ end
 
 -- returns: optimal offset for conflicts
 function conflictdetection(hd_type, x, y, l)
-	offset = { 0, 0 }
+	local offset = { 0, 0 }
 	-- avoid_types = {ENT_TYPE.FLOOR_BORDERTILE, ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE}
 	-- HD_COLLISIONTYPE = {
 		-- AIR_TILE_1 = 1,
@@ -1067,7 +1072,7 @@ function conflictdetection(hd_type, x, y, l)
 			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP or
 			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL
 		) then
-			conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
+			local conflict = conflictdetection_floortrap(hd_type.collisiontype, x, y, l)
 			if conflict == true then
 				offset = nil
 			else
@@ -1077,7 +1082,7 @@ function conflictdetection(hd_type, x, y, l)
 			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_FROG or
 			hd_type.collisiontype == hdtypelib.HD_COLLISIONTYPE.GIANT_SPIDER
 		) then
-			side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
+			local side = conflictdetection_giant(hd_type.collisiontype, x, y, l)
 			if side > 0 then
 				offset = nil
 			else

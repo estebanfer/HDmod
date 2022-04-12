@@ -1,5 +1,19 @@
 local module = {}
 
+local function applyflags_to_quest(flags)
+    if #flags > 0 then
+        local flags_set = flags[1]
+        for _, flag in ipairs(flags_set) do
+            state.quest_flags = set_flag(state.quest_flags, flag)
+        end
+        if #flags > 1 then
+            local flags_clear = flags[2]
+            for _, flag in ipairs(flags_clear) do
+                state.quest_flags = clr_flag(state.quest_flags, flag)
+            end
+        end
+    else message("No quest flags") end
+end
 
 -- prevent dark levels for specific states
 function module.clear_dark_level()
@@ -16,7 +30,7 @@ function module.clear_dark_level()
 	end
 end
 
-function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
+local function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 	if roomgenlib.detect_same_levelstate(t_a, l_a, w_a) == true then
 		-- if t_b == THEME.BASE_CAMP then
 		-- 	state.screen_next = ON.CAMP
@@ -36,7 +50,7 @@ function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 end
 
 -- Used to "fake" world/theme/level
-function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)
+local function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)
 	if roomgenlib.detect_same_levelstate(t_a, l_a, w_a) == true then
 		state.level = l_b
 		state.world = w_b
@@ -44,7 +58,7 @@ function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)
 	end
 end
 
-function changestate_samelevel_applyquestflags(w_a, l_a, t_a, flags_set, flags_clear)--w_b, l_b, t_b, flags_set, flags_clear)
+local function changestate_samelevel_applyquestflags(w_a, l_a, t_a, flags_set, flags_clear)--w_b, l_b, t_b, flags_set, flags_clear)
 	flags_set = flags_set or {}
 	flags_clear = flags_clear or {}
 	if roomgenlib.detect_same_levelstate(t_a, l_a, w_a) == true then
@@ -65,14 +79,14 @@ end
 			-- [ENT_FLAG.NO_GRAVITY] = true,
 			-- [ENT_FLAG.PICKUPABLE] = false
 		-- }
-function applyflags_to_level(flags)
+local function applyflags_to_level(flags)
     if #flags > 0 then
-        flags_set = flags[1]
+        local flags_set = flags[1]
         for _, flag in ipairs(flags_set) do
             state.level_flags = set_flag(state.level_flags, flag)
         end
         if #flags > 1 then
-            flags_clear = flags[2]
+            local flags_clear = flags[2]
             for _, flag in ipairs(flags_clear) do
                 state.level_flags = clr_flag(state.level_flags, flag)
             end
@@ -80,23 +94,8 @@ function applyflags_to_level(flags)
     else message("No level flags") end
 end
 
-function applyflags_to_quest(flags)
-    if #flags > 0 then
-        flags_set = flags[1]
-        for _, flag in ipairs(flags_set) do
-            state.quest_flags = set_flag(state.quest_flags, flag)
-        end
-        if #flags > 1 then
-            flags_clear = flags[2]
-            for _, flag in ipairs(flags_clear) do
-                state.quest_flags = clr_flag(state.quest_flags, flag)
-            end
-        end
-    else message("No quest flags") end
-end
-
 -- LEVEL HANDLING
-function onloading_levelrules()
+local function onloading_levelrules()
 	
 	--[[
 		Tutorial
@@ -226,8 +225,8 @@ function onloading_levelrules()
 end
 
 -- executed with the assumption that onloading_levelrules() has already been run, applying state.*_next
-function onloading_applyquestflags()
-	flags_failsafe = {
+local function onloading_applyquestflags()
+	local flags_failsafe = {
 		10, -- Disable Waddler's
 		25, 26, -- Disable Moon and Star challenges.
 		19 -- Disable drill -- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
@@ -241,7 +240,7 @@ end
 -- LEVEL HANDLING
 -- For cases where room generation is hardcoded to a theme's level
 -- and as a result we need to fake the world/level number
-function onlevel_levelrules()
+local function onlevel_levelrules()
 	-- Dwelling 1-5 = 1-4 (Dwelling 1-3 -> Dwelling 1-4)
 	-- changestate_onlevel_fake(1,5,THEME.DWELLING,1,4,THEME.DWELLING)
 	

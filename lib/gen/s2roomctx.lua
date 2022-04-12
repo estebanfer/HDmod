@@ -41,7 +41,7 @@ end
 
 function module.assign_s2_room_templates(room_gen_ctx)
     
-		level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+		local level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		for y = 0, level_h - 1, 1 do
 		    for x = 0, level_w - 1, 1 do
 				local template_to_set = ROOM_TEMPLATE.SIDE
@@ -49,7 +49,7 @@ function module.assign_s2_room_templates(room_gen_ctx)
 
 				if options.hd_debug_scripted_levelgen_disable == false then
 
-					_template_hd = roomgenlib.global_levelassembly.modification.levelrooms[y+1][x+1]
+					local _template_hd = roomgenlib.global_levelassembly.modification.levelrooms[y+1][x+1]
 
 					if (
 						state.theme == THEME.OLMEC

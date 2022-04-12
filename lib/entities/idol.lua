@@ -1,12 +1,12 @@
 local module = {}
 
-IDOLTRAP_TRIGGER = false
+local IDOLTRAP_TRIGGER = false
 module.IDOL_X = nil
 module.IDOL_Y = nil
 module.IDOL_UID = nil
 
-IDOLTRAP_JUNGLE_ACTIVATETIME = 15
-idoltrap_timeout = 0
+local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
+local idoltrap_timeout = 0
 module.idoltrap_blocks = {}
 
 function module.init()
@@ -19,23 +19,24 @@ function module.init()
 	module.idoltrap_blocks = {}
 end
 
-function idol_disturbance()
+local function idol_disturbance()
 	if module.IDOL_UID ~= nil then
-		x, y, l = get_position(module.IDOL_UID)
-		_entity = get_entity(module.IDOL_UID)
+		local x, y, l = get_position(module.IDOL_UID)
+        ---@type Idol
+		local _entity = get_entity(module.IDOL_UID)
 		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
 	end
 end
 
-function create_ghost_at_border()
-	xmin, _, xmax, _ = get_bounds()
+local function create_ghost_at_border()
+	local xmin, _, xmax, _ = get_bounds()
 	-- message("xmin: " .. xmin .. " ymin: " .. ymin .. " xmax: " .. xmax .. " ymax: " .. ymax)
 	
 	if #players > 0 then
-		p_x, p_y, p_l = get_position(players[1].uid)
-		bx_mid = (xmax - xmin)/2
-		gx = 0
-		gy = p_y
+		local p_x, p_y, p_l = get_position(players[1].uid)
+		local bx_mid = (xmax - xmin)/2
+		local gx = 0
+		local gy = p_y
 		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
 		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
 		toast("A terrible chill runs up your spine!")

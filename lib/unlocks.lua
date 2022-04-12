@@ -122,7 +122,7 @@ end
 	- When it's in one of the four areas.
 	- Any exceptions to this, such as special areas? Not that I'm aware of.
 ]]
-function detect_if_area_unlock_not_unlocked_yet()
+local function detect_if_area_unlock_not_unlocked_yet()
 	-- module.RUN_UNLOCK_AREA[state.theme] ~= nil and module.RUN_UNLOCK_AREA[state.theme] == false
 	for i = 1, #module.RUN_UNLOCK_AREA, 1 do
 		if module.RUN_UNLOCK_AREA[i].theme == state.theme and module.RUN_UNLOCK_AREA[i].unlocked == false then
@@ -137,11 +137,11 @@ end
 	Run the chance for an area coffin to spawn.
 	1 / (X - deaths), chance can't go better than 1/9
 ]]
-function run_unlock_area_chance()
+local function run_unlock_area_chance()
 	if (
 		state.world < 5
 	) then
-		area_and_deaths = 301 - savegame.deaths
+		local area_and_deaths = 301 - savegame.deaths
 		if state.world == 1 then
 			area_and_deaths = 51 - savegame.deaths
 		elseif state.world == 2 then
@@ -150,7 +150,7 @@ function run_unlock_area_chance()
 			area_and_deaths = 201 - savegame.deaths
 		end
 
-		chance = (area_and_deaths < 9) and 9 or area_and_deaths
+		local chance = (area_and_deaths < 9) and 9 or area_and_deaths
 
 		if math.random(chance) == 1 then
 			return true
@@ -170,15 +170,15 @@ function module.get_unlock()
 			detect_if_area_unlock_not_unlocked_yet()
 			and run_unlock_area_chance()
 		) then -- AREA_RAND* unlocks
-			rand_pool = {
+			local rand_pool = {
 				module.HD_UNLOCK_ID.AREA_RAND1,
 				module.HD_UNLOCK_ID.AREA_RAND2,
 				module.HD_UNLOCK_ID.AREA_RAND3,
 				module.HD_UNLOCK_ID.AREA_RAND4
 			}
-			coffin_rand_pool = {}
-			chunkPool_rand_index = 1
-			n = #rand_pool
+			local coffin_rand_pool = {}
+			local chunkPool_rand_index = 1
+			local n = #rand_pool
 			for rand_index = 1, #rand_pool, 1 do
 				if module.HD_UNLOCKS[rand_pool[rand_index]].unlocked == true then
 					rand_pool[rand_index] = nil

@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 commonlib = require 'lib.common'
 demolib = require 'lib.demo'
 worldlib = require 'lib.worldstate'

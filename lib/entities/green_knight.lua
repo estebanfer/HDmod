@@ -4,7 +4,7 @@ local module = {}
 --movable.price is used as a cooldown to stop the whip from damaging the entity multiple times
 local green_knight_texture_id
 do
-    green_knight_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS01_0)
+    local green_knight_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS01_0)
     green_knight_texture_def.texture_path = 'res/green_knight.png'
     green_knight_texture_id = define_texture(green_knight_texture_def)
 end
@@ -25,7 +25,7 @@ local function green_knight_update(ent)
 end
 local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
     if damage_dealer.type.id == ENT_TYPE.ITEM_WHIP and ent.price == 0 and ent.health > 2 then
-        generate_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
+        generate_world_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
         ent.price = 10 --cooldown
         commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, ent.uid)
         return true

@@ -11,8 +11,8 @@ function module.init()
 end
 
 function module.create_coffin_coop(x, y, l)
-	coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	the_coffin = get_entity(coffin_uid)
+	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
+	local the_coffin = get_entity(coffin_uid)
 	the_coffin.player_respawn = true
 	return coffin_uid
 end
@@ -141,7 +141,7 @@ function module.create_liquidfall(x, y, l, texture_path, is_lava)
 	end
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
 	texture_def.texture_path = texture_path
-	drain_texture = define_texture(texture_def)
+	local drain_texture = define_texture(texture_def)
 	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
 	get_entity(drain_uid):set_texture(drain_texture)
 
@@ -149,7 +149,7 @@ function module.create_liquidfall(x, y, l, texture_path, is_lava)
 	if #backgrounds ~= 0 then
 		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
 		texture_def2.texture_path = texture_path
-		fountain_texture = define_texture(texture_def2)
+		local fountain_texture = define_texture(texture_def2)
 
 		local fountain = get_entity(backgrounds[1])
 		fountain:set_texture(fountain_texture)
@@ -157,7 +157,7 @@ function module.create_liquidfall(x, y, l, texture_path, is_lava)
 end
 
 function module.create_regenblock(x, y, l)
-	spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l, 0, 0)
+	spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_REGENERATINGBLOCK, x, y, l)
 	local regen_bg = get_entity(spawn_entity(ENT_TYPE.MIDBG, x, y, l, 0, 0))
 	regen_bg:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_SUNKEN_0)
 	regen_bg.animation_frame = 137
@@ -177,12 +177,12 @@ function module.create_damsel(x, y, l)
 	elseif pet_setting == 2 then
 		pet_type = ENT_TYPE.MONS_PET_HAMSTER
 	end
-	spawn_grid_entity(pet_type, x, y, l, 0, 0)
+	spawn_grid_entity(pet_type, x, y, l)
 end
 
 function module.create_idol(x, y, l)
 	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
 	if state.theme == THEME.ICE_CAVES then
 		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
 		get_entity(idollib.IDOL_UID).trap_triggered = true
@@ -191,7 +191,7 @@ end
 
 function module.create_idol_crystalskull(x, y, l)
 	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l, 0, 0)
+	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
 
 	local entity = get_entity(idollib.IDOL_UID)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)

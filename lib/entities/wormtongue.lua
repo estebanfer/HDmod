@@ -1,13 +1,13 @@
 local module = {}
 
-WORMTONGUE_UID = nil
-WORMTONGUE_BG_UID = nil
-WORM_BG_UID = nil
-TONGUE_ACCEPTTIME = 200
-tongue_tick = TONGUE_ACCEPTTIME
-TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
-TONGUE_STATE = nil
-TONGUE_STATECOMPLETE = false
+local WORMTONGUE_UID = nil
+local WORMTONGUE_BG_UID = nil
+local WORM_BG_UID = nil
+local TONGUE_ACCEPTTIME = 200
+local tongue_tick = TONGUE_ACCEPTTIME
+local TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
+local TONGUE_STATE = nil
+local TONGUE_STATECOMPLETE = false
 
 module.tongue_spawned = false
 
@@ -20,55 +20,7 @@ function module.init()
 	tongue_tick = TONGUE_ACCEPTTIME
 end
 
-function module.create_wormtongue(x, y, l)
-	-- message("created wormtongue:")
-	set_interval(tongue_idle, 15)
-	set_interval(onframe_tonguetimeout, 1)
-	-- currently using level generation to place stickytraps
-	stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
-	sticky = get_entity(stickytrap_uid)
-	sticky.flags = set_flag(sticky.flags, ENT_FLAG.INVISIBLE)
-	sticky.flags = clr_flag(sticky.flags, ENT_FLAG.SOLID)
-	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
-	balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
-	if #balls > 0 then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
-		local ent_texture = define_texture(texture_def)
-		
-		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-		worm_background = get_entity(WORMTONGUE_BG_UID)
-		worm_background:set_texture(ent_texture)
-		worm_background.animation_frame = 8
-	
-		-- sticky part creation
-		WORMTONGUE_UID = balls[1] -- HAHA tongue and balls
-		ball = get_entity(WORMTONGUE_UID)
-		ball.width = 1.35
-		ball.height = 1.35
-		ball.hitboxx = 0.3375
-		ball.hitboxy = 0.3375
-		
-		ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
-		for _, ballstem_uid in ipairs(ballstems) do
-			ballstem = get_entity(ballstem_uid)
-			ballstem.flags = set_flag(ballstem.flags, ENT_FLAG.INVISIBLE)
-			ballstem.flags = clr_flag(ballstem.flags, ENT_FLAG.CLIMBABLE)
-		end
-		balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
-		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
-		
-		TONGUE_STATE = TONGUE_SEQUENCE.READY
-	else
-		message("No STICKYTRAP_BALL found, no tongue generated.")
-		kill_entity(stickytrap_uid)
-		
-		TONGUE_STATE = TONGUE_SEQUENCE.GONE
-	end
-end
-
-
-function tongue_idle()
+local function tongue_idle()
 	if (
 		state.theme == THEME.JUNGLE and -- or state.theme == THEME.ICE_CAVES) and
 		WORMTONGUE_UID ~= nil and
@@ -77,25 +29,107 @@ function tongue_idle()
 			TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
 		)
 	) then
-		x, y, l = get_position(WORMTONGUE_UID)
+		local x, y, l = get_position(WORMTONGUE_UID)
 		for _ = 1, 3, 1 do
 			if math.random() >= 0.5 then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((math.random()*1.5)-1), y+((math.random()*1.5)-1), l, 0, 0) end
 		end
 	end
 end
 
-function onframe_tonguetimeout()
+
+local function tongue_exit()
+	local x, y, l = get_position(WORMTONGUE_UID)
+	local checkradius = 1.5
+	local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
+	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
+	
+	local exits_doors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)
+	-- exits_worm = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 1)
+	-- worm_exit_uid = exits_worm[1]
+	local exitdoor = nil
+	for _, exits_door in ipairs(exits_doors) do
+		-- if exits_door ~= worm_exit_uid then
+			exitdoor = exits_door
+		-- end
+	end
+	if exitdoor ~= nil then
+		local exit_x, exit_y, _ = get_position(exitdoor)
+		for _, damsel_uid in ipairs(damsels) do
+			local damsel = get_entity(damsel_uid)
+			local stuck_in_web = test_flag(damsel.more_flags, 9)
+			local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
+			if (
+				(stuck_in_web == true)
+			) then
+				if dead then
+					damsel:destroy()
+				else
+					damsel.stun_timer = 0
+					if options.hd_debug_scripted_enemies_show == false then
+						damsel.flags = set_flag(damsel.flags, ENT_FLAG.INVISIBLE)
+					end
+					damsel.flags = clr_flag(damsel.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
+					-- damsel.flags = clr_flag(damsel.flags, ENT_FLAG.STUNNABLE)-- disable stunable
+					damsel.flags = set_flag(damsel.flags, ENT_FLAG.TAKE_NO_DAMAGE)--6)-- enable take no damage
+					move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
+				end
+			end
+		end
+	else
+		message("No Level Exitdoor found, can't force-rescue damsels.")
+	end
+
+	if #ensnaredplayers > 0 then
+		
+		for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
+			local ensnaredplayer = get_entity(ensnaredplayer_uid)
+			ensnaredplayer.stun_timer = 0
+			ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)-- disable input
+			
+			if options.hd_debug_scripted_enemies_show == false then
+				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
+			end
+				-- disable interactions with anything else that may interfere with entering the door
+			ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
+			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
+			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.NO_GRAVITY)-- disable gravity
+			
+			-- -- teleport player to the newly created invisible door (platform is at y+0.05)
+			-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
+		end
+		
+		set_timeout(function()
+			
+			state.screen_next = SCREEN.TRANSITION
+			state.world_next = state.world
+			state.level_next = state.level+1
+			state.theme_next = THEME.EGGPLANT_WORLD
+			state.loading = 1--SCREEN.INTRO?
+			state.pause = 0
+
+		end, 55)
+	end
+	
+	-- hide worm tongue
+	local tongue = get_entity(WORMTONGUE_UID)
+	if options.hd_debug_scripted_enemies_show == false then
+		tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
+	end
+	tongue.flags = set_flag(tongue.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
+end
+
+local function onframe_tonguetimeout()
 	if WORMTONGUE_UID ~= nil and TONGUE_STATE ~= TONGUE_SEQUENCE.GONE then
 		local tongue = get_entity(WORMTONGUE_UID)
-		x, y, l = get_position(WORMTONGUE_UID)
-		checkradius = 1.5
+		local x, y, l = get_position(WORMTONGUE_UID)
+		local checkradius = 1.5
 		
 		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
 			if TONGUE_STATE == TONGUE_SEQUENCE.READY then
 				local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
 				if #damsels > 0 then
-					damsel = get_entity(damsels[1])
-					stuck_in_web = test_flag(damsel.more_flags, 8)
+					local damsel = get_entity(damsels[1])
+					local stuck_in_web = test_flag(damsel.more_flags, 8)
 					if (
 						(stuck_in_web == true)
 					) then
@@ -112,7 +146,7 @@ function onframe_tonguetimeout()
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
 				set_timeout(function()
 					if WORMTONGUE_BG_UID ~= nil then
-						worm_background = get_entity(WORMTONGUE_BG_UID)
+						local worm_background = get_entity(WORMTONGUE_BG_UID)
 						worm_background.animation_frame = 7
 					else message("WORMTONGUE_BG_UID is nil :(") end
 					
@@ -145,7 +179,7 @@ function onframe_tonguetimeout()
 					local ent_texture = define_texture(texture_def)
 					
 					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-					worm_background = get_entity(WORM_BG_UID)
+					local worm_background = get_entity(WORM_BG_UID)
 					worm_background:set_texture(ent_texture)
 					worm_background.animation_frame = 5
 
@@ -215,7 +249,7 @@ function onframe_tonguetimeout()
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then
 				set_timeout(function()
 					-- message("boulder deletion at state.time_level: " .. tostring(state.time_level))
-					boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
+					local boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
 					kill_entity(boulder_spawners[1])
 					
 					local entity = get_entity(WORMTONGUE_UID)
@@ -235,114 +269,81 @@ function onframe_tonguetimeout()
 	end
 end
 
-function tongue_exit()
-	x, y, l = get_position(WORMTONGUE_UID)
-	checkradius = 1.5
-	local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
-	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
+function module.create_wormtongue(x, y, l)
+	-- message("created wormtongue:")
+	set_interval(tongue_idle, 15)
+	set_interval(onframe_tonguetimeout, 1)
+	-- currently using level generation to place stickytraps
+	local stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
+	local sticky = get_entity(stickytrap_uid)
+	sticky.flags = set_flag(sticky.flags, ENT_FLAG.INVISIBLE)
+	sticky.flags = clr_flag(sticky.flags, ENT_FLAG.SOLID)
+	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
+	local balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
+	if #balls > 0 then
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
+		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+		local ent_texture = define_texture(texture_def)
+		
+		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+		local worm_background = get_entity(WORMTONGUE_BG_UID)
+		worm_background:set_texture(ent_texture)
+		worm_background.animation_frame = 8
 	
-	exits_doors = get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)
-	-- exits_worm = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 1)
-	-- worm_exit_uid = exits_worm[1]
-	exitdoor = nil
-	for _, exits_door in ipairs(exits_doors) do
-		-- if exits_door ~= worm_exit_uid then
-			exitdoor = exits_door
-		-- end
-	end
-	if exitdoor ~= nil then
-		exit_x, exit_y, _ = get_position(exitdoor)
-		for _, damsel_uid in ipairs(damsels) do
-			damsel = get_entity(damsel_uid):as_movable()
-			stuck_in_web = test_flag(damsel.more_flags, 9)
-			local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
-			if (
-				(stuck_in_web == true)
-			) then
-				if dead then
-					damsel:destroy()
-				else
-					damsel.stun_timer = 0
-					if options.hd_debug_scripted_enemies_show == false then
-						damsel.flags = set_flag(damsel.flags, ENT_FLAG.INVISIBLE)
-					end
-					damsel.flags = clr_flag(damsel.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-					-- damsel.flags = clr_flag(damsel.flags, ENT_FLAG.STUNNABLE)-- disable stunable
-					damsel.flags = set_flag(damsel.flags, ENT_FLAG.TAKE_NO_DAMAGE)--6)-- enable take no damage
-					move_entity(damsel_uid, exit_x, exit_y+0.1, 0, 0)
-				end
-			end
+		-- sticky part creation
+		WORMTONGUE_UID = balls[1] -- HAHA tongue and balls
+		local ball = get_entity(WORMTONGUE_UID)
+		ball.width = 1.35
+		ball.height = 1.35
+		ball.hitboxx = 0.3375
+		ball.hitboxy = 0.3375
+		
+		local ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
+		for _, ballstem_uid in ipairs(ballstems) do
+			local ballstem = get_entity(ballstem_uid)
+			ballstem.flags = set_flag(ballstem.flags, ENT_FLAG.INVISIBLE)
+			ballstem.flags = clr_flag(ballstem.flags, ENT_FLAG.CLIMBABLE)
 		end
+		local balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
+		for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
+		
+		TONGUE_STATE = TONGUE_SEQUENCE.READY
 	else
-		message("No Level Exitdoor found, can't force-rescue damsels.")
-	end
-
-	if #ensnaredplayers > 0 then
+		message("No STICKYTRAP_BALL found, no tongue generated.")
+		kill_entity(stickytrap_uid)
 		
-		for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-			ensnaredplayer = get_entity(ensnaredplayer_uid)
-			ensnaredplayer.stun_timer = 0
-			ensnaredplayer.more_flags = set_flag(ensnaredplayer.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)-- disable input
-			
-			if options.hd_debug_scripted_enemies_show == false then
-				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
-			end
-				-- disable interactions with anything else that may interfere with entering the door
-			ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
-			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
-			ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.NO_GRAVITY)-- disable gravity
-			
-			-- -- teleport player to the newly created invisible door (platform is at y+0.05)
-			-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
-		end
-		
-		set_timeout(function()
-			
-			state.screen_next = SCREEN.TRANSITION
-			state.world_next = state.world
-			state.level_next = state.level+1
-			state.theme_next = THEME.EGGPLANT_WORLD
-			state.loading = 1--SCREEN.INTRO?
-			state.pause = 0
-
-		end, 55)
+		TONGUE_STATE = TONGUE_SEQUENCE.GONE
 	end
-	
-	-- hide worm tongue
-	tongue = get_entity(WORMTONGUE_UID)
-	if options.hd_debug_scripted_enemies_show == false then
-		tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
-	end
-	tongue.flags = set_flag(tongue.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)-- disable interaction with objects
 end
 
 
 -- debug
-set_callback(function()
+---@param draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if options.hd_debug_info_tongue == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.level == 1 and (state.theme == THEME.JUNGLE or state.theme == THEME.ICE_CAVES) then
-			text_x = -0.95
-			text_y = -0.45
-			white = rgba(255, 255, 255, 255)
+			local text_x = -0.95
+			local text_y = -0.45
+			local white = rgba(255, 255, 255, 255)
 			
 			-- TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
-			tongue_debugtext_sequence = "UNKNOWN"
+			local tongue_debugtext_sequence = "UNKNOWN"
 			if TONGUE_STATE == TONGUE_SEQUENCE.READY then tongue_debugtext_sequence = "READY"
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then tongue_debugtext_sequence = "RUMBLE"
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then tongue_debugtext_sequence = "EMERGE"
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then tongue_debugtext_sequence = "SWALLOW"
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.GONE then tongue_debugtext_sequence = "GONE" end
-			draw_text(text_x, text_y, 0, "Worm Tongue State: " .. tongue_debugtext_sequence, white)
+			draw_ctx:draw_text(text_x, text_y, 0, "Worm Tongue State: " .. tongue_debugtext_sequence, white)
 			text_y = text_y-0.1
 			
-			tongue_debugtext_uid = tostring(WORMTONGUE_UID)
+			local tongue_debugtext_uid = tostring(WORMTONGUE_UID)
 			if WORMTONGUE_UID == nil then tongue_debugtext_uid = "nil" end
-			draw_text(text_x, text_y, 0, "Worm Tongue UID: " .. tongue_debugtext_uid, white)
+			draw_ctx:draw_text(text_x, text_y, 0, "Worm Tongue UID: " .. tongue_debugtext_uid, white)
 			text_y = text_y-0.1
 			
-			tongue_debugtext_tick = tostring(tongue_tick)
+			local tongue_debugtext_tick = tostring(tongue_tick)
 			if tongue_tick == nil then tongue_debugtext_tick = "nil" end
-			draw_text(text_x, text_y, 0, "Worm Tongue Acceptance tic: " .. tongue_debugtext_tick, white)
+			draw_ctx:draw_text(text_x, text_y, 0, "Worm Tongue Acceptance tic: " .. tongue_debugtext_tick, white)
 		end
 	end
 end, ON.GUIFRAME)

@@ -342,8 +342,6 @@ function module.create_arrowtrap(x, y, l)
 
 end
 
-function module.create_tikitrap(x, y, l) end -- spawn_entity_over the floor above
-
 function module.create_giantfrog(x, y, l) end
 
 function module.create_giantspider(x, y, l)

@@ -1,6 +1,7 @@
 blackknightlib = require 'lib.entities.black_knight'
 turrentlib = require 'lib.entities.laser_turrent'
 spikeballlib = require 'lib.entities.spikeball_trap'
+tikitraplib = require 'lib.entities.tikitrap'
 
 local module = {}
 
@@ -611,20 +612,20 @@ module.HD_TILENAME = {
 						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT)
 						or (_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT)
 					) then
-						hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
+						tikitraplib.create_tikitrap(x, y, l)
 					elseif (
 						(_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_SETROOM_3_2)
 						-- or (_subchunk_id == genlib.HD_SUBCHUNKID.YAMA_SETROOM_3_3)
 					) then
 						for i = 0, 10, 2 do
-							local uid = hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y+i, l, false, 0, 0)
+							local uid = tikitraplib.create_tikitrap(x, y+i, l)
 							-- uid = get_entities_at(ENT_TYPE.FLOOR_TRAP_TOTEM, 0, x, y+i, l, .5)[1]
 							if uid ~= -1 then
 								get_entity(uid).animation_frame = 12
 							end
 						end
 						for i = 0, 10, 2 do
-							local uid = hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x+7, y+i, l, false, 0, 0)
+							local uid = tikitraplib.create_tikitrap(x+7, y+i, l)
 							-- uid = get_entities_at(ENT_TYPE.FLOOR_TRAP_TOTEM, 0, x, y+i, l, .5)[1]
 							if uid ~= -1 then
 								get_entity(uid).animation_frame = 12

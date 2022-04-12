@@ -125,6 +125,9 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
+local function is_solid_grid_entity(x, y, l)
+    return test_flag(get_entity_flags(get_grid_entity_at(x, y, l)), ENT_FLAG.SOLID)
+end
 
 
 local function run_spiderlair_ground_enemy_chance()
@@ -412,7 +415,13 @@ function module.is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Imp
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
-function module.is_valid_greenknight_spawn(x, y, l) return false end -- # TODO: Implement method for valid greenknight spawn
+function module.is_valid_greenknight_spawn(x, y, l)
+	return (
+		detect_floor_at(x, y, l) == false
+		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
+	)
+end -- # TODO: Implement method for valid greenknight spawn
 
 function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
 
@@ -476,7 +485,17 @@ function module.is_valid_lantern_spawn(x, y, l)
 	)
 end -- # TODO: Implement method for valid lantern spawn
 
-function module.is_valid_turret_spawn(x, y, l) return false end -- # TODO: Implement method for valid turret spawn
+function module.is_valid_turret_spawn(x, y, l)
+	if (
+		get_grid_entity_at(x, y, l) == -1
+		and is_solid_grid_entity(x, y+1, l)
+		and get_entity(get_grid_entity_at(x, y+1, l)).type.id == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
+		and get_grid_entity_at(x, y-1, l) == -1
+	) then
+		return true
+    end
+    return false
+end -- # TODO: Implement method for valid turret spawn
 
 function module.is_valid_webnest_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
@@ -504,7 +523,19 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	)
 end
 
-function module.is_valid_spikeball_spawn(x, y, l) return false end -- # TODO: Implement method for valid spikeball spawn
+function module.is_valid_spikeball_spawn(x, y, l)
+	local above = get_grid_entity_at(x, y+1, l)
+	if above ~= -1 then
+		above = get_entity(above)
+		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
+			return false
+		end
+	end
+    return (
+		detect_solid_nonshop_nontree(x, y, l)
+		and detect_solid_nonshop_nontree(x, y - 1, l)
+	)
+end -- # TODO: Implement method for valid spikeball spawn
 
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, ry = get_room_index(x, y)
@@ -562,7 +593,26 @@ end
 
 function module.is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
 
-function module.is_valid_mammoth_spawn(x, y, l) return false end -- # TODO: Implement method for valid mammoth spawn
+function module.is_valid_mammoth_spawn(x, y, l)
+	local cx, cy = x-1.5, y+1.5
+	local w, h = 4, 2
+    local entity_uids = get_entities_overlapping_hitbox(
+		0, MASK.FLOOR,
+		AABB:new(
+			cx-(w/2),
+			cy+(h/2),
+			cx+(w/2),
+			cy-(h/2)
+		),
+		l
+	)
+	return (
+		#entity_uids == 0
+		and detect_floor_at(x, y, l) == false
+		and detect_floor_below(x, y, l) == true
+		and detect_entrance_room_template(x, y, l) == false
+	)
+end -- # TODO: Implement method for valid mammoth spawn
 
 function module.is_valid_giantspider_spawn(x, y, l)
 	local floor_above_right = get_grid_entity_at(x+1, y+1, l)

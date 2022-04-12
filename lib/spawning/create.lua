@@ -1,3 +1,5 @@
+spikeballlib = require 'lib.entities.spikeball_trap'
+
 local module = {}
 
 module.GIANTSPIDER_SPAWNED = false
@@ -245,8 +247,6 @@ function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSH
 
 function module.create_devil(x, y, l) end
 
-function module.create_greenknight(x, y, l) end
-
 function module.create_alientank(x, y, l) end
 
 function module.create_piranha(x, y, l) end
@@ -264,8 +264,6 @@ function module.create_spider(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SPIDER, x
 function module.create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE, x, y, l) end
 
 function module.create_mshiplight(x, y, l) end
-
-function module.create_turret(x, y, l) end
 
 function module.create_webnest(x, y, l)
 	local block_uid = get_grid_entity_at(x, y+1, l)
@@ -305,7 +303,10 @@ function module.create_pushblock_powderkeg(x, y, l)
 	end
 end
 
-function module.create_spikeball(x, y, l) end
+function module.create_spikeball(x, y, l)
+	removelib.remove_floor_and_embedded_at(x, y, l)
+	spikeballlib.create_spikeball_trap(x, y, l)
+end
 
 function module.create_arrowtrap(x, y, l)
 	-- local entity_here = get_grid_entity_at(x, y, l)
@@ -344,8 +345,6 @@ end
 function module.create_tikitrap(x, y, l) end -- spawn_entity_over the floor above
 
 function module.create_giantfrog(x, y, l) end
-
-function module.create_mammoth(x, y, l) end
 
 function module.create_giantspider(x, y, l)
     spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0)

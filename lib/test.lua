@@ -1,3 +1,5 @@
+tikitraplib = require 'lib.entities.tikitrap'
+
 local module = {}
 
 function testroom_level_1()
@@ -56,7 +58,7 @@ function testroom_level_1()
 			HD_ENT field for a method interacting with a passed-in uid.
 	--]]
 	hdtypelib.create_hd_type(hdtypelib.HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
+	tikitraplib.create_tikitrap(14, 110, LAYER.FRONT)--hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
 
 
 	--[[

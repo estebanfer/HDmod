@@ -2,33 +2,11 @@ local celib = require "lib.entities.custom_entities"
 
 local module = {}
 
---this script will bug in OL,, but in PL its fine .
 local mammoth_texture_id
 do
     mammoth_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBIG03_0)
     mammoth_texture_def.texture_path = 'res/mammoth.png'
     mammoth_texture_id = define_texture(mammoth_texture_def)
-end
---this should probably be put away somewhere correct and not here but this is fine for now..
-local function play_sound_at_entity(snd, uid)
-        local ent = get_entity(uid)
-        local sound = get_sound(snd)
-        local audio = sound:play(true)
-        local x, y, _ = get_position(ent.uid)
-        local sx, sy = screen_position(x, y)
-        local d = screen_distance(distance(ent.uid, ent.uid))
-        if players[1] ~= nil then
-            d = screen_distance(distance(ent.uid, players[1].uid))
-        end
-        audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx))
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy))
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-        audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, 0.5)
-        
-        -- unpause after init
-        audio:set_pause(false)
 end
 local function mammoth_set(uid)
     local ent = get_entity(uid)
@@ -78,7 +56,7 @@ local function mammoth_update(ent)
     end
     if ent.price == 4 then --create attack hitbox
         local x, y, l = get_position(ent.uid)
-        play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid)
         if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
             local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.5, l, -0.25, 0))
             freezeray.angle = math.pi

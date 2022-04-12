@@ -2,11 +2,6 @@ local celib = require "lib.entities.custom_entities"
 
 local module = {}
 
---spikeball is offset by 3 tiles from its source block.
---the spawn function will create the spikeball itself,, then the source block + chains over it .
-
---todo: 
---add knockback SFX when corpses are hit by the trap
 local spikeball_texture_id
 do
     local spikeball_texture_def = TextureDefinition.new()
@@ -63,7 +58,7 @@ local function spikeball_trap_set(uid)
     --move_state determines the direction the ball will spin in
     ent.move_state = 1
     if math.random(2) == 1 then
-        ent.move_state = 2 --we cant set move_state to -1 because its an unsigned int,, just check the exact number later
+        ent.move_state = 2 --we cant set move_state to -1 because its an unsigned int, just check the exact number later in the code
     end
     --health determines the speed of the ball
     ent.health = math.random(20, 40)
@@ -115,7 +110,7 @@ local function spikeball_trap_update(ent)
             if test_flag(other_ent.flags, ENT_FLAG.DEAD) then
                 other_ent.velocityx = (kbdir)*ent.health/250
                 other_ent.velocityy = math.sin(ey-y)/2
-                --play a sound here
+                commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
             end
             other_ent.invincibility_frames_timer = 25
         end

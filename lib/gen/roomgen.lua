@@ -12,7 +12,7 @@ function module.init_posttile_door()
 end
 
 
-function init_onlevel()
+local function init_onlevel()
 	FRAG_PREVENTION_UID = nil
 
 	createlib.init()
@@ -38,7 +38,7 @@ end
 	Since ON.START runs on the first ON.SCREEN of a run, it runs after post_tile runs.
 	Run this in post_tile to circumvent the issue.
 ]]
-function init_posttile_onstart()
+local function init_posttile_onstart()
 	if POSTTILE_STARTBOOL == false then -- determine if you need to set new things
 		POSTTILE_STARTBOOL = true
 
@@ -48,7 +48,7 @@ function init_posttile_onstart()
 	-- message("wormtonguelib.tongue_spawned: " .. tostring(wormtonguelib.tongue_spawned))
 end
 
-function levelcreation_init()
+local function levelcreation_init()
 	init_onlevel()
 	unlockslib.unlocks_load()
 
@@ -63,6 +63,7 @@ function levelcreation_init()
 	feelingslib.onlevel_set_feelingToastMessage()
 end
 
+local assign_s2_level_height
 
 set_callback(function(room_gen_ctx)
 	if state.screen == SCREEN.LEVEL then
@@ -110,7 +111,7 @@ set_pre_tile_code_callback(function(x, y, layer)
 		type_to_use = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE)
 	end
 
-	local entity = get_entity(spawn_grid_entity(type_to_use, x, y, layer, 0, 0))
+	local entity = get_entity(spawn_grid_entity(type_to_use, x, y, layer))
 	entity.flags = set_flag(entity.flags, ENT_FLAG.SHOP_FLOOR)
 
 	return true
@@ -170,7 +171,10 @@ end, ON.RESET)
 -- 	-- roomgenlib.global_levelassembly = nil
 -- end, ON.TRANSITION)
 
-
+local levelrooms_setn, levelrooms_setn_rowfive, levelcode_setn, level_generation_method_side
+local level_generation_method_setrooms, detect_level_allow_path_gen, level_generation_method_world_coffin
+local level_generation_method_coffin_coop, level_generation_method_shops
+local gen_levelrooms_nonpath, gen_levelcode_fill, gen_levelrooms_path
 --[[
 	CHUNK GENERATION - ON.LEVEL
 
@@ -178,7 +182,7 @@ end, ON.RESET)
 ]]
 function module.onlevel_generation_modification()
 	-- Initialize global_levelassembly
-	levelw, levelh = 4, 4
+	local levelw, levelh = 4, 4
 	if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim ~= nil then
 		levelw, levelh = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim.w, roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].level_dim.h
 	end
@@ -224,6 +228,7 @@ function module.onlevel_generation_modification()
 
 end
 
+local gen_levelcode_phase_1
 -- phase one of baking levelcode
 	-- spawning most things
 function module.onlevel_generation_execution_phase_one()
@@ -231,12 +236,15 @@ function module.onlevel_generation_execution_phase_one()
 	gen_levelcode_phase_1(true)
 end
 
+local gen_levelcode_phase_2
 -- phase two of baking levelcode
 	-- spawn_over entities, such as spikes
 function module.onlevel_generation_execution_phase_two()
 	gen_levelcode_phase_2()
 	gen_levelcode_phase_2(true)
 end
+
+local gen_levelcode_phase_3
 -- # TODO: More phases to fix crashing entities
 	-- water
 	-- chain(/vine?)
@@ -245,6 +253,7 @@ function module.onlevel_generation_execution_phase_three()
 	gen_levelcode_phase_3(true)
 end
 
+local gen_levelcode_phase_4
 -- during on_level
 	-- elevators
 	-- force fields
@@ -254,17 +263,17 @@ function module.onlevel_generation_execution_phase_four()
 end
 
 function levelrooms_setn_rowfive(levelw)
-	tw = {}
+	local tw = {}
 	commonlib.setn(tw, levelw)
 	return tw
 end
 
 function levelrooms_setn(levelw, levelh)
-	path = {}
+	local path = {}
 
 	commonlib.setn(path, levelh)
 	for hi = 1, levelh, 1 do
-		tw = {}
+		local tw = {}
 		commonlib.setn(tw, levelw)
 		path[hi] = tw
 	end
@@ -274,12 +283,12 @@ end
 
 
 function levelcode_setn(levelw, levelh)
-	levelcodew, levelcodeh = levelw*10, levelh*8
-	levelcode = {}
+	local levelcodew, levelcodeh = levelw*10, levelh*8
+	local levelcode = {}
 
 	commonlib.setn(levelcode, levelcodeh)
 	for hi = 1, levelcodeh, 1 do
-		tw = {}
+		local tw = {}
 		commonlib.setn(tw, levelcodew)
 		levelcode[hi] = tw
 	end
@@ -294,13 +303,13 @@ function level_generation_method_side()
 		ROOM CODES
 	--]]
 	-- worlds
-	chunkcodes = (
+	local chunkcodes = (
 		roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
 		roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
 		roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.SIDE] ~= nil
 	) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.SIDE]
 	-- feelings
-	check_feeling_content = nil
+	local check_feeling_content = nil
 	-- feelings
 	for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 		if (
@@ -316,13 +325,13 @@ function level_generation_method_side()
 	end
 
 	if chunkcodes ~= nil then
-		levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		for level_hi = 1, levelh, 1 do
 			for level_wi = 1, levelw, 1 do
-				subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
+				local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 				if subchunk_id == nil then -- apply sideroom
-					specified_index = math.random(#chunkcodes)
-					side_results = nil
+					local specified_index = math.random(#chunkcodes)
+					local side_results = nil
 					if (
 						roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 						roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms ~= nil and
@@ -347,7 +356,7 @@ function level_generation_method_side()
 							side_results.index == nil
 						) then
 							if side_results.altar ~= nil then
-								altar_roomcodes = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.ALTAR]
+								local altar_roomcodes = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.ALTAR]
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 									if (
@@ -365,13 +374,13 @@ function level_generation_method_side()
 									altar_roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[roomdeflib.HD_SUBCHUNKID.ALTAR]
 								end
 
-								levelcode_inject_roomcode(
+								module.levelcode_inject_roomcode(
 									roomdeflib.HD_SUBCHUNKID.ALTAR,
 									altar_roomcodes,
 									level_hi, level_wi
 								)
 							elseif side_results.idol ~= nil then
-								idol_roomcodes = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.IDOL]
+								local idol_roomcodes = roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[roomdeflib.HD_SUBCHUNKID.IDOL]
 								check_feeling_content = nil
 								for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 									if (
@@ -385,7 +394,7 @@ function level_generation_method_side()
 								if check_feeling_content ~= nil then
 									idol_roomcodes = check_feeling_content
 								end
-								levelcode_inject_roomcode(
+								module.levelcode_inject_roomcode(
 									(
 										feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) and
 										roomdeflib.HD_SUBCHUNKID.RESTLESS_IDOL or roomdeflib.HD_SUBCHUNKID.IDOL
@@ -405,7 +414,7 @@ function level_generation_method_side()
 
 					if specified_index ~= -1 then
 
-						levelcode_inject_roomcode(
+						module.levelcode_inject_roomcode(
 							roomdeflib.HD_SUBCHUNKID.SIDE,
 							chunkcodes, -- roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[genlib.HD_SUBCHUNKID.SIDE],
 							level_hi, level_wi,
@@ -421,13 +430,13 @@ function level_generation_method_side()
 	end
 end
 
-function level_generation_method_setrooms_rowfive(setRooms, prePath)
+local function level_generation_method_setrooms_rowfive(setRooms, prePath)
 	for _, setroomcont in ipairs(setRooms) do
 		if (setroomcont.prePath == nil and prePath == false) or (setroomcont.prePath ~= nil and setroomcont.prePath == prePath) then
 			if setroomcont.placement == nil or setroomcont.subchunk_id == nil or setroomcont.roomcodes == nil then
 				message("setroom params missing! Couldn't spawn.")
 			else
-				levelcode_inject_roomcode_rowfive(setroomcont.subchunk_id, setroomcont.roomcodes, setroomcont.placement)
+				module.levelcode_inject_roomcode_rowfive(setroomcont.subchunk_id, setroomcont.roomcodes, setroomcont.placement)
 			end
 		end
 	end
@@ -440,7 +449,7 @@ function level_generation_method_setrooms(setRooms, prePath)
 			if setroomcont.placement == nil or setroomcont.subchunk_id == nil or setroomcont.roomcodes == nil then
 				message("setroom params missing! Couldn't spawn.")
 			else
-				levelcode_inject_roomcode(setroomcont.subchunk_id, setroomcont.roomcodes, setroomcont.placement[1], setroomcont.placement[2])
+				module.levelcode_inject_roomcode(setroomcont.subchunk_id, setroomcont.roomcodes, setroomcont.placement[1], setroomcont.placement[2])
 			end
 		end
 	end
@@ -452,19 +461,19 @@ end
 		.roomcodes
 	_avoid_bottom
 --]]
-function level_generation_method_nonaligned(_nonaligned_room_type, _avoid_bottom)
+function module.level_generation_method_nonaligned(_nonaligned_room_type, _avoid_bottom)
 	_avoid_bottom = _avoid_bottom or false
 	
 	
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
-	spots = {}
+	local spots = {}
 		--{x, y}
 
 	-- build a collection of potential spots
 	for level_hi = 1, levelh-(_avoid_bottom and 1 or 0), 1 do
 		for level_wi = 1, levelw, 1 do
-			subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 			if subchunk_id == nil then
 				-- add room
 				table.insert(spots, {x = level_wi, y = level_hi})
@@ -473,9 +482,9 @@ function level_generation_method_nonaligned(_nonaligned_room_type, _avoid_bottom
 	end
 
 	-- pick random place to fill
-	spot = commonlib.TableCopyRandomElement(spots)
+	local spot = commonlib.TableCopyRandomElement(spots)
 
-	levelcode_inject_roomcode(_nonaligned_room_type.subchunk_id, _nonaligned_room_type.roomcodes, spot.y, spot.x)
+	module.levelcode_inject_roomcode(_nonaligned_room_type.subchunk_id, _nonaligned_room_type.roomcodes, spot.y, spot.x)
 end
 
 --[[
@@ -487,16 +496,16 @@ end
 			.subchunk_id
 			.roomcodes
 --]]
-function level_generation_method_aligned(_aligned_room_types)
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+function module.level_generation_method_aligned(_aligned_room_types)
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
-	spots = {}
+	local spots = {}
 		--{x, y, facing_left}
 
 	-- build a collection of potential spots
 	for level_hi = 1, levelh, 1 do
 		for level_wi = 1, levelw, 1 do
-			subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 			if subchunk_id == nil then
 				if ( -- add right facing if there is a path on the right
 					level_wi+1 <= levelw and
@@ -522,9 +531,9 @@ function level_generation_method_aligned(_aligned_room_types)
 	end
 
 	-- pick random place to fill
-	spot = spots[math.random(#spots)]
+	local spot = spots[math.random(#spots)]
 	if spot ~= nil then
-		levelcode_inject_roomcode(
+		module.levelcode_inject_roomcode(
 			(spot.facing_left and _aligned_room_types.left.subchunk_id or _aligned_room_types.right.subchunk_id),
 			(spot.facing_left and _aligned_room_types.left.roomcodes or _aligned_room_types.right.roomcodes),
 			spot.y, spot.x
@@ -532,13 +541,13 @@ function level_generation_method_aligned(_aligned_room_types)
 	end
 end
 
-function detect_level_non_boss()
+local function detect_level_non_boss()
 	return (
 		state.theme ~= THEME.OLMEC
 		and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
 	)
 end
-function detect_level_non_special()
+function module.detect_level_non_special()
 	return (
 		state.theme ~= THEME.EGGPLANT_WORLD and
 		state.theme ~= THEME.NEO_BABYLON and
@@ -566,7 +575,7 @@ function level_generation_method_world_coffin()
 			or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
 		)
 	) then
-		level_generation_method_aligned(
+		module.level_generation_method_aligned(
 			{
 				left = {
 					subchunk_id = roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT,
@@ -583,13 +592,13 @@ end
 
 function level_generation_method_coffin_coop()
 	if cooplib.detect_level_allow_coop_coffin() then
-		levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		
-		spots = {}
+		local spots = {}
 		for room_y = 1, levelh, 1 do
 			for room_x = 1, levelw, 1 do
-				path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
-				path_to_replace_with = -1
+				local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
+				local path_to_replace_with = -1
 				
 				if path_to_replace == roomdeflib.HD_SUBCHUNKID.PATH_DROP then
 					path_to_replace_with = roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
@@ -609,8 +618,8 @@ function level_generation_method_coffin_coop()
 		end
 		if #spots ~= 0 then
 			-- pick random place to fill
-			spot = spots[math.random(#spots)]
-			roomcode = nil
+			local spot = spots[math.random(#spots)]
+			local roomcode = nil
 			
 			if (
 				roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms ~= nil and
@@ -629,7 +638,7 @@ function level_generation_method_coffin_coop()
 				end
 			end
 
-			levelcode_inject_roomcode(
+			module.levelcode_inject_roomcode(
 				spot.id,
 				roomcode,
 				spot.y, spot.x
@@ -643,11 +652,11 @@ function level_generation_method_shops()
 		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
 		state.theme ~= THEME.VOLCANA and
 		detect_level_non_boss() and
-		detect_level_non_special()
+		module.detect_level_non_special()
 	) then
 		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
-			shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
-			shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
+			local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
+			local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
 			-- # TODO: Find real chance of spawning a dice shop.
 			-- This is a temporary solution.
 			if math.random(7) == 1 then
@@ -658,7 +667,7 @@ function level_generation_method_shops()
 			-- 	state.level_gen.shop_type = math.random(0, 5)
 			end
 
-			level_generation_method_aligned(
+			module.level_generation_method_aligned(
 				{
 					left = {
 						subchunk_id = shop_id_left,
@@ -674,18 +683,18 @@ function level_generation_method_shops()
 	end
 end
 
-function level_generation_method_structure_vertical(_structure_top, _structure_parts, _struct_x_pool, _mid_height_min)
+function module.level_generation_method_structure_vertical(_structure_top, _structure_parts, _struct_x_pool, _mid_height_min)
 	_mid_height_min = _mid_height_min or 0
 	
-	_, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local _, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
-	structx = _struct_x_pool[math.random(1, #_struct_x_pool)]
+	local structx = _struct_x_pool[math.random(1, #_struct_x_pool)]
 
 	-- spawn top
-	levelcode_inject_roomcode(_structure_top.subchunk_id, _structure_top.roomcodes, 1, structx)
+	module.levelcode_inject_roomcode(_structure_top.subchunk_id, _structure_top.roomcodes, 1, structx)
 
 	if _structure_parts ~= nil then
-		mid_height = (_mid_height_min == 0) and 0 or math.random(_mid_height_min, levelh-2)
+		local mid_height = (_mid_height_min == 0) and 0 or math.random(_mid_height_min, levelh-2)
 		-- if _midheight_min == 0 then
 		-- 	midheight = 0
 		-- else
@@ -696,24 +705,25 @@ function level_generation_method_structure_vertical(_structure_top, _structure_p
 		if _structure_parts.middle ~= nil then
 			
 			for i = 2, 1+mid_height, 1 do
-				levelcode_inject_roomcode(_structure_parts.middle.subchunk_id, _structure_parts.middle.roomcodes, i, structx)
+				module.levelcode_inject_roomcode(_structure_parts.middle.subchunk_id, _structure_parts.middle.roomcodes, i, structx)
 			end
 		end
 		-- spawn bottom
 		if _structure_parts.bottom ~= nil then
-			levelcode_inject_roomcode(_structure_parts.bottom.subchunk_id, _structure_parts.bottom.roomcodes, mid_height+2, structx)
+			module.levelcode_inject_roomcode(_structure_parts.bottom.subchunk_id, _structure_parts.bottom.roomcodes, mid_height+2, structx)
 		end
 	end
 end
 
-function levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _level_wi, _specified_index)
+local levelcode_inject_rowfive
+function module.levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _level_wi, _specified_index)
 	_specified_index = _specified_index or math.random(#_roomPool)
 	roomgenlib.global_levelassembly.modification.rowfive.levelrooms[_level_wi] = _subchunk_id
 
-	c_y = 1
-	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
+	local c_y = 1
+	local c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
-	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
+	-- message("module.levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
 	levelcode_inject_rowfive(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
@@ -721,10 +731,10 @@ end
 
 function levelcode_inject_rowfive(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
 	_specified_index = _specified_index or math.random(#_chunkPool)
-	chunkPool_rand_index = _specified_index
-	chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
-	chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
-	i = 1
+	local chunkPool_rand_index = _specified_index
+	local chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
+	local chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
+	local i = 1
 	for c_hi = _c_y, (_c_y+_c_dim_h)-1, 1 do
 		for c_wi = _c_x, (_c_x+_c_dim_w)-1, 1 do
 			roomgenlib.global_levelassembly.modification.rowfive.levelcode[c_hi][c_wi] = chunkcode:sub(i, i)
@@ -733,14 +743,15 @@ function levelcode_inject_rowfive(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _s
 	end
 end
 
-function levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi, _specified_index)
+local levelcode_inject
+function module.levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi, _specified_index)
 	_specified_index = _specified_index or math.random(#_roomPool)
 	roomgenlib.global_levelassembly.modification.levelrooms[_level_hi][_level_wi] = _subchunk_id
 
-	c_y = ((_level_hi*CONST.ROOM_HEIGHT)-CONST.ROOM_HEIGHT)+1
-	c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
+	local c_y = ((_level_hi*CONST.ROOM_HEIGHT)-CONST.ROOM_HEIGHT)+1
+	local c_x = ((_level_wi*CONST.ROOM_WIDTH)-CONST.ROOM_WIDTH)+1
 	
-	-- message("levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
+	-- message("module.levelcode_inject_roomcode: hi, wi: " .. _level_hi .. ", " .. _level_wi .. ";")
 	-- prinspect(c_y, c_x)
 	
 	levelcode_inject(_roomPool, CONST.ROOM_HEIGHT, CONST.ROOM_WIDTH, c_y, c_x, _specified_index)
@@ -748,10 +759,10 @@ end
 
 function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
 	_specified_index = _specified_index or math.random(#_chunkPool)
-	chunkPool_rand_index = _specified_index
-	chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
-	chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
-	i = 1
+	local chunkPool_rand_index = _specified_index
+	local chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
+	local chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
+	local i = 1
 	for c_hi = _c_y, (_c_y+_c_dim_h)-1, 1 do
 		for c_wi = _c_x, (_c_x+_c_dim_w)-1, 1 do
 			roomgenlib.global_levelassembly.modification.levelcode[c_hi][c_wi] = chunkcode:sub(i, i)
@@ -829,6 +840,7 @@ end
 --[[
 	Obstacle chunk edits to the levelcode
 ]]
+local levelcode_chunks
 function gen_levelcode_fill()
 	levelcode_chunks()
 	levelcode_chunks(true)
@@ -855,7 +867,7 @@ function levelcode_chunks(rowfive)
 			end
 
 			if roomdeflib.HD_OBSTACLEBLOCK_TILENAME[tilename] ~= nil then
-				chunkcodes = nil
+				local chunkcodes = nil
 
 				--[[
 					CHUNK CODES
@@ -884,7 +896,7 @@ function levelcode_chunks(rowfive)
 					CHUNK RULES
 				--]]
 				-- worlds
-				chunkpool_rand_index = (
+				local chunkpool_rand_index = (
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks[tilename] ~= nil
@@ -902,7 +914,7 @@ function levelcode_chunks(rowfive)
 				end
 	
 				if chunkcodes ~= nil then
-					c_dim_h, c_dim_w = roomdeflib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[1], roomdeflib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[2]
+					local c_dim_h, c_dim_w = roomdeflib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[1], roomdeflib.HD_OBSTACLEBLOCK_TILENAME[tilename].dim[2]
 					if rowfive == true then
 						levelcode_inject_rowfive(chunkcodes, c_dim_h, c_dim_w, levelcode_yi, levelcode_xi, chunkpool_rand_index)
 					else
@@ -954,15 +966,15 @@ function gen_levelcode_phase_1(rowfive)
 	if rowfive == true then
 		c_hi_len = CONST.ROOM_HEIGHT
 	end
-	y = _sy + offsety
+	local y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
-		x = _sx + offsetx
+		local x = _sx + offsetx
 		for level_wi = 1, c_wi_len, 1 do
-			_tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
+			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
 			if rowfive == true then
 				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
 			end
-			hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
+			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
 			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
 			if hd_tiletype ~= nil and hd_tiletype.phase_1 ~= nil then
 				if (
@@ -972,8 +984,8 @@ function gen_levelcode_phase_1(rowfive)
 						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
 					)
 				) then
-					entity_type_pool = {}
-					entity_type = 0
+					local entity_type_pool = {}
+					local entity_type = 0
 					if hd_tiletype.phase_1.default ~= nil then
 						entity_type_pool = hd_tiletype.phase_1.default
 					end
@@ -1052,15 +1064,15 @@ function gen_levelcode_phase_2(rowfive)
 	if rowfive == true then
 		c_hi_len = CONST.ROOM_HEIGHT
 	end
-	y = _sy + offsety
+	local y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
-		x = _sx + offsetx
+		local x = _sx + offsetx
 		for level_wi = 1, c_wi_len, 1 do
-			_tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
+			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
 			if rowfive == true then
 				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
 			end
-			hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
+			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
 			if hd_tiletype ~= nil and hd_tiletype.phase_2 ~= nil then
 				if (
 					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
@@ -1069,8 +1081,8 @@ function gen_levelcode_phase_2(rowfive)
 						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
 					)
 				) then
-					entity_type_pool = {}
-					entity_type = 0
+					local entity_type_pool = {}
+					local entity_type = 0
 					if hd_tiletype.phase_2.default ~= nil then
 						entity_type_pool = hd_tiletype.phase_2.default
 					end
@@ -1136,15 +1148,15 @@ function gen_levelcode_phase_3(rowfive)
 	if rowfive == true then
 		c_hi_len = CONST.ROOM_HEIGHT
 	end
-	y = _sy + offsety
+	local y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
-		x = _sx + offsetx
+		local x = _sx + offsetx
 		for level_wi = 1, c_wi_len, 1 do
-			_tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
+			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
 			if rowfive == true then
 				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
 			end
-			hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
+			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
 			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
 			if hd_tiletype ~= nil and hd_tiletype.phase_3 ~= nil then
 				if (
@@ -1154,8 +1166,8 @@ function gen_levelcode_phase_3(rowfive)
 						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
 					)
 				) then
-					entity_type_pool = {}
-					entity_type = 0
+					local entity_type_pool = {}
+					local entity_type = 0
 					if hd_tiletype.phase_3.default ~= nil then
 						entity_type_pool = hd_tiletype.phase_3.default
 					end
@@ -1236,15 +1248,15 @@ function gen_levelcode_phase_4(rowfive)
 	if rowfive == true then
 		c_hi_len = CONST.ROOM_HEIGHT
 	end
-	y = _sy + offsety
+	local y = _sy + offsety
 	for level_hi = 1, c_hi_len, 1 do
-		x = _sx + offsetx
+		local x = _sx + offsetx
 		for level_wi = 1, c_wi_len, 1 do
-			_tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
+			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
 			if rowfive == true then
 				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
 			end
-			hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
+			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
 			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
 			if hd_tiletype ~= nil and hd_tiletype.phase_4 ~= nil then
 				if (
@@ -1254,8 +1266,8 @@ function gen_levelcode_phase_4(rowfive)
 						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
 					)
 				) then
-					entity_type_pool = {}
-					entity_type = 0
+					local entity_type_pool = {}
+					local entity_type = 0
 					if hd_tiletype.phase_4.default ~= nil then
 						entity_type_pool = hd_tiletype.phase_4.default
 					end
@@ -1298,7 +1310,7 @@ function gen_levelcode_phase_4(rowfive)
 end
 
 -- the right side is blocked if:
-function detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh)
+function module.detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh)
 	return (
 		-- the space to the right goes off of the path
 		wi+1 > maxw
@@ -1309,7 +1321,7 @@ function detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh)
 end
 
 -- the left side is blocked
-function detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh)
+function module.detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh)
 	return (
 		-- the space to the left goes off of the path
 		wi-1 < minw
@@ -1320,7 +1332,7 @@ function detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh)
 end
 
 -- the under side is blocked
-function detect_sideblocked_under(path, wi, hi, minw, minh, maxw, maxh)
+local function detect_sideblocked_under(path, wi, hi, minw, minh, maxw, maxh)
 	return (
 		-- the space under goes off of the path
 		hi+1 > maxh
@@ -1331,7 +1343,7 @@ function detect_sideblocked_under(path, wi, hi, minw, minh, maxw, maxh)
 end
 
 -- the top side is blocked
-function detect_sideblocked_top(path, wi, hi, minw, minh, maxw, maxh)
+local function detect_sideblocked_top(path, wi, hi, minw, minh, maxw, maxh)
 	return (
 		-- the space above goes off of the path
 		hi-1 < minh
@@ -1342,18 +1354,18 @@ function detect_sideblocked_top(path, wi, hi, minw, minh, maxw, maxh)
 end
 
 -- both sides blocked off
-function detect_sideblocked_both(path, wi, hi, minw, minh, maxw, maxh)
+function module.detect_sideblocked_both(path, wi, hi, minw, minh, maxw, maxh)
 	return (
-		detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh) and 
-		detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh)
+		module.detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh) and 
+		module.detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh)
 	)
 end
 
 -- both sides blocked off
-function detect_sideblocked_neither(path, wi, hi, minw, minh, maxw, maxh)
+function module.detect_sideblocked_neither(path, wi, hi, minw, minh, maxw, maxh)
 	return (
-		(false == detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh)) and 
-		(false == detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh))
+		(false == module.detect_sideblocked_left(path, wi, hi, minw, minh, maxw, maxh)) and 
+		(false == module.detect_sideblocked_right(path, wi, hi, minw, minh, maxw, maxh))
 	)
 end
 
@@ -1368,24 +1380,24 @@ end
 		-- used for mothership level
 function gen_levelrooms_path()
 	-- spread = false
-	reverse_path = (state.theme == THEME.NEO_BABYLON)
+	local reverse_path = (state.theme == THEME.NEO_BABYLON)
 
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	minw, minh, maxw, maxh = 1, 1, levelw, levelh
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local minw, minh, maxw, maxh = 1, 1, levelw, levelh
 	-- message("levelw, levelh: " .. tostring(levelw) .. ", " .. tostring(levelh))
 
 	-- build an array of unoccupied spaces to start winding downwards from
-	rand_startindexes = {}
+	local rand_startindexes = {}
 	for i = 1, levelw, 1 do
 		if roomgenlib.global_levelassembly.modification.levelrooms[1][i] == nil then
 			rand_startindexes[#rand_startindexes+1] = i
 		end
 	end	
 	
-	assigned_exit = false
-	assigned_entrance = false
-	wi, hi = rand_startindexes[math.random(1, #rand_startindexes)], 1
-	dropping = false
+	local assigned_exit = false
+	local assigned_entrance = false
+	local wi, hi = rand_startindexes[math.random(1, #rand_startindexes)], 1
+	local dropping = false
 
 	-- don't spawn paths if roomcodes aren't available
 	if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme] == nil or
@@ -1393,8 +1405,8 @@ function gen_levelrooms_path()
 		-- message("level_createpath: No pathRooms available in roomdeflib.HD_ROOMOBJECT.WORLDS;")
 	else
 		while assigned_exit == false do
-			pathid = math.random(2)
-			ind_off_x, ind_off_y = 0, 0
+			local pathid = math.random(2)
+			local ind_off_x, ind_off_y = 0, 0
 			if (
 				(
 					-- num == 2 and
@@ -1405,15 +1417,15 @@ function gen_levelrooms_path()
 				pathid = roomdeflib.HD_SUBCHUNKID.PATH
 			end
 			if pathid == roomdeflib.HD_SUBCHUNKID.PATH then
-				dir = 0
-				if detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
+				local dir = 0
+				if module.detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					pathid = roomdeflib.HD_SUBCHUNKID.PATH_DROP
-				elseif detect_sideblocked_neither(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
+				elseif module.detect_sideblocked_neither(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					dir = (math.random(2) == 2) and 1 or -1
 				else
-					if detect_sideblocked_right(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
+					if module.detect_sideblocked_right(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 						dir = -1
-					elseif detect_sideblocked_left(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
+					elseif module.detect_sideblocked_left(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 						dir = 1
 					end
 				end
@@ -1445,7 +1457,7 @@ function gen_levelrooms_path()
 				end
 				assigned_entrance = true
 			elseif hi == maxh then
-				if detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
+				if module.detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					assigned_exit = true
 				else
 					assigned_exit = (math.random(2) == 2)
@@ -1471,11 +1483,11 @@ function gen_levelrooms_path()
 				ROOM CODES
 			--]]
 			-- worlds
-			chunkcodes = (
+			local chunkcodes = (
 				roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[pathid] ~= nil
 			) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rooms[pathid]
 			-- feelings
-			check_feeling_content = nil
+			local check_feeling_content = nil
 			-- feelings
 			for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 				if (
@@ -1494,7 +1506,7 @@ function gen_levelrooms_path()
 				chunkcodes ~= nil
 			) then
 				
-				specified_index = math.random(#chunkcodes)
+				local specified_index = math.random(#chunkcodes)
 				if (
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms ~= nil and
@@ -1517,7 +1529,7 @@ function gen_levelrooms_path()
 					specified_index = check_feeling_content
 				end
 
-				levelcode_inject_roomcode(
+				module.levelcode_inject_roomcode(
 					pathid,
 					chunkcodes,
 					hi, wi,
@@ -1537,27 +1549,27 @@ end
 
 
 
-
-set_callback(function()
+---@param draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if (
 		options.hd_debug_info_path == true and
 		-- (state.pause == 0 and state.screen == 12 and #players > 0) and
 		roomgenlib.global_levelassembly ~= nil
 	) then
-		text_x = -0.95
-		text_y = -0.35
-		white = rgba(255, 255, 255, 255)
+		local text_x = -0.95
+		local text_y = -0.35
+		local white = rgba(255, 255, 255, 255)
 		
 		-- levelw, levelh = get_levelsize()
-		levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		
-		text_y_space = text_y
+		local text_y_space = text_y
 		for hi = 1, levelh, 1 do -- hi :)
-			text_x_space = text_x
+			local text_x_space = text_x
 			for wi = 1, levelw, 1 do
-				text_subchunkid = tostring(roomgenlib.global_levelassembly.modification.levelrooms[hi][wi])
+				local text_subchunkid = tostring(roomgenlib.global_levelassembly.modification.levelrooms[hi][wi])
 				if text_subchunkid == nil then text_subchunkid = "nil" end
-				draw_text(text_x_space, text_y_space, 0, text_subchunkid, white)
+				draw_ctx:draw_text(text_x_space, text_y_space, 0, text_subchunkid, white)
 				
 				text_x_space = text_x_space+0.04
 			end

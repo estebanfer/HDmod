@@ -21,10 +21,26 @@ local function black_knight_set(uid)
     local x, y, l = get_position(uid)
     local shield = get_entity(spawn(ENT_TYPE.ITEM_METAL_SHIELD, x, y, l, 0, 0))
     shield:set_texture(shield_texture_id)
+    --remove any item black knight may have
+    local held_item = get_entity(ent.holding_uid)
+    if held_item ~= nil then
+        drop(ent.uid, held_item.uid)
+        held_item:destroy()
+    end
+    --give him his shield
     pick_up(uid, shield.uid)
 end
 local function black_knight_update(ent)
-    --give the tikiman a speedboost so its as fast as a shoppie
+    if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
+    --wait for player to get near
+    if players[1] ~= nil then
+        local dist = distance(ent.uid, players[1].uid)
+        if dist <= 9 then
+            ent.chased_target_uid = players[1].uid
+            ent.move_state = 6
+        end
+    end
+    --give the tikiman a speedbost to his movement (as fast as shoppie)
     if ent.movex ~= 0 then
         ent.x = ent.x + 0.025*ent.movex
     end
@@ -34,39 +50,97 @@ local function black_knight_update(ent)
             local px, py, pl = get_position(players[1].uid)
             local x, y, l = get_position(ent.uid)
             if py > y and ent.standing_on_uid ~= -1 then
-                ent.velocityy = 0.21
+                ent.velocityy = 0.23
             end
-            if math.abs(px-x) > 6 and ent.standing_on_uid ~= -1 then
-                ent.velocityy = 0.21
+            if math.abs(px-x) > 5 then
+                if ent.standing_on_uid ~= -1 then
+                    ent.velocityy = 0.23
+                end
+                --face the player when out of range
+                local held_item = get_entity(ent.holding_uid)
+                if held_item ~= nil then
+                    held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                end
+                ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                ent.movex = -1
+                if px > x then
+                    if held_item ~= nil then
+                        held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                    end
+                    ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = 1
+                end
+            end
+            --pick up any shields
+            for _, v in ipairs(get_entities_by_type(ENT_TYPE.ITEM_METAL_SHIELD)) do
+                local shield = get_entity(v)
+                if shield.overlay == nil then
+                    if shield:overlaps_with(ent) and ent.holding_uid == -1 then
+                        pick_up(ent.uid, v)
+                    end
+                end
+            end
+        end
+        if ent.velocityx == 0 then
+            ent.velocityx = 1*ent.movex
+        end
+    end
+
+    --kill any webs the entity may run into
+    for _, v in ipairs(get_entities_by_type(ENT_TYPE.ITEM_WEB)) do
+        local web = get_entity(v)
+        local wx, wy, wl = get_position(v)
+        if web:overlaps_with(ent) then
+            generate_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
+            for i=1, 3, 1 do
+                commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, v, 0.25)
+                local leaf = get_entity(spawn(ENT_TYPE.ITEM_LEAF, wx+(i-1)/3, wy, wl, 0, 0))
+                leaf.width = 0.75
+                leaf.height = 0.75
+                leaf.animation_frame = 47
+                leaf.fade_away_trigger = true
+                web:destroy()
             end
         end
     end
 end
+local function burst_out_of_mantrap(ent, collision_ent)
+    if collision_ent.type.id == ENT_TYPE.MONS_MANTRAP and not test_flag(ent.flags, ENT_FLAG.DEAD) then
+        if collision_ent.stun_timer == 0 and collision_ent.move_state ~= 6 then
+            local cx, cy, cl = get_position(collision_ent.uid)
+            collision_ent.eaten_uid = ent.uid
+            collision_ent.move_state = 6
+            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_MANTRAP_BITE, ent.uid)
+            drop(ent.uid, ent.holding_uid)
+            ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
+            ent.flags = set_flag(ent.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
+            ent.x = cx
+            ent.y = cy
+            attach_entity(collision_ent.uid, ent.uid)
+            set_on_destroy(collision_ent.uid, function()
+                ent.flags = clr_flag(ent.flags, ENT_FLAG.INVISIBLE)
+                ent.flags = clr_flag(ent.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
+                ent.move_state = 6
+            end)
+        end
+        return true
+    end
+end
 local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
     if ent.health - damage_amount <= 0 then
-        local x, y, l = get_position(ent.uid)
-        local held_item = get_entity(ent.holding_uid)
-        if held_item ~= nil then
-            held_item.velocityx = ent.velocityx
-            held_item.velocityy = ent.velocityy
-        end
-        local grub = spawn(ENT_TYPE.MONS_GRUB, x, y, l, 0, 0)
-        ent:drop(get_entity(ent.holding_uid))
-        ent.x = -900
-        --create a new,, silent corpse :)))
-        kill_entity(grub) --grubs make a good way to generate blood based on whether or not the player has vlads cape
+        --set it temporarily to tikiman makes no sound on death then set it back 1 frame later
+        --technically its possible that if a tikiman and black knight die on the same frame, tikiman makes no sound, but he should never be near a black knight anyways
+        local tikiman_db = get_type(ENT_TYPE.MONS_TIKIMAN)
+        local sound_killed_by_player = tikiman_db.sound_killed_by_player
+        local sound_killed_by_other = tikiman_db.sound_killed_by_other
+        tikiman_db.sound_killed_by_player = -1
+        tikiman_db.sound_killed_by_other = -1
         set_timeout(function()
-            if ent.frozen_timer == 0 then --leave no corpse if frozen,, crushing should be fine .
-                local corpse = get_entity(spawn(ENT_TYPE.MONS_TIKIMAN, x, y, l, 0, 0))
-                corpse:set_texture(black_knight_texture_id)
-                corpse.velocityx = ent.velocityx
-                corpse.velocityy = ent.velocityy
-                corpse.flags = set_flag(corpse.flags, ENT_FLAG.DEAD)
-                corpse.health = 0
-                corpse:light_on_fire(ent.onfire_effect_timer)
-                corpse.wet_effect_timer = ent.wet_effect_timer
-            end
+            tikiman_db.sound_killed_by_player = sound_killed_by_player
+            tikiman_db.sound_killed_by_other = sound_killed_by_other
         end, 1)
+        --play a death sound, sounds weird otherwise
+        commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
     end
 end
 
@@ -75,11 +149,12 @@ function module.create_black_knight(x, y, l)
     black_knight_set(black_knight)
     set_post_statemachine(black_knight, black_knight_update)
     set_on_damage(black_knight, black_knight_death)
+    set_pre_collision2(black_knight, burst_out_of_mantrap)
 end
 
 -- register_option_button("spawn_black_knight", "spawn_black_knight", 'spawn_black_knight', function()
---     local x, y, l = get_position(players[1].uid)
---     module.create_black_knight(x-5, y, l)
+--      local x, y, l = get_position(players[1].uid)
+--      module.create_black_knight(x-5, y, l)
 -- end)
 
 return module

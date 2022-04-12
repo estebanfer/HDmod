@@ -108,5 +108,39 @@ function module.setn(t,n)
 	setmetatable(t,{__len=function() return n end})
 end
 
+function module.shake_camera(countdown_start, countdown, amplitude, multiplier_x, multiplier_y, uniform_shake)
+  state.camera.shake_countdown_start = countdown_start
+  state.camera.shake_countdown = countdown
+  state.camera.shake_amplitude = amplitude
+  state.camera.shake_multiplier_x = multiplier_x
+  state.camera.shake_multiplier_y = multiplier_y
+  state.camera.uniform_shake = uniform_shake
+end
+
+--This function isn't perfect yet but it's fine for now.
+function module.play_sound_at_entity(snd, uid, volume)
+  local v = 0.5
+  if volume ~= nil then
+      v = volume
+  end
+  local ent = get_entity(uid)
+  local sound = get_sound(snd)
+  local audio = sound:play(true)
+  local x, y, _ = get_position(ent.uid)
+  local sx, sy = screen_position(x, y)
+  local d = screen_distance(distance(ent.uid, ent.uid))
+  if players[1] ~= nil then
+      d = screen_distance(distance(ent.uid, players[1].uid))
+  end
+  audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx))
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy))
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+  audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)
+  
+  audio:set_pause(false)
+end
+
 
 return module

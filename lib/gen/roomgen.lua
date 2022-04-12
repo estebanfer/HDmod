@@ -541,7 +541,7 @@ function module.level_generation_method_aligned(_aligned_room_types)
 	end
 end
 
-local function detect_level_non_boss()
+function module.detect_level_non_boss()
 	return (
 		state.theme ~= THEME.OLMEC
 		and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
@@ -558,7 +558,7 @@ function module.detect_level_non_special()
 end
 function detect_level_allow_path_gen()
 	return (
-		detect_level_non_boss() and
+		module.detect_level_non_boss() and
 		-- state.theme ~= THEME.CITY_OF_GOLD and
 		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false and
 		feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false
@@ -651,7 +651,7 @@ function level_generation_method_shops()
 	if (
 		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
 		state.theme ~= THEME.VOLCANA and
-		detect_level_non_boss() and
+		module.detect_level_non_boss() and
 		module.detect_level_non_special()
 	) then
 		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then

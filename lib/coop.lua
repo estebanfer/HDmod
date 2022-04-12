@@ -23,7 +23,7 @@ end
 function module.detect_level_allow_coop_coffin()
 	return (
 		COOP_COFFIN == true
-		and detect_level_non_boss()
+		and roomgenlib.detect_level_non_boss()
 		-- and state.theme ~= THEME.CITY_OF_GOLD
 		and feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == false
 		and feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) == false

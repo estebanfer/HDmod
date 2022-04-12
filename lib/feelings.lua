@@ -143,8 +143,8 @@ module.HD_FEELING_DEFAULTS = {
 	},
 }
 
-global_feelings = nil
-MESSAGE_FEELING = nil
+local global_feelings = nil
+local MESSAGE_FEELING = nil
 
 function module.init()
 	global_feelings = commonlib.TableCopy(module.HD_FEELING_DEFAULTS)
@@ -160,6 +160,35 @@ set_callback(function()
 	global_feelings = nil
 end, ON.RESET)
 
+-- if multiple levels are passed in, a random level in the table is set
+	-- NOTE: won't set to a past level
+local function feeling_set(feeling, levels)
+	local chance = 1
+	if global_feelings[feeling].chance ~= nil then
+		chance = global_feelings[feeling].chance
+	end
+	if chance ~= 0 then
+		if math.random(1, chance) == 1 then
+			local levels_indexed = {}
+			for _, level in ipairs(levels) do
+				if level >= state.level then
+					levels_indexed[#levels_indexed+1] = level
+				end
+			end
+			global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
+			return true
+		else return false end
+	end
+end
+
+local function detect_feeling_themes(feeling)
+	for _, feeling_theme in ipairs(global_feelings[feeling].themes) do
+		if state.theme == feeling_theme then
+			return true
+		end
+	end
+	return false
+end
 
 -- -- won't set if already set to the current level or a past level
 -- function feeling_set_once_future(feeling, levels, use_chance)
@@ -183,36 +212,6 @@ function module.feeling_set_once(feeling, levels)
 	else
 		return feeling_set(feeling, levels)
 	end
-end
-
--- if multiple levels are passed in, a random level in the table is set
-	-- NOTE: won't set to a past level
-function feeling_set(feeling, levels)
-	chance = 1
-	if global_feelings[feeling].chance ~= nil then
-		chance = global_feelings[feeling].chance
-	end
-	if chance ~= 0 then
-		if math.random(1, chance) == 1 then
-			levels_indexed = {}
-			for _, level in ipairs(levels) do
-				if level >= state.level then
-					levels_indexed[#levels_indexed+1] = level
-				end
-			end
-			global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
-			return true
-		else return false end
-	end
-end
-
-function detect_feeling_themes(feeling)
-	for _, feeling_theme in ipairs(global_feelings[feeling].themes) do
-		if state.theme == feeling_theme then
-			return true
-		end
-	end
-	return false
 end
 
 function module.feeling_check(feeling)
@@ -376,9 +375,9 @@ function module.onlevel_set_feelingToastMessage()
 	-- NOTES:
 		-- Black Market, COG and Beehive are currently handled by the game
 	
-	loadchecks = commonlib.TableCopy(global_feelings)
+	local loadchecks = commonlib.TableCopy(global_feelings)
 	
-	n = #loadchecks
+	local n = #loadchecks
 	for feelingname, loadcheck in pairs(loadchecks) do
 		if (
 			-- detect_feeling_themes(feelingname) == false or
@@ -431,15 +430,16 @@ set_callback(function(text)
 end, ON.TOAST)
 
 
-set_callback(function()
+---@params draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
-		text_x = -0.95
-		text_y = -0.35
-		white = rgba(255, 255, 255, 255)
-		green = rgba(55, 200, 75, 255)
+		local text_x = -0.95
+		local text_y = -0.35
+		local white = rgba(255, 255, 255, 255)
+		local green = rgba(55, 200, 75, 255)
 		
-		text_levelfeelings = "No Level Feelings"
-		feelings = 0
+		local text_levelfeelings = "No Level Feelings"
+		local feelings = 0
 		
 		for feelingname, feeling in pairs(global_feelings) do
 			if module.feeling_check(feelingname) == true then
@@ -448,24 +448,24 @@ set_callback(function()
 		end
 		if feelings ~= 0 then text_levelfeelings = (tostring(feelings) .. " Level Feelings") end
 		
-		draw_text(text_x, text_y, 0, text_levelfeelings, white)
+		draw_ctx:draw_text(text_x, text_y, 0, text_levelfeelings, white)
 		text_y = text_y-0.035
-		color = white
+		local color = white
 		if MESSAGE_FEELING ~= nil then color = green end
-		text_message_feeling = ("MESSAGE_FEELING: " .. tostring(MESSAGE_FEELING))
-		draw_text(text_x, text_y, 0, text_message_feeling, color)
+		local text_message_feeling = ("MESSAGE_FEELING: " .. tostring(MESSAGE_FEELING))
+		draw_ctx:draw_text(text_x, text_y, 0, text_message_feeling, color)
 		text_y = text_y-0.04
 		for feelingname, feeling in pairs(global_feelings) do
 			color = white
-			text_message = ""
+			local text_message = ""
 			
-			feeling_bool = module.feeling_check(feelingname)
+			local feeling_bool = module.feeling_check(feelingname)
 			if feeling.message ~= nil then text_message = (": \"" .. feeling.message .. "\"") end
 			if feeling_bool == true then color = green end
 			
-			text_feeling = (feelingname) .. text_message
+			local text_feeling = (feelingname) .. text_message
 			
-			draw_text(text_x, text_y, 0, text_feeling, color)
+			draw_ctx:draw_text(text_x, text_y, 0, text_feeling, color)
 			text_y = text_y-0.032
 		end
 

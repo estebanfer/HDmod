@@ -1008,11 +1008,11 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 	chunkRules = {
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
-				range_start, range_end = 1, 2 -- default
+				local range_start, range_end = 1, 2 -- default
 				if (math.random(8) == 8) then
 					range_start, range_end = 3, 5
 				end
-				chunkPool_rand_index = math.random(range_start, range_end)
+				local chunkPool_rand_index = math.random(range_start, range_end)
 				return chunkPool_rand_index
 			end,
 		},
@@ -1182,11 +1182,11 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 	chunkRules = {
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
-				range_start, range_end = 1, 2 -- default
+				local range_start, range_end = 1, 2 -- default
 				if (math.random(8) == 8) then
 					range_start, range_end = 3, 5
 				end
-				chunkPool_rand_index = math.random(range_start, range_end)
+				local chunkPool_rand_index = math.random(range_start, range_end)
 				return chunkPool_rand_index
 			end,
 		},
@@ -1386,21 +1386,21 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].method = fun
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	minw, minh, maxw, maxh = 1, 2, levelw-1, levelh
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local minw, minh, maxw, maxh = 1, 2, levelw-1, levelh
 
-	assigned_exit = false
-	assigned_entrance = false
-	wi, hi = maxw, minh
-	dropping = false
+	local assigned_exit = false
+	local assigned_entrance = false
+	local wi, hi = maxw, minh
+	local dropping = false
 	
 	
 	while assigned_exit == false do
-		pathid = math.random(2)
-		ind_off_x, ind_off_y = 0, 0
+		local pathid = math.random(2)
+		local ind_off_x, ind_off_y = 0, 0
 
 		if pathid == module.HD_SUBCHUNKID.PATH then
-			dir = 0
+			local dir = 0
 			if detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 				pathid = module.HD_SUBCHUNKID.PATH_DROP
 			elseif detect_sideblocked_neither(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
@@ -1468,6 +1468,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].method = fun
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
 			if roomgenlib.global_levelassembly.modification.levelrooms[hi][wi] == nil then
+				local pathid
 				if hi == maxh then
 					if wi == minw then
 						pathid = module.HD_SUBCHUNKID.HAUNTEDCASTLE_EXIT
@@ -1582,8 +1583,8 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].method = funct
 	
 	for room_y = levelh_start, levelh_end, 1 do
 		for room_x = levelw_start, levelw_end, 1 do
-			path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
-			path_to_replace_with = -1
+			local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
+			local path_to_replace_with = -1
 			
 			-- drop/drop_notop
 			if (
@@ -1694,11 +1695,11 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER] = {
 	}
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	-- exit row
 	for room_x = 1, levelw, 1 do
-		path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[levelh][room_x]
-		path_to_replace_with = -1
+		local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[levelh][room_x]
+		local path_to_replace_with = -1
 		
 		-- path
 		if path_to_replace == module.HD_SUBCHUNKID.PATH or path_to_replace == nil then
@@ -1750,33 +1751,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].method = fun
 			)
 		end
 	end
-
-
-
-	rowfive = {
-		setRooms = {
-			{
-				subchunk_id = module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
-				placement = 1,
-				roomcodes = commonlib.TableCopy(module.HD_ROOMOBJECT.GENERIC[module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
-			},
-			{
-				subchunk_id = module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
-				placement = 2,
-				roomcodes = commonlib.TableCopy(module.HD_ROOMOBJECT.GENERIC[module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
-			},
-			{
-				subchunk_id = module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
-				placement = 3,
-				roomcodes = commonlib.TableCopy(module.HD_ROOMOBJECT.GENERIC[module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
-			},
-			{
-				subchunk_id = module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE,
-				placement = 4,
-				roomcodes = commonlib.TableCopy(module.HD_ROOMOBJECT.GENERIC[module.HD_SUBCHUNKID.ICE_CAVES_ROW_FIVE])
-			},
-		}
-	}
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI] = {
@@ -1790,15 +1764,15 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI] = {
 	}
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
-	spots = {}
+	local spots = {}
 		--{x, y}
-	minw, minh, maxw, maxh = 1, 2, levelw, levelh-1
+	local minw, minh, maxw, maxh = 1, 2, levelw, levelh-1
 	-- build a collection of potential spots
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
-			subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[hi][wi]
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[hi][wi]
 			if (
 				(
 					subchunk_id == nil and
@@ -1830,7 +1804,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].method = function()
 	end
 
 	-- pick random place to fill
-	spot = spots[math.random(#spots)]
+	local spot = spots[math.random(#spots)]
 
 	levelcode_inject_roomcode(
 		module.HD_SUBCHUNKID.MOAI,
@@ -1862,21 +1836,21 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO] = {
 	Note that this implimentation shouldn't be wrapping around UFO subchunks, but forcing the path to drop down and continue from there.
 --]]
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	minw, minh, maxw, maxh = 1, 1, levelw, levelh
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local minw, minh, maxw, maxh = 1, 1, levelw, levelh
 
-	drop_detected = false
+	local drop_detected = false
 	for room_x = 1, levelw, 1 do
 		if roomgenlib.global_levelassembly.modification.levelrooms[minh+1][room_x] == 3 then
 			drop_detected = true
 		end
 	end
 
-	wi, hi = maxw, minh+(drop_detected and 1 or 2)
+	local wi, hi = maxw, minh+(drop_detected and 1 or 2)
 
 	levelcode_inject_roomcode(module.HD_SUBCHUNKID.UFO_RIGHTSIDE, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[module.HD_SUBCHUNKID.UFO_RIGHTSIDE], hi, wi)
-	_mid_width_min = 0
-	mid_width = math.random(_mid_width_min, maxw-2)
+	local _mid_width_min = 0
+	local mid_width = math.random(_mid_width_min, maxw-2)
 	for i = maxw-1, maxw-mid_width, -1 do
 		levelcode_inject_roomcode(module.HD_SUBCHUNKID.UFO_MIDDLE, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].rooms[module.HD_SUBCHUNKID.UFO_MIDDLE], hi, i)
 	end
@@ -2058,7 +2032,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 	}
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
 	if unlockslib.LEVEL_UNLOCK ~= nil then
 		level_generation_method_aligned(
@@ -2075,13 +2049,13 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = funct
 		)
 	end
 
-	spots = {}
+	local spots = {}
 		--{x, y, subchunk_id}
-	minw, minh, maxw, maxh = 1, 2, levelw, levelh-1
+	local minw, minh, maxw, maxh = 1, 2, levelw, levelh-1
 	-- build a collection of potential spots
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
-			subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[hi][wi]
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[hi][wi]
 			if (
 				(
 					subchunk_id == nil and
@@ -2260,15 +2234,15 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL] = {
 			Otherwise, spawn single room.
 --]]
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
-	spots = {}
+	local spots = {}
 		--{x, y}
 
 	-- build a collection of potential spots
 	for level_hi = 1, levelh, 1 do
 		for level_wi = 1, levelw, 1 do
-			subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 			if subchunk_id == nil then
 				-- add room
 				table.insert(spots, {x = level_wi, y = level_hi})
@@ -2277,7 +2251,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].method = fu
 	end
 
 	-- pick random place to fill
-	spot = commonlib.TableCopyRandomElement(spots)
+	local spot = commonlib.TableCopyRandomElement(spots)
 	
 	if (
 		math.random(4) <= 3
@@ -2444,9 +2418,9 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].setRooms = {
 	},
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].method = function()
-	levelw, _ = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local levelw, _ = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
-	exit_on_left = (math.random(2) == 1)
+	local exit_on_left = (math.random(2) == 1)
 	
 	if exit_on_left == true then
 		levelcode_inject_roomcode(
@@ -2479,8 +2453,9 @@ module.HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
-				_, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+				local _, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
+				local chunkPool_rand_index
 				if state.level == 1 then
 					chunkPool_rand_index = math.random(9)
 				elseif (
@@ -2531,14 +2506,14 @@ module.HD_ROOMOBJECT.WORLDS[THEME.DWELLING] = {
 		},
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
-				range_start, range_end = 1, 32 -- default
+				local range_start, range_end = 1, 32 -- default
 				if (state.level < 3) then
 					range_start, range_end = 1, 14
 				else
 					range_start, range_end = 15, 32
 				end
 
-				chunkPool_rand_index = math.random(range_start, range_end)
+				local chunkPool_rand_index = math.random(range_start, range_end)
 				return chunkPool_rand_index
 			end,
 		}
@@ -2754,15 +2729,14 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 					module.CHUNKBOOL_IDOL = true
 					return {idol = true}
 				else
-					chunkPool_rand_index = math.random(8)
+					local chunkPool_rand_index = math.random(8)
+					return {index = chunkPool_rand_index}
 				end
-				
-				return {index = chunkPool_rand_index}
 			end,
 		},
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
-				range_start, range_end = 1, 22 -- default
+				local range_start, range_end = 1, 22 -- default
 				if (state.level < 3) then
 					if (math.random(6) == 6) then -- if (uVar8 % 6 == 0)
 						range_start, range_end = 17, 19 -- iVar6 = uVar8 % 3 + 100;
@@ -2777,7 +2751,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 					end
 				end
 
-				chunkPool_rand_index = math.random(range_start, range_end)
+				local chunkPool_rand_index = math.random(range_start, range_end)
 				return chunkPool_rand_index
 			end,
 		}
@@ -3045,7 +3019,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 	-- Coffin
 	if unlockslib.LEVEL_UNLOCK ~= nil then
 		-- Select room coordinates between x = 1..2 and y = 11
-		local unlock_location_x, unlock_location_y = math.random(1, levelw), 11
+		unlock_location_x, unlock_location_y = math.random(1, levelw), 11
 	
 		local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[unlock_location_y][unlock_location_x]
 		local path_to_replace_with = module.HD_SUBCHUNKID.COFFIN_UNLOCK
@@ -3063,11 +3037,11 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 
 
 	-- Replace two drop/drop_notop with WORM_REGENBLOCK_STRUCTURE.
-	spots = {}
+	local spots = {}
 	for room_y = 1, levelh, 1 do
 		for room_x = 1, levelw, 1 do
-			path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
-			path_to_replace_with = -1
+			local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
+			local path_to_replace_with = -1
 			
 			if (
 				(path_to_replace == module.HD_SUBCHUNKID.PATH_DROP
@@ -3083,7 +3057,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 		-- pick random place to fill
 		local n = #spots
 		local spot1_i = math.random(n)
-		spot1 = spots[spot1_i]
+		local spot1 = spots[spot1_i]
 
 		levelcode_inject_roomcode(
 			module.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
@@ -3093,7 +3067,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 
 		spots[spot1_i] = nil
 		commonlib.CompactList(spots, n)
-		spot2 = spots[math.random(#spots)]
+		local spot2 = spots[math.random(#spots)]
 
 		levelcode_inject_roomcode(
 			module.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,
@@ -3104,7 +3078,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 	
 end
 
-function path_algorithm_icecaves_drop()
+local function path_algorithm_icecaves_drop()
 	if math.random(10) == 1 then
 		return 13
 	end
@@ -3114,7 +3088,7 @@ function path_algorithm_icecaves_drop()
 	end
 	return chunkpool_rand_index
 end
-function path_algorithm_icecaves()
+local function path_algorithm_icecaves()
 	if math.random(10) == 1 then
 		return 13
 	end
@@ -3138,10 +3112,9 @@ module.HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES] = {
 						module.CHUNKBOOL_IDOL = true
 						return {idol = true}
 					else
-						chunkPool_rand_index = math.random(8)
+						local chunkPool_rand_index = math.random(8)
+						return {index = chunkPool_rand_index}
 					end
-					
-					return {index = chunkPool_rand_index}
 				else
 					return {index = path_algorithm_icecaves()+8} -- use path room algorithm + adjusted range 
 				end
@@ -3284,7 +3257,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
-				chunkPool_rand_index = math.random(2)
+				local chunkPool_rand_index = math.random(2)
 				if math.random(10) == 1 then 
 					chunkPool_rand_index = 3
 				end
@@ -3421,8 +3394,8 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
 		loop through top to bottom, replace the first two side rooms found with alienlord rooms
 	--]]
 
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	minw, minh, maxw, maxh = 1, 1, levelw, levelh
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local minw, minh, maxw, maxh = 1, 1, levelw, levelh
 
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
@@ -3470,6 +3443,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+				local chunkPool_rand_index
 				if (math.random(4) == 4) then
 					chunkPool_rand_index = math.random(15, 24) -- use path roomcodes
 				else
@@ -3646,6 +3620,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
+				local chunkPool_rand_index
 				if (math.random(4) == 4) then
 					chunkPool_rand_index = math.random(13, 22) -- use path roomcodes
 				end
@@ -3724,8 +3699,8 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	},
 }
 module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
-	levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	minw, minh, maxw, maxh = 1, 2, levelw, levelh
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	local minw, minh, maxw, maxh = 1, 2, levelw, levelh
 	--[[
 		let the path generate as normal,
 		then run this method to replace parts of it with the two middle setrooms and a few paths.
@@ -3734,7 +3709,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
 
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
-			pathid = -1
+			local pathid = -1
 			
 			if wi == minw or wi == maxw then
 				if (hi == minh and
@@ -3853,7 +3828,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
-				_, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+				local _, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 				if (
 					module.CHUNKBOOL_ALTAR == false and
@@ -3868,21 +3843,21 @@ module.HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 					module.CHUNKBOOL_IDOL = true
 					return {idol = true}
 				else
-					chunkPool_rand_index = math.random(9)
+					local chunkPool_rand_index = math.random(9)
+					return {index = chunkPool_rand_index}
 				end
 
-				return {index = chunkPool_rand_index}
 			end,
 		},
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
-				range_start, range_end = 1, 2 -- default
+				local range_start, range_end = 1, 2 -- default
 
 				if (math.random(7) == 7) then
 					range_start, range_end = 3, 5 -- iVar6 = uVar8 % 3 + 0x67;
 				end
 
-				chunkPool_rand_index = math.random(range_start, range_end)
+				local chunkPool_rand_index = math.random(range_start, range_end)
 				return chunkPool_rand_index
 			end,
 		}

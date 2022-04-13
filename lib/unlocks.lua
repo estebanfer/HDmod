@@ -242,15 +242,15 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 			local coffin_id = spawn_entity(ENT_TYPE.ITEM_COFFIN, -100, -100, LAYER.FRONT, 0, 0)
 			get_entity(coffin_id).inside = ENT_TYPE.CHAR_GREEN_GIRL
 		]]
-		-- set_post_statemachine(uid, function()
-		-- 	local ent = get_entity(uid)
-		-- 	if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
-		-- 		-- Can't manually unlock characters this way
-		-- 		-- savegame.characters = set_flag(savegame.characters, module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
-
-		-- 		return false
-		-- 	end
-		-- end)
+		set_post_statemachine(uid, function(ent)
+			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)
+				set_contents(coffin_uid, 193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
+				kill_entity(coffin_uid)
+				cancel_speechbubble()
+				clear_callback()
+			end
+		end)
 		return uid
 	end
 	-- return spawn_grid_entity(ENT_TYPE.CHAR_HIREDHAND, x, y, l)

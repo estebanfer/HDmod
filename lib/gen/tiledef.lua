@@ -1411,6 +1411,8 @@ module.HD_TILENAME = {
 					
 					if state.shoppie_aggro_next <= 0 then
 						pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+						shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
+						shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
 					end
 					shopkeeper.is_patrolling = true
 					shopkeeper.move_state = 9

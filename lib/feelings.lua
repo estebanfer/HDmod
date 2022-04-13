@@ -49,7 +49,7 @@ module.HD_FEELING_DEFAULTS = {
 	},
 	[module.FEELING_ID.SNAKEPIT] = {
 		chance = 10,
-		-- chance = 0,
+		-- chance = 1,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
@@ -407,7 +407,10 @@ function module.onlevel_toastfeeling()
 		MESSAGE_FEELING ~= nil and
 		options.hd_debug_feelingtoast_disable == false
 	) then
-		toast(MESSAGE_FEELING)
+		cancel_toast()
+		set_timeout(function()
+			toast(MESSAGE_FEELING)
+		end, 1)
 	end
 end
 

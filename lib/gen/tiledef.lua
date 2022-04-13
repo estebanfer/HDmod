@@ -598,10 +598,7 @@ module.HD_TILENAME = {
 				function(x, y, l)
 					-- Idol trap variants
 					if state.theme == THEME.DWELLING then
-						local statue = get_entity(spawn_entity(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0))
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_1)
-						texture_def.texture_path = "res/deco_extra_idol_statue.png"
-						statue:set_texture(define_texture(texture_def))
+						spawn_entity(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0)
 					end
 					
 					-- need subchunkid of what room we're in
@@ -1411,6 +1408,8 @@ module.HD_TILENAME = {
 					
 					if state.shoppie_aggro_next <= 0 then
 						pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+						shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
+						shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
 					end
 					shopkeeper.is_patrolling = true
 					shopkeeper.move_state = 9

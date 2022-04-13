@@ -48,7 +48,10 @@ function module.create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
-		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
+		texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
+		get_entity(door_bg):set_texture(define_texture(texture_def))
+		get_entity(door_bg).animation_frame = 2
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	if (

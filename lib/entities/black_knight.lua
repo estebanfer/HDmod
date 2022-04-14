@@ -33,21 +33,25 @@ end
 local function black_knight_update(ent)
     if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
     --wait for player to get near
-    if players[1] ~= nil then
-        local dist = distance(ent.uid, players[1].uid)
-        if dist <= 9 then
-            ent.chased_target_uid = players[1].uid
-            ent.move_state = 6
+    for _, player in ipairs(players) do
+        if player ~= nil then
+            local dist = distance(ent.uid, player.uid)
+            if dist <= 9 then
+                ent.chased_target_uid = player.uid
+                ent.move_state = 6
+                break
+            end
         end
     end
+
     --give the tikiman a speedbost to his movement (as fast as shoppie)
     if ent.movex ~= 0 then
         ent.x = ent.x + 0.025*ent.movex
     end
     if ent.move_state == 6 then
         --aggro shoppie behavior from scratch
-        if players[1] ~= nil then
-            local px, py, pl = get_position(players[1].uid)
+        for _, player in ipairs(players) do
+            local px, py, pl = get_position(player.uid)
             local x, y, l = get_position(ent.uid)
             if py > y and ent.standing_on_uid ~= -1 then
                 ent.velocityy = 0.23

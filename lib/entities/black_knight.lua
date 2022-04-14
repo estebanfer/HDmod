@@ -5,17 +5,18 @@ local module = {}
 --obviously the custom shield will become a regular one when you leave the level
 local black_knight_texture_id
 do
-    black_knight_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS01_0)
+    local black_knight_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS01_0)
     black_knight_texture_def.texture_path = 'res/black_knight.png'
     black_knight_texture_id = define_texture(black_knight_texture_def)
 end
 local shield_texture_id
 do
-    shield_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+    local shield_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
     shield_texture_def.texture_path = 'res/shield.png'
     shield_texture_id = define_texture(shield_texture_def)
 end
 local function black_knight_set(uid)
+    ---@type Movable
     local ent = get_entity(uid)
     ent:set_texture(black_knight_texture_id)
     local x, y, l = get_position(uid)
@@ -95,7 +96,7 @@ local function black_knight_update(ent)
         local web = get_entity(v)
         local wx, wy, wl = get_position(v)
         if web:overlaps_with(ent) then
-            generate_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
+            generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
             for i=1, 3, 1 do
                 commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, v, 0.25)
                 local leaf = get_entity(spawn(ENT_TYPE.ITEM_LEAF, wx+(i-1)/3, wy, wl, 0, 0))

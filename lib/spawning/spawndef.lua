@@ -9,6 +9,7 @@ tombstonelib = require 'lib.entities.tombstone'
 turrentlib = require 'lib.entities.laser_turrent'
 greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
+tikitraplib = require 'lib.entities.tikitrap'
 
 local module = {}
 
@@ -149,7 +150,7 @@ module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_proc
 
 module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
-module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", createlib.create_tikitrap, validlib.is_valid_tikitrap_spawn)
+module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap, validlib.is_valid_tikitrap_spawn)
 
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 

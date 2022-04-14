@@ -1,6 +1,8 @@
+tikitraplib = require 'lib.entities.tikitrap'
+
 local module = {}
 
-function testroom_level_1()
+local function testroom_level_1()
 	--[[
 		Coordinates of each floor:
 		Top:	x = 13..32,	y = 112
@@ -56,7 +58,7 @@ function testroom_level_1()
 			HD_ENT field for a method interacting with a passed-in uid.
 	--]]
 	hdtypelib.create_hd_type(hdtypelib.HD_ENT.HANGSPIDER, 26, 104, LAYER.FRONT, false, 0, 0)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
+	tikitraplib.create_tikitrap(14, 110, LAYER.FRONT)--hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, 14, 110, LAYER.FRONT, false, 0, 0)
 
 
 	--[[
@@ -75,11 +77,11 @@ function testroom_level_1()
 	-- thank you and good luck :derekapproves:
 end
 
-function testroom_level_2()
+local function testroom_level_2()
 	
 end
 
-function test_bacterium()
+local function test_bacterium()
 	-- Bacterium Creation
 		-- FLOOR_THORN_VINE:
 			-- flags = clr_flag(flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- indestructable (maybe need to clear this? Not sure yet)

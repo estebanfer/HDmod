@@ -6,26 +6,26 @@ local module = {}
 -- register_option_float("hd_ui_botd_d_y", "UI: botd y", 0.93, -999.0, 999.0)
 -- register_option_float("hd_ui_botd_e_squash", "UI: botd uvx shifting rate", 0.25, -5.0, 5.0)
 
-BOOKOFDEAD_TIC_LIMIT = 5
-BOOKOFDEAD_RANGE = 14
+local BOOKOFDEAD_TIC_LIMIT = 5
+local BOOKOFDEAD_RANGE = 14
 
 module.hell_x = 0
-bookofdead_tick = 0
-bookofdead_frames_index = 1
-BOOKOFDEAD_FRAMES = 4
-BOOKOFDEAD_SQUASH = (1/BOOKOFDEAD_FRAMES) --options.hd_ui_botd_e_squash
+local bookofdead_tick = 0
+local bookofdead_frames_index = 1
+local BOOKOFDEAD_FRAMES = 4
+local BOOKOFDEAD_SQUASH = (1/BOOKOFDEAD_FRAMES) --options.hd_ui_botd_e_squash
 
 module.OBTAINED_BOOKOFDEAD = false
 
-UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/bookofdead.png')
-UI_BOTD_PLACEMENT_W = 0.08
-UI_BOTD_PLACEMENT_H = 0.12
-UI_BOTD_PLACEMENT_X = 0.2
-UI_BOTD_PLACEMENT_Y = 0.93
+local UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/bookofdead.png')
+local UI_BOTD_PLACEMENT_W = 0.08
+local UI_BOTD_PLACEMENT_H = 0.12
+local UI_BOTD_PLACEMENT_X = 0.2
+local UI_BOTD_PLACEMENT_Y = 0.93
 
 function module.create_botd(x, y, l)
     local bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
-    local book_ = get_entity(bookofdead_pickup_id):as_movable()
+    local book_ = get_entity(bookofdead_pickup_id)
     local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
     texture_def.texture_path = "res/items_botd.png"
     book_:set_texture(define_texture(texture_def))
@@ -45,7 +45,7 @@ set_callback(function()
 end, ON.START)
 
 -- removes all types of an entity from any player that has it.
-function remove_player_item(powerup, player)
+local function remove_player_item(powerup, player)
 	local powerup_uids = get_entities_by_type(powerup)
 	for i = 1, #powerup_uids, 1 do
 		for j = 1, #players, 1 do
@@ -60,7 +60,7 @@ function module.set_hell_x()
     module.hell_x = math.random(4, 41)
 end
 
-function animate_bookofdead(tick_limit)
+local function animate_bookofdead(tick_limit)
 	if bookofdead_tick <= tick_limit then
 		bookofdead_tick = bookofdead_tick + 1
 	else
@@ -74,7 +74,8 @@ function animate_bookofdead(tick_limit)
 end
 
 -- Book of dead animating
-set_callback(function()
+---@param draw_ctx GuiDrawContext
+set_callback(function(draw_ctx)
 	if state.pause == 0 and state.screen == 12 and #players > 0 then
 		if module.OBTAINED_BOOKOFDEAD == true then
 			local w = UI_BOTD_PLACEMENT_W
@@ -113,7 +114,7 @@ set_callback(function()
 			
 			-- draw_text(x-0.1, y, 0, tostring(bookofdead_tick), rgba(234, 234, 234, 255))
 			-- draw_text(x-0.1, y-0.1, 0, tostring(bookofdead_frames_index), rgba(234, 234, 234, 255))
-			draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
+			draw_ctx:draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
 		end
 	end
 end, ON.GUIFRAME)

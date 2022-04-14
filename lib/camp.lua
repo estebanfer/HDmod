@@ -5,7 +5,7 @@ module.DOOR_TUTORIAL_UID = nil
 
 function module.create_door_testing(x, y, l)
 	module.DOOR_TESTING_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)--THEME.TIDE_POOL)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_3)
 	get_entity(door_bg).animation_frame = 1
 end
@@ -17,13 +17,13 @@ function module.create_door_tutorial(x, y, l)
 		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
 		construction_sign:set_draw_depth(40)
 	end
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 end
 
-function entrance_force_worldstate(_worldstate, _entrance_uid)
+local function entrance_force_worldstate(_worldstate, _entrance_uid)
 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
-		door_entrance_ent = get_entity(_entrance_uid)
+		local door_entrance_ent = get_entity(_entrance_uid)
 		if door_entrance_ent ~= nil then
 			for i = 1, #players, 1 do
 				if (
@@ -38,57 +38,22 @@ function entrance_force_worldstate(_worldstate, _entrance_uid)
 	end
 end
 
-function entrance_testing()
+local function entrance_testing()
 	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TESTING, camplib.DOOR_TESTING_UID)
 end
 
-function entrance_tutorial()
+local function entrance_tutorial()
 	entrance_force_worldstate(worldlib.HD_WORLDSTATE_STATUS.TUTORIAL, camplib.DOOR_TUTORIAL_UID)
 end
 
-
-set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
-	return 0
-end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
-
-define_tile_code("hd_shortcuts")
-define_tile_code("hd_tunnelman")
-
-set_pre_tile_code_callback(function(x, y, layer)
-	oncamp_tunnelman_spawn(x, y, layer)
-	return true
-end, "hd_tunnelman")
-
-set_post_tile_code_callback(function(x, y, layer)
-	oncamp_shortcuts(x, y, layer)
-	oncamp_fixes()
-	return true
-end, "hd_shortcuts")
-
-define_tile_code("hd_door_tutorial")
-define_tile_code("hd_door_testing")
-
-set_post_tile_code_callback(function(x, y, layer)
-	camplib.create_door_tutorial(x, y, layer)
-	return true
-end, "hd_door_tutorial")
-
-set_post_tile_code_callback(function(x, y, layer)
-	if options.hd_debug_testing_door == true then
-		camplib.create_door_testing(x, y, layer)
-	end
-	return true
-end, "hd_door_testing")
-
-
-function oncamp_tunnelman_spawn(x, y, l)
-	marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
-	marla = get_entity(marla_uid)
+local function oncamp_tunnelman_spawn(x, y, l)
+	local marla_uid = spawn_entity_nonreplaceable(ENT_TYPE.MONS_MARLA_TUNNEL, x, y, l, 0, 0)
+	local marla = get_entity(marla_uid)
 	marla.flags = clr_flag(marla.flags, ENT_FLAG.FACING_LEFT)
 	return marla_uid
 end
 
-function oncamp_shortcuts(x, y, l)
+local function oncamp_shortcuts(x, y, l)
 
 	--loop once for door materials,
 	--once done, concatonate LOGIC_DOOR and ITEM_CONSTRUCTION_SIGN lists, make sure construction signs are last.
@@ -142,13 +107,47 @@ function oncamp_shortcuts(x, y, l)
 	end
 end
 
-function oncamp_fixes()
+local function oncamp_fixes()
 	-- fix gap in floor where S2 shortcut would normally spawn
 	spawn(ENT_TYPE.FLOOR_GENERIC, 21, 84, LAYER.FRONT, 0, 0)
 
 	-- # TODO: add missing wood bg decorations (wood bg doesn't get placed past the usual s2 camera bounds)
 
 end
+
+
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+	return 0
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_MARLA_TUNNEL)
+
+define_tile_code("hd_shortcuts")
+define_tile_code("hd_tunnelman")
+
+set_pre_tile_code_callback(function(x, y, layer)
+	oncamp_tunnelman_spawn(x, y, layer)
+	return true
+end, "hd_tunnelman")
+
+set_post_tile_code_callback(function(x, y, layer)
+	oncamp_shortcuts(x, y, layer)
+	oncamp_fixes()
+	return true
+end, "hd_shortcuts")
+
+define_tile_code("hd_door_tutorial")
+define_tile_code("hd_door_testing")
+
+set_post_tile_code_callback(function(x, y, layer)
+	camplib.create_door_tutorial(x, y, layer)
+	return true
+end, "hd_door_tutorial")
+
+set_post_tile_code_callback(function(x, y, layer)
+	if options.hd_debug_testing_door == true then
+		camplib.create_door_testing(x, y, layer)
+	end
+	return true
+end, "hd_door_testing")
 
 
 -- ON.CAMP

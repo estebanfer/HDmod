@@ -1,6 +1,6 @@
 local module = {}
 
-HD_THEMEORDER = {
+local HD_THEMEORDER = {
 	THEME.DWELLING,
 	THEME.JUNGLE,
 	THEME.ICE_CAVES,
@@ -8,15 +8,15 @@ HD_THEMEORDER = {
 	THEME.VOLCANA
 }
 
-DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
-DOOR_EXIT_TO_BLACKMARKET_POS = nil
+local DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
+local DOOR_EXIT_TO_BLACKMARKET_POS = nil
 
 function module.init()
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = nil
 	DOOR_EXIT_TO_BLACKMARKET_POS = nil
 end
 
-function hd_exit_levelhandling()
+local function hd_exit_levelhandling()
 	-- local next_world, next_level, next_theme = state.world or 1, state.level or 1, state.theme or THEME.DWELLING
 	local next_world, next_level, next_theme = state.world, state.level, state.theme
 
@@ -46,16 +46,20 @@ end
 
 function module.create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
-		get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
+		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
+		texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
+		get_entity(door_bg):set_texture(define_texture(texture_def))
+		get_entity(door_bg).animation_frame = 2
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	if (
 		test_flag(state.level_flags, 18) == true
 		and state.theme ~= THEME.VOLCANA
 	) then
-		ent = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_TORCH, x, y, l, 0, 0))
+		---@type Torch
+		local ent = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_TORCH, x, y, l))
 		ent:light_up(true)
 	end
 	-- assign coordinates to a global variable to define the game coordinates the player needs to be
@@ -64,10 +68,10 @@ function module.create_door_entrance(x, y, l)
 end
 
 function module.create_door_exit(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	spawn_entity_over(ENT_TYPE.FX_COMPASS, door_target, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 	local _w, _l, _t = hd_exit_levelhandling()
 	set_door_target(door_target, _w, _l, _t)
@@ -85,8 +89,8 @@ function module.create_door_exit(x, y, l)
 end
 
 function module.create_door_exit_moai(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 	local _w, _l, _t = hd_exit_levelhandling()
 	set_door_target(door_target, _w, _l, _t)
@@ -94,11 +98,11 @@ function module.create_door_exit_moai(x, y, l)
 end
 
 function module.create_door_exit_to_hell(x, y, l)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
+	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
 	set_door_target(door_target, 5, 1, THEME.VOLCANA)
 	
 	if botdlib.OBTAINED_BOOKOFDEAD == true then
-		helldoor_e = get_entity(door_target):as_movable()
+		local helldoor_e = get_entity(door_target)
 		helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 		helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
 	end
@@ -107,37 +111,15 @@ end
 -- creates mothership entrance
 function module.create_door_exit_to_mothership(x, y, l)
 	-- _door_uid = spawn_door(x, y, l, 3, 3, THEME.NEO_BABYLON)
-	door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_BABYLON_1)
 	get_entity(door_bg).animation_frame = 1
 	set_door_target(door_target, 3, 3, THEME.NEO_BABYLON)
 end
 
--- creates blackmarket entrance
-function module.create_door_exit_to_blackmarket(x, y, l)
-	spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
-	get_entity(door_bg).animation_frame = 1
-	DOOR_EXIT_TO_BLACKMARKET_POS = {x = x, y = y}
-	set_interval(entrance_blackmarket, 1)
-end
-
-function module.create_door_exit_to_hauntedcastle(x, y, l)
-	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
-	texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
-	get_entity(door_bg):set_texture(define_texture(texture_def))
-	get_entity(door_bg).animation_frame = 1
-	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = {x = x, y = y}
-	set_interval(entrance_hauntedcastle, 1)
-end
-
-function entrance_force_feeling(_feeling_to_force)
+local function entrance_force_feeling(_feeling_to_force)
 	local x, y = nil, nil
 	if _feeling_to_force == feelingslib.FEELING_ID.BLACKMARKET and DOOR_EXIT_TO_BLACKMARKET_POS ~= nil then
 		x, y = DOOR_EXIT_TO_BLACKMARKET_POS.x, DOOR_EXIT_TO_BLACKMARKET_POS.y
@@ -159,8 +141,8 @@ function entrance_force_feeling(_feeling_to_force)
 			local sound = get_sound(VANILLA_SOUND.UI_SECRET)
 			if sound ~= nil then sound:play() end
 
-			local door_spawned = true -- for those who can frame-perfect :spelunkoid:
-			local door_exit_ent = get_entity(door_target)
+			door_spawned = true -- for those who can frame-perfect :spelunkoid:
+			door_exit_ent = get_entity(door_target)
 		end
 		if door_spawned == true then
 			for i = 1, #players, 1 do
@@ -176,20 +158,42 @@ function entrance_force_feeling(_feeling_to_force)
 	end
 end
 
-function entrance_blackmarket()
+local function entrance_blackmarket()
 	entrance_force_feeling(feelingslib.FEELING_ID.BLACKMARKET)
 end
 
-function entrance_hauntedcastle()
+local function entrance_hauntedcastle()
 	entrance_force_feeling(feelingslib.FEELING_ID.HAUNTEDCASTLE)
 end
 
+-- creates blackmarket entrance
+function module.create_door_exit_to_blackmarket(x, y, l)
+	spawn_entity(ENT_TYPE.LOGICAL_BLACKMARKET_DOOR, x, y, l, 0, 0)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	-- get_entity(door_bg):set_texture(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1)
+	get_entity(door_bg).animation_frame = 1
+	DOOR_EXIT_TO_BLACKMARKET_POS = {x = x, y = y}
+	set_interval(entrance_blackmarket, 1)
+end
+
+function module.create_door_exit_to_hauntedcastle(x, y, l)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
+	texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
+	get_entity(door_bg):set_texture(define_texture(texture_def))
+	get_entity(door_bg).animation_frame = 1
+	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = {x = x, y = y}
+	set_interval(entrance_hauntedcastle, 1)
+end
+
 -- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
-function exit_boss(yama)
+local function exit_boss(yama)
 	local yama = false or yama
 	local win_state = WIN_STATE.NO_WIN
 	for i = 1, #players, 1 do
-		x, y, l = get_position(players[i].uid)
+		local x, y, l = get_position(players[i].uid)
 		if (
 			-- (get_entity(olmeclib.DOOR_ENDGAME_OLMEC_UID).entered == true)
 			(players[i].state == CHAR_STATE.ENTERING)
@@ -210,11 +214,11 @@ function exit_boss(yama)
 	state.win_state = win_state
 end
 
-function exit_olmec()
+local function exit_olmec()
 	exit_boss()
 end
 
-function exit_yama()
+local function exit_yama()
 	exit_boss(true)
 end
 
@@ -225,7 +229,7 @@ function module.create_door_ending(x, y, l)
 	-- # TOTEST: Test if the compass works for this. If not, use the method Mr Auto suggested (attatching the compass arrow entity to it)
 	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	set_door_target(olmeclib.DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
-	door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
+	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock == false then
 		lock_door_at(x, y)
 	end

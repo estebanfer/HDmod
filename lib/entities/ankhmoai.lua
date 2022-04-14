@@ -20,7 +20,7 @@ function module.create_moai_veil(x, y, l)
     decoration.width, decoration.height = 3, 4
 end
 
-function players_in_moai()
+local function players_in_moai()
 	local moai_hollow_aabb = AABB:new(
 		roomgenlib.global_levelassembly.moai_exit.x-.5,
 		roomgenlib.global_levelassembly.moai_exit.y+1.5,
@@ -28,12 +28,12 @@ function players_in_moai()
 		roomgenlib.global_levelassembly.moai_exit.y-1.5
 	)
 	moai_hollow_aabb:offset(0, 1)
-	local players_in_moai = get_entities_overlapping_hitbox(
+	local _players_in_moai = get_entities_overlapping_hitbox(
 		0, MASK.PLAYER,
 		moai_hollow_aabb,
 		LAYER.FRONT
 	)
-	return #players_in_moai ~= 0
+	return #_players_in_moai ~= 0
 end
 
 set_callback(function()

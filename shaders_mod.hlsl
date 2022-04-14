@@ -1,33 +1,63 @@
-float4 LiquidHelper(float2 tex, float2 noise, float currentLiquidSample, Texture2D liquidTexture) {
-  float4 WATER_COLOR = float4(1.0f, 0.0f, 0.0f, 0.5f);
-  float4 LAVA_COLOR = float4(0.0f, 1.0f, 0.0f, 0.9f);
-  float4 EGGJUICE_COLOR = float4(0.0f, 1.0f, 0.0f, 0.9f);//0.0f, 0.0f, 1.0f, 0.5f);
+#define ACID_RGBA float4(.0f, 1.0f, .0f, .43f)
 
-	float alpha = saturate((1.f / (LIQUID_END_CUTOFF - LIQUID_START_CUTOFF)) * currentLiquidSample - (LIQUID_START_CUTOFF / (LIQUID_END_CUTOFF - LIQUID_START_CUTOFF)));
-	if (alpha == 0.f) {
-		// Air
-		return float4(0.f, 0.f, 0.f, 0.f);
-	}
-	float4 liquidSample = liquidTexture.Sample(smoothClampingSamplerState, float2(1.f, 0.f));
-  if(distance(liquidSample.rgb, float3(0.04705882352f, 0.69411764705f, 0.89803921568f)) < 0.1f) {
-    //liquidSample = WATER_COLOR;
-  } else if(distance(liquidSample.rgb, float3(1.0f, 0.56078431372, 0.0f)) < 0.1f) {
-    //liquidSample = LAVA_COLOR;
-  } else {
-    liquidSample = EGGJUICE_COLOR;
-  }
-	float3 diffuseSample = pow(texture1.Sample(smoothClampingSamplerState, tex + alpha * noise * LIQUIDREFRACTION_NOISE).rgb, 1.f / GAMMA_CORRECTION);
-	return float4(lerp(diffuseSample, liquidSample.rgb, liquidSample.a * alpha), 1.f);
+//It might seem that I know what I'm doing, but I have no idea about the glowing, just copied this from TemperatureHelper (Estebanfer)
+float3 AcidHelper(float acidness) {
+	// Only works for temperature <= 6500.0
+
+	//orignal
+	//float3 m0 = float3(0.0f,-1902.1955373783176f,-8257.7997278925690f);
+	//float3 m1 = float3(0.0f, 1669.5803561666639f, 2575.2827530017594f);
+	//float3 m2 = float3(1.0f, 1.3302673723350029f, 1.8993753891711275f);
+
+	//Some colors swapped
+	//float3 m0 = float3(-8257.7997278925690f, 0.0f, -1902.1955373783176f);
+	//float3 m1 = float3(2575.2827530017594f, 0.0f, 1669.5803561666639f);
+	//float3 m2 = float3(1.8993753891711275f, 1.0f, 1.3302673723350029f);
+
+	//average of both
+	float3 m0 = float3(-4128.899863946284f, -951.0977686891588f, -5079.997632635443f);
+	float3 m1 = float3(1287.6413765008797f, 834.790178083332f, 2122.431554584212f);
+	float3 m2 = float3(1.4496876945855637f, 1.1651336861675015f, 1.6148213807530651f);
+	return saturate(m0 / (acidness +  m1) + m2);
 }
 
-/*LightOutput mainp_LiquidLava_PS(PixelInputType input) {
-  float4 GLOW_COLOR = float4(1.0f, 0.0f, 0.5f, 1.0f);
+LiquidOutput mainp_LiquidEggplant_PS(PixelInputType input) {
+	LiquidOutput output;
 
-  LightOutput output;
-  float currentLiquidSample = texture0.Sample(smoothBorderSamplerState, input.tex).g;
-  float4 liquidOutput = LiquidHelper(input.tex, float2(0.f, 0.f), currentLiquidSample, texture4);
-  output.liquid = float4(pow(liquidOutput.rgb, GAMMA_CORRECTION), liquidOutput.a * GLOW_COLOR.a);
-  output.emissive = float4(.4f * liquidOutput.a * GLOW_COLOR.a * GLOW_COLOR.rgb, liquidOutput.a * GLOW_COLOR.a);
-  return output;
+	float currentLiquidSample = texture0.Sample(smoothBorderSamplerState, input.tex).r;
+
+	// Get final refracted position
+	float2 noise = GetRefractionVector(input.tex, LIQUIDREFRACTION_TIMESTEP_MULTIPLIER, LIQUIDREFRACTION_NOISE, LIQUIDREFRACTION_THRESHOLD);
+
+	float4 liquidOutput = LiquidHelperWater(input.tex, noise, currentLiquidSample, ACID_RGBA);
+	output.liquid = pow(liquidOutput, GAMMA_CORRECTION);
+
+	//copied from lava
+	float sampleHotness = pow(currentLiquidSample, 4.f);
+	float3 emissiveTint = AcidHelper(3000.f * sampleHotness);
+	output.emissive = float4(.2f * liquidOutput.a * emissiveTint, liquidOutput.a);
+
+	//Original emissive
+	//output.emissive = float4(0.f, 0.f, 0.f, 0.f);
+
+	return output;
 }
-*/
+
+float4 mainp_lowp_LiquidEggplant_PS(PixelInputType input) : SV_TARGET0 {
+	float4 output;
+
+	float currentLiquidSample = texture0.Sample(smoothBorderSamplerState, input.tex).r;
+
+	// Get final refracted position
+	float2 noise = GetRefractionVector(input.tex, LIQUIDREFRACTION_TIMESTEP_MULTIPLIER, LIQUIDREFRACTION_NOISE, LIQUIDREFRACTION_THRESHOLD);
+
+	float4 liquidOutput = LiquidHelperWater(input.tex, noise, currentLiquidSample, ACID_RGBA);
+	output = pow(liquidOutput, GAMMA_CORRECTION);
+	
+	//Copied from Lava
+	//float sampleHotness = pow(currentLiquidSample, 4.f);
+	//float3 emissiveTint = AcidHelper(3000.f * sampleHotness);
+	//output += float4(.2f * liquidOutput.a * emissiveTint, liquidOutput.a);
+
+	return output;
+}

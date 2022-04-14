@@ -1,6 +1,8 @@
 blackknightlib = require 'lib.entities.black_knight'
 turrentlib = require 'lib.entities.laser_turrent'
 spikeballlib = require 'lib.entities.spikeball_trap'
+snaillib = require 'lib.entities.snail'
+babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
 
 local module = {}

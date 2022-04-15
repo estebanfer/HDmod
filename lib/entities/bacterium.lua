@@ -65,7 +65,7 @@ local function bacterium_kill(bacterium)
     bacterium:destroy()
 end
 
----@param bacterium Frog
+---@param bacterium Movable
 ---@param attacker Movable
 local function bacterium_damage(bacterium, attacker)
     messpect(enum_get_name(ENT_TYPE, attacker.type.id))
@@ -92,7 +92,7 @@ local function bacterium_damage(bacterium, attacker)
     end
 end
 
----@param ent Frog
+---@param ent Movable
 local function bacterium_set(ent)
     ent.hitboxx, ent.hitboxy = 0.45, 0.45
     ent.width, ent.height = 1.25, 1.25
@@ -129,7 +129,8 @@ local function will_collide_floor(ent, ent_info)
     x = ent_info.movex == 0 and math.floor(x+0.5) or math.floor(x+(ent.hitboxx*ent_info.movex)+ent.velocityx+0.5)
     y = ent_info.movey == 0 and math.floor(y+0.5) or math.floor(y+(ent.hitboxy*ent_info.movey)+ent.velocityx+0.5)
     local floor_uid = get_solid_grid_entity(x, y, l)
-    if floor_uid ~= -1 then
+    floor_uid = floor_uid ~= -1 and floor_uid or get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, get_hitbox(ent.uid, 0, ent.velocityx, ent.velocityy), l)[1]
+    if floor_uid ~= nil then
         return floor_uid
     end
 end
@@ -202,12 +203,14 @@ local function bacterium_update(ent, ent_info)
         end
         for _,p_uid in ipairs(get_entities_overlapping_hitbox(0, MASK.PLAYER, get_hitbox(ent.uid), LAYER.PLAYER)) do
             local player = get_entity(p_uid)
-            if player.invincibility_frames_timer == 0 then
-                local x = get_position(ent.uid)
-                local px = get_position(p_uid)
-                player:damage(ent.uid, 1, 0, px > x and 0.1 or -0.1, 0.1, 60)
+            if not test_flag(player.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
+                if player.invincibility_frames_timer == 0 then
+                    local x = get_position(ent.uid)
+                    local px = get_position(p_uid)
+                    player:damage(ent.uid, 1, 0, px > x and 0.1 or -0.1, 0.1, 60)
+                end
+                bacterium_kill(ent)
             end
-            bacterium_kill(ent)
         end
         ent.animation_frame = math.floor(ent.idle_counter / 5)
         ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)

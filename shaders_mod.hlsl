@@ -1,5 +1,42 @@
 #define ACID_RGBA float4(.25f, 1.0f, .0f, .3f)
 
+//For acid particles and effects
+PixelProcessOutput mainp_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
+	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
+	if (textureSample.a == 0.f) {
+		discard;
+	}
+	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
+    	input.color = ACID_RGBA;
+	}
+	
+	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
+
+	PixelProcessOutput pixelProcessOutput;
+	pixelProcessOutput.emissive = float4(0.f, 0.f, 0.f, outputColor.a);
+	pixelProcessOutput.transparency = outputColor;
+
+	return pixelProcessOutput;
+}
+
+LowPPixelProcessOutput mainp_lowP_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
+	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
+	if (textureSample.a == 0.f) {
+		discard;
+	}
+	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
+    	input.color = ACID_RGBA;
+	}
+
+	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
+
+	LowPPixelProcessOutput pixelProcessOutput;
+	pixelProcessOutput.diffuse = outputColor;
+
+	return pixelProcessOutput;
+}
+
+//For acid
 //It might seem that I know what I'm doing, but I have no idea about the glowing, just copied this from TemperatureHelper (Estebanfer)
 float3 AcidHelper(float acidness) {
 	// Only works for temperature <= 6500.0
@@ -71,40 +108,4 @@ float4 mainp_lowp_LiquidEggplant_PS(PixelInputType input) : SV_TARGET0 {
 	//output += float4(.2f * liquidOutput.a * emissiveTint, liquidOutput.a);
 
 	return output;
-}
-
-//For acid particles and effects:
-PixelProcessOutput mainp_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
-	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
-	if (textureSample.a == 0.f) {
-		discard;
-	}
-	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
-    	input.color = ACID_RGBA;
-	}
-	
-	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
-
-	PixelProcessOutput pixelProcessOutput;
-	pixelProcessOutput.emissive = float4(0.f, 0.f, 0.f, outputColor.a);
-	pixelProcessOutput.transparency = outputColor;
-
-	return pixelProcessOutput;
-}
-
-LowPPixelProcessOutput mainp_lowP_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
-	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
-	if (textureSample.a == 0.f) {
-		discard;
-	}
-	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
-    	input.color = ACID_RGBA;
-	}
-
-	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
-
-	LowPPixelProcessOutput pixelProcessOutput;
-	pixelProcessOutput.diffuse = outputColor;
-
-	return pixelProcessOutput;
 }

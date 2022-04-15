@@ -72,3 +72,39 @@ float4 mainp_lowp_LiquidEggplant_PS(PixelInputType input) : SV_TARGET0 {
 
 	return output;
 }
+
+//For acid particles and effects:
+PixelProcessOutput mainp_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
+	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
+	if (textureSample.a == 0.f) {
+		discard;
+	}
+	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
+    	input.color = ACID_RGBA;
+	}
+	
+	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
+
+	PixelProcessOutput pixelProcessOutput;
+	pixelProcessOutput.emissive = float4(0.f, 0.f, 0.f, outputColor.a);
+	pixelProcessOutput.transparency = outputColor;
+
+	return pixelProcessOutput;
+}
+
+LowPPixelProcessOutput mainp_lowP_Process_DeferredTextureColor_Transparent_PS(PixelProcessInput input) {
+	float4 textureSample = texture0.Sample(smoothWrappingSamplerState, input.tex);
+	if (textureSample.a == 0.f) {
+		discard;
+	}
+	if(distance(input.color.rgb, float3(.7f, .05f, .32f)) < .3f) {
+    	input.color = ACID_RGBA;
+	}
+
+	float4 outputColor = float4(input.color.rgb * textureSample.rgb, input.color.a * textureSample.a);
+
+	LowPPixelProcessOutput pixelProcessOutput;
+	pixelProcessOutput.diffuse = outputColor;
+
+	return pixelProcessOutput;
+}

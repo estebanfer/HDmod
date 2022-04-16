@@ -714,8 +714,27 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,},
 			alternate = {
-				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
-				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
+				[THEME.JUNGLE] = {function(x, y, l)
+					local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
+					local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_monkey)
+					if (
+						monkey_chance ~= 0
+						and math.random(monkey_chance) == 1
+					) then
+						spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
+					end
+				end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l)
+					local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
+					local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_worm_jungle_monkey)
+					if (
+						state.world == 2
+						and monkey_chance ~= 0
+						and math.random(monkey_chance) == 1
+					) then
+						spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
+					end
+				end,},
 
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,

@@ -1,4 +1,5 @@
 local celib = require "custom_entities"
+local commonlib = require "common"
 
 local bacterium_texture_id
 do
@@ -86,7 +87,6 @@ local function bacterium_set(ent)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
-    ent.flags = clr_flag(ent.flags, ENT_FLAG.INTERACT_WITH_WEBS)
     set_on_damage(ent.uid, bacterium_damage)
 
     local x, y, l = get_position(ent.uid)
@@ -140,12 +140,12 @@ end
 ---@param ent_info any
 local function bacterium_update(ent, ent_info)
     if get_entity(ent_info.attached_floor_uid) then
-        if ent.stun_timer == 0 then
+        if ent.stun_timer == 0 and not test_flag(ent.more_flags, 9) then
             ent.velocityx = ent_info.movex*BACTERIUM_VEL
             ent.velocityy = ent_info.movey*BACTERIUM_VEL
         else
             ent.velocityx = 0
-            ent.velocityy = ent.frozen_timer == 0 and 0 or 0.01
+            ent.velocityy = ent.frozen_timer == 0 and 0 or 0.01 --Frozen entities always move down
         end
         --messpect(ent_info.dir_state, ent_info.attached_floor_uid)
         if will_be_out_of_owner(ent, ent_info) then

@@ -18,7 +18,11 @@ local MOVE_MAP = {
     {0, -1},
     {-1, 0}
 }
-local BACTERIUM_VEL = 0.075
+local BACTERIUM_VEL = 0.055
+
+local function spawn_blood(x, y, l)
+    spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.4-0.2, math.random()*0.2)
+end
 
 local function play_sound_at_entity(snd, uid, volume)
     local v = 0.5
@@ -57,9 +61,9 @@ end
 
 local function bacterium_kill(bacterium)
     local x, y, l = get_position(bacterium.uid)
-    spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.5-0.25, math.random()*0.25)
-    spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.5-0.25, math.random()*0.25)
-    spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.5-0.25, math.random()*0.25)
+    spawn_blood(x, y, l)
+    spawn_blood(x, y, l)
+    spawn_blood(x, y, l)
     play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
     spawn_bacterium_rubble(x, y, l, 2)
     bacterium:destroy()
@@ -76,16 +80,19 @@ local function bacterium_damage(bacterium, attacker)
         end
         bacterium.frozen_timer = 120
         bacterium.stun_timer = 120
+        play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY_HIT, bacterium.uid)
+        generate_world_particles(PARTICLEEMITTER.BLUESPARKS, bacterium.uid)
         kill_entity(attacker.uid)
         return true
     elseif bacterium.frozen_timer == 0 then
         if bacterium.stun_timer == 0 then
             bacterium.stun_timer = 60
         end
-        local x, y = get_position(bacterium.uid)
-        spawn(ENT_TYPE.ITEM_BLOOD, x, y, bacterium.layer, math.random()*0.5-0.25, math.random()*0.25)
+        local x, y, l = get_position(bacterium.uid)
+        spawn_blood(x, y, l)
+        generate_world_particles(PARTICLEEMITTER.HITEFFECT_SMACK, bacterium.uid)
         bacterium.exit_invincibility_timer = 10
-        play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, bacterium.uid)
+        play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid)
         return true
     else
         bacterium_kill(bacterium)

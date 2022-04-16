@@ -45,8 +45,6 @@ local function acid_update()
 end
 
 set_callback(function ()
-    water_emitters = {}
-    water_index = 1
 	if state.theme == THEME.EGGPLANT_WORLD then
 		if gameframe_cb == -1 then
 			gameframe_cb = set_callback(acid_update, ON.GAMEFRAME)
@@ -56,6 +54,13 @@ set_callback(function ()
 		gameframe_cb = -1
 	end
 end, ON.POST_LEVEL_GENERATION)
+
+set_callback(function ()
+	if state.loading == 1 and state.screen_next ~= SCREEN.DEATH then
+    	water_emitters = {}
+    	water_index = 1
+	end
+end, ON.LOADING)
 
 function module.spawn_acid_illumination()
 	if not options.disable_acid_illumination then

@@ -429,7 +429,14 @@ function module.is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO:
 
 function module.is_valid_piranha_spawn(x, y, l) return false end -- # TODO: Implement method for valid piranha spawn
 
-function module.is_valid_monkey_spawn(x, y, l) return false end -- # TODO: Implement method for valid monkey spawn
+function module.is_valid_monkey_spawn(x, y, l)
+	local floor = get_grid_entity_at(x, y, l)
+	if floor ~= -1 then
+		floor = get_entity(floor)
+		return commonlib.has({ENT_TYPE.FLOOR_VINE}, floor.type.id)
+	end
+	return false
+end
 
 function module.is_valid_hangspider_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)

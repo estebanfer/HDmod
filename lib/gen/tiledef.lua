@@ -411,10 +411,18 @@ module.HD_TILENAME = {
 			alternate = {
 				-- force field spawning method, rows of 3.
 				[THEME.ICE_CAVES] = {
-					function(x, y, l) return 0 end,
+					function(x, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x+1, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x+2, y, l)
+					end,
 				},
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) return 0 end,
+					function(x, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x+1, y, l)
+						spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x+2, y, l)
+					end,
 				},
 			}
 		},
@@ -706,11 +714,30 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,},
 			alternate = {
-				[THEME.JUNGLE] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
-				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l) end,},
+				[THEME.JUNGLE] = {function(x, y, l)
+					local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
+					local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_monkey)
+					if (
+						monkey_chance ~= 0
+						and math.random(monkey_chance) == 1
+					) then
+						spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
+					end
+				end,},
+				[THEME.EGGPLANT_WORLD] = {function(x, y, l)
+					local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
+					local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_worm_jungle_monkey)
+					if (
+						state.world == 2
+						and monkey_chance ~= 0
+						and math.random(monkey_chance) == 1
+					) then
+						spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
+					end
+				end,},
 
 				[THEME.NEO_BABYLON] = {
-					function(x, y, l) return 0 end,
+					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 				},
 				[THEME.VOLCANA] = {function(x, y, l) return 0 end},
 				[THEME.CITY_OF_GOLD] = {
@@ -1433,8 +1460,18 @@ module.HD_TILENAME = {
 	["("] = {
 		-- Had to create a new tile for Temple's obstacle tile because there were conflictions with "r" in Jungle.
 		description = "Temple Obstacle Block",
-	}
+	},
 		-- description = "Unknown",
+	[")"] = {
+		phase_1 = {
+			default = {
+				function(x, y, l)
+					spawn_grid_entity(ENT_TYPE.FLOOR_FORCEFIELD_TOP, x, y, l)
+				end
+			}
+		},
+		description = "Forcefield top",
+	}
 }
 
 

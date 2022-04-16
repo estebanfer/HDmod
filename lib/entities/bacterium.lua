@@ -24,30 +24,6 @@ local function spawn_blood(x, y, l)
     spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.4-0.2, math.random()*0.2)
 end
 
-local function play_sound_at_entity(snd, uid, volume)
-    local v = 0.5
-    if volume ~= nil then
-        v = volume
-    end
-    local ent = get_entity(uid)
-    local sound = get_sound(snd)
-    local audio = sound:play(true)
-    local x, y, _ = get_position(ent.uid)
-    local sx, sy = screen_position(x, y)
-    local d = screen_distance(distance(ent.uid, ent.uid))
-    if players[1] ~= nil then
-        d = screen_distance(distance(ent.uid, players[1].uid))
-    end
-    audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx))
-    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy))
-    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-    audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)
-    
-    audio:set_pause(false)
-  end
-
 local function get_solid_grid_entity(x, y, l)
     local uid = get_grid_entity_at(x, y, l)
     return test_flag(get_entity_flags(uid), ENT_FLAG.SOLID) and uid or -1
@@ -64,7 +40,7 @@ local function bacterium_kill(bacterium)
     spawn_blood(x, y, l)
     spawn_blood(x, y, l)
     spawn_blood(x, y, l)
-    play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
+    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
     spawn_bacterium_rubble(x, y, l, 2)
     bacterium:destroy()
 end
@@ -72,7 +48,6 @@ end
 ---@param bacterium Movable
 ---@param attacker Movable
 local function bacterium_damage(bacterium, attacker)
-    messpect(enum_get_name(ENT_TYPE, attacker.type.id))
     if attacker.type.id == ENT_TYPE.ITEM_FREEZERAYSHOT then
         if bacterium.frozen_timer == 0 then
             spawn_over(ENT_TYPE.ITEM_ICECAGE, bacterium.uid, 0, 0)
@@ -80,7 +55,7 @@ local function bacterium_damage(bacterium, attacker)
         end
         bacterium.frozen_timer = 120
         bacterium.stun_timer = 120
-        play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY_HIT, bacterium.uid)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY_HIT, bacterium.uid)
         generate_world_particles(PARTICLEEMITTER.BLUESPARKS, bacterium.uid)
         kill_entity(attacker.uid)
         return true
@@ -92,7 +67,7 @@ local function bacterium_damage(bacterium, attacker)
         spawn_blood(x, y, l)
         generate_world_particles(PARTICLEEMITTER.HITEFFECT_SMACK, bacterium.uid)
         bacterium.exit_invincibility_timer = 10
-        play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid)
         return true
     else
         bacterium_kill(bacterium)
@@ -115,7 +90,6 @@ local function bacterium_set(ent)
     set_on_damage(ent.uid, bacterium_damage)
 
     local x, y, l = get_position(ent.uid)
-    messpect(get_solid_grid_entity(x, y-1, l))
     local is_inverse
     if math.random(2) == 1 then
         is_inverse = false

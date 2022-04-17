@@ -4,6 +4,7 @@ spikeballlib = require 'lib.entities.spikeball_trap'
 snaillib = require 'lib.entities.snail'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
+feelingslib = require 'lib.feelings'
 
 local module = {}
 
@@ -351,7 +352,7 @@ module.HD_TILENAME = {
 						local block = get_entity(block_uid)
 						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
 						block.more_flags = set_flag(block.more_flags, 17)
-						
+
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
 						texture_def.texture_path = "res/floormisc_tombstone_king.png"
 						get_entity(block_uid):set_texture(define_texture(texture_def))
@@ -729,7 +730,8 @@ module.HD_TILENAME = {
 					local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
 					local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_monkey)
 					if (
-						monkey_chance ~= 0
+						feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
+						and monkey_chance ~= 0
 						and math.random(monkey_chance) == 1
 					) then
 						spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)

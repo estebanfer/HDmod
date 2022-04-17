@@ -7,10 +7,16 @@ function module.init()
 end
 
 function module.create_tombstone(x, y, l)
-	local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l, 0, 0)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+    local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+    local block = get_entity(block_uid)
+    block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+    block.more_flags = set_flag(block.more_flags, 17)
+	
+    local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
 	texture_def.texture_path = "res/floormisc_tombstone_rip.png"
 	get_entity(block_uid):set_texture(define_texture(texture_def))
+    block.animation_frame = 27
+
 	module.tombstone_blocks[#module.tombstone_blocks+1] = block_uid
 end
 

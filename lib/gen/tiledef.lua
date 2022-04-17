@@ -347,10 +347,15 @@ module.HD_TILENAME = {
 						doorslib.create_door_exit_to_mothership(x, y, l)
 					elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 						-- Spawn king's tombstone
-						local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l)
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+						local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+						local block = get_entity(block_uid)
+						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+						block.more_flags = set_flag(block.more_flags, 17)
+						
+						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
 						texture_def.texture_path = "res/floormisc_tombstone_king.png"
 						get_entity(block_uid):set_texture(define_texture(texture_def))
+						block.animation_frame = 27
 						
 						-- 2 tiles down
 						-- Spawn skeleton
@@ -466,10 +471,16 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {
 				function(x, y, l)
-					local block_uid = spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP, x, y, l)
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+					local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+					local block = get_entity(block_uid)
+					block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+					block.more_flags = set_flag(block.more_flags, 17)
+
+					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
 					texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
 					get_entity(block_uid):set_texture(define_texture(texture_def))
+					block.animation_frame = 27
+
 					idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
 				end,
 			},

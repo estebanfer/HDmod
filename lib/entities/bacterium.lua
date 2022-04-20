@@ -1,5 +1,5 @@
 local celib = require "custom_entities"
-local commonlib = require "common"
+local bacterium_id
 
 local bacterium_texture_id
 do
@@ -41,28 +41,21 @@ local function bacterium_kill(bacterium)
     spawn_blood(x, y, l)
     spawn_blood(x, y, l)
     spawn_blood(x, y, l)
-    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
+    if bacterium.frozen_timer == 0 then
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
+    end
     spawn_bacterium_rubble(x, y, l, 2)
     bacterium:destroy()
 end
 
+--TODO: Crysknife, telefrag
 ---@param bacterium Movable
 ---@param attacker Movable
 local function bacterium_damage(bacterium, attacker)
-    if attacker.type.id == ENT_TYPE.ITEM_FREEZERAYSHOT then
-        if bacterium.frozen_timer == 0 then
-            spawn_over(ENT_TYPE.ITEM_ICECAGE, bacterium.uid, 0, 0)
-            bacterium.flags = set_flag(bacterium.flags, ENT_FLAG.CAN_BE_STOMPED)
-        end
-        bacterium.frozen_timer = 120
-        bacterium.stun_timer = 120
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY_HIT, bacterium.uid)
-        generate_world_particles(PARTICLEEMITTER.BLUESPARKS, bacterium.uid)
-        kill_entity(attacker.uid)
-        return true
-    elseif bacterium.frozen_timer == 0 then
-        if bacterium.stun_timer == 0 then
-            bacterium.stun_timer = 60
+    if bacterium.frozen_timer == 0 then
+        local bacterium_info = celib.get_custom_entity(bacterium.uid, bacterium_id)
+        if bacterium_info.stop_timer == 0 then
+            bacterium_info.stop_timer = 60
         end
         local x, y, l = get_position(bacterium.uid)
         spawn_blood(x, y, l)
@@ -88,6 +81,7 @@ local function bacterium_set(ent)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
     set_on_damage(ent.uid, bacterium_damage)
+    set_on_kill(ent.uid, bacterium_kill) --Telefrag
 
     local x, y, l = get_position(ent.uid)
     local is_inverse
@@ -101,7 +95,8 @@ local function bacterium_set(ent)
         inverse = is_inverse,
         dir_state = 2,
         movex = is_inverse and -1 or 1,
-        movey = 0
+        movey = 0,
+        stop_timer = 0,
     }
 end
 
@@ -135,12 +130,14 @@ local function update_move(ent, ent_info, ox, oy)
     ent.velocityy = ent_info.movey*BACTERIUM_VEL
 end
 
----comment
 ---@param ent Movable
 ---@param ent_info any
 local function bacterium_update(ent, ent_info)
     if get_entity(ent_info.attached_floor_uid) then
-        if ent.stun_timer == 0 and not test_flag(ent.more_flags, 9) then
+        if ent.frozen_timer ~= 0 then
+            ent_info.stop_timer = ent.frozen_timer
+        end
+        if ent_info.stop_timer == 0 and not test_flag(ent.more_flags, 9) then
             ent.velocityx = ent_info.movex*BACTERIUM_VEL
             ent.velocityy = ent_info.movey*BACTERIUM_VEL
         else
@@ -196,15 +193,18 @@ local function bacterium_update(ent, ent_info)
         ent.animation_frame = math.floor(ent.idle_counter / 5)
         ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     end
+    if ent_info.stop_timer ~= 0 then
+        ent_info.stop_timer = ent_info.stop_timer - 1
+    end
 end
 
-local bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.ITEM_ROCK, celib.UPDATE_TYPE.POST_STATEMACHINE)
+bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.MONS_MANTRAP, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
 celib.init()
 
 register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", function ()
     local x, y, l = get_position(players[1].uid)
     x, y = math.floor(x), math.floor(y)
-    local uid = spawn(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0)
+    local uid = spawn(ENT_TYPE.MONS_MANTRAP, x, y, l, 0, 0)
     celib.set_custom_entity(uid, bacterium_id)
 end)

@@ -22,11 +22,14 @@ end
 
 local function tongue_idle()
 	if (
-		state.theme == THEME.JUNGLE and -- or state.theme == THEME.ICE_CAVES) and
-		WORMTONGUE_UID ~= nil and
 		(
-			TONGUE_STATE == TONGUE_SEQUENCE.READY or
-			TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
+			state.theme == THEME.JUNGLE
+			or state.theme == THEME.ICE_CAVES
+		)
+		and WORMTONGUE_UID ~= nil
+		and (
+			TONGUE_STATE == TONGUE_SEQUENCE.READY
+			or TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
 		)
 	) then
 		local x, y, l = get_position(WORMTONGUE_UID)

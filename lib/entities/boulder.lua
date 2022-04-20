@@ -32,11 +32,6 @@ function module.onframe_ownership_crush_prevention()
             -- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
             if options.hd_og_boulder_agro_disable == false then
                 local boulder = get_entity(BOULDER_UID)
-                
-                -- set texture
-                local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_ICE_2)
-                texture_def.texture_path = "res/deco_ice_boulder.png"
-                boulder:set_texture(define_texture(texture_def))
 
                 for i, player in ipairs(players) do
                     boulder.last_owner_uid = player.uid

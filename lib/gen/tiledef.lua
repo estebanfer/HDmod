@@ -138,8 +138,8 @@ module.HD_TILENAME = {
 					end,
 				},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,},
-				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
 			},
 		},
@@ -168,11 +168,15 @@ module.HD_TILENAME = {
 					function(x, y, l) return 0 end,
 				},
 				[THEME.OLMEC] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
+					function(x, y, l)
+						spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l)
+					end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,
+					function(x, y, l)
+						spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
+					end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.CITY_OF_GOLD] = {

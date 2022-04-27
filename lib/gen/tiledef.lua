@@ -138,8 +138,8 @@ module.HD_TILENAME = {
 					end,
 				},
 				[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,},
-				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
-				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+				[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
+				[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
 				[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
 			},
 		},
@@ -168,11 +168,15 @@ module.HD_TILENAME = {
 					function(x, y, l) return 0 end,
 				},
 				[THEME.OLMEC] = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
+					function(x, y, l)
+						spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l)
+					end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.TEMPLE] = {
-					function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,
+					function(x, y, l)
+						spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
+					end,
 					function(x, y, l) return 0 end,
 				},
 				[THEME.CITY_OF_GOLD] = {
@@ -549,22 +553,40 @@ module.HD_TILENAME = {
 			},
 			default = {
 				function(x, y, l)
-					if math.random(10) == 1 then
-						spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
-					elseif math.random(5) == 1 then
-						spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
-					elseif math.random(2) == 2 then
-						local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
-						if state.theme == THEME.OLMEC then
-							tile_to_spawn = ENT_TYPE.FLOORSTYLED_STONE
-						elseif state.theme == THEME.CITY_OF_GOLD then
-							tile_to_spawn = ENT_TYPE.FLOORSTYLED_COG
-						elseif state.theme == THEME.TEMPLE then
-							tile_to_spawn = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE)
+					if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == true then
+						if math.random(10) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+						elseif math.random(5) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+						elseif math.random(2) == 2 then
+							spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
+						else
+							spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
 						end
-						spawn_grid_entity(tile_to_spawn, x, y, l)
 					else
-						return 0
+						if math.random(15) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+						elseif math.random(10) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+						elseif math.random(12) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l)
+						elseif math.random(10) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
+						elseif math.random(8) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
+						elseif math.random(6) == 1 then
+							spawn_grid_entity(ENT_TYPE.ITEM_EMERALD, x, y, l)
+						else
+							local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
+							if state.theme == THEME.OLMEC then
+								tile_to_spawn = ENT_TYPE.FLOORSTYLED_STONE
+							elseif state.theme == THEME.CITY_OF_GOLD then
+								tile_to_spawn = ENT_TYPE.FLOORSTYLED_COG
+							elseif state.theme == THEME.TEMPLE then
+								tile_to_spawn = (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE)
+							end
+							spawn_grid_entity(tile_to_spawn, x, y, l)
+						end
 					end
 				end,
 				-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,

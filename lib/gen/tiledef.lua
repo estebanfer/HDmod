@@ -187,6 +187,17 @@ module.HD_TILENAME = {
 						else return 0 end
 					end,
 				},
+				[THEME.ICE_CAVES] = {
+					function(x, y, l)
+						if math.random(2) == 1 then
+							if math.random(10) == 1 then
+								spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l)
+							else
+								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
+							end
+						else return 0 end
+					end,
+				},
 				[THEME.NEO_BABYLON] = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,
 					function(x, y, l) return 0 end,

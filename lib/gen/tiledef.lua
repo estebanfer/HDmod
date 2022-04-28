@@ -121,6 +121,30 @@ module.HD_TILENAME = {
 		phase_1 = {
 			default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,},
 			alternate = {
+				[THEME.DWELLING] = {
+					function(x, y, l)
+						local chance = 80
+						local block_above = get_grid_entity_at(x, y+1, l)
+						local block_left = get_grid_entity_at(x-1, y, l)
+						local to_spawn = ENT_TYPE.FLOOR_GENERIC
+						if (--block above is ground or is not a woodblock
+							block_above == -1
+							or (block_above ~= -1 and commonlib.has({ENT_TYPE.FLOOR_GENERIC}, get_entity(block_above).type.id))
+						) then
+							if ( --(block left is not ground and is a woodblock) or (block right is not ground and is a woodblock)
+							block_left ~= -1 and commonlib.has({ENT_TYPE.FLOORSTYLED_MINEWOOD}, get_entity(block_left).type.id)
+							) then
+								chance = 3
+							end
+						else
+							chance = 2
+						end
+						if (math.random(chance) == 1) then
+							to_spawn = ENT_TYPE.FLOORSTYLED_MINEWOOD
+						end
+						spawn_grid_entity(to_spawn, x, y, l)
+					end
+				},
 				[THEME.EGGPLANT_WORLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l) end,},
 				[THEME.ICE_CAVES] = {
 					function(x, y, l)

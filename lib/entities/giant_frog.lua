@@ -8,21 +8,24 @@ ANIM_STATE = {
     IDLE_ANIM = 1,
     JUMPING = 2,
     SPITTING = 3,
-    TURNING = 4
+    TURNING = 4,
+    WALKING = 5
 }
+local FRAME_TIME = 4
 
 ANIMATIONS = {
-    [ANIM_STATE.IDLE_ANIM] = {1, 2, 1},
-    [ANIM_STATE.SPITTING] = {8, 7, 6, 5, 4, 3},
-    [ANIM_STATE.JUMPING] = {11, 10, 9},
-    [ANIM_STATE.TURNING] = {16, 15, 14, 13}
+    [ANIM_STATE.IDLE_ANIM] = {1, 2, 1, frames = 3},
+    [ANIM_STATE.SPITTING] = {8, 7, 6, 5, 4, 3, frames = 6},
+    [ANIM_STATE.JUMPING] = {11, 10, 9, frames = 3},
+    [ANIM_STATE.TURNING] = {15, 14, 13, frames = 3},
+    [ANIM_STATE.WALKING] = {23, 22, 21, 20, 19, 18, 17, loop = true, frames = 7},
 }
 
 local giant_frog_texture_id
 do
     local giant_frog_texture_def = TextureDefinition.new()
     giant_frog_texture_def.width = 1536
-    giant_frog_texture_def.height = 768
+    giant_frog_texture_def.height = 1024
     giant_frog_texture_def.tile_width = 256
     giant_frog_texture_def.tile_height = 256
 
@@ -36,6 +39,15 @@ local function gfrog_target_facing(frog_uid, player_uid)
     return x1 - x2 < 0
 end
 
+local function set_animation(c_data, anim_state)
+    c_data.animation_state = anim_state
+    c_data.animation_timer = ANIMATIONS[anim_state].frames*FRAME_TIME
+end
+
+local function filter_solids(ent)
+    return test_flag(ent.flags, ENT_FLAG.SOLID)
+end
+
 local function get_animation_frame(anim_state, anim_timer)
     return ANIMATIONS[anim_state][math.ceil(anim_timer / 4)]
 end
@@ -45,6 +57,7 @@ end
 local function giant_frog_set(ent)
     ent.health = 10
     ent.hitboxx, ent.hitboxy = 0.640, 0.700
+    ent.offsety = -0.2
     ent.width, ent.height = 2.0, 2.0
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)
@@ -52,6 +65,7 @@ local function giant_frog_set(ent)
         script_jumped = false,
         animation_state = ANIM_STATE.IDLE,
         animation_timer = 60,
+        action_timer = math.random(100, 200)
     }
 end
 
@@ -90,28 +104,31 @@ end
 local function update_giant_frog_animation(ent, c_data)
     if c_data.animation_state < ANIM_STATE.JUMPING and
     gfrog_target_facing(ent.uid, ent.chased_target_uid) ~= test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-        c_data.animation_state = ANIM_STATE.TURNING
-        c_data.animation_timer = 4*4
-        ent.jump_timer = ent.jump_timer + 15
+        set_animation(c_data, ANIM_STATE.TURNING)
+        c_data.action_timer = c_data.action_timer + 15
     end
     if c_data.animation_state == ANIM_STATE.IDLE then
         ent.animation_frame = 0
         if c_data.animation_timer == 0 then
-            c_data.animation_state = ANIM_STATE.IDLE_ANIM
-            c_data.animation_timer = 3*4
+            set_animation(c_data, ANIM_STATE.IDLE_ANIM)
         end
     else
         if c_data.animation_timer == 0 then
-            ent.animation_frame = 0
-            if c_data.animation_state == ANIM_STATE.JUMPING then
-                giant_frog_jump(ent)
-                c_data.script_jumped = true
-                ent.animation_frame = 12
-            elseif c_data.animation_state == ANIM_STATE.TURNING then
-                ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
+            if ANIMATIONS[c_data.animation_state].loop then
+                c_data.animation_timer = ANIMATIONS[c_data.animation_state].frames*FRAME_TIME
+                ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
+            else
+                ent.animation_frame = 0
+                if c_data.animation_state == ANIM_STATE.JUMPING then
+                    giant_frog_jump(ent)
+                    c_data.script_jumped = true
+                    ent.animation_frame = 12
+                elseif c_data.animation_state == ANIM_STATE.TURNING then
+                    ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
+                end
+                c_data.animation_state = ANIM_STATE.IDLE
+                c_data.animation_timer = math.random(20, 50)
             end
-            c_data.animation_state = ANIM_STATE.IDLE
-            c_data.animation_timer = math.random(20, 50)
         else
             ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
         end
@@ -120,33 +137,57 @@ local function update_giant_frog_animation(ent, c_data)
 end
 
 ---comment
----@param ent Monster
+---@param ent Frog
 ---@param c_data any
 local function giant_frog_update(ent, c_data)
+    ent.pause = true
     if ent.standing_on_uid ~= -1 and ent.state ~= CHAR_STATE.JUMPING then
+        c_data.action_timer = c_data.action_timer - 1
         c_data.script_jumped = false
-        if ent.jump_timer == 0 then
+        if c_data.action_timer < 1 then
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time
                 if math.random(2) == 1 then
-                    c_data.animation_state = ANIM_STATE.JUMPING
-                    c_data.animation_timer = 3*4
-                    time = math.random(100, 200)
+                    if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, 0, 0.8), ent.layer), filter_solids)[1] then
+                        ent.move_state = 1
+                        time = math.random(50, 100)
+                        set_animation(c_data, ANIM_STATE.WALKING)
+                    else
+                        set_animation(c_data, ANIM_STATE.JUMPING)
+                        time = math.random(100, 200)
+                    end
                 else
                     giant_frog_spit(ent)
-                    c_data.animation_state = ANIM_STATE.SPITTING
-                    c_data.animation_timer = 6*4
+                    set_animation(c_data, ANIM_STATE.SPITTING)
                     time = 200
                 end
                 ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
-                ent.jump_timer = time
+                c_data.action_timer = time
                 messpect(time)
+            elseif c_data.animation_state == ANIM_STATE.WALKING then
+                c_data.animation_state = ANIM_STATE.IDLE
+                c_data.animation_timer = math.random(20, 50)
+                c_data.action_timer = math.random(100, 200)
             else
                 update_giant_frog_animation(ent, c_data)
-                ent.jump_timer = 1
             end
         else
+            if c_data.animation_state == ANIM_STATE.WALKING then
+                if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, 0, 0.8), ent.layer), filter_solids)[1] then
+                    ent.move_state = 1
+                    local vel_x = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -0.05 or 0.05
+                    if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, vel_x), ent.layer), filter_solids)[1] then
+                        vel_x = vel_x * -1
+                        ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
+                    end
+                    ent.velocityx = vel_x
+                else
+                    c_data.animation_state = ANIM_STATE.IDLE
+                    c_data.animation_timer = math.random(20, 50)
+                    c_data.action_timer = math.random(100, 200)
+                end
+            end
             update_giant_frog_animation(ent, c_data)
         end
     elseif not c_data.script_jumped then
@@ -157,7 +198,7 @@ local function giant_frog_update(ent, c_data)
         ent.animation_frame = 12
     end
     logger.log_text_uid(tostring(c_data.script_jumped), ent.uid)
-    logger.log_text_uid(tostring(ent.jump_timer), ent.uid)
+    logger.log_text_uid(tostring(c_data.action_timer), ent.uid)
     logger.log_text_uid(tostring(c_data.animation_state), ent.uid)
 end
 

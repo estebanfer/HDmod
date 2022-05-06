@@ -1,5 +1,4 @@
 local celib = require "custom_entities"
-local logger = require "logger"
 
 local function b(flag) return (1 << (flag-1)) end
 
@@ -164,7 +163,6 @@ local function giant_frog_update(ent, c_data)
                 end
                 ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
                 c_data.action_timer = time
-                messpect(time)
             elseif c_data.animation_state == ANIM_STATE.WALKING then
                 c_data.animation_state = ANIM_STATE.IDLE
                 c_data.animation_timer = math.random(20, 50)
@@ -197,9 +195,6 @@ local function giant_frog_update(ent, c_data)
     else
         ent.animation_frame = 12
     end
-    logger.log_text_uid(tostring(c_data.script_jumped), ent.uid)
-    logger.log_text_uid(tostring(c_data.action_timer), ent.uid)
-    logger.log_text_uid(tostring(c_data.animation_state), ent.uid)
 end
 
 local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE, celib.UPDATE_TYPE.POST_STATEMACHINE)

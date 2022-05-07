@@ -55,8 +55,8 @@ end
 ---@param ent Frog
 local function giant_frog_set(ent)
     ent.health = 10
-    ent.hitboxx, ent.hitboxy = 0.640, 0.700
-    ent.offsety = -0.2
+    ent.hitboxx, ent.hitboxy = 0.600, 0.750
+    ent.offsety = -0.215
     ent.width, ent.height = 2.0, 2.0
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)

@@ -61,6 +61,7 @@ local function giant_frog_set(ent)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)
     return {
+        frogs_inside = 5,
         script_jumped = false,
         animation_state = ANIM_STATE.IDLE,
         animation_timer = 60,
@@ -147,7 +148,7 @@ local function giant_frog_update(ent, c_data)
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time
-                if math.random(2) == 1 then
+                if c_data.frogs_inside == 0 or math.random(2) == 1 then
                     if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, 0, 0.8), ent.layer), filter_solids)[1] then
                         ent.move_state = 1
                         time = math.random(50, 100)
@@ -158,6 +159,7 @@ local function giant_frog_update(ent, c_data)
                     end
                 else
                     giant_frog_spit(ent)
+                    c_data.frogs_inside = c_data.frogs_inside - 1
                     set_animation(c_data, ANIM_STATE.SPITTING)
                     time = 200
                 end

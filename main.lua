@@ -153,7 +153,7 @@ end, ON.LEVEL)
 
 set_callback(function()
 	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
-	if state.loading == 1 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
+	if state.loading == 2 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
 		custommusiclib.on_end_level()
 	end
 end, ON.LOADING)

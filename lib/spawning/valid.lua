@@ -81,6 +81,13 @@ local function detect_entrance_room_template(x, y, l) -- is this position inside
 	)
 end
 
+local nonshop_nontree_solids = {
+	ENT_TYPE.FLOOR_ALTAR,
+	ENT_TYPE.FLOOR_TREE_BASE,
+	ENT_TYPE.FLOOR_TREE_TRUNK,
+	ENT_TYPE.FLOOR_TREE_TOP,
+	ENT_TYPE.FLOOR_IDOL_BLOCK
+}
 local function detect_solid_nonshop_nontree(x, y, l)
     local entity_here = get_grid_entity_at(x, y, l)
 	if entity_here ~= -1 then
@@ -90,11 +97,7 @@ local function detect_solid_nonshop_nontree(x, y, l)
 			test_flag(entity_flags, ENT_FLAG.SOLID) == true
 			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
 			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
-			and entity_type ~= ENT_TYPE.FLOOR_ALTAR
-			and entity_type ~= ENT_TYPE.FLOOR_TREE_BASE
-			and entity_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
-			and entity_type ~= ENT_TYPE.FLOOR_TREE_TOP
-			and entity_type ~= ENT_TYPE.FLOOR_IDOL_BLOCK
+			and not commonlib.has(nonshop_nontree_solids, entity_type)
 		)
 	end
 	return false
@@ -238,6 +241,14 @@ function module.is_valid_wormtongue_spawn(x, y, l)
 	return false
 end
 
+local blackmarket_invalid_floors = {
+	ENT_TYPE.FLOORSTYLED_MINEWOOD,
+	ENT_TYPE.FLOOR_BORDERTILE,
+	ENT_TYPE.FLOORSTYLED_STONE,
+	ENT_TYPE.FLOOR_TREE_BASE,
+	ENT_TYPE.FLOOR_TREE_TRUNK,
+	ENT_TYPE.FLOOR_TREE_TOP
+}
 function module.is_valid_blackmarket_spawn(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y, l)
 	local floor_uid2 = get_grid_entity_at(x, y-1, l)
@@ -254,26 +265,12 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 			(
 				test_flag(floor_flags, ENT_FLAG.SOLID) == true
 				and test_flag(floor_flags, ENT_FLAG.SHOP_FLOOR) == false
-				and floor_type ~= ENT_TYPE.FLOOR_BORDERTILE
-				and floor_type ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
-				and floor_type ~= ENT_TYPE.FLOORSTYLED_STONE
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_BASE
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
-				and floor_type ~= ENT_TYPE.FLOOR_TREE_TOP
-				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER
-				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
+				and not commonlib.has(blackmarket_invalid_floors, floor_type)
 			)
 			and (
 				test_flag(floor_flags2, ENT_FLAG.SOLID) == true
 				and test_flag(floor_flags2, ENT_FLAG.SHOP_FLOOR) == false
-				and floor_type2 ~= ENT_TYPE.FLOOR_BORDERTILE
-				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
-				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_STONE
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_BASE
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TRUNK
-				and floor_type2 ~= ENT_TYPE.FLOOR_TREE_TOP
-				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER
-				-- and floor_type2 ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
+				and not commonlib.has(blackmarket_invalid_floors, floor_type2)
 			)
 		)
 	end

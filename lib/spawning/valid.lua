@@ -84,16 +84,17 @@ end
 local function detect_solid_nonshop_nontree(x, y, l)
     local entity_here = get_grid_entity_at(x, y, l)
 	if entity_here ~= -1 then
-		entity_here = get_entity(entity_here)
+		local entity_type = get_entity_type(entity_here)
+		local entity_flags = get_entity_flags(entity_here)
 		return (
-			test_flag(entity_here.flags, ENT_FLAG.SOLID) == true
-			and test_flag(entity_here.flags, ENT_FLAG.SHOP_FLOOR) == false
-			and test_flag(entity_here.flags, ENT_FLAG.SHOP_FLOOR) == false
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_ALTAR
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_BASE
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_TRUNK
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_TREE_TOP
-			and entity_here.type.id ~= ENT_TYPE.FLOOR_IDOL_BLOCK
+			test_flag(entity_flags, ENT_FLAG.SOLID) == true
+			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
+			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
+			and entity_type ~= ENT_TYPE.FLOOR_ALTAR
+			and entity_type ~= ENT_TYPE.FLOOR_TREE_BASE
+			and entity_type ~= ENT_TYPE.FLOOR_TREE_TRUNK
+			and entity_type ~= ENT_TYPE.FLOOR_TREE_TOP
+			and entity_type ~= ENT_TYPE.FLOOR_IDOL_BLOCK
 		)
 	end
 	return false
@@ -244,15 +245,15 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 		floor_uid ~= -1
 		and floor_uid2 ~= -1
 	) then
-		local floor = get_entity(floor_uid)
+		local floor_flags = get_entity_flags(floor_uid)
 		local floor_type = get_entity_type(floor_uid)
 
-		local floor2 = get_entity(floor_uid2)
+		local floor_flags2 = get_entity_flags(floor_uid2)
 		local floor_type2 = get_entity_type(floor_uid2)
 		return (
 			(
-				test_flag(floor.flags, ENT_FLAG.SOLID) == true
-				and test_flag(floor.flags, ENT_FLAG.SHOP_FLOOR) == false
+				test_flag(floor_flags, ENT_FLAG.SOLID) == true
+				and test_flag(floor_flags, ENT_FLAG.SHOP_FLOOR) == false
 				and floor_type ~= ENT_TYPE.FLOOR_BORDERTILE
 				and floor_type ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
 				and floor_type ~= ENT_TYPE.FLOORSTYLED_STONE
@@ -263,8 +264,8 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 				-- and floor_type ~= ENT_TYPE.FLOOR_LADDER_PLATFORM
 			)
 			and (
-				test_flag(floor2.flags, ENT_FLAG.SOLID) == true
-				and test_flag(floor2.flags, ENT_FLAG.SHOP_FLOOR) == false
+				test_flag(floor_flags2, ENT_FLAG.SOLID) == true
+				and test_flag(floor_flags2, ENT_FLAG.SHOP_FLOOR) == false
 				and floor_type2 ~= ENT_TYPE.FLOOR_BORDERTILE
 				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_MINEWOOD
 				and floor_type2 ~= ENT_TYPE.FLOORSTYLED_STONE
@@ -406,8 +407,7 @@ function module.is_valid_piranha_spawn(x, y, l) return false end -- # TODO: Impl
 function module.is_valid_monkey_spawn(x, y, l)
 	local floor = get_grid_entity_at(x, y, l)
 	if floor ~= -1 then
-		floor = get_entity(floor)
-		return commonlib.has({ENT_TYPE.FLOOR_VINE}, floor.type.id)
+		return commonlib.has({ENT_TYPE.FLOOR_VINE}, get_entity_type(floor))
 	end
 	return false
 end
@@ -470,7 +470,7 @@ function module.is_valid_turret_spawn(x, y, l)
 	if (
 		get_grid_entity_at(x, y, l) == -1
 		and is_solid_grid_entity(x, y+1, l)
-		and get_entity(get_grid_entity_at(x, y+1, l)).type.id == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
+		and get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
 		and get_grid_entity_at(x, y-1, l) == -1
 	) then
 		return true
@@ -493,8 +493,7 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath
     local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		above = get_entity(above)
-		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
+		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
 			return false
 		end
 	end
@@ -507,8 +506,7 @@ end
 function module.is_valid_spikeball_spawn(x, y, l)
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		above = get_entity(above)
-		if above.type.id == ENT_TYPE.FLOOR_ALTAR then
+		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
 			return false
 		end
 	end
@@ -530,8 +528,7 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
 		(left == -1 and left2 == -1 and right ~= -1)
 		or (left ~= -1 and right == -1 and right2 == -1)
 	) then
-        floor = get_entity(floor)
-        return commonlib.has(valid_floors, floor.type.id)
+        return commonlib.has(valid_floors, get_entity_type(floor))
     end
     return false
 end -- # TODO: Implement method for valid arrowtrap spawn

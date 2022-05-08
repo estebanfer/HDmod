@@ -53,32 +53,6 @@ local module = {}
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
-
-local function detect_floor_at(x, y, l)
-	local floor = get_grid_entity_at(x, y, l)
-	return floor ~= -1
-end
-
-local function detect_floor_below(x, y, l)
-	local floor = get_grid_entity_at(x, y-1, l)
-	return floor ~= -1
-end
-
-local function detect_floor_above(x, y, l)
-	local floor = get_grid_entity_at(x, y+1, l)
-	return floor ~= -1
-end
-
-local function detect_floor_left(x, y, l)
-	local floor = get_grid_entity_at(x-1, y, l)
-	return floor ~= -1
-end
-
-local function detect_floor_right(x, y, l)
-	local floor = get_grid_entity_at(x+1, y, l)
-	return floor ~= -1
-end
-
 local function detect_empty_nodoor(x, y, l)
 	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
 	local entity_uids = get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y, l, 0.5)
@@ -312,8 +286,8 @@ function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: I
 function module.is_valid_caveman_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid caveman spawn
@@ -321,8 +295,8 @@ end -- # TODO: Implement method for valid caveman spawn
 function module.is_valid_scorpion_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid scorpion spawn
@@ -331,8 +305,8 @@ function module.is_valid_cobra_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
 		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 	)
 end -- # TODO: Implement method for valid cobra spawn
 
@@ -340,8 +314,8 @@ function module.is_valid_snake_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
 		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 	)
 end -- # TODO: Implement method for valid snake spawn
 
@@ -349,39 +323,39 @@ function module.is_valid_mantrap_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
 		and detect_entrance_room_template(x, y, l) == false
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 	)
 end -- # TODO: Implement method for valid mantrap spawn
 
 function module.is_valid_tikiman_spawn(x, y, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid tikiman spawn
 
 function module.is_valid_snail_spawn(x, y, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid snail spawn
 
 function module.is_valid_firefrog_spawn(x, y, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid firefrog spawn
 
 function module.is_valid_frog_spawn(x, y, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid frog spawn
@@ -397,8 +371,8 @@ function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: 
 function module.is_valid_critter_rat_spawn(x, y, l)
 	return (
 		run_spiderlair_ground_enemy_chance()
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid critter_rat spawn
@@ -417,8 +391,8 @@ function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implem
 
 function module.is_valid_greenknight_spawn(x, y, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid greenknight spawn
@@ -442,9 +416,9 @@ function module.is_valid_hangspider_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	local floor_three_below = get_grid_entity_at(x, y-3, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y+1, l) ~= -1
+		and get_grid_entity_at(x, y-1, l) == -1
 		and floor_two_below == -1
 		and floor_three_below == -1
 		and detect_entrance_room_template(x, y, l) == false
@@ -454,9 +428,9 @@ end -- # TODO: Implement method for valid hangspider spawn
 function module.is_valid_bat_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y+1, l) ~= -1
+		and get_grid_entity_at(x, y-1, l) == -1
 		and floor_two_below == -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
@@ -465,9 +439,9 @@ end -- # TODO: Implement method for valid bat spawn
 function module.is_valid_spider_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y+1, l) ~= -1
+		and get_grid_entity_at(x, y-1, l) == -1
 		and floor_two_below == -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
@@ -484,9 +458,9 @@ function module.is_valid_mshiplight_spawn(x, y, l) return false end -- # TODO: I
 function module.is_valid_lantern_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y+1, l) ~= -1
+		and get_grid_entity_at(x, y-1, l) == -1
 		and floor_two_below == -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
@@ -507,9 +481,9 @@ end -- # TODO: Implement method for valid turret spawn
 function module.is_valid_webnest_spawn(x, y, l)
 	local floor_two_below = get_grid_entity_at(x, y-2, l)
 	return (
-		detect_floor_at(x, y, l) == false
-		and detect_floor_above(x, y, l) == true
-		and detect_floor_below(x, y, l) == false
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y+1, l) ~= -1
+		and get_grid_entity_at(x, y-1, l) == -1
 		and floor_two_below == -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
@@ -615,8 +589,8 @@ function module.is_valid_mammoth_spawn(x, y, l)
 	)
 	return (
 		#entity_uids == 0
-		and detect_floor_at(x, y, l) == false
-		and detect_floor_below(x, y, l) == true
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) ~= -1
 		and detect_entrance_room_template(x, y, l) == false
 	)
 end -- # TODO: Implement method for valid mammoth spawn
@@ -637,7 +611,7 @@ function module.is_valid_giantspider_spawn(x, y, l)
 	)
 	return (
 		#entity_uids == 0
-		and detect_floor_above(x, y, l) == true
+		and get_grid_entity_at(x, y+1, l) ~= -1
 		and floor_above_right ~= -1
 		and createlib.GIANTSPIDER_SPAWNED == false
 		and detect_entrance_room_template(x, y, l) == false

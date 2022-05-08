@@ -63,13 +63,16 @@ local function detect_empty_nodoor(x, y, l)
 	)
 end
 
+local shop_templates = {
+	ROOM_TEMPLATE.SHOP,
+	ROOM_TEMPLATE.SHOP_LEFT,
+	ROOM_TEMPLATE.DICESHOP,
+	ROOM_TEMPLATE.DICESHOP_LEFT
+}
 local function detect_shop_room_template(x, y, l) -- is this position inside an entrance room?
 	local rx, ry = get_room_index(x, y)
 	return (
-		get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.SHOP_LEFT
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.DICESHOP_LEFT
+		commonlib.has(shop_templates, get_room_template(rx, ry, l))
 	)
 end
 
@@ -95,7 +98,6 @@ local function detect_solid_nonshop_nontree(x, y, l)
 		local entity_flags = get_entity_flags(entity_here)
 		return (
 			test_flag(entity_flags, ENT_FLAG.SOLID) == true
-			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
 			and test_flag(entity_flags, ENT_FLAG.SHOP_FLOOR) == false
 			and not commonlib.has(nonshop_nontree_solids, entity_type)
 		)

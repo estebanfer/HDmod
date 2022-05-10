@@ -120,6 +120,14 @@ local function default_ground_monster_condition(x, y, l)
 	and detect_entrance_room_template(x, y, l) == false
 end
 
+local function default_ceiling_entity_condition(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and is_solid_grid_entity(x, y+1, l)
+	and get_grid_entity_at(x, y-1, l) == -1
+	and get_grid_entity_at(x, y-2, l) == -1
+	and detect_entrance_room_template(x, y, l) == false
+end
+
 local function run_spiderlair_ground_enemy_chance()
 	--[[
 		if not spiderlair
@@ -344,39 +352,15 @@ function module.is_valid_monkey_spawn(x, y, l)
 end
 
 function module.is_valid_hangspider_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	local floor_three_below = get_grid_entity_at(x, y-3, l)
 	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
-		and get_grid_entity_at(x, y-1, l) == -1
-		and floor_two_below == -1
-		and floor_three_below == -1
-		and detect_entrance_room_template(x, y, l) == false
+		default_ceiling_entity_condition(x, y, l)
+		and get_grid_entity_at(x, y-3, l) == -1
 	)
 end -- # TODO: Implement method for valid hangspider spawn
 
-function module.is_valid_bat_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
-		and get_grid_entity_at(x, y-1, l) == -1
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid bat spawn
+module.is_valid_bat_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid bat spawn
 
-function module.is_valid_spider_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
-		and get_grid_entity_at(x, y-1, l) == -1
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid spider spawn
+module.is_valid_spider_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid spider spawn
 
 function module.is_valid_vampire_spawn(x, y, l) return false end -- # TODO: Implement method for valid vampire spawn
 
@@ -386,16 +370,9 @@ function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Imple
 
 function module.is_valid_mshiplight_spawn(x, y, l) return false end -- # TODO: Implement method for valid mshiplight spawn
 
-function module.is_valid_lantern_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
-		and get_grid_entity_at(x, y-1, l) == -1
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid lantern spawn
+module.is_valid_lantern_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid lantern spawn
+
+module.is_valid_webnest_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid webnest spawn
 
 function module.is_valid_turret_spawn(x, y, l)
 	if (
@@ -407,17 +384,6 @@ function module.is_valid_turret_spawn(x, y, l)
     end
     return false
 end -- # TODO: Implement method for valid turret spawn
-
-function module.is_valid_webnest_spawn(x, y, l)
-	local floor_two_below = get_grid_entity_at(x, y-2, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
-		and get_grid_entity_at(x, y-1, l) == -1
-		and floor_two_below == -1
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid webnest spawn
 
 function module.is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath

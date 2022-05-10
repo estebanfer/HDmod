@@ -15,6 +15,7 @@ feelingslib = require 'lib.feelings'
 unlockslib = require 'lib.unlocks'
 cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
+custommusiclib = require 'lib.music.custommusic'
 
 validlib = require 'lib.spawning.valid'
 spawndeflib = require 'lib.spawning.spawndef'
@@ -42,6 +43,7 @@ meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_boss_exits_unlock", "Debug: Unlock boss exits",														false)
+register_option_bool("hd_debug_custom_music_disable", "Debug: Disable custom music for special levels",								false)
 register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-enduced feeling toasts",								false)
 register_option_bool("hd_debug_info_boss", "Debug: Info - Bossfight",																false)
 register_option_bool("hd_debug_info_boulder", "Debug: Info - Boulder",																false)
@@ -113,6 +115,8 @@ set_callback(function()
 		
 		roomgenlib.onlevel_generation_execution_phase_three()
 
+		custommusiclib.on_start_level()
+
 		--[[
 			Procedural Spawn post_level_generation stuff
 		--]]
@@ -146,3 +150,10 @@ set_callback(function()
 
 	acidlib.spawn_acid_illumination()
 end, ON.LEVEL)
+
+set_callback(function()
+	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
+	if state.loading == 2 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
+		custommusiclib.on_end_level()
+	end
+end, ON.LOADING)

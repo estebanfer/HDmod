@@ -114,6 +114,12 @@ local function is_valid_monster_floor(x, y, l)
     return test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)
 end
 
+local function default_ground_monster_condition(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and is_valid_monster_floor(x, y-1, l)
+	and detect_entrance_room_template(x, y, l) == false
+end
+
 local function run_spiderlair_ground_enemy_chance()
 	--[[
 		if not spiderlair
@@ -130,6 +136,11 @@ local function run_spiderlair_ground_enemy_chance()
 		return true
 	end
 	return false
+end
+
+local function spiderlair_ground_monster_condition(x, y, l)
+	return run_spiderlair_ground_enemy_chance()
+		and default_ground_monster_condition(x, y, l)
 end
 
 -- Only spawn in a space that has floor above, below, and at least one left or right of it
@@ -283,81 +294,16 @@ function module.is_valid_landmine_spawn(x, y, l) return false end -- # TODO: Imp
 
 function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
 
-function module.is_valid_caveman_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid caveman spawn
+module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
+module.is_valid_scorpion_spawn = spiderlair_ground_monster_condition
+module.is_valid_cobra_spawn = spiderlair_ground_monster_condition
+module.is_valid_snake_spawn = spiderlair_ground_monster_condition
 
-function module.is_valid_scorpion_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid scorpion spawn
-
-function module.is_valid_cobra_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_entrance_room_template(x, y, l) == false
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-	)
-end -- # TODO: Implement method for valid cobra spawn
-
-function module.is_valid_snake_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and detect_entrance_room_template(x, y, l) == false
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-	)
-end -- # TODO: Implement method for valid snake spawn
-
-function module.is_valid_mantrap_spawn(x, y, l)
-	return (
-		detect_entrance_room_template(x, y, l) == false
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-	)
-end -- # TODO: Implement method for valid mantrap spawn
-
-function module.is_valid_tikiman_spawn(x, y, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid tikiman spawn
-
-function module.is_valid_snail_spawn(x, y, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid snail spawn
-
-function module.is_valid_firefrog_spawn(x, y, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid firefrog spawn
-
-function module.is_valid_frog_spawn(x, y, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid frog spawn
+module.is_valid_mantrap_spawn = default_ground_monster_condition
+module.is_valid_tikiman_spawn = default_ground_monster_condition
+module.is_valid_snail_spawn = default_ground_monster_condition
+module.is_valid_firefrog_spawn = default_ground_monster_condition
+module.is_valid_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
 
@@ -367,14 +313,7 @@ function module.is_valid_crocman_spawn(x, y, l) return false end -- # TODO: Impl
 
 function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
 
-function module.is_valid_critter_rat_spawn(x, y, l)
-	return (
-		run_spiderlair_ground_enemy_chance()
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid critter_rat spawn
+module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition -- # TODO: Implement method for valid critter_rat spawn
 
 function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
 
@@ -388,13 +327,7 @@ function module.is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Imp
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
-function module.is_valid_greenknight_spawn(x, y, l)
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
-	)
-end -- # TODO: Implement method for valid greenknight spawn
+module.is_valid_greenknight_spawn = default_ground_monster_condition -- # TODO: Implement method for valid greenknight spawn
 
 function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
 
@@ -583,9 +516,7 @@ function module.is_valid_mammoth_spawn(x, y, l)
 	)
 	return (
 		#entity_uids == 0
-		and get_grid_entity_at(x, y, l) == -1
-		and is_valid_monster_floor(x, y-1, l)
-		and detect_entrance_room_template(x, y, l) == false
+		and default_ground_monster_condition(x, y, l)
 	)
 end -- # TODO: Implement method for valid mammoth spawn
 

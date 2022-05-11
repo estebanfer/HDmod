@@ -229,7 +229,7 @@ end
 register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)
 
 function module.create_giant_frog(grid_x, grid_y, layer)
-    celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.5, layer, 0, 0)
+    celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)
 end
 
 

@@ -1,3 +1,4 @@
+local module = {}
 local celib = require "custom_entities"
 
 local function b(flag) return (1 << (flag-1)) end
@@ -51,6 +52,18 @@ local function get_animation_frame(anim_state, anim_timer)
     return ANIMATIONS[anim_state][math.ceil(anim_timer / 4)]
 end
 
+local function spawn_frog_rubble(x, y, l, amount)
+    for _=1, amount do
+        get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.4-0.2, prng:random_float(PRNG_CLASS.PARTICLES)*0.2)).animation_frame = 12
+    end
+end
+
+local function spawn_blood(x, y, l, amount)
+    for _=1, amount do
+        spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.4-0.2, prng:random_float(PRNG_CLASS.PARTICLES)*0.2)
+    end
+end
+
 --giant frogs spit only 5 frogs and then only jump (?)
 ---@param ent Frog
 local function giant_frog_set(ent)
@@ -60,6 +73,12 @@ local function giant_frog_set(ent)
     ent.width, ent.height = 2.0, 2.0
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)
+    ---@param dead_ent Frog
+    set_on_kill(ent.uid, function (dead_ent)
+        local x, y, l = get_position(dead_ent.uid)
+        spawn_frog_rubble(x, y, l, 2)
+        spawn_blood(x, y, l, 4)
+    end)
     return {
         frogs_inside = 5,
         script_jumped = false,
@@ -140,7 +159,9 @@ end
 ---@param ent Frog
 ---@param c_data any
 local function giant_frog_update(ent, c_data)
-    ent.pause = true
+    ent.jump_timer = 255
+    if ent.frozen_timer > 0 then return end
+
     if ent.standing_on_uid ~= -1 and ent.state ~= CHAR_STATE.JUMPING then
         c_data.action_timer = c_data.action_timer - 1
         c_data.script_jumped = false
@@ -201,9 +222,15 @@ end
 
 local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
-local function spawn_frog()
+local function spawn_frog_debug()
     local x, y, l = get_position(players[1].uid)
     celib.set_custom_entity(spawn(ENT_TYPE.MONS_FROG, x+2, y, l, 0, 0), giant_frog_id)
 end
+register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)
 
-register_option_button("spawn_frog", "spawn g frog", "", spawn_frog)
+function module.create_giant_frog(grid_x, grid_y, layer)
+    celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.5, layer, 0, 0)
+end
+
+
+return module

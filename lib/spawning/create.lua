@@ -342,16 +342,12 @@ function module.create_arrowtrap(x, y, l)
 
 end
 
-function module.create_giantfrog(x, y, l) end
-
 function module.create_giantspider(x, y, l)
     spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+.5, y, l, 0, 0)
     module.GIANTSPIDER_SPAWNED = true
 end
 
 function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l) end
-
-function module.create_bacterium(x, y, l) end
 
 function module.create_eggsac(x, y, l) end
 

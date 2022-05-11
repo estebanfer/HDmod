@@ -29,7 +29,7 @@ do
     giant_frog_texture_def.tile_width = 256
     giant_frog_texture_def.tile_height = 256
 
-    giant_frog_texture_def.texture_path = "giant_frog.png"
+    giant_frog_texture_def.texture_path = "res/giant_frog_hd.png"
     giant_frog_texture_id = define_texture(giant_frog_texture_def)
 end
 
@@ -165,7 +165,7 @@ local function giant_frog_update(ent, c_data)
     if ent.standing_on_uid ~= -1 and ent.state ~= CHAR_STATE.JUMPING then
         c_data.action_timer = c_data.action_timer - 1
         c_data.script_jumped = false
-        if c_data.action_timer < 1 then
+        if c_data.action_timer < 1 and distance(ent.uid, ent.chased_target_uid) < 6 then --TODO: check HD distance
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time
@@ -220,7 +220,7 @@ local function giant_frog_update(ent, c_data)
     end
 end
 
-local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE, celib.UPDATE_TYPE.POST_STATEMACHINE)
+local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE.MONS_FROG, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
 local function spawn_frog_debug()
     local x, y, l = get_position(players[1].uid)
@@ -228,7 +228,8 @@ local function spawn_frog_debug()
 end
 register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)
 
-function module.create_giant_frog(grid_x, grid_y, layer)
+function module.create_giantfrog(grid_x, grid_y, layer)
+    messpect("create", grid_x, grid_y, layer)
     celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)
 end
 

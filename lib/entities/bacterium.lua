@@ -10,7 +10,7 @@ do
     bacterium_texture_def.tile_width = 128
     bacterium_texture_def.tile_height = 128
 
-    bacterium_texture_def.texture_path = "bacterium.png"
+    bacterium_texture_def.texture_path = "res/bacterium.png"
     bacterium_texture_id = define_texture(bacterium_texture_def)
 end
 
@@ -229,7 +229,7 @@ register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", 
     move_entity(uid, x+off_x, y+off_y, 0, 0)
 end)
 
-function module.create_bacterium(grid_x, grid_y, layer, attach_dir)
+local function spawn_bacterium(grid_x, grid_y, layer, attach_dir)
     local uid = spawn(ENT_TYPE.MONS_MANTRAP, grid_x, grid_y, layer, 0, 0)
     celib.set_custom_entity(uid, bacterium_id, attach_dir)
     local off_x, off_y = DIR_MAP[attach_dir][1], DIR_MAP[attach_dir][2]
@@ -237,6 +237,17 @@ function module.create_bacterium(grid_x, grid_y, layer, attach_dir)
     off_y = off_y - off_y * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
     local x, y = get_position(uid)
     move_entity(uid, x+off_x, y+off_y, 0, 0)
+end
+
+function module.create_bacterium(x, y, layer)
+    for dir_i, dir in ipairs(DIR_MAP) do
+        local off_x, off_y = table.unpack(dir)
+        if test_flag(get_entity_flags(get_grid_entity_at(x+off_x, y+off_y, layer)), ENT_FLAG.SOLID) then
+            spawn_bacterium(x, y, layer, dir_i)
+            return
+        end
+    end
+    spawn_bacterium(x, y, layer, 1)
 end
 
 return module

@@ -1,3 +1,4 @@
+local module = {}
 local celib = require "custom_entities"
 local bacterium_id
 
@@ -13,16 +14,27 @@ do
     bacterium_texture_id = define_texture(bacterium_texture_def)
 end
 
-local MOVE_MAP = {
+local DIR_MAP = {
     {0, 1},
     {1, 0},
     {0, -1},
     {-1, 0}
 }
-local BACTERIUM_VEL = 0.055
+module.ATTACH_DIR = {
+    TOP = 1,
+    RIGHT = 2,
+    BOTTOM = 3,
+    LEFT = 4
+}
 
-local function spawn_blood(x, y, l)
-    spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, math.random()*0.4-0.2, math.random()*0.2)
+local BACTERIUM_VEL = 0.055
+local EXTRA_FLOOR_SEPARATION = 0.075
+local HITBOX_SIZE = 0.4
+
+local function spawn_blood(x, y, l, amount)
+    for _=1, amount do
+        spawn(ENT_TYPE.ITEM_BLOOD, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.4-0.2, prng:random_float(PRNG_CLASS.PARTICLES)*0.2)
+    end
 end
 
 local function get_solid_grid_entity(x, y, l)
@@ -38,9 +50,7 @@ end
 
 local function bacterium_kill(bacterium)
     local x, y, l = get_position(bacterium.uid)
-    spawn_blood(x, y, l)
-    spawn_blood(x, y, l)
-    spawn_blood(x, y, l)
+    spawn_blood(x, y, l, 3)
     if bacterium.frozen_timer == 0 then
         commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
     end
@@ -53,12 +63,13 @@ end
 ---@param attacker Movable
 local function bacterium_damage(bacterium, attacker)
     if bacterium.frozen_timer == 0 then
+        ---@type table
         local bacterium_info = celib.get_custom_entity(bacterium.uid, bacterium_id)
         if bacterium_info.stop_timer == 0 then
             bacterium_info.stop_timer = 60
         end
         local x, y, l = get_position(bacterium.uid)
-        spawn_blood(x, y, l)
+        spawn_blood(x, y, l, 1)
         generate_world_particles(PARTICLEEMITTER.HITEFFECT_SMACK, bacterium.uid)
         bacterium.exit_invincibility_timer = 10
         commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid)
@@ -69,8 +80,8 @@ local function bacterium_damage(bacterium, attacker)
 end
 
 ---@param ent Movable
-local function bacterium_set(ent)
-    ent.hitboxx, ent.hitboxy = 0.45, 0.45
+local function bacterium_set(ent, _, _, attach_dir)
+    ent.hitboxx, ent.hitboxy = HITBOX_SIZE, HITBOX_SIZE
     ent.width, ent.height = 1.25, 1.25
     ent.offsety = 0
     ent:set_texture(bacterium_texture_id)
@@ -90,20 +101,23 @@ local function bacterium_set(ent)
     else
         is_inverse = true
     end
+    local dir_state = is_inverse and attach_dir % 4 + 1 or (attach_dir - 2) % 4 + 1
+    local movex, movey = table.unpack(DIR_MAP[dir_state])
+    local attach_off_x, attach_off_y = table.unpack(DIR_MAP[attach_dir])
     return {
-        attached_floor_uid = get_solid_grid_entity(x, y-1, l),
+        attached_floor_uid = get_solid_grid_entity(x+attach_off_x, y+attach_off_y, l),
         inverse = is_inverse,
-        dir_state = 2,
-        movex = is_inverse and -1 or 1,
-        movey = 0,
+        dir_state = dir_state,
+        movex = movex,
+        movey = movey,
         stop_timer = 0,
     }
 end
 
 local function will_collide_floor(ent, ent_info)
     local x, y, l = get_position(ent.uid)
-    x = ent_info.movex == 0 and math.floor(x+0.5) or math.floor(x+(ent.hitboxx*ent_info.movex)+ent.velocityx+0.5)
-    y = ent_info.movey == 0 and math.floor(y+0.5) or math.floor(y+(ent.hitboxy*ent_info.movey)+ent.velocityx+0.5)
+    x = ent_info.movex == 0 and math.floor(x+0.5) or math.floor(x+((ent.hitboxx+EXTRA_FLOOR_SEPARATION)*ent_info.movex)+ent.velocityx+0.5)
+    y = ent_info.movey == 0 and math.floor(y+0.5) or math.floor(y+((ent.hitboxy+EXTRA_FLOOR_SEPARATION)*ent_info.movey)+ent.velocityx+0.5)
     local floor_uid = get_solid_grid_entity(x, y, l)
     floor_uid = floor_uid ~= -1 and floor_uid or get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, get_hitbox(ent.uid, 0, ent.velocityx, ent.velocityy), l)[1]
     if floor_uid ~= nil then
@@ -111,21 +125,21 @@ local function will_collide_floor(ent, ent_info)
     end
 end
 
-local function will_be_out_of_owner(ent, ent_info)
+local function will_be_out_of_attached(ent, ent_info)
     local ox, oy = get_position(ent_info.attached_floor_uid)
     --messpect(ent_info.movex, math.abs(ent.x + ent.velocityx - ent.hitboxx*ent_info.movex - ox), ent_info.movey, math.abs(ent.y + ent.velocityy - ent.hitboxy*ent_info.movey - oy))
-    if (ent_info.movex ~= 0 and ent_info.movex*(ent.x + ent.velocityx - ent.hitboxx*ent_info.movex - ox) > 0.5)
-    or (ent_info.movey ~= 0 and ent_info.movey*(ent.y + ent.velocityy - ent.hitboxy*ent_info.movey - oy) > 0.5)  then
+    if (ent_info.movex ~= 0 and ent_info.movex*(ent.x + ent.velocityx - (ent.hitboxx+EXTRA_FLOOR_SEPARATION)*ent_info.movex - ox) > 0.5)
+    or (ent_info.movey ~= 0 and ent_info.movey*(ent.y + ent.velocityy - (ent.hitboxx+EXTRA_FLOOR_SEPARATION)*ent_info.movey - oy) > 0.5)  then
         return true
     end
     return false
 end
 
 local function update_move(ent, ent_info, ox, oy)
-    ent.x = ent_info.movex == 0 and ent.x or ox + (ent.hitboxx+0.025) * 2 * ent_info.movex --+ ent.velocityx
-    ent.y = ent_info.movey == 0 and ent.y or oy + (ent.hitboxy+0.025) * 2 * ent_info.movey --+ ent.velocityy
+    ent.x = ent_info.movex == 0 and ent.x or ox + (ent.hitboxx+EXTRA_FLOOR_SEPARATION) * 2 * ent_info.movex --+ ent.velocityx
+    ent.y = ent_info.movey == 0 and ent.y or oy + (ent.hitboxy+EXTRA_FLOOR_SEPARATION) * 2 * ent_info.movey --+ ent.velocityy
     
-    ent_info.movex, ent_info.movey = table.unpack(MOVE_MAP[ent_info.dir_state])
+    ent_info.movex, ent_info.movey = table.unpack(DIR_MAP[ent_info.dir_state])
     ent.velocityx = ent_info.movex*BACTERIUM_VEL
     ent.velocityy = ent_info.movey*BACTERIUM_VEL
 end
@@ -145,7 +159,7 @@ local function bacterium_update(ent, ent_info)
             ent.velocityy = ent.frozen_timer == 0 and 0 or 0.01 --Frozen entities always move down
         end
         --messpect(ent_info.dir_state, ent_info.attached_floor_uid)
-        if will_be_out_of_owner(ent, ent_info) then
+        if will_be_out_of_attached(ent, ent_info) then
             local ox, oy, ol = get_position(ent_info.attached_floor_uid)
             local next_floor_uid = get_solid_grid_entity(ox+ent_info.movex, oy+ent_info.movey, ol)
             if next_floor_uid ~= -1 then
@@ -206,5 +220,23 @@ register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", 
     local x, y, l = get_position(players[1].uid)
     x, y = math.floor(x), math.floor(y)
     local uid = spawn(ENT_TYPE.MONS_MANTRAP, x, y, l, 0, 0)
-    celib.set_custom_entity(uid, bacterium_id)
+    local attach_dir = module.ATTACH_DIR.BOTTOM
+    celib.set_custom_entity(uid, bacterium_id, attach_dir)
+    local off_x, off_y = DIR_MAP[attach_dir][1], DIR_MAP[attach_dir][2]
+    off_x = off_x - off_x * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
+    off_y = off_y - off_y * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
+    x, y = get_position(uid)
+    move_entity(uid, x+off_x, y+off_y, 0, 0)
 end)
+
+function module.create_bacterium(grid_x, grid_y, layer, attach_dir)
+    local uid = spawn(ENT_TYPE.MONS_MANTRAP, grid_x, grid_y, layer, 0, 0)
+    celib.set_custom_entity(uid, bacterium_id, attach_dir)
+    local off_x, off_y = DIR_MAP[attach_dir][1], DIR_MAP[attach_dir][2]
+    off_x = off_x - off_x * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
+    off_y = off_y - off_y * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
+    local x, y = get_position(uid)
+    move_entity(uid, x+off_x, y+off_y, 0, 0)
+end
+
+return module

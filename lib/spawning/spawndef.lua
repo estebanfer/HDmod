@@ -107,7 +107,8 @@ module.global_spawn_procedural_critter_fish = define_procedural_spawn("hd_proced
 module.global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
 module.global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
 
-module.global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MONKEY, x, y, l) end, validlib.is_valid_monkey_spawn)
+module.global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) return false end, function(x, y, l) return false end)-- throwaway so we can obtain the value while in tiledef
+module.global_spawn_procedural_worm_jungle_monkey = define_procedural_spawn("hd_procedural_worm_jungle_monkey", function(x, y, l) return false end, function(x, y, l) return false end)
 
 module.global_spawn_procedural_hangspider = define_procedural_spawn("hd_procedural_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
 module.global_spawn_procedural_spiderlair_hangspider = define_procedural_spawn("hd_procedural_spiderlair_hangspider", createlib.create_hangspider, validlib.is_valid_hangspider_spawn)
@@ -282,6 +283,7 @@ function module.set_chances(room_gen_ctx)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_firefrog, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_frog, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_bat, 0)
+                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_monkey, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_critter_maggot, 0)
                 elseif state.world ~= 3 then
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_bacterium, 0)

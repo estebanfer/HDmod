@@ -228,38 +228,35 @@ function module.onlevel_generation_modification()
 
 end
 
-local gen_levelcode_phase_1
+local gen_levelcode_phase
 -- phase one of baking levelcode
 	-- spawning most things
 function module.onlevel_generation_execution_phase_one()
-	gen_levelcode_phase_1()
-	gen_levelcode_phase_1(true)
+	gen_levelcode_phase(1)
+	gen_levelcode_phase(1, true)
 end
 
-local gen_levelcode_phase_2
 -- phase two of baking levelcode
 	-- spawn_over entities, such as spikes
 function module.onlevel_generation_execution_phase_two()
-	gen_levelcode_phase_2()
-	gen_levelcode_phase_2(true)
+	gen_levelcode_phase(2)
+	gen_levelcode_phase(2, true)
 end
 
-local gen_levelcode_phase_3
 -- # TODO: More phases to fix crashing entities
 	-- water
 	-- chain(/vine?)
 function module.onlevel_generation_execution_phase_three()
-	gen_levelcode_phase_3()
-	gen_levelcode_phase_3(true)
+	gen_levelcode_phase(3)
+	gen_levelcode_phase(3, true)
 end
 
-local gen_levelcode_phase_4
 -- during on_level
 	-- elevators
 	-- force fields
 function module.onlevel_generation_execution_phase_four()
-	gen_levelcode_phase_4()
-	gen_levelcode_phase_4(true)
+	gen_levelcode_phase(4)
+	gen_levelcode_phase(4, true)
 end
 
 function levelrooms_setn_rowfive(levelw)
@@ -928,13 +925,13 @@ function levelcode_chunks(rowfive)
 	end
 end
 
-function gen_levelcode_phase_1(rowfive)
+function gen_levelcode_phase(phase, rowfive)
 	rowfive = rowfive or false
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	if rowfive == true then
 		levelw = #roomgenlib.global_levelassembly.modification.rowfive.levelrooms
 	end
-	
+
 	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
 	local offsetx, offsety = 0, 0
 	if rowfive == true then
@@ -976,7 +973,7 @@ function gen_levelcode_phase_1(rowfive)
 			end
 			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
 			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
-			if hd_tiletype ~= nil and hd_tiletype.phase_1 ~= nil then
+			if hd_tiletype ~= nil and hd_tiletype.phases ~= nil and hd_tiletype.phases[phase] ~= nil then
 				if (
 					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
 					(
@@ -986,201 +983,19 @@ function gen_levelcode_phase_1(rowfive)
 				) then
 					local entity_type_pool = {}
 					local entity_type = 0
-					if hd_tiletype.phase_1.default ~= nil then
-						entity_type_pool = hd_tiletype.phase_1.default
+					if hd_tiletype.phases[phase].default ~= nil then
+						entity_type_pool = hd_tiletype.phases[phase].default
 					end
 					if (
-						hd_tiletype.phase_1.alternate ~= nil and
-						hd_tiletype.phase_1.alternate[state.theme] ~= nil
+						hd_tiletype.phases[phase].alternate ~= nil and
+						hd_tiletype.phases[phase].alternate[state.theme] ~= nil
 					) then
-						entity_type_pool = hd_tiletype.phase_1.alternate[state.theme]
+						entity_type_pool = hd_tiletype.phases[phase].alternate[state.theme]
 					elseif (
-						hd_tiletype.phase_1.tutorial ~= nil and
+						hd_tiletype.phases[phase].tutorial ~= nil and
 						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
 					) then
-						entity_type_pool = hd_tiletype.phase_1.tutorial
-					end
-					
-					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
-					end
-					-- entType_is_liquid = (
-					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
-					-- 	entity_type == ENT_TYPE.LIQUID_COARSE_WATER or
-					-- 	entity_type == ENT_TYPE.LIQUID_IMPOSTOR_LAKE or
-					-- 	entity_type == ENT_TYPE.LIQUID_LAVA or
-					-- 	entity_type == ENT_TYPE.LIQUID_STAGNANT_LAVA
-					-- )
-					-- if entity_type == 0 then
-					-- 	hd_tiletype_post = tiledeflib.HD_TILENAME["0"]
-					-- else
-					-- 	if entity_type == ENT_TYPE.FLOOR_GENERIC then hd_tiletype_post = tiledeflib.HD_TILENAME["1"]
-					-- 	elseif entType_is_liquid then hd_tiletype_post = tiledeflib.HD_TILENAME["w"]
-					-- 	end
-						
-					-- end
-				end
-			end
-
-			x = x + 1
-		end
-		y = y - 1
-	end
-end
-
-function gen_levelcode_phase_2(rowfive)
-	rowfive = rowfive or false
-	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	if rowfive == true then
-		levelw = #roomgenlib.global_levelassembly.modification.rowfive.levelrooms
-	end
-
-	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
-	local offsetx, offsety = 0, 0
-	if rowfive == true then
-		offsety = (
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
-		local check_feeling_content = nil
-		for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
-			if (
-				feelingslib.feeling_check(feeling) == true and
-				feelingContent.rowfive ~= nil and
-				feelingContent.rowfive.offsety ~= nil
-			) then
-				check_feeling_content = feelingContent.rowfive.offsety
-			end
-		end
-		if check_feeling_content ~= nil then
-			offsety = check_feeling_content
-		end
-	end
-
-
-	local c_hi_len = levelh*CONST.ROOM_HEIGHT
-	local c_wi_len = levelw*CONST.ROOM_WIDTH
-	if rowfive == true then
-		c_hi_len = CONST.ROOM_HEIGHT
-	end
-	local y = _sy + offsety
-	for level_hi = 1, c_hi_len, 1 do
-		local x = _sx + offsetx
-		for level_wi = 1, c_wi_len, 1 do
-			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
-			if rowfive == true then
-				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
-			end
-			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
-			if hd_tiletype ~= nil and hd_tiletype.phase_2 ~= nil then
-				if (
-					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
-					(
-						options.hd_debug_scripted_levelgen_tilecodes_blacklist ~= nil and
-						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
-					)
-				) then
-					local entity_type_pool = {}
-					local entity_type = 0
-					if hd_tiletype.phase_2.default ~= nil then
-						entity_type_pool = hd_tiletype.phase_2.default
-					end
-					if (
-						hd_tiletype.phase_2.alternate ~= nil and
-						hd_tiletype.phase_2.alternate[state.theme] ~= nil
-					) then
-						entity_type_pool = hd_tiletype.phase_2.alternate[state.theme]
-					elseif (
-						hd_tiletype.phase_2.tutorial ~= nil and
-						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
-					) then
-						entity_type_pool = hd_tiletype.phase_2.tutorial
-					end
-					
-					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
-					end
-				end
-			end
-			x = x + 1
-		end
-		y = y - 1
-	end
-end
-
-
-function gen_levelcode_phase_3(rowfive)
-	rowfive = rowfive or false
-	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	if rowfive == true then
-		levelw = #roomgenlib.global_levelassembly.modification.rowfive.levelrooms
-	end
-	
-	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
-	local offsetx, offsety = 0, 0
-	if rowfive == true then
-		offsety = (
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
-		local check_feeling_content = nil
-		for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
-			if (
-				feelingslib.feeling_check(feeling) == true and
-				feelingContent.rowfive ~= nil and
-				feelingContent.rowfive.offsety ~= nil
-			) then
-				check_feeling_content = feelingContent.rowfive.offsety
-			end
-		end
-		if check_feeling_content ~= nil then
-			offsety = check_feeling_content
-		end
-	end
-	-- if rowfive == true then
-	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
-	-- end
-
-	local c_hi_len = levelh*CONST.ROOM_HEIGHT
-	local c_wi_len = levelw*CONST.ROOM_WIDTH
-	if rowfive == true then
-		c_hi_len = CONST.ROOM_HEIGHT
-	end
-	local y = _sy + offsety
-	for level_hi = 1, c_hi_len, 1 do
-		local x = _sx + offsetx
-		for level_wi = 1, c_wi_len, 1 do
-			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
-			if rowfive == true then
-				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
-			end
-			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
-			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
-			if hd_tiletype ~= nil and hd_tiletype.phase_3 ~= nil then
-				if (
-					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
-					(
-						options.hd_debug_scripted_levelgen_tilecodes_blacklist ~= nil and
-						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
-					)
-				) then
-					local entity_type_pool = {}
-					local entity_type = 0
-					if hd_tiletype.phase_3.default ~= nil then
-						entity_type_pool = hd_tiletype.phase_3.default
-					end
-					if (
-						hd_tiletype.phase_3.alternate ~= nil and
-						hd_tiletype.phase_3.alternate[state.theme] ~= nil
-					) then
-						entity_type_pool = hd_tiletype.phase_3.alternate[state.theme]
-					elseif (
-						hd_tiletype.phase_3.tutorial ~= nil and
-						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
-					) then
-						entity_type_pool = hd_tiletype.phase_3.tutorial
+						entity_type_pool = hd_tiletype.phases[phase].tutorial
 					end
 					
 					if #entity_type_pool > 0 then
@@ -1202,107 +1017,6 @@ function gen_levelcode_phase_3(rowfive)
 					-- end
 				end
 			end
-
-			x = x + 1
-		end
-		y = y - 1
-	end
-end
-
-
-function gen_levelcode_phase_4(rowfive)
-	rowfive = rowfive or false
-	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	if rowfive == true then
-		levelw = #roomgenlib.global_levelassembly.modification.rowfive.levelrooms
-	end
-	
-	local _sx, _sy = locatelib.locate_game_corner_position_from_levelrooms_position(1, 1) -- game coordinates of the topleft-most tile of the level
-	local offsetx, offsety = 0, 0
-	if rowfive == true then
-		offsety = (
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme] ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive ~= nil and
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety ~= nil
-		) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].rowfive.offsety or -(levelh*CONST.ROOM_HEIGHT)
-		local check_feeling_content = nil
-		for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
-			if (
-				feelingslib.feeling_check(feeling) == true and
-				feelingContent.rowfive ~= nil and
-				feelingContent.rowfive.offsety ~= nil
-			) then
-				check_feeling_content = feelingContent.rowfive.offsety
-			end
-		end
-		if check_feeling_content ~= nil then
-			offsety = check_feeling_content
-		end
-	end
-	-- if rowfive == true then
-	-- 	message("rowfive y location: " .. tostring(_sy + offsety))
-	-- end
-
-	local c_hi_len = levelh*CONST.ROOM_HEIGHT
-	local c_wi_len = levelw*CONST.ROOM_WIDTH
-	if rowfive == true then
-		c_hi_len = CONST.ROOM_HEIGHT
-	end
-	local y = _sy + offsety
-	for level_hi = 1, c_hi_len, 1 do
-		local x = _sx + offsetx
-		for level_wi = 1, c_wi_len, 1 do
-			local _tilechar = roomgenlib.global_levelassembly.modification.levelcode[level_hi][level_wi]
-			if rowfive == true then
-				_tilechar = roomgenlib.global_levelassembly.modification.rowfive.levelcode[level_hi][level_wi]
-			end
-			local hd_tiletype = tiledeflib.HD_TILENAME[_tilechar]
-			-- hd_tiletype, hd_tiletype_post = tiledeflib.HD_TILENAME[_tilechar], tiledeflib.HD_TILENAME[_tilechar]
-			if hd_tiletype ~= nil and hd_tiletype.phase_4 ~= nil then
-				if (
-					options.hd_debug_scripted_levelgen_tilecodes_blacklist == nil or
-					(
-						options.hd_debug_scripted_levelgen_tilecodes_blacklist ~= nil and
-						string.find(options.hd_debug_scripted_levelgen_tilecodes_blacklist, _tilechar) == nil
-					)
-				) then
-					local entity_type_pool = {}
-					local entity_type = 0
-					if hd_tiletype.phase_4.default ~= nil then
-						entity_type_pool = hd_tiletype.phase_4.default
-					end
-					if (
-						hd_tiletype.phase_4.alternate ~= nil and
-						hd_tiletype.phase_4.alternate[state.theme] ~= nil
-					) then
-						entity_type_pool = hd_tiletype.phase_4.alternate[state.theme]
-					elseif (
-						hd_tiletype.phase_4.tutorial ~= nil and
-						worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
-					) then
-						entity_type_pool = hd_tiletype.phase_4.tutorial
-					end
-					
-					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
-					end
-					-- entType_is_liquid = (
-					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
-					-- 	entity_type == ENT_TYPE.LIQUID_COARSE_WATER or
-					-- 	entity_type == ENT_TYPE.LIQUID_IMPOSTOR_LAKE or
-					-- 	entity_type == ENT_TYPE.LIQUID_LAVA or
-					-- 	entity_type == ENT_TYPE.LIQUID_STAGNANT_LAVA
-					-- )
-					-- if entity_type == 0 then
-					-- 	hd_tiletype_post = tiledeflib.HD_TILENAME["0"]
-					-- else
-					-- 	if entity_type == ENT_TYPE.FLOOR_GENERIC then hd_tiletype_post = tiledeflib.HD_TILENAME["1"]
-					-- 	elseif entType_is_liquid then hd_tiletype_post = tiledeflib.HD_TILENAME["w"]
-					-- 	end
-					-- end
-				end
-			end
-
 			x = x + 1
 		end
 		y = y - 1

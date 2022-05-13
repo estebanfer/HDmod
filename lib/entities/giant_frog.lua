@@ -67,7 +67,7 @@ end
 --giant frogs spit only 5 frogs and then only jump (?)
 ---@param ent Frog
 local function giant_frog_set(ent)
-    ent.health = 10
+    ent.health = 8
     ent.hitboxx, ent.hitboxy = 0.600, 0.750
     ent.offsety = -0.215
     ent.width, ent.height = 2.0, 2.0
@@ -78,6 +78,11 @@ local function giant_frog_set(ent)
         local x, y, l = get_position(dead_ent.uid)
         spawn_frog_rubble(x, y, l, 2)
         spawn_blood(x, y, l, 4)
+        if math.random(1, 3) == 1 then
+            spawn(ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+        else
+            spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+        end
     end)
     return {
         frogs_inside = 5,

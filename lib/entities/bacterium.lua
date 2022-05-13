@@ -193,15 +193,22 @@ local function bacterium_update(ent, ent_info)
         if ent:is_on_fire() then
             bacterium_kill(ent)
         end
-        for _,p_uid in ipairs(get_entities_overlapping_hitbox(0, MASK.PLAYER, get_hitbox(ent.uid), LAYER.PLAYER)) do
-            local player = get_entity(p_uid)
-            if not test_flag(player.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
-                if player.invincibility_frames_timer == 0 then
-                    local x = get_position(ent.uid)
-                    local px = get_position(p_uid)
-                    player:damage(ent.uid, 1, 0, px > x and 0.1 or -0.1, 0.1, 60)
+        for _,player in ipairs(players) do
+            if ent:overlaps_with(get_hitbox(player.uid)) then
+                if not test_flag(player.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
+                    if player.invincibility_frames_timer == 0 then
+                        local x = get_position(ent.uid)
+                        local px = get_position(player.uid)
+                        if player.health > 0 then
+                            player:damage(ent.uid, 1, 0, px > x and 0.1 or -0.1, 0.1, 60)
+                        else
+                            player.velocityx = px > x and 0.1 or -0.1
+                            player.velocityy = 0.1
+                            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_CORPSE, player.uid)
+                        end
+                    end
+                    bacterium_kill(ent)
                 end
-                bacterium_kill(ent)
             end
         end
         ent.animation_frame = math.floor(ent.idle_counter / 5)

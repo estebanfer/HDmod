@@ -528,10 +528,13 @@ function module.is_valid_bee_spawn(x, y, l) return false end -- # TODO: Implemen
 function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
 
 function module.is_valid_bacterium_spawn(x, y, l)
-	return is_solid_grid_entity(x, y+1, l)
-	or is_solid_grid_entity(x+1, y, l)
-	or is_solid_grid_entity(x, y-1, l)
-	or is_solid_grid_entity(x-1, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and (
+		is_solid_grid_entity(x, y+1, l)
+		or is_solid_grid_entity(x+1, y, l)
+		or is_solid_grid_entity(x, y-1, l)
+		or is_solid_grid_entity(x-1, y, l)
+	)
 end -- # TODO: Implement method for valid bacterium spawn
 
 function module.is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn

@@ -166,7 +166,7 @@ local function giant_frog_update(ent, c_data)
     if ent.standing_on_uid ~= -1 and ent.state ~= CHAR_STATE.JUMPING then
         c_data.action_timer = c_data.action_timer - 1
         c_data.script_jumped = false
-        if c_data.action_timer < 1 and distance(ent.uid, ent.chased_target_uid) < 6 then --TODO: check HD distance
+        if c_data.action_timer < 1 and distance(ent.uid, ent.chased_target_uid) <= 6 then
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time

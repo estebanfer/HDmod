@@ -114,7 +114,7 @@ local function giant_frog_spit(ent)
     local x, y, l = get_position(ent.uid)
     --ent.animation_frame = 0
     local vx = facing_left and -0.120 or 0.120
-    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y+0.1, l, vx, 0.1025))
+    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y, l, vx, 0.07+math.random()*0.03))
     spawned.last_owner_uid = ent.uid
     if facing_left then
         spawned.flags = set_flag(spawned.flags, ENT_FLAG.FACING_LEFT)

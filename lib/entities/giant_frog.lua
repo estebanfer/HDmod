@@ -117,6 +117,7 @@ local function giant_frog_spit(ent)
         spawned.flags = clr_flag(spawned.flags, ENT_FLAG.FACING_LEFT)
     end
     ent.idle_counter = 0
+    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, ent.uid)
 end
 
 ---@param ent Frog
@@ -229,7 +230,6 @@ end
 register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)
 
 function module.create_giantfrog(grid_x, grid_y, layer)
-    messpect("create", grid_x, grid_y, layer)
     celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)
 end
 

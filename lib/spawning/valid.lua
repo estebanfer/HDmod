@@ -53,6 +53,17 @@ local module = {}
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
+local function check_empty_space(origin_x, origin_y, layer, width, height)
+	for y = origin_y, origin_y+1-height, -1 do
+		for x = origin_x, origin_x+width-1 do
+			if get_grid_entity_at(x, y, layer) ~= -1 then
+				return false
+			end
+		end
+	end
+	return true
+end
+
 local function detect_empty_nodoor(x, y, l)
 	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
 	local entity_uids = get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y, l, 0.5)
@@ -465,7 +476,11 @@ function module.is_valid_tombstone_spawn(x, y, l)
 	)
 end
 
-function module.is_valid_giantfrog_spawn(x, y, l) return false end -- # TODO: Implement method for valid giantfrog spawn
+function module.is_valid_giantfrog_spawn(x, y, l)
+	return is_solid_grid_entity(x, y-1, l)
+	and is_solid_grid_entity(x+1, y-1, l)
+	and check_empty_space(x, y+1, l, 2, 2)
+end -- # TODO: Implement method for valid giantfrog spawn
 
 function module.is_valid_mammoth_spawn(x, y, l)
 	local cx, cy = x-1.5, y+1.5
@@ -512,7 +527,15 @@ function module.is_valid_bee_spawn(x, y, l) return false end -- # TODO: Implemen
 
 function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
 
-function module.is_valid_bacterium_spawn(x, y, l) return false end -- # TODO: Implement method for valid bacterium spawn
+function module.is_valid_bacterium_spawn(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and (
+		is_solid_grid_entity(x, y+1, l)
+		or is_solid_grid_entity(x+1, y, l)
+		or is_solid_grid_entity(x, y-1, l)
+		or is_solid_grid_entity(x-1, y, l)
+	)
+end -- # TODO: Implement method for valid bacterium spawn
 
 function module.is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn
 

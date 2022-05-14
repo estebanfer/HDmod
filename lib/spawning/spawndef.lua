@@ -4,6 +4,8 @@ feelingslib = require 'lib.feelings'
 doorslib = require 'lib.entities.doors'
 validlib = require 'lib.spawning.valid'
 createlib = require 'lib.spawning.create'
+local giantfroglib = require 'lib.entities.giant_frog'
+local bacteriumlib = require 'lib.entities.bacterium'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
 turrentlib = require 'lib.entities.laser_turrent'
@@ -158,7 +160,7 @@ module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedura
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
 module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, validlib.is_valid_tombstone_spawn)
 
-module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", createlib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
+module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", giantfroglib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
 module.global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_mammoth", mammothlib.create_mammoth, validlib.is_valid_mammoth_spawn)
 
@@ -169,8 +171,8 @@ module.global_spawn_procedural_hive_bee = define_procedural_spawn("hd_procedural
 module.global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
 module.global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
 
-module.global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", createlib.create_bacterium, validlib.is_valid_bacterium_spawn)
-module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", createlib.create_bacterium, validlib.is_valid_bacterium_spawn)
+module.global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", bacteriumlib.create_bacterium, validlib.is_valid_bacterium_spawn)
+module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", bacteriumlib.create_bacterium, validlib.is_valid_bacterium_spawn)
 
 module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)
 module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)

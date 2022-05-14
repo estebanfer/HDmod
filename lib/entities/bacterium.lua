@@ -223,7 +223,7 @@ bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT
 
 celib.init()
 
-register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", function ()
+--[[register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", function ()
     local x, y, l = get_position(players[1].uid)
     x, y = math.floor(x), math.floor(y)
     local uid = spawn(ENT_TYPE.MONS_MANTRAP, x, y, l, 0, 0)
@@ -234,7 +234,7 @@ register_option_button("spawn_bacterium", "spawn bacterium", "spawn bacterium", 
     off_y = off_y - off_y * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2
     x, y = get_position(uid)
     move_entity(uid, x+off_x, y+off_y, 0, 0)
-end)
+end)]]
 
 local function spawn_bacterium(grid_x, grid_y, layer, attach_dir)
     local uid = spawn(ENT_TYPE.MONS_MANTRAP, grid_x, grid_y, layer, 0, 0)

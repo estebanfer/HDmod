@@ -228,11 +228,11 @@ end
 
 local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE.MONS_FROG, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
-local function spawn_frog_debug()
+--[[local function spawn_frog_debug()
     local x, y, l = get_position(players[1].uid)
     celib.set_custom_entity(spawn(ENT_TYPE.MONS_FROG, x+2, y, l, 0, 0), giant_frog_id)
 end
-register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)
+register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)]]
 
 function module.create_giantfrog(grid_x, grid_y, layer)
     celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)

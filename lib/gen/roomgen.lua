@@ -135,12 +135,12 @@ function assign_s2_level_height()
 		state.theme ~= THEME.OLMEC
 		and state.theme ~= THEME.EGGPLANT_WORLD
 		and state.theme ~= THEME.CITY_OF_GOLD
-		and state.theme ~= THEME.NEO_BABYLON
 	) then
 		-- set height for rushing water
 		if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 			new_height = 5
-		elseif state.theme == THEME.ICE_CAVES then
+		elseif state.theme == THEME.ICE_CAVES
+		or state.theme == THEME.NEO_BABYLON then
 			--aproximated size
 			new_height = 7
 		end

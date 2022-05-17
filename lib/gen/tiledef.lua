@@ -2,6 +2,7 @@ blackknightlib = require 'lib.entities.black_knight'
 turrentlib = require 'lib.entities.laser_turrent'
 spikeballlib = require 'lib.entities.spikeball_trap'
 snaillib = require 'lib.entities.snail'
+tombstonelib = require 'lib.entities.tombstone'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
 feelingslib = require 'lib.feelings'
@@ -412,15 +413,8 @@ module.HD_TILENAME = {
 							doorslib.create_door_exit_to_mothership(x, y, l)
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
 							-- Spawn king's tombstone
-							local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
-							local block = get_entity(block_uid)
-							block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-							block.more_flags = set_flag(block.more_flags, 17)
-
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-							texture_def.texture_path = "res/floormisc_tombstone_king.png"
-							get_entity(block_uid):set_texture(define_texture(texture_def))
-							block.animation_frame = 27
+							local block_uid = tombstonelib.spawn_tombstone(x, y, l)
+							get_entity(block_uid).animation_frame = 2
 							
 							-- 2 tiles down
 							-- Spawn skeleton

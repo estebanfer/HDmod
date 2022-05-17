@@ -65,18 +65,22 @@ end
 
 local assign_s2_level_height
 
-set_callback(function(room_gen_ctx)
+set_callback(function()
 	if state.screen == SCREEN.LEVEL then
 		init_posttile_onstart()
 
 		if options.hd_debug_scripted_levelgen_disable == false then
 			roomgenlib.init_posttile_door()
 			levelcreation_init()
-			assign_s2_level_height()
 		end
 	end
 end, ON.PRE_LEVEL_GENERATION)
 
+set_callback(function()
+	if state.screen == SCREEN.LEVEL and options.hd_debug_scripted_levelgen_disable == false then
+		assign_s2_level_height()
+	end
+end, ON.POST_ROOM_GENERATION)
 
 set_post_tile_code_callback(function(x, y, layer)
 	if options.hd_debug_scripted_levelgen_disable == false then
@@ -131,27 +135,14 @@ function assign_s2_level_height()
 		state.theme ~= THEME.OLMEC
 		and state.theme ~= THEME.EGGPLANT_WORLD
 		and state.theme ~= THEME.CITY_OF_GOLD
-		and state.theme ~= THEME.NEO_BABYLON
 	) then
-		if (
-			(--echoes themes
-				state.theme == THEME.DWELLING
-				or state.theme == THEME.JUNGLE
-				or state.theme == THEME.TEMPLE
-				or state.theme == THEME.VOLCANA
-			)
-			and (
-				state.height ~= 4
-				and state.width ~= 4
-			)
-		) then
-			new_width = 4
-			new_height = 4
-		end
-	
 		-- set height for rushing water
 		if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 			new_height = 5
+		elseif state.theme == THEME.ICE_CAVES
+		or state.theme == THEME.NEO_BABYLON then
+			--aproximated size
+			new_height = 7
 		end
 		state.width = new_width
 		state.height = new_height

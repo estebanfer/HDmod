@@ -3,7 +3,7 @@ local celib = require "lib.entities.custom_entities"
 
 local module = {}
 
---Turrent can be freezed on HD, idk how to make that work there
+--turret can be freezed on HD, idk how to make that work there
 --Spot distance for the trap is 6 tiles (?) and based on distance (circle), doesn't detect if 6 tiles below but on ground, doing a little jump makes it detect you
 
 local BRIGHTNESS = 1.0
@@ -22,7 +22,6 @@ end
 local function set_light_color(illumination, color_index)
     local color_lerp = 0.05
     local color, next_color = illumination.light1, turret_light_colors[color_index]
-    messpect(color_index, color.blue)
     color.red = lerp(color.red, next_color.r, color_lerp)
     color.green = lerp(color.green, next_color.g, color_lerp)
     color.blue = lerp(color.blue, next_color.b, color_lerp)
@@ -33,16 +32,16 @@ local function light_update(light_emitter)
     light_emitter.brightness = BRIGHTNESS
 end
 
-local turrent_texture_id
+local turret_texture_id
 do
-    local turrent_texture_def = TextureDefinition.new()
-    turrent_texture_def.width = 640
-    turrent_texture_def.height = 128
-    turrent_texture_def.tile_width = 128
-    turrent_texture_def.tile_height = 128
+    local turret_texture_def = TextureDefinition.new()
+    turret_texture_def.width = 640
+    turret_texture_def.height = 128
+    turret_texture_def.tile_width = 128
+    turret_texture_def.tile_height = 128
 
-    turrent_texture_def.texture_path = "res/turret.png"
-    turrent_texture_id = define_texture(turrent_texture_def)
+    turret_texture_def.texture_path = "res/turret.png"
+    turret_texture_id = define_texture(turret_texture_def)
 end
 
 local function get_diffs(uid1, uid2)
@@ -66,7 +65,7 @@ local function laser_set(laser)
     end)
 end
 
-local function spawn_turrent_rubble(x, y, l, amount)
+local function spawn_turret_rubble(x, y, l, amount)
     for _=1, amount do
         local rub = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.5-0.25, prng:random_float(PRNG_CLASS.PARTICLES)*0.25))
         rub.animation_frame = 20
@@ -78,7 +77,7 @@ local function set_func(ent)
     ent.hitboxx = 0.4
     ent.hitboxy = 0.4
     ent.offsety = 0
-    ent:set_texture(turrent_texture_id)
+    ent:set_texture(turret_texture_id)
     ent.health = 2
     if ent.overlay and ent.overlay.type.search_flags == MASK.FLOOR then
         ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
@@ -88,7 +87,7 @@ local function set_func(ent)
     set_on_kill(ent.uid, function (e)
         local x, y, l = get_position(e.uid)
         get_entity(spawn(ENT_TYPE.FX_EXPLOSION, x, y, l, 0, 0)).last_owner_uid = e.last_owner_uid
-        spawn_turrent_rubble(x, y, l, 5)
+        spawn_turret_rubble(x, y, l, 5)
     end)
     local light_emitter = create_illumination(turret_light_colors[1], 3, ent.uid)
     light_emitter.brightness = BRIGHTNESS
@@ -147,11 +146,11 @@ local function point_to_target(ent, c_data)
     return to_angle, xdiff, ydiff
 end
 
-local function point_up(turrent)
+local function point_up(turret)
     local to_angle
-    turrent.idle_counter = 0
-    to_angle = test_flag(turrent.flags, ENT_FLAG.FACING_LEFT) and -1.5708 or 1.5708
-    turrent.angle = to_angle
+    turret.idle_counter = 0
+    to_angle = test_flag(turret.flags, ENT_FLAG.FACING_LEFT) and -1.5708 or 1.5708
+    turret.angle = to_angle
     return to_angle
 end
 
@@ -203,10 +202,10 @@ local function update_func(ent, c_data)
     light_update(c_data.light_emitter)
 end
 
-local turrent_id = celib.new_custom_entity(set_func, update_func, celib.CARRY_TYPE.HELD, ENT_TYPE.ITEM_ROCK)
+local turret_id = celib.new_custom_entity(set_func, update_func, celib.CARRY_TYPE.HELD, ENT_TYPE.ITEM_ROCK)
 celib.init()
 
--- register_option_button("spawn_trap", "spawn turrent", "spawn turrent", function ()
+-- register_option_button("spawn_trap", "spawn turret", "spawn turret", function ()
 --     local x, y, l = get_position(players[1].uid)
 --     x, y = math.floor(x), math.floor(y)
 --     local over
@@ -215,10 +214,10 @@ celib.init()
 --         y = y + 1
 --     until over ~= -1
 --     local uid = spawn_over(ENT_TYPE.ITEM_ROCK, over, 0, -1)
---     celib.set_custom_entity(uid, turrent_id)
+--     celib.set_custom_entity(uid, turret_id)
 -- end)
 
-function module.spawn_turrent(x, y, l)
+function module.spawn_turret(x, y, l)
     local over, uid = get_grid_entity_at(x, y+1, l)
     if over ~= -1 then
         uid = spawn_over(ENT_TYPE.ITEM_ROCK, over, 0, -1)
@@ -226,13 +225,13 @@ function module.spawn_turrent(x, y, l)
         local floor = get_entity(over)
         local deco_uid = spawn_over(ENT_TYPE.DECORATION_GENERIC, over, 0, -1)
         local deco = get_entity(deco_uid)
-        deco:set_texture(turrent_texture_id)
+        deco:set_texture(turret_texture_id)
         deco.animation_frame = 4
         floor.deco_bottom = deco_uid
     else
         uid = spawn(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0)
     end
-    celib.set_custom_entity(uid, turrent_id)
+    celib.set_custom_entity(uid, turret_id)
 end
 
 return module

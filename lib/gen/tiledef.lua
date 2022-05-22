@@ -1,5 +1,5 @@
 blackknightlib = require 'lib.entities.black_knight'
-turrentlib = require 'lib.entities.laser_turrent'
+turretlib = require 'lib.entities.laser_turret'
 spikeballlib = require 'lib.entities.spikeball_trap'
 snaillib = require 'lib.entities.snail'
 tombstonelib = require 'lib.entities.tombstone'
@@ -1596,7 +1596,7 @@ module.HD_TILENAME = {
 				},
 				alternate = {
 					[THEME.NEO_BABYLON] = {function(x, y, l)
-						turrentlib.spawn_turrent(x, y, l)
+						turretlib.spawn_turret(x, y, l)
 					end,},
 					[THEME.CITY_OF_GOLD] = {function(x, y, l) return 0 end,},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end,} -- bg columns

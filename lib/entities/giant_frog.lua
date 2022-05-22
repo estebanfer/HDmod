@@ -1,5 +1,5 @@
 local module = {}
-local celib = require "custom_entities"
+local celib = require "lib.entities.custom_entities"
 
 local function b(flag) return (1 << (flag-1)) end
 

@@ -379,21 +379,19 @@ function module.is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implemen
 
 function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Implement method for valid scarab spawn
 
-function module.is_valid_mshiplight_spawn(x, y, l) return false end -- # TODO: Implement method for valid mshiplight spawn
+function module.is_valid_mshiplight_spawn(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+		and is_solid_grid_entity(x, y+1, l)
+end -- # TODO: Implement method for valid mshiplight spawn
 
 module.is_valid_lantern_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid lantern spawn
 
 module.is_valid_webnest_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid webnest spawn
 
 function module.is_valid_turret_spawn(x, y, l)
-	if (
-		get_grid_entity_at(x, y, l) == -1
+	return get_grid_entity_at(x, y, l) == -1
 		and get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
-		and get_grid_entity_at(x, y-1, l) == -1
-	) then
-		return true
-    end
-    return false
+		and check_empty_space(x-1, y, l, 3, 3)
 end -- # TODO: Implement method for valid turret spawn
 
 function module.is_valid_pushblock_spawn(x, y, l)

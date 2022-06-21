@@ -85,6 +85,50 @@ module.HD_SUBCHUNKID = {
     WORM_CRYSKNIFE_LEFTSIDE = 1241,
     WORM_CRYSKNIFE_RIGHTSIDE = 1242,
     WORM_REGENBLOCK_STRUCTURE = 1275,
+
+	--H Hive, O Open (crystal skull or path), C Closed (not hive, crystal skull or path)
+	--LEFT/RIGHT Open {
+	HIVE_RIGHT_H_LEFT = 1300, --6
+	HIVE_LEFT_H_RIGHT = 1301, --7
+	HIVE_LEFT = 1302, --2
+	HIVE_SIDES = 1303, --3
+	HIVE_RIGHT = 1304, --5
+	--} SIDE/UP Open (Should always be connected to hive, if not, its unused I think) {
+	HIVE_UP = 1311, --1 unused?
+	HIVE_H_UP = 1312, --2
+	HIVE_UP_RIGHT_H_LEFT = 1313, --3
+	HIVE_UP_RIGHT = 1314, --4 unused?
+	HIVE_RIGHT_H_UP = 1315, --5
+	HIVE_UP_LEFT_H_RIGHT = 1316, --6
+	HIVE_UP_LEFT = 1317, --7 unused?
+	HIVE_LEFT_H_UP = 1318, --8
+	HIVE_UP_SIDES = 1319, -- unused?
+	HIVE_SIDES_H_UP = 1320,
+	--} SIDE/VERTICAL Open {
+	HIVE_UP_DOWN_H_LEFT = 1321,
+	HIVE_UP_DOWN_H_RIGHT = 1322,
+	HIVE_UP_DOWN = 1323, --unused?
+	HIVE_UP_H_DOWN = 1324, --unused?
+	HIVE_UP_RIGHT_H_DOWN = 1325,
+	HIVE_UP_LEFT_H_DOWN = 1326,
+	--} SIDE/DOWN Open (There should always be a hive on sides or down, there can never be a hive up) {
+	HIVE_SIDES_DOWN_H_UP = 1331, --unused?
+	HIVE_SIDES_H_VERTICAL = 1332, --unused?
+	HIVE_DOWN = 1333, --unused?
+	HIVE_H_DOWN = 1334,
+	HIVE_RIGHT_DOWN_H_LEFT = 1335,
+	HIVE_RIGHT_DOWN = 1336, --unused?
+	HIVE_RIGHT_H_DOWN = 1337,
+	HIVE_DOWN_LEFT_H_RIGHT = 1338,
+	HIVE_DOWN_LEFT = 1339,
+	HIVE_LEFT_H_DOWN = 1340,
+	HIVE_SIDES_H_DOWN = 1341,
+	HIVE_SIDES_DOWN = 1342, --used on others when can't find a room (LEFT/RIGHT is the only I know where it can happen)
+	--}
+	HIVE_PRE_SIDES = 1350,
+	HIVE_PRE_SIDE_UP = 1351,
+	HIVE_PRE_SIDE_VERTICAL = 1352,
+	HIVE_PRE_SIDE_DOWN = 1353,
     
     COG_BOTD_LEFTSIDE = 126,
     COG_BOTD_RIGHTSIDE = 127,
@@ -811,8 +855,230 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE] = {
 		-- -- there's 33 total room types, good god. In S2 there are TWO.
 	}
 }
+
+local HIVE_TYPE <const> = {
+	GROW_LEFT = 1,
+	GROW_RIGHT = 2,
+	GROW_UP = 3,
+	GROW_DOWN = 4
+}
+
+local HIVE_OPEN <const> = {
+	LEFT = 0x1,
+	RIGHT = 0x2,
+	UP = 0x4,
+	DOWN = 0x8,
+	H_LEFT = 0xc,
+	H_RIGHT = 0x10,
+	H_UP = 0x20,
+	H_DOWN = 0x40,
+}
+
+local HIVE_BY_MASKS <const> = {
+	[HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_LEFT,
+	[HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_RIGHT,
+	[HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES,
+	[HIVE_OPEN.H_LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT,
+	[HIVE_OPEN.H_RIGHT | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT,
+	[HIVE_OPEN.H_LEFT] = module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT,
+	[HIVE_OPEN.H_RIGHT] = module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT,
+	--UP
+	[HIVE_OPEN.UP] = module.HD_SUBCHUNKID.HIVE_UP,
+	[HIVE_OPEN.H_UP] = module.HD_SUBCHUNKID.HIVE_H_UP,
+	[HIVE_OPEN.UP | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_UP_LEFT,
+	[HIVE_OPEN.UP | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_UP_RIGHT,
+	[HIVE_OPEN.UP | HIVE_OPEN.LEFT | HIVE_OPEN.H_RIGHT] = module.HD_SUBCHUNKID.HIVE_UP_LEFT_H_RIGHT,
+	[HIVE_OPEN.UP | HIVE_OPEN.RIGHT | HIVE_OPEN.H_LEFT] = module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT,
+	[HIVE_OPEN.UP | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_UP_SIDES,
+	[HIVE_OPEN.H_UP | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP,
+	[HIVE_OPEN.H_UP | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_LEFT_H_UP,
+	[HIVE_OPEN.H_UP | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES_H_UP,
+	--VERTICAL
+	[HIVE_OPEN.UP | HIVE_OPEN.DOWN] = module.HD_SUBCHUNKID.HIVE_UP_DOWN,
+	[HIVE_OPEN.UP | HIVE_OPEN.H_DOWN] = module.HD_SUBCHUNKID.HIVE_UP_H_DOWN,
+	[HIVE_OPEN.UP | HIVE_OPEN.DOWN | HIVE_OPEN.H_LEFT] = module.HD_SUBCHUNKID.HIVE_UP_DOWN_H_LEFT,
+	[HIVE_OPEN.UP | HIVE_OPEN.DOWN | HIVE_OPEN.H_RIGHT] = module.HD_SUBCHUNKID.HIVE_UP_DOWN_H_RIGHT,
+	[HIVE_OPEN.UP | HIVE_OPEN.RIGHT | HIVE_OPEN.H_DOWN] = module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_DOWN,
+	[HIVE_OPEN.UP | HIVE_OPEN.LEFT | HIVE_OPEN.H_DOWN] = module.HD_SUBCHUNKID.HIVE_UP_LEFT_H_DOWN,
+	--DOWN
+	[HIVE_OPEN.DOWN] = module.HD_SUBCHUNKID.HIVE_DOWN,
+	[HIVE_OPEN.H_DOWN] = module.HD_SUBCHUNKID.HIVE_H_DOWN,
+	[HIVE_OPEN.DOWN | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_RIGHT_DOWN,
+	[HIVE_OPEN.DOWN | HIVE_OPEN.RIGHT | HIVE_OPEN.H_LEFT] = module.HD_SUBCHUNKID.HIVE_RIGHT_DOWN_H_LEFT,
+	[HIVE_OPEN.H_DOWN | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_RIGHT_H_DOWN,
+	[HIVE_OPEN.DOWN | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_DOWN_LEFT,
+	[HIVE_OPEN.DOWN | HIVE_OPEN.LEFT | HIVE_OPEN.H_RIGHT] = module.HD_SUBCHUNKID.HIVE_DOWN_LEFT_H_RIGHT,
+	[HIVE_OPEN.H_DOWN | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_LEFT_H_DOWN,
+	[HIVE_OPEN.DOWN | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN,
+	[HIVE_OPEN.H_DOWN | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN,
+	--unused [HIVE_OPEN.H_UP | HIVE_OPEN.DOWN | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN_H_UP,
+	--unused [HIVE_OPEN.H_UP | HIVE_OPEN.H_DOWN | HIVE_OPEN.LEFT | HIVE_OPEN.RIGHT] = module.HD_SUBCHUNKID.HIVE_SIDES_H_VERTICAL,
+	--used when SIDES (or maybe others) don't find any valid room
+	[HIVE_OPEN.RIGHT | HIVE_OPEN.DOWN | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN,
+}
+
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
-	
+	--TODO: strings and choose_hive_room
+	local function get_room(x, y)
+		return roomgenlib.global_levelassembly.modification.levelrooms[y][x]
+	end
+	local function is_room_cidol_or_path(x, y)
+		local room = get_room(x, y)
+		return (room > 0 and room < 9) or room == module.HD_SUBCHUNKID.RESTLESS_IDOL --paths or entrance/exit
+	end
+	local function choose_hive_room(hive_id, hive_x, hive_y, hive2_id, hive2_x, hive2_y)
+		local room_mask = 0
+		if hive_x > 1 and is_room_cidol_or_path(hive_x-1, hive_y) then
+			room_mask = room_mask | HIVE_OPEN.LEFT
+		elseif hive_x - 1 == hive2_x then
+			room_mask = room_mask | HIVE_OPEN.H_LEFT
+		end
+		if hive_x < 4 and is_room_cidol_or_path(hive_x+1, hive_y) then
+			room_mask = room_mask | HIVE_OPEN.RIGHT
+		elseif hive_x + 1 == hive2_x then
+			room_mask = room_mask | HIVE_OPEN.H_RIGHT
+		end
+		if hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL then
+			room_mask = room_mask | HIVE_OPEN.UP | HIVE_OPEN.DOWN
+		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP then
+			room_mask = room_mask | HIVE_OPEN.UP
+		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
+			room_mask = room_mask | HIVE_OPEN.DOWN
+		end
+		local hive_room = HIVE_BY_MASKS[room_mask]
+		if not hive_room then
+			hive_room =module.HD_SUBCHUNKID.HIVE_SIDES_DOWN
+		end
+		return hive_room
+		--[[local left_open, right_open = false, false
+		if hive_x > 1 then
+			left_open = is_room_cidol_or_path(hive_x-1, hive_y)
+		end
+		if hive_x < 4 then
+			right_open = is_room_cidol_or_path(hive_x+1, hive_y)
+		end
+
+		if hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDES then
+			if hive_x+1 == hive2_x then --and hive_y == hive2_y then (should always be at the same y level if there's another)
+				return module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT
+			elseif hive_x-1 == hive2_x then
+				return module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT
+			elseif left_open then
+				if right_open then
+					return module.HD_SUBCHUNKID.HIVE_SIDES
+				else
+					return module.HD_SUBCHUNKID.HIVE_LEFT
+				end
+			else
+				if right_open then
+					return module.HD_SUBCHUNKID.HIVE_LEFT
+				end
+			end
+			-- return HIVE_SIDES_DOWN
+		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP then
+			if right_open then
+				if left_open then
+					--there's a room for no hive up, but should be never actually used
+					return module.HD_SUBCHUNKID.HIVE_SIDES_H_UP
+				elseif hive_x-1 == hive2_x then
+					return module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT
+				else --left_closed
+					--if hive2_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
+yhuuuuuuuuuuuu]"
+"						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
+					--else
+						--shouldn't be possible since it must be connected to hive
+					--	return module.HD_SUBCHUNKID.HIVE_UP_RIGHT
+					--end
+				end
+			elseif left_open then
+				if hive_x+1 == hive2_x then
+					return module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT
+				else --left_closed
+					--if hive2_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
+						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
+					--else
+						--shouldn't be possible since it must be connected to hive
+					--	return module.HD_SUBCHUNKID.HIVE_UP_RIGHT
+					--end
+				end
+			end
+		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL then
+
+		else
+
+		end
+		return module.HD_SUBCHUNKID.HIVE_SIDES_DOWN--]]
+	end
+	local ROOM_Y <const> = 3
+	local room_x = 0
+	for i = 1, 4, 1 do
+		local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[ROOM_Y][i]
+		if subchunk_id == module.HD_SUBCHUNKID.SIDE then
+			room_x = i
+			break
+		end
+	end
+	--if didn't find any available room then return
+	if room_x == 0 then return end
+	local room1_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDES
+	local room2_x, room2_y = room_x, ROOM_Y
+	local hive_type = math.random(1, 4)
+	for i = 1, 3 do
+		if hive_type == HIVE_TYPE.GROW_LEFT then
+			if room_x > 1 then
+				room2_x = room_x - 1
+				break
+			end
+		elseif hive_type == HIVE_TYPE.GROW_RIGHT then
+			if room_x < 4 then
+				room2_x = room_x - 1
+				break
+			end
+		elseif hive_type == HIVE_TYPE.GROW_UP then
+			room2_y = ROOM_Y - 1
+			room1_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP
+			break
+		elseif hive_type == HIVE_TYPE.GROW_DOWN then
+			if roomgenlib.global_levelassembly.modification.levelrooms[ROOM_Y+1][room_x] == module.HD_SUBCHUNKID.EXIT then
+			--TODO: or is rushing water and ROOM_Y == 4
+			--Should probably also make smth for rushing water to be done before beehives
+				room2_x = 0
+			else
+				room2_y = ROOM_Y + 1
+				room1_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN
+			end
+			break
+		end
+		hive_type = hive_type + 1
+	end
+	local room2_id
+	if room2_x ~= 0 then
+		local prev_room2_id = roomgenlib.global_levelassembly.modification.levelrooms[room2_y][room2_x]
+		if (
+			prev_room2_id == module.HD_SUBCHUNKID.PATH_DROP
+			or room1_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP
+		) then
+			local above_room_id = roomgenlib.global_levelassembly.modification.levelrooms[room2_y-1][room2_x]
+			if 
+				above_room_id == module.HD_SUBCHUNKID.PATH_DROP
+				or above_room_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP
+			then
+				room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL
+			else
+				room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN
+			end
+		elseif prev_room2_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+			room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL
+		elseif (
+			prev_room2_id == module.HD_SUBCHUNKID.PATH_NOTOP
+			or room1_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN
+		) then
+			room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP
+		else
+			room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDES
+		end
+	end
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
@@ -3065,9 +3331,11 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 			spot1.y, spot1.x
 		)
 
+		messpect(#spots)
 		spots[spot1_i] = nil
 		commonlib.CompactList(spots, n)
 		local spot2 = spots[math.random(#spots)]
+		messpect(#spots, spot2)
 
 		roomgenlib.levelcode_inject_roomcode(
 			module.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,

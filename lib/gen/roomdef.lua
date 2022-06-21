@@ -808,6 +808,43 @@ module.HD_ROOMOBJECT.FEELINGS = {}
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE] = {
 	prePath = false,
 	rooms = {
+		[module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT] = {{"eeeeeeee11zzzzzzzeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT] = {{"11eeeeeeeeeeezzzzzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
+		[module.HD_SUBCHUNKID.HIVE_LEFT] = {{"11eeeeeee1eeezzzzzeeeez00000ze00000000ze00000000zeeez00000zeeeezzzzzee11eeeeeee1"}},
+		[module.HD_SUBCHUNKID.HIVE_SIDES] = {{"11eeeeee11eeezzzzeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_RIGHT] = {{"1eeeeeee11eezzzzzeeeez00000zeeez00000000ez00000000ez00000zeeeezzzzzeee1eeeeeee11"}},
+		
+		[module.HD_SUBCHUNKID.HIVE_UP] = {{"11ee00ee11eeez00zeeeeez0000zeeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_H_UP]  = {{"ez000000zeez00zz00zeez00zz00zeez000000zeez000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT]  = {{"eeee00ee11zzzz00zeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_RIGHT]  = {{"11ee00ee11eeez00zeeeeez0000zeeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP]  = {{"ez000000zeez00zz00zeez00zz00zeez00000000ez00000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_LEFT_H_RIGHT]  = {{"11ee00eeeeeeez00zzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_LEFT]  = {{"11ee00ee11eeez00zeeeeez0000zee00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_LEFT_H_UP]  = {{"ez000000zeez00zz00zeez00zz00ze00000000ze00000000zeeez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_SIDES]  = {{"11ee00ee11eeez00zeeeeez0000zee00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		[module.HD_SUBCHUNKID.HIVE_SIDES_H_UP]  = {{"ez000000zeez00zz00zeez00zz00ze00000000000000000000eez0000zeeeeezzzzeee11eeeeee11"}},
+		
+		[module.HD_SUBCHUNKID.HIVE_UP_DOWN_H_LEFT] = {{"11ee00ee11eeez00zeee0000000zee00000000ze00000000ze00000000zeeeez00zzee11ee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_DOWN_H_RIGHT] = {{"11ee00ee11eeez00zeeeeez0000000ez00000000ez00000000ez00000000eezz00zeeeeeee00ee11"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_DOWN] = {{"11ee00ee11eeez00zeeeeez0000zeeez000000zeez000000zeez000000zeeezz00zzeeeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_H_DOWN] = {{"11ee00ee11eeez00zeeeeez0000zeeez000000zeez000000zeez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_DOWN] = {{"11ee00ee11eeez00zeeeeez0000zeeez00000000ez00000000ez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_UP_LEFT_H_DOWN] = {{"11ee00ee11eeez00zeeeeez0000zee00000000ze00000000zeez00zz00zeez00zz00zeez000000ze"}},
+		
+		[module.HD_SUBCHUNKID.HIVE_SIDES_DOWN_H_UP] = {{"ez000000zeez00zz00zeez00zz00ze00000000000000000000ez000000zeeezz00zzeeeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_SIDES_H_VERTICAL] = {{"ez000000zeez00zz00zeez00zz00ze00000000000000000000ez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_DOWN] = {{"11eeeeee11eeezzzzeeeeez0000zeeez000000zeez000000zeez000000zeeezz00zzeeeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_H_DOWN] = {{"11eeeeee11eeezzzzeeeeez0000zeeez000000zeez000000zeez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_RIGHT_DOWN_H_LEFT] = {{"eeeeeeee11zzzzzzzeee0000000zee000000000000000000000000000zeezzzz00zeeeeeee00ee11"}},
+		[module.HD_SUBCHUNKID.HIVE_RIGHT_DOWN] = {{"1eeeeeee11eezzzzzeeeez00000zeeez00000000ez00000000ez000000zeeezz00zzeeeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_RIGHT_H_DOWN] = {{"1eeeeeee11eezzzzzeeeez00000zeeez00000000ez00000000ez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_DOWN_LEFT_H_RIGHT] = {{"11eeeeeeeeeeezzzzzzzeez000000000000000000000000000ez00000000eezz00zzzzeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_DOWN_LEFT] = {{"11eeeeeee1eeezzzzzeeeez00000ze00000000ze00000000zeez000000zeeezz00zzeeeeee00eeee"}},
+		[module.HD_SUBCHUNKID.HIVE_LEFT_H_DOWN] = {{"11eeeeeee1eeezzzzzeeeez00000ze00000000ze00000000zeez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_SIDES_H_DOWN] = {{"11eeeeee11eeezzzzeeeeez0000zee00000000000000000000ez00zz00zeez00zz00zeez000000ze"}},
+		[module.HD_SUBCHUNKID.HIVE_SIDES_DOWN] = {{"11eeeeee11eeezzzzeeeeez0000zee00000000000000000000ez000000zeeezz00zzeeeeee00eeee"}},
+
 		-- This is an absolute abomination of a naming scheme, but that's for future-me to resolve.
 		-- Resolutions I can only dream of. Imagine living in a post-hive-spawn-understanding world: World peace. Solving world hunger. The hive genlib.HD_SUBCHUNKID naming scheme not being a total cluster-truck.
 		
@@ -868,10 +905,11 @@ local HIVE_OPEN <const> = {
 	RIGHT = 0x2,
 	UP = 0x4,
 	DOWN = 0x8,
-	H_LEFT = 0xc,
-	H_RIGHT = 0x10,
-	H_UP = 0x20,
-	H_DOWN = 0x40,
+	SIDES = 0x3,
+	H_LEFT = 0x10,
+	H_RIGHT = 0x20,
+	H_UP = 0x40,
+	H_DOWN = 0x80,
 }
 
 local HIVE_BY_MASKS <const> = {
@@ -918,15 +956,19 @@ local HIVE_BY_MASKS <const> = {
 }
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
-	--TODO: strings and choose_hive_room
+	local function is_path_drop(room_id)
+		return room_id == module.HD_SUBCHUNKID.PATH_DROP
+			or room_id == module.HD_SUBCHUNKID.ENTRANCE_DROP
+			or room_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP
+	end
 	local function get_room(x, y)
-		return roomgenlib.global_levelassembly.modification.levelrooms[y][x]
+		return roomgenlib.global_levelassembly.modification.levelrooms[y][x] or 0
 	end
 	local function is_room_cidol_or_path(x, y)
 		local room = get_room(x, y)
 		return (room > 0 and room < 9) or room == module.HD_SUBCHUNKID.RESTLESS_IDOL --paths or entrance/exit
 	end
-	local function choose_hive_room(hive_id, hive_x, hive_y, hive2_id, hive2_x, hive2_y)
+	local function choose_hive_room(hive_id, hive_x, hive_y, hive2_x, hive2_y)
 		local room_mask = 0
 		if hive_x > 1 and is_room_cidol_or_path(hive_x-1, hive_y) then
 			room_mask = room_mask | HIVE_OPEN.LEFT
@@ -941,13 +983,14 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 		if hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL then
 			room_mask = room_mask | HIVE_OPEN.UP | HIVE_OPEN.DOWN
 		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP then
-			room_mask = room_mask | HIVE_OPEN.UP
+			room_mask = room_mask | (hive_y-1 == hive2_y and HIVE_OPEN.H_UP or HIVE_OPEN.UP)
 		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
-			room_mask = room_mask | HIVE_OPEN.DOWN
+			room_mask = room_mask | (hive_y+1 == hive2_y and HIVE_OPEN.H_DOWN or HIVE_OPEN.DOWN)
 		end
+		messpect(hive_id, room_mask)
 		local hive_room = HIVE_BY_MASKS[room_mask]
 		if not hive_room then
-			hive_room =module.HD_SUBCHUNKID.HIVE_SIDES_DOWN
+			hive_room = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN
 		end
 		return hive_room
 		--[[local left_open, right_open = false, false
@@ -984,8 +1027,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 					return module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT
 				else --left_closed
 					--if hive2_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
-yhuuuuuuuuuuuu]"
-"						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
+						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
 					--else
 						--shouldn't be possible since it must be connected to hive
 					--	return module.HD_SUBCHUNKID.HIVE_UP_RIGHT
@@ -1010,10 +1052,11 @@ yhuuuuuuuuuuuu]"
 		end
 		return module.HD_SUBCHUNKID.HIVE_SIDES_DOWN--]]
 	end
+	--TODO: Background, bee spawn
 	local ROOM_Y <const> = 3
 	local room_x = 0
 	for i = 1, 4, 1 do
-		local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[ROOM_Y][i]
+		local subchunk_id = get_room(i, ROOM_Y)
 		if subchunk_id == module.HD_SUBCHUNKID.SIDE then
 			room_x = i
 			break
@@ -1061,8 +1104,7 @@ yhuuuuuuuuuuuu]"
 		) then
 			local above_room_id = roomgenlib.global_levelassembly.modification.levelrooms[room2_y-1][room2_x]
 			if 
-				above_room_id == module.HD_SUBCHUNKID.PATH_DROP
-				or above_room_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP
+				is_path_drop(above_room_id)
 			then
 				room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL
 			else
@@ -1078,7 +1120,13 @@ yhuuuuuuuuuuuu]"
 		else
 			room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDES
 		end
+		room2_id = choose_hive_room(room2_id, room2_x, room2_y, room_x, ROOM_Y)
+		messpect(module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id])
+		roomgenlib.levelcode_inject_roomcode(room2_id, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id], room2_y, room2_x, 1)
 	end
+	messpect(module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id])
+	room1_id = choose_hive_room(room1_id, room_x, ROOM_Y, room2_x, room2_y)
+	roomgenlib.levelcode_inject_roomcode(room1_id, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room1_id], ROOM_Y, room_x, 1)
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {

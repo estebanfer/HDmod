@@ -31,8 +31,7 @@ module.FEELING_ID = {
 
 module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.HIVE] = {
-		-- chance = 10,
-		chance = 0,
+		chance = 1,--10,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.UDJAT] = {
@@ -271,6 +270,7 @@ function module.onlevel_set_feelings()
 		-- Restless cannot happen on haunted castle
 		if module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false then
 			module.feeling_set_once(module.FEELING_ID.RESTLESS, {state.level})
+			feeling_set(module.FEELING_ID.HIVE, {state.level})
 		end
 
 		-- Haunted Castle and Black Market cannot have rushing water nor tikivillage

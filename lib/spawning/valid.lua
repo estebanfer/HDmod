@@ -466,11 +466,14 @@ function module.is_valid_tombstone_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 	--]]
+	local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
     return (
 		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and
 		detect_empty_nodoor(x, y, l)
 		and detect_empty_nodoor(x, y+1, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
+		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
+		and below_type ~= ENT_TYPE.FLOOR_EGGPLANT_ALTAR
 	)
 end
 
@@ -521,7 +524,25 @@ function module.is_valid_giantspider_spawn(x, y, l)
 	)
 end -- # TODO: Implement method for valid giantspider spawn
 
-function module.is_valid_bee_spawn(x, y, l) return false end -- # TODO: Implement method for valid bee spawn
+function module.is_valid_bee_spawn(x, y, l)
+	return get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_BEEHIVE
+		and check_empty_space(x, y, l, 1, 2)
+end
+
+function module.is_valid_honey_spawn(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+		and (
+			get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_BEEHIVE
+			or get_entity_type(get_grid_entity_at(x, y-1, l)) == ENT_TYPE.FLOORSTYLED_BEEHIVE
+		)
+end
+
+function module.is_valid_queenbee_spawn(x, y, l)
+	local rx, ry = get_room_index(x, y)
+	local levelrooms = roomgenlib.global_levelassembly.modification.levelrooms
+	local _template_hd = levelrooms[ry+1] and (levelrooms[ry+1][rx+1] or 0) or 0
+	return _template_hd >= 1300 and _template_hd < 1400 and check_empty_space(x, y, l, 3, 3)
+end
 
 function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
 

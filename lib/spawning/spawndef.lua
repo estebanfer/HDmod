@@ -27,7 +27,7 @@ module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.cr
 
 module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_damsel_spawn, 0, 0)
 
-module.global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x, y, l, 0, 0) end, nil, 0, 0)
+module.global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x+1, y, l, 0, 0) end, validlib.is_valid_queenbee_spawn, 0, 0)
 
 module.global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_wormtongue, validlib.is_valid_wormtongue_spawn, 0, 0)
 
@@ -168,6 +168,7 @@ module.global_spawn_procedural_mammoth = define_procedural_spawn("hd_procedural_
 module.global_spawn_procedural_giantspider = define_procedural_spawn("hd_procedural_giantspider", createlib.create_giantspider, validlib.is_valid_giantspider_spawn)
 
 module.global_spawn_procedural_hive_bee = define_procedural_spawn("hd_procedural_hive_bee", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BEE, x, y, l) end, validlib.is_valid_bee_spawn)
+module.global_spawn_procedural_hive_honey = define_procedural_spawn("hd_procedural_hive_honey", createlib.create_honey, validlib.is_valid_honey_spawn)
 
 module.global_spawn_procedural_ufo = define_procedural_spawn("hd_procedural_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
 module.global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_procedural_worm_icecaves_ufo", createlib.create_ufo, validlib.is_valid_ufo_spawn)
@@ -191,6 +192,8 @@ module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("h
 	END PROCEDURAL SPAWN DEF
 --]]
 
+---comment
+---@param room_gen_ctx PostRoomGenerationContext
 function module.set_chances(room_gen_ctx)
     if options.hd_debug_scripted_levelgen_disable == false then
         if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
@@ -246,9 +249,11 @@ function module.set_chances(room_gen_ctx)
 
             if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
                 room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 1, 0)
+                --room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 2)
             else
                 room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 0, 0)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_honey, 0)
             end
 
             if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then

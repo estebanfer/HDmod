@@ -53,6 +53,43 @@ local function level_specific()
     end
 end
 
+local function spawn_hive_bg(hive_x, hive_y, hive2_x, hive2_y)
+    local function spawn_midbg_hive(x, y)
+        local ent = get_entity(spawn_grid_entity(ENT_TYPE.MIDBG_BEEHIVE, x, y, LAYER.FRONT))
+        ent.width, ent.height = 1.25, 1.25
+        ent:set_draw_depth(44)
+    end
+    local x, y = get_room_pos(hive_x-1, hive_y-1)
+    for _, uid in ipairs(
+        get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(x, y, x+10, y-8), LAYER.FRONT)) do
+        get_entity(uid):destroy()
+    end
+    do
+        local ent = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x+5, y-4, LAYER.FRONT, 0, 0))
+        ent:set_texture(TEXTURE.DATA_TEXTURES_BG_BEEHIVE_0)
+        ent.width, ent.height = 10.0, 8.0
+        ent.hitboxx, ent.hitboxy = 3.5, 3.5
+        ent:set_draw_depth(49)
+    end
+    local lx, ly = (hive_x-1)*10 + 1, (hive_y-1)*8 + 1
+    if locatelib.get_levelcode_at(lx, ly+3) == "0" and hive_x - 1 ~= hive2_x and hive_x > 1 then --left
+        spawn_midbg_hive(x+0.5, y-3.5)
+        spawn_midbg_hive(x+0.5, y-4.5)
+    end
+    if locatelib.get_levelcode_at(lx+9, ly+3) == "0" and hive_x + 1 ~= hive2_x and hive_x < 4 then --right
+        spawn_midbg_hive(x+9.5, y-3.5)
+        spawn_midbg_hive(x+9.5, y-4.5)
+    end
+    if locatelib.get_levelcode_at(lx+4, ly) == "0" and hive_y - 1 ~= hive2_y then --up
+        spawn_midbg_hive(x+4.5, y-0.5)
+        spawn_midbg_hive(x+5.5, y-0.5)
+    end
+    if locatelib.get_levelcode_at(lx+4, ly+7) == "0" and hive_y < 4 and hive_y + 1 ~= hive2_y then --down
+        spawn_midbg_hive(x+4.5, y-7.5)
+        spawn_midbg_hive(x+5.5, y-7.5)
+    end
+end
+
 --[[
     Room-Specific
 --]]
@@ -99,6 +136,23 @@ local function room_specific()
                 backwall.width, backwall.height = w, h
                 backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+            elseif _template_hd and _template_hd >= 1300 and _template_hd < 1400 then
+                local hive2_x, hive2_y = -1, -1
+                do -- find second beehive if exists
+                    local ix = 0
+                    local levelrooms = roomgenlib.global_levelassembly.modification.levelrooms
+                    for iy = -1, 1 do
+                        while ix < 2 do
+                            local room = levelrooms[y+iy] and (levelrooms[y+iy][x+ix] or 0) or 0
+                            if room >= 1300 and room < 1400 then
+                                hive2_x, hive2_y = x+ix, y+iy
+                            end
+                            ix = ix + 2
+                        end
+                        ix = ix % 2 - 1
+                    end
+                end
+                spawn_hive_bg(x, y, hive2_x, hive2_y)
             end
         end
     end

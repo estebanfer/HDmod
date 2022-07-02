@@ -30,6 +30,12 @@ function module.locate_levelcode_position_from_game_position(e_x, e_y)
 	return e_x-(_xmin-0.5), (_ymin+0.5)-e_y
 end
 
+---Get levelcode using levelcode coordinates, returns 0 if not found
+function module.get_levelcode_at(lx, ly)
+    local levelcode = roomgenlib.global_levelassembly.modification.levelcode
+    return levelcode[ly] and (levelcode[ly][lx] or 0) or 0
+end
+
 -- translate levelcode coordinates to levelrooms coordinates
 function module.locate_levelrooms_position_from_levelcode_position(e_x, e_y)
 	-- xmin, ymin, xmax, ymax = 1, 1, 4*10, 4*8

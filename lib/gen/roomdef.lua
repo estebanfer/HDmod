@@ -981,78 +981,18 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 			room_mask = room_mask | HIVE_OPEN.H_RIGHT
 		end
 		if hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL then
-			room_mask = room_mask | HIVE_OPEN.UP | HIVE_OPEN.DOWN
+			room_mask = room_mask | HIVE_OPEN.UP |  (hive_y+1 == hive2_y and HIVE_OPEN.H_DOWN or HIVE_OPEN.DOWN)
 		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP then
 			room_mask = room_mask | (hive_y-1 == hive2_y and HIVE_OPEN.H_UP or HIVE_OPEN.UP)
 		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
 			room_mask = room_mask | (hive_y+1 == hive2_y and HIVE_OPEN.H_DOWN or HIVE_OPEN.DOWN)
 		end
-		messpect(hive_id, room_mask)
 		local hive_room = HIVE_BY_MASKS[room_mask]
 		if not hive_room then
 			hive_room = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN
 		end
 		return hive_room
-		--[[local left_open, right_open = false, false
-		if hive_x > 1 then
-			left_open = is_room_cidol_or_path(hive_x-1, hive_y)
-		end
-		if hive_x < 4 then
-			right_open = is_room_cidol_or_path(hive_x+1, hive_y)
-		end
-
-		if hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDES then
-			if hive_x+1 == hive2_x then --and hive_y == hive2_y then (should always be at the same y level if there's another)
-				return module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT
-			elseif hive_x-1 == hive2_x then
-				return module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT
-			elseif left_open then
-				if right_open then
-					return module.HD_SUBCHUNKID.HIVE_SIDES
-				else
-					return module.HD_SUBCHUNKID.HIVE_LEFT
-				end
-			else
-				if right_open then
-					return module.HD_SUBCHUNKID.HIVE_LEFT
-				end
-			end
-			-- return HIVE_SIDES_DOWN
-		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP then
-			if right_open then
-				if left_open then
-					--there's a room for no hive up, but should be never actually used
-					return module.HD_SUBCHUNKID.HIVE_SIDES_H_UP
-				elseif hive_x-1 == hive2_x then
-					return module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT
-				else --left_closed
-					--if hive2_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
-						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
-					--else
-						--shouldn't be possible since it must be connected to hive
-					--	return module.HD_SUBCHUNKID.HIVE_UP_RIGHT
-					--end
-				end
-			elseif left_open then
-				if hive_x+1 == hive2_x then
-					return module.HD_SUBCHUNKID.HIVE_UP_RIGHT_H_LEFT
-				else --left_closed
-					--if hive2_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_DOWN then
-						return module.HD_SUBCHUNKID.HIVE_RIGHT_H_UP
-					--else
-						--shouldn't be possible since it must be connected to hive
-					--	return module.HD_SUBCHUNKID.HIVE_UP_RIGHT
-					--end
-				end
-			end
-		elseif hive_id == module.HD_SUBCHUNKID.HIVE_PRE_SIDE_VERTICAL then
-
-		else
-
-		end
-		return module.HD_SUBCHUNKID.HIVE_SIDES_DOWN--]]
 	end
-	--TODO: Background, bee spawn
 	local ROOM_Y <const> = 3
 	local room_x = 0
 	for i = 1, 4, 1 do
@@ -1067,7 +1007,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 	local room1_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDES
 	local room2_x, room2_y = room_x, ROOM_Y
 	local hive_type = math.random(1, 4)
-	for i = 1, 3 do
+	for i = 1, 4 do
 		if hive_type == HIVE_TYPE.GROW_LEFT then
 			if room_x > 1 then
 				room2_x = room_x - 1
@@ -1075,7 +1015,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 			end
 		elseif hive_type == HIVE_TYPE.GROW_RIGHT then
 			if room_x < 4 then
-				room2_x = room_x - 1
+				room2_x = room_x + 1
 				break
 			end
 		elseif hive_type == HIVE_TYPE.GROW_UP then
@@ -1083,9 +1023,8 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 			room1_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDE_UP
 			break
 		elseif hive_type == HIVE_TYPE.GROW_DOWN then
-			if roomgenlib.global_levelassembly.modification.levelrooms[ROOM_Y+1][room_x] == module.HD_SUBCHUNKID.EXIT then
-			--TODO: or is rushing water and ROOM_Y == 4
-			--Should probably also make smth for rushing water to be done before beehives
+			if roomgenlib.global_levelassembly.modification.levelrooms[ROOM_Y+1][room_x] == module.HD_SUBCHUNKID.EXIT
+			or feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 				room2_x = 0
 			else
 				room2_y = ROOM_Y + 1
@@ -1121,10 +1060,8 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 			room2_id = module.HD_SUBCHUNKID.HIVE_PRE_SIDES
 		end
 		room2_id = choose_hive_room(room2_id, room2_x, room2_y, room_x, ROOM_Y)
-		messpect(module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id])
 		roomgenlib.levelcode_inject_roomcode(room2_id, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id], room2_y, room2_x, 1)
 	end
-	messpect(module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room2_id])
 	room1_id = choose_hive_room(room1_id, room_x, ROOM_Y, room2_x, room2_y)
 	roomgenlib.levelcode_inject_roomcode(room1_id, module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].rooms[room1_id], ROOM_Y, room_x, 1)
 end

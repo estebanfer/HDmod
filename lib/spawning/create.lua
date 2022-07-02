@@ -351,4 +351,19 @@ function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l
 
 function module.create_eggsac(x, y, l) end
 
+-- # TODO: Honey chance isn't completely same as HD, in HD it's 10% for upside down honey, and 9% for normal honey,
+-- but the current implementation should be similar enough since it's 10% for each one
+-- In case of changing this, also change from validlib and junglearea.lvl
+
+function module.create_honey(x, y, l)
+	local floor = get_grid_entity_at(x, y+1, l)
+	if floor ~= -1 and math.random(2) == 1 then
+		get_entity(spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, -0.8)).animation_frame = 238
+	else
+		floor = get_grid_entity_at(x, y-1, l)
+		if floor == -1 then return end
+		spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, 0.8)
+	end
+end
+
 return module

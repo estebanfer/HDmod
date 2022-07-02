@@ -9,9 +9,9 @@ module.FEELING_ID = {
     SPIDERLAIR = 3,
     SNAKEPIT = 4,
     RESTLESS = 5,
-    HIVE = 6,
-    TIKIVILLAGE = 7,
-    RUSHING_WATER = 8,
+    RUSHING_WATER = 6,
+    HIVE = 7,
+    TIKIVILLAGE = 8,
     BLACKMARKET_ENTRANCE = 9,
     BLACKMARKET = 10,
     HAUNTEDCASTLE = 11,
@@ -31,7 +31,7 @@ module.FEELING_ID = {
 
 module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.HIVE] = {
-		chance = 1,--10,
+		chance = 10,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.UDJAT] = {

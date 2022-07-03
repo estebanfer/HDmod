@@ -3,6 +3,7 @@
 local module = {}
 
 function module.create_tikitrap(x, y, l)
+	removelib.remove_floor_and_embedded_at(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y-1, l)
     local uid = -1
     if floor_uid ~= -1 then

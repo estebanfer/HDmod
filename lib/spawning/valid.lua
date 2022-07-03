@@ -439,13 +439,79 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
 end -- # TODO: Implement method for valid arrowtrap spawn
 
 function module.is_valid_tikitrap_spawn(x, y, l)
-	--[[
-		-- # TODO: Implement method for valid tikitrap spawn
-		-- Does it have a block underneith?
-		-- Does it have at least 3 spaces across unoccupied above it?
-		-- Does it have at least one tile unoccupied next to it? (not counting tiki trap tiles)
-		-- Is the top tiki part placed over an unoccupied space?
-	]]
+	-- need subchunkid of what room we're in
+	-- # TOFIX: Prevent tikitraps from spawning in castle rooms.
+	--[[ the following code returns as nil, though it should be showing up at this point...
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	--]]
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then return false end -- TEMPORARY
+
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
+
+	local above = get_grid_entity_at(x, y+1, l)
+	if above ~= -1 then
+		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
+			return false
+		end
+	end
+
+	if (
+		detect_empty_nodoor(x, y+1, l) == false
+		-- or detect_empty_nodoor(x, y, l) == false
+	) then return false end
+
+	-- Does it have 3 spaces across unoccupied above it?
+	local topleft2 = get_grid_entity_at(x-1, y+2, l)
+	local topmid2 = get_grid_entity_at(x, y+2, l)
+	local topright2 = get_grid_entity_at(x+1, y+2, l)
+	if (topleft2 ~= -1 or topmid2 ~= -1 or topright2 ~= -1) then
+		return false
+	end
+
+	-- Does it have at least one tile unoccupied next to it? (not counting tiki trap tiles)
+	local topleft = get_grid_entity_at(x-1, y+1, l)
+	local topright = get_grid_entity_at(x+1, y+1, l)
+	local left = get_grid_entity_at(x-1, y, l)
+	local right = get_grid_entity_at(x+1, y, l)
+	local num_of_blocks = 0
+
+	if (
+		topleft ~= -1
+		and commonlib.has(valid_floors, get_entity_type(topleft))
+	) then
+		num_of_blocks = num_of_blocks + 1
+	end
+	if (
+		topright ~= -1
+		and commonlib.has(valid_floors, get_entity_type(topright))
+	) then
+		num_of_blocks = num_of_blocks + 1
+	end
+	if (
+		left ~= -1
+		and commonlib.has(valid_floors, get_entity_type(left))
+	) then
+		num_of_blocks = num_of_blocks + 1
+	end
+	if (
+		right ~= -1
+		and commonlib.has(valid_floors, get_entity_type(right))
+	) then
+		num_of_blocks = num_of_blocks + 1
+	end
+
+	if num_of_blocks == 4 then return false end
+
+	-- Is the top tiki part placed over an unoccupied space?
+	local topmid = get_grid_entity_at(x, y+1, l)
+	if topmid ~= -1 then return false end
+
+	-- Does it have a block underneith?
+	local bottom = get_grid_entity_at(x, y-1, l)
+	if bottom ~= -1 then
+		return commonlib.has(valid_floors, get_entity_type(bottom))
+	end
 	return false
 end
 

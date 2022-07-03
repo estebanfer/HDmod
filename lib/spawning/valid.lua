@@ -409,6 +409,18 @@ function module.is_valid_pushblock_spawn(x, y, l)
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
+
+	-- need subchunkid of what room we're in
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	if (
+		_subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+	) then
+		return false
+	end
+
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
 		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then

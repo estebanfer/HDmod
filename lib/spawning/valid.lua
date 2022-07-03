@@ -342,7 +342,7 @@ function module.is_valid_critter_penguin_spawn(x, y, l) return false end -- # TO
 
 function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 
-function module.is_valid_jiangshi_spawn(x, y, l) return false end -- # TODO: Implement method for valid jiangshi spawn
+module.is_valid_jiangshi_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid jiangshi spawn
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
@@ -373,7 +373,7 @@ module.is_valid_bat_spawn = default_ceiling_entity_condition -- # TODO: Implemen
 
 module.is_valid_spider_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid spider spawn
 
-function module.is_valid_vampire_spawn(x, y, l) return false end -- # TODO: Implement method for valid vampire spawn
+module.is_valid_vampire_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid vampire spawn
 
 function module.is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
 

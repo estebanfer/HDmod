@@ -66,7 +66,7 @@ end
 
 local function detect_empty_nodoor(x, y, l)
 	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
-	local entity_uids = get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y, l, 0.5)
+	local entity_uids = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 0.5)
 	local door_not_here = #entity_uids == 0
 	return (
 		get_grid_entity_at(x, y, l) == -1
@@ -409,6 +409,18 @@ function module.is_valid_pushblock_spawn(x, y, l)
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
+
+	-- need subchunkid of what room we're in
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	if (
+		_subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+	) then
+		return false
+	end
+
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
 		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
@@ -445,7 +457,18 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
 	--]]
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then return false end -- TEMPORARY
+	-- need subchunkid of what room we're in
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	if (
+		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT
+		and (
+			_subchunk_id >= 200
+			and _subchunk_id <= 213
+		)
+	) then
+		return false
+	end
 
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
 
@@ -527,11 +550,12 @@ end
 
 function module.is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
-	-- # TOFIX: Prevent tombstones from spawning in RESTLESS_TOMB.
-	--[[ the following code returns as nil, though it should be showing up at this point...
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-	--]]
+	if _subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB then
+		return false
+	end
+
 	local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
     return (
 		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and

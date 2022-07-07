@@ -18,6 +18,10 @@ function module.create_tikitrap(x, y, l)
     return uid--hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
 end
 
+function module.create_tikitrap_procedural(x, y, l)
+    module.create_tikitrap(x, y, l)
+end
+
 set_post_entity_spawn(function(entity)
     entity.spawn_entity_type = ENT_TYPE.ITEM_LION_SPEAR
     -- entity.first_sound_id = VANILLA_SOUND.TRAPS_LIONTRAP_TRIGGER

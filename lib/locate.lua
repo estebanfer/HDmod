@@ -16,24 +16,42 @@ end
 -- 	return tc_x, tc_y
 -- end
 
+--Get room at a levelroom cooridnate. returns -1 if not found
+function module.get_levelroom_at(room_x, room_y)
+	local levelrooms = roomgenlib.global_levelassembly.modification.levelrooms
+	return (
+		levelrooms[room_y] and
+		levelrooms[room_y][room_x]
+	) or
+	(room_y == 5 and roomgenlib.global_levelassembly.modification.rowfive.levelrooms[room_x] or -1)
+end
+
 -- translate game coordinates to levelrooms coordinates
 function module.locate_levelrooms_position_from_game_position(e_x, e_y)
-	local xmin, ymin, _, _ = get_bounds()
-	local roomx = math.floor((e_x-(xmin+0.5))/CONST.ROOM_WIDTH)+1
-	local roomy = math.floor(((ymin-0.5)-e_y)/CONST.ROOM_HEIGHT)+1
-	return roomx, roomy
+	local roomx, roomy = get_room_index(e_x, e_y)
+	return roomx+1, roomy+1
+end
+
+function module.get_levelroom_at_game_position(e_x, e_y)
+	local room_x, room_y = module.locate_levelrooms_position_from_game_position(e_x, e_y)
+	return module.get_levelroom_at(room_x, room_y)
 end
 
 -- translate game coordinates to levelcode coordinates
 function module.locate_levelcode_position_from_game_position(e_x, e_y)
 	local _xmin, _ymin, _, _ = get_bounds()
-	return e_x-(_xmin-0.5), (_ymin+0.5)-e_y
+	return math.floor(e_x-(_xmin-0.5)), math.floor((_ymin+0.5)-e_y)
 end
 
 ---Get levelcode using levelcode coordinates, returns 0 if not found
 function module.get_levelcode_at(lx, ly)
     local levelcode = roomgenlib.global_levelassembly.modification.levelcode
     return levelcode[ly] and (levelcode[ly][lx] or 0) or 0
+end
+
+function module.get_levelcode_at_gpos(x, y)
+	local lx, ly = module.locate_levelcode_position_from_game_position(x, y)
+	return module.get_levelcode_at(lx, ly)
 end
 
 -- translate levelcode coordinates to levelrooms coordinates

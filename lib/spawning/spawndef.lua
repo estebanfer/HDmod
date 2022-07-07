@@ -7,6 +7,7 @@ createlib = require 'lib.spawning.create'
 local giantfroglib = require 'lib.entities.giant_frog'
 local bacteriumlib = require 'lib.entities.bacterium'
 local mshiplightlib = require 'lib.entities.mothership_light'
+local piranhalib = require 'lib.entities.piranha'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
 turretlib = require 'lib.entities.laser_turret'
@@ -107,8 +108,8 @@ module.global_spawn_procedural_alientank = define_procedural_spawn("hd_procedura
 
 module.global_spawn_procedural_critter_fish = define_procedural_spawn("hd_procedural_critter_fish", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERFISH, x, y, l) end, validlib.is_valid_critter_fish_spawn)
 
-module.global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
-module.global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", createlib.create_piranha, validlib.is_valid_piranha_spawn)
+module.global_spawn_procedural_piranha = define_procedural_spawn("hd_procedural_piranha", piranhalib.create_piranha, validlib.is_valid_piranha_spawn)
+module.global_spawn_procedural_hcastle_piranha = define_procedural_spawn("hd_procedural_hcastle_piranha", piranhalib.create_piranha, validlib.is_valid_piranha_spawn)
 
 module.global_spawn_procedural_monkey = define_procedural_spawn("hd_procedural_monkey", function(x, y, l) return false end, function(x, y, l) return false end)-- throwaway so we can obtain the value while in tiledef
 module.global_spawn_procedural_worm_jungle_monkey = define_procedural_spawn("hd_procedural_worm_jungle_monkey", function(x, y, l) return false end, function(x, y, l) return false end)
@@ -154,7 +155,7 @@ module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_proc
 
 module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
-module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap, validlib.is_valid_tikitrap_spawn)
+module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 

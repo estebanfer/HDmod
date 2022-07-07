@@ -155,7 +155,7 @@ module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_proc
 
 module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
-module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap, validlib.is_valid_tikitrap_spawn)
+module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 

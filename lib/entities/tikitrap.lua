@@ -14,6 +14,12 @@ function module.create_tikitrap(x, y, l)
             spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, s_head, -0.29, 0.26)
         end
     end
+
+    return uid--hdtypelib.create_hd_type(hdtypelib.HD_ENT.TRAP_TIKI, x, y, l, false, 0, 0)
+end
+
+function module.create_tikitrap_procedural(x, y, l)
+    module.create_tikitrap(x, y, l)
 end
 
 set_post_entity_spawn(function(entity)

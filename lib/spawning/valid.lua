@@ -352,7 +352,21 @@ function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Im
 
 function module.is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_fish spawn
 
-function module.is_valid_piranha_spawn(x, y, l) return false end -- # TODO: Implement method for valid piranha spawn
+local function is_water_at(x, y)
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	return lvlcode == "w" or
+		(lvlcode == "3" and get_grid_entity_at(x, y, LAYER.FRONT) == -1)
+end
+
+function module.is_valid_piranha_spawn(x, y, l)
+	local _, room_y = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	return (is_water_at(x, y) and is_water_at(x, y+1))
+		or (
+			feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+			and room_y == 5
+			and get_grid_entity_at(x, y, l) == -1
+		)
+end -- # TODO: Implement method for valid piranha spawn
 
 function module.is_valid_monkey_spawn(x, y, l)
 	local floor = get_grid_entity_at(x, y, l)
@@ -409,10 +423,8 @@ function module.is_valid_pushblock_spawn(x, y, l)
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
-
 	-- need subchunkid of what room we're in
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	local _subchunk_id = locatelib.get_levelroom_at_game_position(x, y)
 	if (
 		_subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
@@ -459,7 +471,10 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	--]]
 	-- need subchunkid of what room we're in
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	--prevent spawing in lake
+	if roomy > 4 then return false end
+
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	if (
 		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT
 		and (
@@ -472,15 +487,13 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
 
-	local above = get_grid_entity_at(x, y+1, l)
-	if above ~= -1 then
-		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
-			return false
-		end
+	if get_entity_type(get_grid_entity_at(x, y, l)) == ENT_TYPE.FLOOR_ALTAR
+		or is_water_at(x, y) then
+		return false
 	end
 
 	if (
-		detect_empty_nodoor(x, y+1, l) == false
+		detect_empty_nodoor(x, y, l) == false
 		-- or detect_empty_nodoor(x, y, l) == false
 	) then return false end
 
@@ -551,7 +564,10 @@ end
 function module.is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+	-- prevent spawning in lake
+	if roomy > 4 then return false end
+
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	if _subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB then
 		return false
 	end
@@ -563,7 +579,7 @@ function module.is_valid_tombstone_spawn(x, y, l)
 		and detect_empty_nodoor(x, y+1, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
 		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
-		and below_type ~= ENT_TYPE.FLOOR_EGGPLANT_ALTAR
+		and not is_water_at(x, y)
 	)
 end
 

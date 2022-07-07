@@ -1,7 +1,6 @@
 local nosacrifice = require "lib.entities.nosacrifice_items"
 local celib = require "lib.entities.custom_entities"
 local piranha_item_id
---TODO: better piranha movement, maybe check if chasing a dead player
 
 local function b(flag) return (1 << (flag-1)) end
 
@@ -29,11 +28,15 @@ local function set_piranha_skeleton(ent)
     ent:set_texture(piranha_skeleton_tex_id)
 end
 
+local function get_solids_overlapping(hitbox, layer)
+    return filter_entities(
+		get_entities_overlapping_hitbox(0, MASK.FLOOR | MASK.ACTIVEFLOOR, hitbox, layer),
+		filter_solids)
+end
+
 local function piranha_move(ent)
     local vx = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -1 or 1
-    if filter_entities(
-		get_entities_overlapping_hitbox(0, MASK.FLOOR | MASK.ACTIVEFLOOR, get_hitbox(ent.uid, 0, 0.01*vx), ent.layer),
-		filter_solids)[1] then
+    if get_solids_overlapping(get_hitbox(ent.uid, 0, 0.01*vx), ent.layer)[1] then
         ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
         vx = vx * -1
     end
@@ -46,15 +49,35 @@ local function piranha_move(ent)
     end
 end
 
+---@param ent Tadpole
 local function chase_target(ent, px, py)
+    --price betweem -30, -10 and 10, 30
+    ent.price = ent.price > 0
+        and (ent.price > 10 and ent.price - 1 or -30)
+        or (ent.price < -10 and ent.price + 1 or 30)
+
     local tx, ty = get_position(ent.chased_target_uid)
     local xdiff, ydiff = tx - px, ty - py
     local dist = distance(ent.uid, ent.chased_target_uid) * 20
     local vx, vy = xdiff / dist, ydiff / dist
-    local hitbox = get_hitbox(ent.uid, 0, vx, vy+0.15):extrude(-0.2)
+    local hitbox = get_hitbox(ent.uid, 0, vx, vy+0.15):extrude(-0.25)
     if not get_entities_overlapping_hitbox(0, MASK.WATER, hitbox, ent.layer)[1] then
-        vy = ent.velocityy - 0.01
+        vy = math.min(ent.velocityy, 0.0)
+
+        local vel_off = ent.price * 0.0015
+        if math.abs(vx) < 0.035 then
+            vx = vx + vel_off
+        end
+    elseif get_solids_overlapping(get_hitbox(ent.uid):offset(vx, vy):extrude(-0.025), ent.layer)[1] then
+        local vel_off = ent.price * 0.0015
+        if math.abs(vx) > math.abs(vy) then
+            vy = vy + vel_off
+        else
+            vx = vx + vel_off
+        end
     end
+    --vel_off is for the thing that hd does when the piranha wants to move in a direction but there's a block there. I didn't look how it works in hd
+
     ent.velocityx, ent.velocityy = vx, vy
     ent.flags = xdiff > 0 and clr_flag(ent.flags, ENT_FLAG.FACING_LEFT) or set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
 end
@@ -78,7 +101,22 @@ end
 ---@param ent Tadpole
 local function piranha_update(ent)
     --ent.animation_frame = get_frame() % 8 --check how many frames piranha has
+    if ent.wet_effect_timer < 300 and ent.standing_on_uid ~= -1 then
+        if ent.wet_effect_timer < 150 then
+            local x, y, l = get_position(ent.uid)
+            celib.spawn_custom_entity(piranha_item_id, x, y, l, 0, 0)
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+                ent:destroy()
+            else
+                kill_entity(ent.uid)
+            end
+        end
+        ent.lock_input_timer = 0
+        ent.chased_target_uid = -1
+        return
+    end
     ent.lock_input_timer = 512
+
     ---@type Player | nil
     local chased = get_entity(ent.chased_target_uid)
     if not chased or distance(ent.uid, ent.chased_target_uid) > 6.0
@@ -98,23 +136,13 @@ local function piranha_update(ent)
     else
         piranha_move(ent)
     end
-    
-    if ent.wet_effect_timer < 300 and ent.standing_on_uid ~= -1 then
-        local x, y, l = get_position(ent.uid)
-        celib.spawn_custom_entity(piranha_item_id, x, y, l, 0, 0)
-        if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-            ent:destroy()
-        else
-            kill_entity(ent.uid)
-        end
-    end
 end
 
---[[register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
+register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
     local x, y, l = get_position(players[1].uid)
     local uid = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)
     set_post_statemachine(uid, piranha_update)
-end)]]
+end)
 
 local function spawn_piranha_skeleton_rubble(x, y, l, amount)
     for _=1, amount do

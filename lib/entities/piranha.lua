@@ -1,4 +1,6 @@
 local nosacrifice = require "lib.entities.nosacrifice_items"
+local celib = require "lib.entities.custom_entities"
+local piranha_item_id
 --TODO: better piranha movement, maybe check if chasing a dead player
 
 local function b(flag) return (1 << (flag-1)) end
@@ -19,15 +21,11 @@ local function filter_solids(ent)
     return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
-local function set_piranha_skeleton(uid)
-    --TODO: Hitbox?
-    --set_entity_flags(uid, set_flag(get_entity_flags(uid), ENT_FLAG.TAKE_NO_DAMAGE))
-    local ent = get_entity(uid)
+local function set_piranha_skeleton(ent)
     ent.hitboxx = 0.35
     ent.hitboxy = 0.25
-    nosacrifice.add_uid(uid)
+    nosacrifice.add_uid(ent.uid)
 	ent.animation_frame = 105
-    --offsety?
     ent:set_texture(piranha_skeleton_tex_id)
 end
 
@@ -103,24 +101,30 @@ local function piranha_update(ent)
     
     if ent.wet_effect_timer < 300 and ent.standing_on_uid ~= -1 then
         local x, y, l = get_position(ent.uid)
-        set_piranha_skeleton(spawn(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0))
-        ent:destroy()
+        celib.spawn_custom_entity(piranha_item_id, x, y, l, 0, 0)
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+            ent:destroy()
+        else
+            kill_entity(ent.uid)
+        end
     end
 end
 
-register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
+--[[register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
     local x, y, l = get_position(players[1].uid)
     local uid = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)
     set_post_statemachine(uid, piranha_update)
-end)
-
-local module = {}
+end)]]
 
 local function spawn_piranha_skeleton_rubble(x, y, l, amount)
     for _=1, amount do
         get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l, 0, 0)).animation_frame = 6
     end
 end
+
+piranha_item_id = celib.new_custom_entity(set_piranha_skeleton, function() end, celib.CARRY_TYPE.HELD, ENT_TYPE.ITEM_ROCK)
+
+local module = {}
 
 function module.create_piranha(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_TADPOLE, x, y, l)

@@ -2,7 +2,6 @@ local no_sacrifice_uids = {}
 set_post_entity_spawn(function (ent)
     set_pre_collision2(ent.uid, function (altar, sacrifice_ent)
         if no_sacrifice_uids[sacrifice_ent.uid] then
-            messpect("true")
             return true
         end
     end)

@@ -1,5 +1,5 @@
 local module = {}
-local celib = require "custom_entities"
+local celib = require 'lib.entities.custom_entities'
 local bacterium_id
 
 local bacterium_texture_id

@@ -76,7 +76,7 @@ register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of H
 -- # TODO: Influence the velocity of the boulder on every frame.
 -- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
 
-register_option_bool("disable_acid_illumination", "Disable acid illumination", "", false)
+register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", "", false)
 
 set_callback(function()
 	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
@@ -85,6 +85,7 @@ end, ON.TITLE)
 
 set_callback(function(room_gen_ctx)
 	if state.screen == SCREEN.LEVEL then
+		state.level_flags = set_flag(state.level_flags, 18) --force dark level
 		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		if options.hd_debug_scripted_levelgen_disable == false then
@@ -148,7 +149,7 @@ set_callback(function()
 
 	feelingslib.onlevel_toastfeeling()
 
-	acidlib.spawn_acid_illumination()
+	acidlib.spawn_liquid_illumination()
 end, ON.LEVEL)
 
 set_callback(function()

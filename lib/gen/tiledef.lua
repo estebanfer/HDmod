@@ -358,21 +358,27 @@ module.HD_TILENAME = {
 						-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
 						
 						if #floorsAtOffset > 0 then
-							local floor_uid = floorsAtOffset[1]
-							-- local floor = get_entity(floor_uid)
 							
-							spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
-							-- if state.theme == THEME.EGGPLANT_WORLD then
-							-- 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_GUTS_0)
-							-- 	deco_texture = define_texture(texture_def)
+							local floor_uid = floorsAtOffset[1]
+							---@type Floor
+							local floor = get_entity(floor_uid)
+							local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
+							if (
+								state.theme == THEME.DWELLING
+								and floor.type.id == ENT_TYPE.FLOORSTYLED_MINEWOOD
+							) then
+								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+								texture_def.texture_path = "res/wood_spikes.png"
+								local deco_texture = define_texture(texture_def)
 
-							-- 	floor:add_decoration(FLOOR_SIDE.TOP)
+								floor:add_decoration(FLOOR_SIDE.TOP)
 								
-							-- 	if floor.deco_top ~= -1 then
-							-- 		local deco = get_entity(floor.deco_top)
-							-- 		deco:set_texture(deco_texture)
-							-- 	end
-							-- end
+								if floor.deco_top ~= -1 then
+									local deco = get_entity(floor.deco_top)
+									deco:set_texture(deco_texture)
+									deco.animation_frame = math.random(101, 103)
+								end
+							end
 						end
 					end,
 					function(x, y, l) return 0 end
@@ -1464,7 +1470,22 @@ module.HD_TILENAME = {
 							---@type Floor
 							local floor = get_entity(floor_uid)
 							local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
-							if state.theme == THEME.EGGPLANT_WORLD then
+							if (
+								state.theme == THEME.DWELLING
+								and floor.type.id == ENT_TYPE.FLOORSTYLED_MINEWOOD
+							) then
+								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
+								texture_def.texture_path = "res/wood_spikes.png"
+								local deco_texture = define_texture(texture_def)
+
+								floor:add_decoration(FLOOR_SIDE.TOP)
+								
+								if floor.deco_top ~= -1 then
+									local deco = get_entity(floor.deco_top)
+									deco:set_texture(deco_texture)
+									deco.animation_frame = math.random(101, 103)
+								end
+							elseif state.theme == THEME.EGGPLANT_WORLD then
 								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0)
 								local deco_texture = define_texture(texture_def)
 

@@ -162,13 +162,21 @@ function module.assign_s2_room_templates(room_gen_ctx)
 						-- coop coffin
 						
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP) then
-							template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER
+							if state.level == 4 and state.world == 1 then
+								template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+							else
+								template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER
+							end
 						elseif (
 							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
 							or _template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
 							or _template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 						) then
-							template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+							if state.level == 4 and state.world == 1 then
+								template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+							else
+								template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+							end
 
 						end
 					end

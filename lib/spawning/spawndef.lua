@@ -6,6 +6,7 @@ validlib = require 'lib.spawning.valid'
 createlib = require 'lib.spawning.create'
 local giantfroglib = require 'lib.entities.giant_frog'
 local bacteriumlib = require 'lib.entities.bacterium'
+local eggsaclib = require 'lib.entities.eggsac'
 local mshiplightlib = require 'lib.entities.mothership_light'
 local piranhalib = require 'lib.entities.piranha'
 wormtonguelib = require 'lib.entities.wormtongue'
@@ -177,8 +178,8 @@ module.global_spawn_procedural_worm_icecaves_ufo = define_procedural_spawn("hd_p
 module.global_spawn_procedural_worm_jungle_bacterium = define_procedural_spawn("hd_procedural_worm_jungle_bacterium", bacteriumlib.create_bacterium, validlib.is_valid_bacterium_spawn)
 module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn("hd_procedural_worm_icecaves_bacterium", bacteriumlib.create_bacterium, validlib.is_valid_bacterium_spawn)
 
-module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)
-module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", createlib.create_eggsac, validlib.is_valid_eggsac_spawn)
+module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
+module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
 
 --[[ Template for defining procedural spawns:

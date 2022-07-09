@@ -662,6 +662,6 @@ function module.is_valid_bacterium_spawn(x, y, l)
 	)
 end -- # TODO: Implement method for valid bacterium spawn
 
-function module.is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn
+module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn-- # TODO: Implement method for valid eggsac spawn
 
 return module

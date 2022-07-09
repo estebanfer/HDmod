@@ -258,4 +258,5 @@ function module.create_bacterium(x, y, layer)
     spawn_bacterium(x, y, layer, 1)
 end
 
+module.id = bacterium_id
 return module

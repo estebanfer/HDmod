@@ -138,11 +138,11 @@ local function piranha_update(ent)
     end
 end
 
-register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
+--[[register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
     local x, y, l = get_position(players[1].uid)
     local uid = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)
     set_post_statemachine(uid, piranha_update)
-end)
+end)]]
 
 local function spawn_piranha_skeleton_rubble(x, y, l, amount)
     for _=1, amount do

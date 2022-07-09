@@ -1,9 +1,9 @@
 local celib = require "lib.entities.custom_entities"
 
 local module = {}
-local baby_worm_texture_def
+local baby_worm_texture_id
 do
-    baby_worm_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBASIC01_0)
+    local baby_worm_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBASIC01_0)
     baby_worm_texture_def.texture_path = 'res/baby_worm.png'
     baby_worm_texture_id = define_texture(baby_worm_texture_def)
 end
@@ -65,6 +65,11 @@ function module.create_babyworm(x, y, l)
     baby_worm_set(baby_worm)
     set_post_statemachine(baby_worm, baby_worm_update)
 end
+
+set_pre_entity_spawn(function (e_type, x, y, l)
+    module.create_babyworm(x, y, l)
+    return spawn_grid_entity(ENT_TYPE.FX_SHADOW, 0, 0, LAYER.FRONT)
+end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_GRUB)
 
 -- register_option_button("spawn_baby_worm", "spawn_baby_worm", 'spawn_baby_worm', function ()
 --     local x, y, l = get_position(players[1].uid)

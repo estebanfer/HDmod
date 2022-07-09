@@ -53,6 +53,14 @@ local module = {}
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
+local function is_liquid_at(x, y)
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	return lvlcode == "w" or
+		(lvlcode == "3" and get_grid_entity_at(x, y, LAYER.FRONT) == -1) or
+		(lvlcode == "c" and state.theme == THEME.EGGPLANT_WORLD) or
+		(feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) and y < 96)
+end
+
 local function check_empty_space(origin_x, origin_y, layer, width, height)
 	for y = origin_y, origin_y+1-height, -1 do
 		for x = origin_x, origin_x+width-1 do
@@ -129,6 +137,7 @@ local function default_ground_monster_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 	and is_valid_monster_floor(x, y-1, l)
 	and detect_entrance_room_template(x, y, l) == false
+	and not is_liquid_at(x, y)
 end
 
 local function default_ceiling_entity_condition(x, y, l)
@@ -137,6 +146,7 @@ local function default_ceiling_entity_condition(x, y, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
 	and detect_entrance_room_template(x, y, l) == false
+	and not is_liquid_at(x, y)
 end
 
 local function run_spiderlair_ground_enemy_chance()
@@ -267,6 +277,8 @@ function module.is_valid_wormtongue_spawn(x, y, l)
 		)
 		return (
 			#entity_uids == 0
+			and not is_liquid_at(x, y)
+			and not is_liquid_at(x, y-1)
 			and detect_shop_room_template(x, y, l) == false
 		)
 	end
@@ -342,7 +354,7 @@ function module.is_valid_critter_penguin_spawn(x, y, l) return false end -- # TO
 
 function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 
-module.is_valid_jiangshi_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid jiangshi spawn
+module.is_valid_jiangshi_spawn = default_ground_monster_condition -- # TODO: Implement method for valid jiangshi spawn
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
@@ -352,15 +364,9 @@ function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Im
 
 function module.is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_fish spawn
 
-local function is_water_at(x, y)
-	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
-	return lvlcode == "w" or
-		(lvlcode == "3" and get_grid_entity_at(x, y, LAYER.FRONT) == -1)
-end
-
 function module.is_valid_piranha_spawn(x, y, l)
 	local _, room_y = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	return (is_water_at(x, y) and is_water_at(x, y+1))
+	return (is_liquid_at(x, y) and is_liquid_at(x, y+1))
 		or (
 			feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 			and room_y == 5
@@ -372,6 +378,7 @@ function module.is_valid_monkey_spawn(x, y, l)
 	local floor = get_grid_entity_at(x, y, l)
 	if floor ~= -1 then
 		return commonlib.has({ENT_TYPE.FLOOR_VINE}, get_entity_type(floor))
+		and not is_liquid_at(x, y)
 	end
 	return false
 end
@@ -488,7 +495,7 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
 
 	if get_entity_type(get_grid_entity_at(x, y, l)) == ENT_TYPE.FLOOR_ALTAR
-		or is_water_at(x, y) then
+		or is_liquid_at(x, y) then
 		return false
 	end
 
@@ -578,14 +585,15 @@ function module.is_valid_tombstone_spawn(x, y, l)
 		detect_empty_nodoor(x, y, l)
 		and detect_empty_nodoor(x, y+1, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
+		and check_empty_space(x-1, y+1, l, 3, 1)
 		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
-		and not is_water_at(x, y)
+		and not is_liquid_at(x, y)
 	)
 end
 
 function module.is_valid_giantfrog_spawn(x, y, l)
-	return is_solid_grid_entity(x, y-1, l)
-	and is_solid_grid_entity(x+1, y-1, l)
+	return default_ground_monster_condition(x, y, l)
+	and is_valid_monster_floor(x+1, y-1, l)
 	and check_empty_space(x, y+1, l, 2, 2)
 end -- # TODO: Implement method for valid giantfrog spawn
 
@@ -654,6 +662,7 @@ function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implemen
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_liquid_at(x, y)
 	and (
 		is_solid_grid_entity(x, y+1, l)
 		or is_solid_grid_entity(x+1, y, l)
@@ -662,6 +671,6 @@ function module.is_valid_bacterium_spawn(x, y, l)
 	)
 end -- # TODO: Implement method for valid bacterium spawn
 
-function module.is_valid_eggsac_spawn(x, y, l) return false end -- # TODO: Implement method for valid eggsac spawn
+module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn-- # TODO: Implement method for valid eggsac spawn
 
 return module

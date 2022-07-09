@@ -1,5 +1,5 @@
 local module = {}
-local celib = require "custom_entities"
+local celib = require 'lib.entities.custom_entities'
 local bacterium_id
 
 local bacterium_texture_id
@@ -193,9 +193,10 @@ local function bacterium_update(ent, ent_info)
         if ent:is_on_fire() then
             bacterium_kill(ent)
         end
-        for _,player in ipairs(players) do
-            if ent:overlaps_with(get_hitbox(player.uid)) then
-                if not test_flag(player.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
+        for _,player_uid in ipairs(get_entities_by(0, MASK.PLAYER, LAYER.FRONT)) do
+            if ent:overlaps_with(get_hitbox(player_uid)) then
+                if not test_flag(get_entity_flags(player_uid), ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
+                    local player = get_entity(player_uid)
                     if player.invincibility_frames_timer == 0 then
                         local x = get_position(ent.uid)
                         local px = get_position(player.uid)
@@ -257,4 +258,5 @@ function module.create_bacterium(x, y, layer)
     spawn_bacterium(x, y, layer, 1)
 end
 
+module.id = bacterium_id
 return module

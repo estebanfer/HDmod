@@ -9,19 +9,12 @@ do
     black_knight_texture_def.texture_path = 'res/black_knight.png'
     black_knight_texture_id = define_texture(black_knight_texture_def)
 end
-local shield_texture_id
-do
-    local shield_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-    shield_texture_def.texture_path = 'res/shield.png'
-    shield_texture_id = define_texture(shield_texture_def)
-end
 local function black_knight_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
     ent:set_texture(black_knight_texture_id)
     local x, y, l = get_position(uid)
     local shield = get_entity(spawn(ENT_TYPE.ITEM_METAL_SHIELD, x, y, l, 0, 0))
-    shield:set_texture(shield_texture_id)
     --remove any item black knight may have
     local held_item = get_entity(ent.holding_uid)
     if held_item ~= nil then

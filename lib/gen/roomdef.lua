@@ -3316,11 +3316,12 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
 			spot1.y, spot1.x
 		)
 
-		messpect(#spots)
-		spots[spot1_i] = nil
-		commonlib.CompactList(spots, n)
+		table.remove(spots, n)
 		local spot2 = spots[math.random(#spots)]
-		messpect(#spots, spot2)
+
+		--TODO: check if spot2 being nil still happens, SNF said it could have been due to using CompactList instead of table.remove
+		--This return is just to be sure to not get an error on hdmod showcase
+		if not spot2 then return end
 
 		roomgenlib.levelcode_inject_roomcode(
 			module.HD_SUBCHUNKID.WORM_REGENBLOCK_STRUCTURE,

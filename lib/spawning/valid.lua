@@ -354,7 +354,7 @@ function module.is_valid_critter_penguin_spawn(x, y, l) return false end -- # TO
 
 function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 
-module.is_valid_jiangshi_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid jiangshi spawn
+module.is_valid_jiangshi_spawn = default_ground_monster_condition -- # TODO: Implement method for valid jiangshi spawn
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
@@ -585,6 +585,7 @@ function module.is_valid_tombstone_spawn(x, y, l)
 		detect_empty_nodoor(x, y, l)
 		and detect_empty_nodoor(x, y+1, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
+		and check_empty_space(x-1, y+1, l, 3, 1)
 		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
 		and not is_liquid_at(x, y)
 	)

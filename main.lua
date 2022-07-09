@@ -30,7 +30,7 @@ snowlib = require 'lib.entities.snow'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
 idollib = require 'lib.entities.idol'
-acidlib = require 'lib.entities.acid'
+liquidlib = require 'lib.entities.liquid'
 treelib = require 'lib.entities.tree'
 ankhmoailib = require 'lib.entities.ankhmoai'
 doorslib = require 'lib.entities.doors'
@@ -85,7 +85,7 @@ end, ON.TITLE)
 
 set_callback(function(room_gen_ctx)
 	if state.screen == SCREEN.LEVEL then
-		state.level_flags = set_flag(state.level_flags, 18) --force dark level
+		-- state.level_flags = set_flag(state.level_flags, 18) --force dark level
 		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		if options.hd_debug_scripted_levelgen_disable == false then
@@ -149,7 +149,7 @@ set_callback(function()
 
 	feelingslib.onlevel_toastfeeling()
 
-	acidlib.spawn_liquid_illumination()
+	liquidlib.spawn_liquid_illumination()
 end, ON.LEVEL)
 
 set_callback(function()

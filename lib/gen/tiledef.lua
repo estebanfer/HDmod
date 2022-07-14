@@ -6,6 +6,7 @@ tombstonelib = require 'lib.entities.tombstone'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
 feelingslib = require 'lib.feelings'
+local crysknifelib = require 'lib.entities.crysknife'
 
 local module = {}
 
@@ -1158,7 +1159,7 @@ module.HD_TILENAME = {
 							if (math.random(2) == 2) then
 								x = x + 10
 							end
-							createlib.create_crysknife(x, y, l)
+							crysknifelib.create_crysknife(x, y, l)
 						end
 					},
 				}

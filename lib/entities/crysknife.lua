@@ -31,7 +31,7 @@ set_pre_entity_spawn(function(entity_type, x, y, layer, overlay_entity, spawn_fl
 	return uid
 end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_WHIP)
 
-set_vanilla_sound_callback(VANILLA_SOUND.SHARED_PICK_UP, SOUND_TYPE.MUSIC, function (sound)
+set_vanilla_sound_callback(VANILLA_SOUND.SHARED_PICK_UP, VANILLA_SOUND_CALLBACK_TYPE.CREATED, function (sound)
 	if mute_pick_sound then
 		sound:set_volume(0)
 		sound:stop()

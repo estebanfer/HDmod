@@ -225,7 +225,7 @@ function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP,
 
 function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 
-function module.create_snail(x, y, l) hdtypelib.create_hd_type(hdtypelib.HD_ENT.SNAIL, x, y, l, false, 0, 0) end
+function module.create_snail(x, y, l) spawn_on_floor(ENT_TYPE.MONS_HERMITCRAB, x, y, l) end
 
 function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 

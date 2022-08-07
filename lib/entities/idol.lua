@@ -8,6 +8,7 @@ module.IDOL_UID = nil
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 local idoltrap_timeout = 0
 module.idoltrap_blocks = {}
+module.sliding_wall_ceilings = {}
 
 function module.init()
 	IDOLTRAP_TRIGGER = false
@@ -17,6 +18,7 @@ function module.init()
 
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	module.idoltrap_blocks = {}
+    module.sliding_wall_ceilings = {}
 end
 
 local function idol_disturbance()
@@ -74,7 +76,12 @@ set_callback(function()
                     kill_entity(module.idoltrap_blocks[i])
                 end
             else -- Normal temple trap
-                -- # TODO: Normal temple idol trap sliding doors
+                -- sliding doors
+                for _, sliding_wall_ceiling in ipairs(module.sliding_wall_ceilings) do
+                    local ent = get_entity(sliding_wall_ceiling)
+                    ent.state = 0
+                end
+
                 local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
                 texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
                 for i = 1, #module.idoltrap_blocks, 1 do

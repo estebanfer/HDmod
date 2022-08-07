@@ -6,6 +6,7 @@ tombstonelib = require 'lib.entities.tombstone'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
 feelingslib = require 'lib.feelings'
+slidingwalllib = require 'lib.entities.sliding_wall'
 
 local module = {}
 
@@ -586,20 +587,22 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {function(x, y, l)
-					local slidingwall_ceiling = get_entity(spawn_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, l, 0.0, 0.0))
-					local slidingwall_chain = get_entity(spawn_over(ENT_TYPE.ITEM_SLIDINGWALL_CHAIN_LASTPIECE, slidingwall_ceiling.uid, 0, 0))
-					local slidingwall = get_entity(spawn_over(ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, slidingwall_chain.uid, 0, -1.5))
+					slidingwalllib.spawn_slidingwall(x, y, l, true)
 					
-					if state.theme == THEME.TEMPLE then
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
-						texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-						slidingwall_ceiling:set_texture(define_texture(texture_def))
-						slidingwall_chain:set_texture(define_texture(texture_def))
+					-- local slidingwall_ceiling = get_entity(spawn_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, l, 0.0, 0.0))
+					-- local slidingwall_chain = get_entity(spawn_over(ENT_TYPE.ITEM_SLIDINGWALL_CHAIN_LASTPIECE, slidingwall_ceiling.uid, 0, 0))
+					-- local slidingwall = get_entity(spawn_over(ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, slidingwall_chain.uid, 0, -1.5))
+					
+					-- if state.theme == THEME.TEMPLE then
+					-- 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
+					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+					-- 	slidingwall_ceiling:set_texture(define_texture(texture_def))
+					-- 	slidingwall_chain:set_texture(define_texture(texture_def))
 		
-						texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
-						texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-						slidingwall:set_texture(define_texture(texture_def))
-					end
+					-- 	texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
+					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+					-- 	slidingwall:set_texture(define_texture(texture_def))
+					-- end
 
 					-- spawn_entity(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH, x+1, y-1, l, 0, 0)
 

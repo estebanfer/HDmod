@@ -1,3 +1,5 @@
+idollib = require 'lib.entities.idol'
+
 local module = {}
 
 module.slidingwalls = {} -- store entity uids for the walls here to keep track in case they're destroyed
@@ -17,6 +19,8 @@ function module.spawn_slidingwall(x, y, layer, up)
 
     
     if state.theme == THEME.TEMPLE then
+        idollib.sliding_wall_ceilings[#idollib.sliding_wall_ceilings+1] = ceiling.uid
+
         local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
         texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
         ceiling:set_texture(define_texture(texture_def))

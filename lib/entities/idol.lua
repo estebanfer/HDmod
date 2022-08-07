@@ -18,6 +18,7 @@ function module.init()
 
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	module.idoltrap_blocks = {}
+    module.sliding_wall_ceilings = {}
 end
 
 local function idol_disturbance()

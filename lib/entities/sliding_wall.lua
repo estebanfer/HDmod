@@ -1,11 +1,8 @@
 idollib = require 'lib.entities.idol'
+feelingslib = require 'lib.feelings'
 
 local module = {}
-
-module.slidingwalls = {} -- store entity uids for the walls here to keep track in case they're destroyed
-set_callback(function()
-    module.slidingwalls = get_entities_by_type(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING)
-end, ON.POST_LEVEL_GENERATION)
+local hc_sliding_wall_ceiling = nil
 
 function module.spawn_slidingwall(x, y, layer, up)
     local ceiling = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, layer))
@@ -29,6 +26,28 @@ function module.spawn_slidingwall(x, y, layer, up)
         texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
         texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
         wall:set_texture(define_texture(texture_def))
+    end
+
+    if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+        hc_sliding_wall_ceiling = ceiling.uid
+
+        set_callback(function()
+            local overlapping_players = get_entities_overlapping_hitbox(
+                0, MASK.PLAYER,
+                AABB:new(
+                    2.5,
+                    118.5,
+                    30.5,
+                    92.5
+                ),
+                layer
+            )
+            if #overlapping_players > 0 then
+                local ent = get_entity(hc_sliding_wall_ceiling)
+                ent.state = 0
+                return false
+            end
+        end, ON.FRAME)
     end
 end
 return module

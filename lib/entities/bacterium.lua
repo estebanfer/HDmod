@@ -62,7 +62,7 @@ end
 ---@param bacterium Movable
 ---@param attacker Movable
 local function bacterium_damage(bacterium, attacker)
-    if bacterium.frozen_timer == 0 then
+    if bacterium.frozen_timer == 0 and attacker.type.id ~= ENT_TYPE.ITEM_EXCALIBUR then
         ---@type table
         local bacterium_info = celib.get_custom_entity(bacterium.uid, bacterium_id)
         if bacterium_info.stop_timer == 0 then
@@ -196,12 +196,14 @@ local function bacterium_update(ent, ent_info)
         for _,player_uid in ipairs(get_entities_by(0, MASK.PLAYER, LAYER.FRONT)) do
             if ent:overlaps_with(get_hitbox(player_uid)) then
                 if not test_flag(get_entity_flags(player_uid), ENT_FLAG.PASSES_THROUGH_EVERYTHING) then
+                    ---@type Player
                     local player = get_entity(player_uid)
                     if player.invincibility_frames_timer == 0 then
                         local x = get_position(ent.uid)
                         local px = get_position(player.uid)
                         if player.health > 0 then
                             player:damage(ent.uid, 1, 0, px > x and 0.1 or -0.1, 0.1, 60)
+                            player.exit_invincibility_timer = 60
                         else
                             player.velocityx = px > x and 0.1 or -0.1
                             player.velocityy = 0.1

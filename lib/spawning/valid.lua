@@ -61,6 +61,10 @@ local function is_liquid_at(x, y)
 		(feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) and y < 96)
 end
 
+local function is_anti_trap_at(x, y)
+	return locatelib.get_levelcode_at_gpos(x, y) == "q"
+end
+
 local function check_empty_space(origin_x, origin_y, layer, width, height)
 	for y = origin_y, origin_y+1-height, -1 do
 		for x = origin_x, origin_x+width-1 do
@@ -440,6 +444,8 @@ function module.is_valid_spikeball_spawn(x, y, l)
 		return false
 	end
 
+	if is_anti_trap_at(x, y) == true then return false end
+
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
 		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
@@ -480,6 +486,11 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	--prevent spawing in lake
 	if roomy > 4 then return false end
+
+	if (
+		is_anti_trap_at(x, y) == true
+		or is_anti_trap_at(x, y-1) == true
+	) then return false end
 
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	if (

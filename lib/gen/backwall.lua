@@ -128,6 +128,11 @@ local function room_specific()
                 backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
 
+                for _, uid in ipairs(
+                    get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(_x-(w/2), _y+(h/2), _x+(w/2), _y-(h/2)), LAYER.FRONT)) do
+                    get_entity(uid):destroy()
+                end
+
                 -- vlad alcove
                 w, h = 2, 2
                 _x, _y, _l = corner_x+4.5, corner_y+20.5, LAYER.FRONT

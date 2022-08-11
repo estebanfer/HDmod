@@ -684,4 +684,18 @@ end -- # TODO: Implement method for valid bacterium spawn
 
 module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn-- # TODO: Implement method for valid eggsac spawn
 
+function module.is_valid_hcastle_window_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return (
+		(
+			_subchunk_id >= 202
+			and _subchunk_id <= 207
+		)
+		and get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) == -1
+		and #get_entities_at(0, MASK.DECORATION, x, y, l, 2) == 0
+	)
+end
+
 return module

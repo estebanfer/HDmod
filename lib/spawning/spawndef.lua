@@ -181,6 +181,7 @@ module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn
 module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
+module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", createlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
 
 --[[ Template for defining procedural spawns:
 
@@ -280,6 +281,7 @@ function module.set_chances(room_gen_ctx)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_snail, 0)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_firefrog, 0)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_window, 0)
             end
 
             if state.theme == THEME.EGGPLANT_WORLD then

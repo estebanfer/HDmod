@@ -8,6 +8,7 @@ tikitraplib = require 'lib.entities.tikitrap'
 feelingslib = require 'lib.feelings'
 slidingwalllib = require 'lib.entities.sliding_wall'
 local crysknifelib = require 'lib.entities.crysknife'
+treelib = require 'lib.entities.tree'
 
 local module = {}
 
@@ -1030,10 +1031,10 @@ module.HD_TILENAME = {
 	},
 	["T"] = {
 		phases = {
-			[3] = {
+			[1] = {
 				default = {
 					function(x, y, l)
-						spawn_tree(x, y, l)
+						treelib.create_hd_tree(x, y, l)
 					end,
 				},
 			}

@@ -43,17 +43,17 @@ local function level_specific()
             get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(2.5, 118.5, 30.5, 92.5), LAYER.FRONT)) do
             get_entity(uid):destroy()
         end
-        for _, uid in ipairs(
-            get_entities_overlapping_hitbox(ENT_TYPE.MIDBG, MASK.BG, AABB:new(2.5, 118.5, 31.5, 92.5), LAYER.FRONT)) do
-            local ent = get_entity(uid)
-            if (
-                ent:get_texture() == TEXTURE.DATA_TEXTURES_FLOORSTYLED_STONE_2
-                and ent.animation_frame >= 80
-                and ent.animation_frame <= 95
-            ) then
-                ent:destroy()
-            end
-        end
+        -- for _, uid in ipairs(
+        --     get_entities_overlapping_hitbox(ENT_TYPE.MIDBG, MASK.BG, AABB:new(2.5, 118.5, 31.5, 92.5), LAYER.FRONT)) do
+        --     local ent = get_entity(uid)
+        --     if (
+        --         ent:get_texture() == TEXTURE.DATA_TEXTURES_FLOORSTYLED_STONE_2
+        --         and ent.animation_frame >= 80
+        --         and ent.animation_frame <= 95
+        --     ) then
+        --         ent:destroy()
+        --     end
+        -- end
     end
 
     if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
@@ -127,6 +127,11 @@ local function room_specific()
                 backwall.width, backwall.height = w, h
                 backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+
+                for _, uid in ipairs(
+                    get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(_x-(w/2), _y+(h/2), _x+(w/2), _y-(h/2)), LAYER.FRONT)) do
+                    get_entity(uid):destroy()
+                end
 
                 -- vlad alcove
                 w, h = 2, 2

@@ -117,22 +117,6 @@ function module.create_embedded(ent_toembedin, entity_type)
 	end
 end
 
--- # TODO: Revise to a new pickup.
-	-- IDEAS:
-		-- Replace with actual crysknife
-			-- Upgrade player whip damage?
-			-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
-			-- Can't make player whip invisible, apparently, so that might be hard to do
-		-- Permanent firewhip
-		-- Just spawn a powerpack
-			-- It's the spiritual successor to the crysknife, so its a fitting replacement
-			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, so allowing them to break with firewhip would play into HDs feature of being able to kill them.
-			-- In HD a good way of dispatching bacterium was with bombs, but they moved fast and went up walls so it was hard to time correctly.
-				-- So the powerpack would naturally balance things out by making bombs more effective against them.
-function module.create_crysknife(x, y, l)
-    spawn_entity(ENT_TYPE.ITEM_POWERPACK, x, y, l, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
-end
-
 function module.create_liquidfall(x, y, l, texture_path, is_lava)
 	local is_lava = is_lava or false
 	local type = ENT_TYPE.LOGICAL_WATER_DRAIN

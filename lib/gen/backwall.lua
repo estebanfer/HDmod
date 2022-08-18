@@ -2,6 +2,8 @@
     Level Background stuff
 ]]
 
+pillarlib = require 'lib.entities.pillar'
+
 local module = {}
 
 --[[
@@ -57,6 +59,7 @@ local function level_specific()
     end
 
     if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+        -- throne backwall bricks
         local w, h = 6, 8
         local x, y, l = 22.5, 94.5, LAYER.FRONT
         local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -66,6 +69,15 @@ local function level_specific()
         backwall.width, backwall.height = w, h
         backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
         backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+
+        -- throne pillars
+        pillarlib.create_pillar(19.5, 94, LAYER.FRONT, 4)
+        pillarlib.create_pillar(25.5, 94, LAYER.FRONT, 4)
+        
+        for _, uid in ipairs(
+            get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(18.5, 98, 26.5, 90.5), LAYER.FRONT)) do
+            get_entity(uid):destroy()
+        end
     end
 end
 

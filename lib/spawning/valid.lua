@@ -338,9 +338,20 @@ function module.is_valid_landmine_spawn(x, y, l)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
-end -- # TODO: Implement method for valid landmine spawn
+end
 
-function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
+--[[
+	if not in YetiKing room
+	1x4 space available 4 from 4 spaces above this tile
+]]
+function module.is_valid_bouncetrap_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return default_ground_monster_condition(x, y, l)
+	and check_empty_space(x, y+4, l, 1, 4)
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+end
 
 module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
 module.is_valid_scorpion_spawn = spiderlair_ground_monster_condition

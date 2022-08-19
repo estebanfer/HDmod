@@ -325,7 +325,20 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 	return false
 end
 
-function module.is_valid_landmine_spawn(x, y, l) return false end -- # TODO: Implement method for valid landmine spawn
+--[[
+	if not in YetiKing room
+	not in left part of psychic presence
+	not in middle part of psychic presence
+]]
+function module.is_valid_landmine_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return default_ground_monster_condition(x, y, l)
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
+end -- # TODO: Implement method for valid landmine spawn
 
 function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
 

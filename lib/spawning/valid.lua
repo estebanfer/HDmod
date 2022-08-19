@@ -325,7 +325,20 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 	return false
 end
 
-function module.is_valid_landmine_spawn(x, y, l) return false end -- # TODO: Implement method for valid landmine spawn
+--[[
+	if not in YetiKing room
+	not in left part of psychic presence
+	not in middle part of psychic presence
+]]
+function module.is_valid_landmine_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return default_ground_monster_condition(x, y, l)
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
+end -- # TODO: Implement method for valid landmine spawn
 
 function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
 
@@ -340,7 +353,7 @@ module.is_valid_snail_spawn = default_ground_monster_condition
 module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
-function module.is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
+module.is_valid_yeti_spawn =  default_ground_monster_condition
 
 function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
 
@@ -669,7 +682,7 @@ function module.is_valid_queenbee_spawn(x, y, l)
 	return _template_hd >= 1300 and _template_hd < 1400 and check_empty_space(x, y, l, 3, 3)
 end
 
-function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
+module.is_valid_ufo_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid ufo spawn
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1

@@ -340,7 +340,7 @@ module.is_valid_snail_spawn = default_ground_monster_condition
 module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
-function module.is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
+module.is_valid_yeti_spawn =  default_ground_monster_condition
 
 function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
 

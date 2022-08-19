@@ -669,7 +669,7 @@ function module.is_valid_queenbee_spawn(x, y, l)
 	return _template_hd >= 1300 and _template_hd < 1400 and check_empty_space(x, y, l, 3, 3)
 end
 
-function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
+module.is_valid_ufo_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid ufo spawn
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1

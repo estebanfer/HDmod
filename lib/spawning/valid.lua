@@ -368,7 +368,7 @@ module.is_valid_yeti_spawn =  default_ground_monster_condition
 
 function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
 
-function module.is_valid_crocman_spawn(x, y, l) return false end -- # TODO: Implement method for valid crocman spawn
+module.is_valid_crocman_spawn = default_ground_monster_condition
 
 function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
 

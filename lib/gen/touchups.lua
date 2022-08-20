@@ -127,6 +127,27 @@ local function onlevel_remove_boulderstatue()
 	end
 end
 
+local function onlevel_remove_cobwebs_on_pushblocks()
+	if (--only run on any themes that have pushblocks
+		state.theme == THEME.DWELLING
+		or state.theme == THEME.TEMPLE
+		or state.theme == THEME.OLMEC
+		or state.theme == THEME.VOLCANA
+	) then
+		local pushblocks = get_entities_by({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, ENT_TYPE.ACTIVEFLOOR_POWDERKEG}, MASK.ACTIVEFLOOR, LAYER.FRONT)
+		for _, pushblock in ipairs(pushblocks) do
+			local x, y, _ = get_position(pushblock)
+			local webs = get_entities_at(ENT_TYPE.ITEM_WEB, MASK.ITEM, x, y+1, LAYER.FRONT, 0.5)
+			if (
+				#webs ~= 0
+				and get_entity_type(webs[1]) == ENT_TYPE.ITEM_WEB
+			) then
+				kill_entity(webs[1])
+			end
+		end
+	end
+end
+
 -- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 -- 	-- SORRY NOTHING
 -- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_YAMA_PLATFORM)
@@ -165,6 +186,7 @@ function module.onlevel_touchups()
 	onlevel_removeborderfloor()
 	onlevel_create_impostorlake()
 	onlevel_remove_boulderstatue()
+	onlevel_remove_cobwebs_on_pushblocks()
 end
 
 -- set_post_entity_spawn(function(entity)

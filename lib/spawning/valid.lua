@@ -334,6 +334,7 @@ function module.is_valid_landmine_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	return default_ground_monster_condition(x, y, l)
+	and get_grid_entity_at(x, y+1, l) == -1
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
@@ -343,6 +344,7 @@ end
 --[[
 	if not in YetiKing room
 	1x4 space available 4 from 4 spaces above this tile
+	# TODO: make sure this can't spawn on altars or ice platforms
 ]]
 function module.is_valid_bouncetrap_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
@@ -364,7 +366,10 @@ module.is_valid_snail_spawn = default_ground_monster_condition
 module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
-module.is_valid_yeti_spawn =  default_ground_monster_condition
+function module.is_valid_yeti_spawn(x, y, l)
+	return default_ground_monster_condition(x, y, l)
+	and get_grid_entity_at(x, y+1, l) == -1
+end
 
 function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
 

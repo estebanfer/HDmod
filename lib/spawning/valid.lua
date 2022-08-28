@@ -325,9 +325,35 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 	return false
 end
 
-function module.is_valid_landmine_spawn(x, y, l) return false end -- # TODO: Implement method for valid landmine spawn
+--[[
+	if not in YetiKing room
+	not in left part of psychic presence
+	not in middle part of psychic presence
+]]
+function module.is_valid_landmine_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return default_ground_monster_condition(x, y, l)
+	and get_grid_entity_at(x, y+1, l) == -1
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
+end
 
-function module.is_valid_bouncetrap_spawn(x, y, l) return false end -- # TODO: Implement method for valid bouncetrap spawn
+--[[
+	if not in YetiKing room
+	1x4 space available 4 from 4 spaces above this tile
+	# TODO: make sure this can't spawn on altars or ice platforms
+]]
+function module.is_valid_bouncetrap_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return default_ground_monster_condition(x, y, l)
+	and check_empty_space(x, y+4, l, 1, 4)
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+end
 
 module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
 module.is_valid_scorpion_spawn = spiderlair_ground_monster_condition
@@ -340,11 +366,14 @@ module.is_valid_snail_spawn = default_ground_monster_condition
 module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
-function module.is_valid_yeti_spawn(x, y, l) return false end -- # TODO: Implement method for valid yeti spawn
+function module.is_valid_yeti_spawn(x, y, l)
+	return default_ground_monster_condition(x, y, l)
+	and get_grid_entity_at(x, y+1, l) == -1
+end
 
 function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
 
-function module.is_valid_crocman_spawn(x, y, l) return false end -- # TODO: Implement method for valid crocman spawn
+module.is_valid_crocman_spawn = default_ground_monster_condition
 
 function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
 
@@ -423,7 +452,11 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath
     local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
+		local _entity_type = get_entity_type(above)
+		if (
+			_entity_type == ENT_TYPE.FLOOR_ALTAR
+			or _entity_type == ENT_TYPE.FLOOR_TREE_BASE
+		) then
 			return false
 		end
 	end
@@ -669,7 +702,7 @@ function module.is_valid_queenbee_spawn(x, y, l)
 	return _template_hd >= 1300 and _template_hd < 1400 and check_empty_space(x, y, l, 3, 3)
 end
 
-function module.is_valid_ufo_spawn(x, y, l) return false end -- # TODO: Implement method for valid ufo spawn
+module.is_valid_ufo_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid ufo spawn
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
@@ -683,5 +716,37 @@ function module.is_valid_bacterium_spawn(x, y, l)
 end -- # TODO: Implement method for valid bacterium spawn
 
 module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn-- # TODO: Implement method for valid eggsac spawn
+
+local function is_valid_window_spawn(x, y, l)
+	return (
+		get_grid_entity_at(x, y, l) == -1
+		and get_grid_entity_at(x, y-1, l) == -1
+		and #get_entities_at(0, MASK.DECORATION, x, y, l, 2) == 0
+	)
+end
+
+function module.is_valid_hcastle_window_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return (
+		(
+			_subchunk_id >= 202
+			and _subchunk_id <= 207
+		)
+		and is_valid_window_spawn(x, y, l)
+	)
+end
+
+function module.is_valid_vlad_window_spawn(x, y, l)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return (
+		(
+			_subchunk_id > roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+			and _subchunk_id <= roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+		)
+		and is_valid_window_spawn(x, y, l)
+	)
+end
 
 return module

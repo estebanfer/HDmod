@@ -117,22 +117,6 @@ function module.create_embedded(ent_toembedin, entity_type)
 	end
 end
 
--- # TODO: Revise to a new pickup.
-	-- IDEAS:
-		-- Replace with actual crysknife
-			-- Upgrade player whip damage?
-			-- put crysknife animations in the empty space in items.png (animation_frame = 120 - 126 for crysknife) and then animating it behind the player
-			-- Can't make player whip invisible, apparently, so that might be hard to do
-		-- Permanent firewhip
-		-- Just spawn a powerpack
-			-- It's the spiritual successor to the crysknife, so its a fitting replacement
-			-- I'm planning to make bacterium use FLOOR_THORN_VINE for damage, so allowing them to break with firewhip would play into HDs feature of being able to kill them.
-			-- In HD a good way of dispatching bacterium was with bombs, but they moved fast and went up walls so it was hard to time correctly.
-				-- So the powerpack would naturally balance things out by making bombs more effective against them.
-function module.create_crysknife(x, y, l)
-    spawn_entity(ENT_TYPE.ITEM_POWERPACK, x, y, l, 0, 0)--ENT_TYPE.ITEM_EXCALIBUR, x, y, layer, 0, 0)
-end
-
 function module.create_liquidfall(x, y, l, texture_path, is_lava)
 	local is_lava = is_lava or false
 	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
@@ -362,6 +346,26 @@ function module.create_honey(x, y, l)
 		if floor == -1 then return end
 		spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, 0.8)
 	end
+end
+
+local function create_window(x, y, l, is_hc)
+	local ent = get_entity(spawn_entity(ENT_TYPE.BG_VLAD_WINDOW, x, y-0.5, l, 0, 0))
+	ent.width, ent.height = 1, 2
+	ent.hitboxx, ent.hitboxy = 0.5, 1
+
+	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
+	if is_hc == true then
+		texture_def.texture_path = "res/hc_window.png"
+	end
+	ent:set_texture(define_texture(texture_def))
+end
+
+function module.create_hcastle_window(x, y, l)
+	create_window(x, y, l, true)
+end
+
+function module.create_vlad_window(x, y, l)
+	create_window(x, y, l, false)
 end
 
 return module

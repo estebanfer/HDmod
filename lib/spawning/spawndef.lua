@@ -44,7 +44,7 @@ module.global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, v
 
 module.global_spawn_procedural_spiderlair_ground_enemy = define_procedural_spawn("hd_procedural_spiderlair_ground_enemy", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use it for ground enemy spawns
 
-module.global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
+module.global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
 
 module.global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
 
@@ -181,6 +181,8 @@ module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn
 module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
+module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", createlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
+module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedural_vlad_window", createlib.create_vlad_window, validlib.is_valid_vlad_window_spawn)
 
 --[[ Template for defining procedural spawns:
 
@@ -280,6 +282,7 @@ function module.set_chances(room_gen_ctx)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_snail, 0)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_firefrog, 0)
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_window, 0)
             end
 
             if state.theme == THEME.EGGPLANT_WORLD then
@@ -324,6 +327,10 @@ function module.set_chances(room_gen_ctx)
             end
 
             if state.theme == THEME.VOLCANA then
+                if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) == false then
+                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_vlad_window, 0)
+                end
+
                 if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
                     room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_succubus, 0, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)

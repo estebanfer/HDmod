@@ -26,7 +26,6 @@ hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
-snowlib = require 'lib.entities.snow'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
 idollib = require 'lib.entities.idol'
@@ -133,8 +132,6 @@ set_callback(function()
 				backwalllib.set_backwall_bg()
 				
 				decorlib.add_decorations()
-
-				snowlib.add_snow_to_floor()
 			end
 		end
 	end

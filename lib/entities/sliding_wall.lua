@@ -29,6 +29,10 @@ function module.spawn_slidingwall(x, y, layer, up)
     end
 
     if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+        texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
+        texture_def.texture_path = "res/castledoor.png"
+        wall:set_texture(define_texture(texture_def))
+
         hc_sliding_wall_ceiling = ceiling.uid
 
         set_callback(function()

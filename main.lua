@@ -36,6 +36,7 @@ ankhmoailib = require 'lib.entities.ankhmoai'
 doorslib = require 'lib.entities.doors'
 tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
+decorlib = require 'lib.gen.decor'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.03"
@@ -130,6 +131,8 @@ set_callback(function()
 				s2roomctxlib.remove_bm_shopkeyp()
 
 				backwalllib.set_backwall_bg()
+				
+				decorlib.add_decorations()
 
 				snowlib.add_snow_to_floor()
 			end

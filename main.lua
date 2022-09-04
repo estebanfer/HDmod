@@ -26,7 +26,6 @@ hdtypelib = require 'lib.entities.hdtype'
 botdlib = require 'lib.entities.botd'
 wormtonguelib = require 'lib.entities.wormtongue'
 ghostlib = require 'lib.entities.ghost'
-snowlib = require 'lib.entities.snow'
 olmeclib = require 'lib.entities.olmec'
 boulderlib = require 'lib.entities.boulder'
 idollib = require 'lib.entities.idol'
@@ -36,6 +35,7 @@ ankhmoailib = require 'lib.entities.ankhmoai'
 doorslib = require 'lib.entities.doors'
 tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
+decorlib = require 'lib.gen.decor'
 
 meta.name = "HDmod - Demo"
 meta.version = "1.03"
@@ -130,8 +130,8 @@ set_callback(function()
 				s2roomctxlib.remove_bm_shopkeyp()
 
 				backwalllib.set_backwall_bg()
-
-				snowlib.add_snow_to_floor()
+				
+				decorlib.add_decorations()
 			end
 		end
 	end

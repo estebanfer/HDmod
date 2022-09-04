@@ -218,15 +218,15 @@ function module.create_hd_tree(x, y, l)
 end
 
 function module.onlevel_decorate_haunted()
+	-- decorate tree trunks
 	if (
 		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
 	) then
-		-- decorate tree trunks
 		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_TREE)) do
 			local decor_ent = get_entity(decor)
 			if (
-				(
+				(-- ignore branch decorations
 					decor_ent.animation_frame == 112
 					or decor_ent.animation_frame == 124
 					or decor_ent.animation_frame == 136
@@ -236,9 +236,10 @@ function module.onlevel_decorate_haunted()
 				get_entity(decor).animation_frame = 124
 			end
 		end
+	end
 	
-		-- decorate grass
-		--animation_frames 53..55
+	-- decorate grass
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
 			if (math.random(2) == 1) then
 				get_entity(decor):set_texture(hauntedgrass_texture_def)

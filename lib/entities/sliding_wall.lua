@@ -48,7 +48,9 @@ function module.spawn_slidingwall(x, y, layer, up)
             )
             if #overlapping_players > 0 then
                 local ent = get_entity(hc_sliding_wall_ceiling)
-                ent.state = 0
+                if ent ~= nil then
+                    ent.state = 0
+                end
                 clear_callback()
             end
         end, ON.FRAME)

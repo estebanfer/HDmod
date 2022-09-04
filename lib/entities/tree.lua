@@ -1,5 +1,16 @@
 local module = {}
 
+local hauntedface_texture_def
+local hauntedgrass_texture_def
+do
+	hauntedface_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
+	hauntedface_texture_def.texture_path = "res/restless_jungle.png"
+	hauntedface_texture_def = define_texture(hauntedface_texture_def)
+
+	hauntedgrass_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
+	hauntedgrass_texture_def.texture_path = "res/restless_jungle.png"
+	hauntedgrass_texture_def = define_texture(hauntedgrass_texture_def)
+end
 
 -- # TODO: Revise into HD_TILENAME["T"] and improve.
 -- Use the following methods for a starting point:
@@ -202,6 +213,36 @@ function module.create_hd_tree(x, y, l)
 		-- if if 1/3 chance passes, spawn branch on right side
 		if math.random(3) == 1 then
 			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk, 1, 0, 0.1, false), -0.03, 0.47, 0.5, true)
+		end
+	end
+end
+
+function module.onlevel_decorate_haunted()
+	if (
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
+		or feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
+	) then
+		-- decorate tree trunks
+		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_TREE)) do
+			local decor_ent = get_entity(decor)
+			if (
+				(
+					decor_ent.animation_frame == 112
+					or decor_ent.animation_frame == 124
+					or decor_ent.animation_frame == 136
+				) and math.random(15) == 1
+			) then
+				get_entity(decor):set_texture(hauntedface_texture_def)
+				get_entity(decor).animation_frame = 124
+			end
+		end
+	
+		-- decorate grass
+		--animation_frames 53..55
+		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
+			if (math.random(2) == 1) then
+				get_entity(decor):set_texture(hauntedgrass_texture_def)
+			end
 		end
 	end
 end

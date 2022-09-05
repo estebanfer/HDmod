@@ -1,6 +1,6 @@
 meta = {
     name = "Custom-Entities-Library",
-    version = "1.0a",
+    version = "1.0b",
     author = "Estebanfer",
     description = "A library for creating custom entities"
 }
@@ -62,7 +62,7 @@ local module = {}
 ---@type CustomEntityType[]
 local custom_types = {}
 
-local cb_update, cb_loading, cb_transition, cb_pre_level_gen, cb_post_level_gen, cb_clonegunshot = -1, -1, -1, -1, -1, -1
+local cb_update, cb_pre_load, cb_transition, cb_pre_level_gen, cb_post_level_gen, cb_clonegunshot = -1, -1, -1, -1, -1, -1
 local didnt_init = true
 
 ---@class TransitionInfo
@@ -461,8 +461,11 @@ function module.custom_init(game_frame, not_handle_clonegun)
         end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_CLONEGUNSHOT)
     end
 
-    cb_loading = set_callback(function()
-        if ((state.screen_next == SCREEN.TRANSITION and state.screen ~= SCREEN.SPACESHIP) or state.screen_next == SCREEN.SPACESHIP) then
+    cb_pre_load = set_callback(function()
+        if (state.screen_next == SCREEN.TRANSITION and state.screen ~= SCREEN.SPACESHIP)
+            or (state.screen_next == SCREEN.SPACESHIP)
+            or (state.screen == SCREEN.LEVEL and state.screen_next == SCREEN.LEVEL)
+        then
             local is_storage_floor_there = get_entities_by(ENT_TYPE.FLOOR_STORAGE, MASK.FLOOR, LAYER.BOTH)[1] ~= nil
             if state.loading == 2 then
                 local hh_info_cache = {}
@@ -520,10 +523,6 @@ function module.custom_init(game_frame, not_handle_clonegun)
                         end
                     end
                 end
-            elseif state.loading == 3 then
-                for _,c_type in ipairs(custom_types) do
-                    c_type.entities = {}
-                end
             end
             if custom_entities_t_info_cog_ankh[1] then
                 for _, info in ipairs(custom_entities_t_info_cog_ankh) do
@@ -531,8 +530,11 @@ function module.custom_init(game_frame, not_handle_clonegun)
                 end
             end
             custom_entities_t_info_cog_ankh = {}
+            for _,c_type in ipairs(custom_types) do
+                c_type.entities = {}
+            end
         end
-    end, ON.LOADING)
+    end, ON.PRE_LOAD_SCREEN)
 
     cb_transition = set_callback(function()
         local companions = get_entities_by(0, MASK.PLAYER, LAYER.FRONT)
@@ -568,7 +570,7 @@ end
 ---Stop the library callbacks (not the extras callbacks)
 function module.stop()
     clear_callback(cb_update)
-    clear_callback(cb_loading)
+    clear_callback(cb_pre_load)
     clear_callback(cb_transition)
     clear_callback(cb_post_level_gen)
     clear_callback(cb_pre_level_gen)
@@ -1011,8 +1013,10 @@ item_hud_color.a = 0.4
 
 local function set_item_draw_callbacks()
     if not item_draw_callbacks_set then
+        local invisible_hud = get_setting(GAME_SETTING.HUD_STYLE) == 3
+        ---@param render_ctx VanillaRenderContext
         set_callback(function(render_ctx)
-            if not test_flag(state.pause, 1) and state.level_flags & (FLAGS_BIT[21] | FLAGS_BIT[22]) == 0 then --(state.screen == SCREEN.LEVEL or state.screen == SCREEN.CAMP) then --state.paused is probably flags, 1 is the pause menu
+            if not invisible_hud and not test_flag(state.pause, 1) and state.level_flags & (FLAGS_BIT[21] | FLAGS_BIT[22]) == 0 then --(state.screen == SCREEN.LEVEL or state.screen == SCREEN.CAMP) then --state.paused is probably flags, 1 is the pause menu
                 for i, v in ipairs(player_items_draw) do
                     for i1, draw_info in ipairs(v) do
                         local y1, x1 = 0.74, -0.95+((i1-1)*0.04)+((i-1)*0.32)
@@ -1045,6 +1049,10 @@ local function set_item_draw_callbacks()
         set_callback(function()
             player_items_draw = {{}, {}, {}, {}}
         end, ON.PRE_LEVEL_GENERATION)
+
+        set_callback(function()
+            invisible_hud = get_setting(GAME_SETTING.HUD_STYLE) == 3
+        end, ON.PRE_LOAD_SCREEN)
         item_draw_callbacks_set = true
     end
 end

@@ -38,7 +38,7 @@ flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 
 meta.name = "HDmod - Demo"
-meta.version = "1.03"
+meta.version = "1.03.1"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 

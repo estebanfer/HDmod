@@ -181,21 +181,26 @@ local function onlevel_hide_yama()
 end
 
 function module.postlevelgen_remove_door_items()
+	local items_to_remove = {
+		ENT_TYPE.ITEM_POT,
+		ENT_TYPE.ITEM_SKULL,
+		ENT_TYPE.ITEM_BONES,
+		ENT_TYPE.ITEM_ROCK,
+		ENT_TYPE.ITEM_WEB,
+		ENT_TYPE.ITEM_CHEST,
+		ENT_TYPE.ITEM_CRATE,
+		ENT_TYPE.ITEM_RUBY,
+		ENT_TYPE.ITEM_SAPPHIRE,
+		ENT_TYPE.ITEM_EMERALD,
+		ENT_TYPE.ITEM_GOLDBAR,
+		ENT_TYPE.ITEM_GOLDBARS
+	}
 	removelib.remove_non_held_item(
-		{
-			ENT_TYPE.ITEM_POT,
-			ENT_TYPE.ITEM_SKULL,
-			ENT_TYPE.ITEM_BONES,
-			ENT_TYPE.ITEM_ROCK,
-			ENT_TYPE.ITEM_WEB,
-			ENT_TYPE.ITEM_CHEST,
-			ENT_TYPE.ITEM_CRATE,
-			ENT_TYPE.ITEM_RUBY,
-			ENT_TYPE.ITEM_SAPPHIRE,
-			ENT_TYPE.ITEM_EMERALD,
-			ENT_TYPE.ITEM_GOLDBAR,
-			ENT_TYPE.ITEM_GOLDBARS
-		},
+		items_to_remove,
+		roomgenlib.global_levelassembly.exit.x, roomgenlib.global_levelassembly.exit.y
+	)
+	removelib.remove_non_held_item(
+		items_to_remove,
 		roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y
 	)
 end

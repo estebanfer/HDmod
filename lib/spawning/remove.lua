@@ -70,6 +70,27 @@ function module.remove_damsel_spawn_item(x, y, l)
 end
 
 
+function module.remove_non_held_item(items, x, y)
+	local hitbox_items = get_entities_overlapping_hitbox(
+		items,
+		MASK.ITEM,
+		AABB:new(
+			x-.5,
+			y+.5,
+			x+.5,
+			y-.5
+		),
+		LAYER.FRONT
+	)
+	for _, item_uid in ipairs(hitbox_items) do
+		for _, pl in ipairs(players) do
+			if entity_has_item_uid(pl.uid, item_uid) == false then
+				local ent = get_entity(item_uid)
+				ent:destroy()
+			end
+		end
+	end
+end
 
 --[[
 	SPAWN EXCEPTIONS

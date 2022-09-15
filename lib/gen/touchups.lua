@@ -1,3 +1,5 @@
+local removelib = require 'lib.spawning.remove'
+
 local module = {}
 
 local function onlevel_create_impostorlake()
@@ -176,6 +178,26 @@ local function onlevel_hide_yama()
         -- yama.flags = set_flag(yama.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
         -- move_entity(0, 1000, 0, 0)
     end
+end
+
+function module.postlevelgen_remove_door_items()
+	removelib.remove_non_held_item(
+		{
+			ENT_TYPE.ITEM_POT,
+			ENT_TYPE.ITEM_SKULL,
+			ENT_TYPE.ITEM_BONES,
+			ENT_TYPE.ITEM_ROCK,
+			ENT_TYPE.ITEM_WEB,
+			ENT_TYPE.ITEM_CHEST,
+			ENT_TYPE.ITEM_CRATE,
+			ENT_TYPE.ITEM_RUBY,
+			ENT_TYPE.ITEM_SAPPHIRE,
+			ENT_TYPE.ITEM_EMERALD,
+			ENT_TYPE.ITEM_GOLDBAR,
+			ENT_TYPE.ITEM_GOLDBARS
+		},
+		roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y
+	)
 end
 
 function module.onlevel_touchups()

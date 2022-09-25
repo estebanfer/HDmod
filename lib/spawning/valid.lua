@@ -177,7 +177,7 @@ local function spiderlair_ground_monster_condition(x, y, l)
 end
 
 -- Only spawn in a space that has floor above, below, and at least one left or right of it
-function module.is_valid_damsel_spawn(x, y, l)
+function module.is_valid_special_spawn(x, y, l)
     local entity_uids = get_entities_at({
 		ENT_TYPE.FLOOR_GENERIC,
 		ENT_TYPE.FLOOR_BORDERTILE,
@@ -202,6 +202,18 @@ function module.is_valid_damsel_spawn(x, y, l)
 		ENT_TYPE.ITEM_LOCKEDCHEST,
 	}, 0, x, y, l, 0.5)
 	local not_entity_here = #entity_uids == 0
+	if (
+		(
+			x == roomgenlib.global_levelassembly.exit.x
+			and y == roomgenlib.global_levelassembly.exit.y
+		)
+		-- or (
+		-- 	x == roomgenlib.global_levelassembly.entrance.x
+		-- 	and y == roomgenlib.global_levelassembly.entrance.y
+		-- )
+	) then
+		return false
+	end
     if not_entity_here == true then
 		local entity_uid = get_grid_entity_at(x, y - 1, l)
         local entity_below = entity_uid ~= -1 and (
@@ -231,6 +243,13 @@ function module.is_valid_damsel_spawn(x, y, l)
         end
     end
     return false
+end
+
+function module.is_valid_damsel_spawn(x, y, l)
+	-- if #get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) > 0 then
+	-- 	return false
+	-- end
+	return module.is_valid_special_spawn(x, y, l)
 end
 
 -- 4 spaces available

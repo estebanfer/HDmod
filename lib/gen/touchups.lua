@@ -181,28 +181,30 @@ local function onlevel_hide_yama()
 end
 
 function module.postlevelgen_remove_door_items()
-	local items_to_remove = {
-		ENT_TYPE.ITEM_POT,
-		ENT_TYPE.ITEM_SKULL,
-		ENT_TYPE.ITEM_BONES,
-		ENT_TYPE.ITEM_ROCK,
-		ENT_TYPE.ITEM_WEB,
-		ENT_TYPE.ITEM_CHEST,
-		ENT_TYPE.ITEM_CRATE,
-		ENT_TYPE.ITEM_RUBY,
-		ENT_TYPE.ITEM_SAPPHIRE,
-		ENT_TYPE.ITEM_EMERALD,
-		ENT_TYPE.ITEM_GOLDBAR,
-		ENT_TYPE.ITEM_GOLDBARS
-	}
-	removelib.remove_non_held_item(
-		items_to_remove,
-		roomgenlib.global_levelassembly.exit.x, roomgenlib.global_levelassembly.exit.y
-	)
-	removelib.remove_non_held_item(
-		items_to_remove,
-		roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y
-	)
+	if state.theme ~= THEME.OLMEC then
+		local items_to_remove = {
+			ENT_TYPE.ITEM_POT,
+			ENT_TYPE.ITEM_SKULL,
+			ENT_TYPE.ITEM_BONES,
+			ENT_TYPE.ITEM_ROCK,
+			ENT_TYPE.ITEM_WEB,
+			ENT_TYPE.ITEM_CHEST,
+			ENT_TYPE.ITEM_CRATE,
+			ENT_TYPE.ITEM_RUBY,
+			ENT_TYPE.ITEM_SAPPHIRE,
+			ENT_TYPE.ITEM_EMERALD,
+			ENT_TYPE.ITEM_GOLDBAR,
+			ENT_TYPE.ITEM_GOLDBARS
+		}
+		removelib.remove_non_held_item(
+			items_to_remove,
+			roomgenlib.global_levelassembly.exit.x, roomgenlib.global_levelassembly.exit.y
+		)
+		removelib.remove_non_held_item(
+			items_to_remove,
+			roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y
+		)
+	end
 end
 
 function module.onlevel_touchups()
@@ -244,6 +246,24 @@ end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)
 set_post_entity_spawn(function(entity)
 	entity:fix_decorations(true, true)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD_TOP)
+
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+        print("BYE PET")
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+    print("HI PET")
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
+
+-- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+-- 	print("HI DOGGIE")
+-- 	return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+-- end, SPAWN_TYPE.SYSTEMIC, 0, ENT_TYPE.MONS_PET_DOG)
+
+-- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
+-- 	print("HELLO HAMPTER")
+-- 	return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+-- end, SPAWN_TYPE.SYSTEMIC, 0, ENT_TYPE.MONS_PET_HAMSTER)
 
 -- set_pre_tile_code_callback(function(x, y, layer)
 	-- if state.theme == THEME.JUNGLE then

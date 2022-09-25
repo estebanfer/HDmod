@@ -161,8 +161,14 @@ function module.create_damsel(x, y, l)
 	elseif pet_setting == 2 then
 		pet_type = ENT_TYPE.MONS_PET_HAMSTER
 	end
-	spawn_grid_entity(pet_type, x, y, l)
+	prinspect(spawn_grid_entity(pet_type, x, y, l))
 end
+
+function module.create_damsel_procedural(x, y, l)
+	module.create_damsel(x, y, l)
+	removelib.remove_damsel_spawn_item(x, y, l)
+end
+
 
 function module.create_idol(x, y, l)
 	idollib.IDOL_X, idollib.IDOL_Y = x, y

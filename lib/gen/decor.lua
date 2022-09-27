@@ -1,6 +1,7 @@
 snowlib = require 'lib.entities.snow'
 treelib = require 'lib.entities.tree'
 gargoylelib = require 'lib.entities.gargoyle'
+touchupslib = require 'lib.gen.touchups'
 
 module = {}
 
@@ -11,6 +12,8 @@ local function add_decorations()
 end
 
 local function remove_decorations()
+	touchupslib.remove_boulderstatue()
+	touchupslib.remove_neobab_decorations()
 end
 
 function module.change_decorations()

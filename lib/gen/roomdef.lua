@@ -3621,7 +3621,9 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].prePathMethod = function()
 		nil,
 		{1, 2, 3, 4}
 	)
+end
 
+module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].postPathMethod = function()
 	-- # TODO: Make all module.HD_ROOMOBJECT.method functions have a prePath parameter. Then put below in prePath == false.
 	--[[
 		loop through top to bottom, replace the first two side rooms found with alienlord rooms
@@ -3636,7 +3638,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].prePathMethod = function()
 			local pathid = roomgenlib.global_levelassembly.modification.levelrooms[hi][wi]
 
 
-			if pathid == module.HD_SUBCHUNKID.SIDE then
+			if pathid == nil then
 				if module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 == false then
 					spawn_alienlord = true
 					module.CHUNKBOOL_MOTHERSHIP_ALIENLORD_1 = true

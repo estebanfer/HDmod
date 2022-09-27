@@ -1231,16 +1231,25 @@ module.HD_TILENAME = {
 						else
 							coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
 						end
-						if coffin_uid ~= nil then
+						if (
+							coffin_uid ~= nil
+							and (
+								state.theme == THEME.EGGPLANT_WORLD
+								or state.theme == THEME.NEO_BABYLON
+							)
+						) then
+							local coffin_e = get_entity(coffin_uid)
+							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
 							if state.theme == THEME.EGGPLANT_WORLD then
-								local coffin_e = get_entity(coffin_uid)
 								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
 								coffin_e.velocityx = 0
 								coffin_e.velocityy = 0
-								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
 								texture_def.texture_path = "res/coffins_worm.png"
-								coffin_e:set_texture(define_texture(texture_def))
 							end
+							if state.theme == THEME.NEO_BABYLON then
+								texture_def.texture_path = "res/coffins_mothership.png"
+							end
+							coffin_e:set_texture(define_texture(texture_def))
 						end
 					end
 				},

@@ -131,7 +131,7 @@ set_callback(function()
 
 				backwalllib.set_backwall_bg()
 				
-				decorlib.add_decorations()
+				decorlib.change_decorations()
 			end
 		end
 	end

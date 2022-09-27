@@ -4,10 +4,19 @@ gargoylelib = require 'lib.entities.gargoyle'
 
 module = {}
 
-function module.add_decorations()
+local function add_decorations()
     snowlib.add_snow_to_floor()
     treelib.onlevel_decorate_haunted()
     gargoylelib.add_gargoyles_to_hc()
 end
+
+local function remove_decorations()
+end
+
+function module.change_decorations()
+    add_decorations()
+    remove_decorations()
+end
+
 
 return module

@@ -345,7 +345,6 @@ module.HD_ROOMOBJECT.TUTORIAL[1] = {
 	setRooms = {
 		-- 1
 		{
-			-- prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.ENTRANCE,
 			placement = {1, 1},
 			roomcodes = {{"11111111111111111122121111120010222220001000000000100000000010090000001111111111"}}
@@ -437,7 +436,6 @@ module.HD_ROOMOBJECT.TUTORIAL[2] = {
 	setRooms = {
 		-- 1
 		{
-			-- prePath = false,
 			subchunk_id = -1,
 			placement = {1, 1},
 			roomcodes = {{"10001111110000000000z000000000111000000011L00000e0vvPvvvvv11vEL000Ev11vvL0vvvv11"}}
@@ -529,7 +527,6 @@ module.HD_ROOMOBJECT.TUTORIAL[3] = {
 	setRooms = {
 		-- 1
 		{
-			-- prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.ENTRANCE,
 			placement = {1, 1},
 			roomcodes = {{"1111111111vvvvvv2222v0000v0000v009000000v====v000011111100vv11111111vv1111111111"}}
@@ -624,7 +621,6 @@ module.HD_ROOMOBJECT.TESTING[1] = {
 	setRooms = {
 		-- 1
 		{
-			-- prePath = false,
 			subchunk_id = -1,
 			placement = {1, 1},
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
@@ -716,7 +712,6 @@ module.HD_ROOMOBJECT.TESTING[2] = {
 	setRooms = {
 		-- 1
 		{
-			-- prePath = false,
 			subchunk_id = -1,
 			placement = {1, 1},
 			roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
@@ -806,7 +801,6 @@ module.HD_ROOMOBJECT.TESTING[2] = {
 }
 module.HD_ROOMOBJECT.FEELINGS = {}
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE] = {
-	prePath = false,
 	rooms = {
 		[module.HD_SUBCHUNKID.HIVE_RIGHT_H_LEFT] = {{"eeeeeeee11zzzzzzzeee0000000zee000000000000000000000000000zeezzzzzzzeeeeeeeeeee11"}},
 		[module.HD_SUBCHUNKID.HIVE_LEFT_H_RIGHT] = {{"11eeeeeeeeeeezzzzzzzeez000000000000000000000000000eez0000000eeezzzzzzz11eeeeeeee"}},
@@ -955,7 +949,7 @@ local HIVE_BY_MASKS <const> = {
 	[HIVE_OPEN.RIGHT | HIVE_OPEN.DOWN | HIVE_OPEN.LEFT] = module.HD_SUBCHUNKID.HIVE_SIDES_DOWN,
 }
 
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].postPathMethod = function()
 	local function is_path_drop(room_id)
 		return room_id == module.HD_SUBCHUNKID.PATH_DROP
 			or room_id == module.HD_SUBCHUNKID.ENTRANCE_DROP
@@ -1067,8 +1061,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HIVE].method = function()
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
-	prePath = false,
-	method = function()
+	postPathMethod = function()
 		if (
 			roomgenlib.detect_level_non_special()
 		) then
@@ -1134,7 +1127,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR] = {
 	}
 }
 
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 	--1.) Select room coordinates between x = 1..3 and y = 2..3
@@ -1177,7 +1170,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR].method = functi
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT] = {
-	prePath = true,
 	rooms = {
 		[module.HD_SUBCHUNKID.SNAKEPIT_TOP] = { -- grabs 4 and upwards from HD's path_drop roomcodes
 			{"00000000000060000000000000000000000000000000000000001112220002100000001110111111"},
@@ -1194,7 +1186,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT] = {
 		[module.HD_SUBCHUNKID.SNAKEPIT_BOTTOM] = {{"111000011111n0000n1111100001111100N0001111N0110N11111NRRN1111111M111111111111111"}}
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].prePathMethod = function()
 	roomgenlib.level_generation_method_structure_vertical(
 		{
 			subchunk_id = module.HD_SUBCHUNKID.SNAKEPIT_TOP,
@@ -1217,7 +1209,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SNAKEPIT].method = function
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
-	prePath = false,
 	rooms = {
 		[module.HD_SUBCHUNKID.RESTLESS_IDOL] = {
 			{"tttttttttttttttttttttt00c000tt0tt0A00tt00400000040ttt0tt0ttttt000000tt1111111111"}
@@ -1230,7 +1221,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
 		},
 	},
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	if state.level ~= 4 then
@@ -1255,7 +1246,6 @@ end
 
 -- # TODO: Replace haunted castle roomcode altar tilecodes with new tilecode (or re-used) for torches
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
-	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
@@ -1429,7 +1419,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
-	prePath = false,
 	chunkRules = {
 		obstacleBlocks = {
 			[module.HD_OBSTACLEBLOCK.GROUND.tilename] = function()
@@ -1633,7 +1622,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 		},
 	},
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].postPathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
 	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	
@@ -1741,7 +1730,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].method = fun
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE] = {
-	prePath = false,
 	rooms = {
 		-- Replaced all "d" tiles with "v"
 		[module.HD_SUBCHUNKID.TIKIVILLAGE_PATH] = {
@@ -1793,7 +1781,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE] = {
 		},
 	},
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.TIKIVILLAGE].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
 	local levelh_start, levelh_end = 2, levelh-1
@@ -1891,7 +1879,6 @@ end
 
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER] = {
-	prePath = false,
 	rooms = {
 		[module.HD_SUBCHUNKID.RUSHING_WATER_EXIT] = {{"000000000000000900000221111220wwvvvvvvwwwwwwwwwwww000000000000000000000000000000"}},--"000000000000000900000221111220wwvvvvvvwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}},
 		[module.HD_SUBCHUNKID.RUSHING_WATER_SIDE] = {
@@ -1945,7 +1932,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER] = {
 		},
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RUSHING_WATER].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	-- exit row
 	for room_x = 1, levelw, 1 do
@@ -2014,7 +2001,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI] = {
 		}
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 	local spots = {}
@@ -2065,7 +2052,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOAI].method = function()
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO] = {
-	prePath = false,
 	rooms = {
 		[module.HD_SUBCHUNKID.UFO_LEFTSIDE] = {
 			{"0000000000000+++++++0+++0000000+000000000+000000000++000000000++++++++0000000000"}
@@ -2086,7 +2072,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO] = {
 	What should be done is make it so the path at least passes through or around UFO_LEFTSIDE (considering it as a PATH_DROP or PATH_DROP_NOTOP).
 	Note that this implimentation shouldn't be wrapping around UFO subchunks, but forcing the path to drop down and continue from there.
 --]]
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	local minw, minh, maxw, maxh = 1, 1, levelw, levelh
 
@@ -2282,7 +2268,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 		},
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
 	if unlockslib.LEVEL_UNLOCK ~= nil then
@@ -2356,7 +2342,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].method = funct
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE] = {
-	prePath = true,
 	rooms = {
 		[module.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP] = {
 			{
@@ -2367,7 +2352,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE] = {
 		[module.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_BOTTOM] = {{"++++00++++++++00++++++++00++++++++00++++++000000++0+++00+++000++00++000000000000"}}
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].prePathMethod = function()
 	roomgenlib.level_generation_method_structure_vertical(
 		{
 			subchunk_id = module.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP,
@@ -2384,7 +2369,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE].method
 	)
 end
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT] = {
-	prePath = true,
 	rooms = {
 		[module.HD_SUBCHUNKID.SACRIFICIALPIT_TOP] = {{"0000000000000000000000000000000000000000000100100000110011000111;01110111BBBB111"}},
 		[module.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION] = {{"11200002111120000211112000021111200002111120000211112000021111200002111120000211"}},
@@ -2408,7 +2392,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT] = {
 		-- end
 	-- 118
 		-- spawn 118 at structx, struct_midheight+1
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].prePathMethod = function()
 	roomgenlib.level_generation_method_structure_vertical(
 		{
 			subchunk_id = module.HD_SUBCHUNKID.SACRIFICIALPIT_TOP,
@@ -2430,7 +2414,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SACRIFICIALPIT].method = fu
 end
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD] = {
-	prePath = true,
 	rooms = {
 		[module.HD_SUBCHUNKID.VLAD_TOP] = {{"0000hh000000shhhhs000shhhhhhs00hhhU0hhh0shh0000hhshhhh00hhhhhhQ0000Qhhhh000000hh"}},
 		[module.HD_SUBCHUNKID.VLAD_MIDSECTION] = {{
@@ -2440,7 +2423,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD] = {
 		[module.HD_SUBCHUNKID.VLAD_BOTTOM] = {{"hh0L00L0hhhhhL00Lhhh040L00L040hhhL00Lhhhhh0L00L0hh040ssss040hhshhhhshhhhhhhhhhhh"}},
 	}
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VLAD].prePathMethod = function()
 	roomgenlib.level_generation_method_structure_vertical(
 		{
 			subchunk_id = module.HD_SUBCHUNKID.VLAD_TOP,
@@ -2484,7 +2467,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL] = {
 		2. If 3/4 chance passes and the space under it is a sideroom, use two-room.
 			Otherwise, spawn single room.
 --]]
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 	local spots = {}
@@ -2533,7 +2516,6 @@ end
 
 
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA] = {
-	prepath = false,
 	rooms = {
 		[module.HD_SUBCHUNKID.YAMA_LEFTSIDE] = {
 			{"0000000000000070000000021207000000Q00120070000000021000000000Q000212000000000000"},
@@ -2668,7 +2650,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].setRooms = {
 		-- roomcodes = {{"00000000000000000000000000000000000000000000000000000000000000000000000000000000"}}
 	},
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].method = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YAMA].postPathMethod = function()
 	local levelw, _ = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
 	local exit_on_left = (math.random(2) == 1)
@@ -3150,7 +3132,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	
 	setRooms = {
 		{
-			-- prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.WORM_CRYSKNIFE_LEFTSIDE,
 			placement = {6, 1},
 			roomcodes = {
@@ -3158,7 +3139,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 			}
 		},
 		{
-			-- prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.WORM_CRYSKNIFE_RIGHTSIDE,
 			placement = {6, 2},
 			roomcodes = {
@@ -3262,7 +3242,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	},
 }
 
-module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].method = function()
+module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
 	local unlock_location_x, unlock_location_y = nil, nil
@@ -3507,7 +3487,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.ICE_CAVES].rooms[module.HD_SUBCHUNKID.PATH_NOT
 }
 
 module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
-	prePath = true,
 	chunkRules = {
 		rooms = {
 			[module.HD_SUBCHUNKID.SIDE] = function(_chunk_coords)
@@ -3633,7 +3612,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON] = {
 		},
 	},
 }
-module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].method = function()
+module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].prePathMethod = function()
 	roomgenlib.level_generation_method_structure_vertical(
 		{
 			subchunk_id = module.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN,
@@ -3886,14 +3865,12 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 	},
 	setRooms = {
 		{
-			prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.COG_BOTD_LEFTSIDE,
 			placement = {3, 2},
 			-- # TODO: alter this roomcode's altar (HAHHHH)
 			roomcodes = {{"00000111110000011000000001100000Y00110001111111000000001100#00Y001100A1111111111"}}
 		},
 		{
-			prePath = false,
 			subchunk_id = module.HD_SUBCHUNKID.COG_BOTD_RIGHTSIDE,
 			placement = {3, 3},
 			roomcodes = {{"111110000000011000000001100Y000001111111000110000000011000000001100Y001111111111"}}
@@ -3952,7 +3929,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		[module.HD_OBSTACLEBLOCK.DOOR.tilename] = commonlib.TableCopy(module.HD_ROOMOBJECT.WORLDS[THEME.TEMPLE].obstacleBlocks[module.HD_OBSTACLEBLOCK.DOOR.tilename]),
 	},
 }
-module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].method = function()
+module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	local minw, minh, maxw, maxh = 1, 2, levelw, levelh
 	--[[

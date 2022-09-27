@@ -9,6 +9,7 @@ feelingslib = require 'lib.feelings'
 slidingwalllib = require 'lib.entities.sliding_wall'
 local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
+spikeslib = require 'lib.entities.spikes'
 
 local module = {}
 
@@ -1522,6 +1523,7 @@ module.HD_TILENAME = {
 									local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
 									texture_def.texture_path = "res/vladspikes.png"
 									get_entity(spikes_uid):set_texture(define_texture(texture_def))
+									spikeslib.vlad_spikes[#spikeslib.vlad_spikes+1] = spikes_uid
 								end
 							end
 						end

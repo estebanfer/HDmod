@@ -1,3 +1,5 @@
+local spikeslib = require 'lib.entities.spikes'
+
 local module = {}
 
 POSTTILE_STARTBOOL = false
@@ -30,6 +32,7 @@ local function init_onlevel()
 	doorslib.init()
 	tombstonelib.init()
 	roomdeflib.init()
+	spikeslib.init()
 end
 
 --[[

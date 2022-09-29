@@ -4106,6 +4106,18 @@ module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
 		},
 	}
 }
+module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].prePathMethod = function()
+	if unlockslib.LEVEL_UNLOCK ~= nil then
+		roomgenlib.level_generation_method_structure_vertical(
+			{
+				subchunk_id = module.HD_SUBCHUNKID.COFFIN_UNLOCK,
+				roomcodes = module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[module.HD_SUBCHUNKID.COFFIN_UNLOCK]
+			},
+			nil,
+			{1, 2, 3, 4}
+		)
+	end
+end
 
 module.HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 	chunkRules = {

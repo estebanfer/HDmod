@@ -3939,46 +3939,49 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].postPathMethod = function()
 		- next to a path
 		- replacing a path_drop
 	]]
-	local spots = {}
-	for wi = 1, levelw, 1 do
-		subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[1][wi]
-		if (
-			(
-				subchunk_id == nil
-				and (
-					(
-						wi+1 <= levelw and
+	
+	if unlockslib.LEVEL_UNLOCK ~= nil then
+		local spots = {}
+		for wi = 1, levelw, 1 do
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[1][wi]
+			if (
+				(
+					subchunk_id == nil
+					and (
 						(
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] ~= nil and
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] >= 1 and
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] <= 8
-						)
-					) or (
-						wi-1 >= 1 and
-						(
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] ~= nil and
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] >= 1 and
-							roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] <= 8
+							wi+1 <= levelw and
+							(
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] ~= nil and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] >= 1 and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] <= 8
+							)
+						) or (
+							wi-1 >= 1 and
+							(
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] ~= nil and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] >= 1 and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] <= 8
+							)
 						)
 					)
 				)
-			)
-			or (
-				subchunk_id ~= nil
-				and subchunk_id == module.HD_SUBCHUNKID.PATH_DROP
-			)
-		) then
-			table.insert(spots, {x = wi})
+				or (
+					subchunk_id ~= nil
+					and subchunk_id == module.HD_SUBCHUNKID.PATH_DROP
+				)
+			) then
+				table.insert(spots, {x = wi})
+			end
 		end
-	end
-	-- pick random place to fill
-	local spot = spots[math.random(#spots)]
+		-- pick random place to fill
+		local spot = spots[math.random(#spots)]
 
-	roomgenlib.levelcode_inject_roomcode(
-		module.HD_SUBCHUNKID.COFFIN_UNLOCK,
-		module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].rooms[module.HD_SUBCHUNKID.COFFIN_UNLOCK],
-		1, spot.x
-	)
+		roomgenlib.levelcode_inject_roomcode(
+			module.HD_SUBCHUNKID.COFFIN_UNLOCK,
+			module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].rooms[module.HD_SUBCHUNKID.COFFIN_UNLOCK],
+			1, spot.x
+		)
+	end
 
 	--[[
 		let the path generate as normal,

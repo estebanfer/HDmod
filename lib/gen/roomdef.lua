@@ -3933,13 +3933,63 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 }
 module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-	local minw, minh, maxw, maxh = 1, 2, levelw, levelh
+	
+	--[[
+		viable coffin spots are:
+		- next to a path
+		- replacing a path_drop
+	]]
+	
+	if unlockslib.LEVEL_UNLOCK ~= nil then
+		local spots = {}
+		for wi = 1, levelw, 1 do
+			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[1][wi]
+			if (
+				(
+					subchunk_id == nil
+					and (
+						(
+							wi+1 <= levelw and
+							(
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] ~= nil and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] >= 1 and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi+1] <= 8
+							)
+						) or (
+							wi-1 >= 1 and
+							(
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] ~= nil and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] >= 1 and
+								roomgenlib.global_levelassembly.modification.levelrooms[1][wi-1] <= 8
+							)
+						)
+					)
+				)
+				or (
+					subchunk_id ~= nil
+					and subchunk_id == module.HD_SUBCHUNKID.PATH_DROP
+				)
+			) then
+				table.insert(spots, {x = wi})
+			end
+		end
+		-- pick random place to fill
+		local spot = spots[math.random(#spots)]
+
+		roomgenlib.levelcode_inject_roomcode(
+			module.HD_SUBCHUNKID.COFFIN_UNLOCK,
+			module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD].rooms[module.HD_SUBCHUNKID.COFFIN_UNLOCK],
+			1, spot.x
+		)
+	end
+
 	--[[
 		let the path generate as normal,
 		then run this method to replace parts of it with the two middle setrooms and a few paths.
 		Place paths along the sides and underneath where there isn't any.
 	--]]
 
+	local minw, minh, maxw, maxh = 1, 2, levelw, levelh
 	for hi = minh, maxh, 1 do
 		for wi = minw, maxw, 1 do
 			local pathid = -1
@@ -4056,6 +4106,18 @@ module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rowfive = {
 		},
 	}
 }
+module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].prePathMethod = function()
+	if unlockslib.LEVEL_UNLOCK ~= nil then
+		roomgenlib.level_generation_method_structure_vertical(
+			{
+				subchunk_id = module.HD_SUBCHUNKID.COFFIN_UNLOCK,
+				roomcodes = module.HD_ROOMOBJECT.WORLDS[THEME.OLMEC].rooms[module.HD_SUBCHUNKID.COFFIN_UNLOCK]
+			},
+			nil,
+			{1, 2, 3, 4}
+		)
+	end
+end
 
 module.HD_ROOMOBJECT.WORLDS[THEME.VOLCANA] = {
 	chunkRules = {

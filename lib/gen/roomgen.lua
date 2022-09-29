@@ -1,3 +1,5 @@
+local spikeslib = require 'lib.entities.spikes'
+
 local module = {}
 
 POSTTILE_STARTBOOL = false
@@ -30,6 +32,7 @@ local function init_onlevel()
 	doorslib.init()
 	tombstonelib.init()
 	roomdeflib.init()
+	spikeslib.init()
 end
 
 --[[
@@ -760,13 +763,13 @@ function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified
 end
 
 function gen_levelrooms_nonpath(prePath)
-	
-	if (
-		(roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].prePath == nil and prePath == false)
-		or (roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].prePath ~= nil and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].prePath == prePath)
-	) then
-		if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].method ~= nil then
-			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].method()
+	if prePath then
+		if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].prePathMethod ~= nil then
+			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].prePathMethod()
+		end
+	else
+		if roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].postPathMethod ~= nil then
+			roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].postPathMethod()
 		end
 	end
 	-- world setrooms
@@ -783,10 +786,13 @@ function gen_levelrooms_nonpath(prePath)
 	-- feeling structures
 	for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 		if feelingslib.feeling_check(feeling) == true then
-			if (feelingContent.prePath == nil and prePath == false) or (feelingContent.prePath ~= nil and feelingContent.prePath == prePath) then
-				if feelingContent.method ~= nil then
-					-- message("gen_levelrooms_nonpath: Executing feeling spawning method:")
-					feelingContent.method()
+			if prePath then
+				if feelingContent.prePathMethod ~= nil then
+					feelingContent.prePathMethod()
+				end
+			else
+				if feelingContent.postPathMethod ~= nil then
+					feelingContent.postPathMethod()
 				end
 			end
 			if feelingContent.setRooms ~= nil then

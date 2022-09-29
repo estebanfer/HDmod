@@ -120,11 +120,18 @@ local function onlevel_remove_mounts()
 	end
 end
 
-local function onlevel_remove_boulderstatue()
+function module.remove_boulderstatue()
 	if state.theme == THEME.ICE_CAVES then
-		local boulderbackgrounds = get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)
-		if #boulderbackgrounds > 0 then
-			kill_entity(boulderbackgrounds[1])
+		for _, uid in ipairs(get_entities_by_type(ENT_TYPE.BG_BOULDER_STATUE)) do
+			get_entity(uid):destroy()
+		end
+	end
+end
+
+function module.remove_neobab_decorations()
+	if state.theme == THEME.NEO_BABYLON then
+		for _, uid in ipairs(get_entities_by_type({ENT_TYPE.DECORATION_BABYLON_NEON_SIGN, ENT_TYPE.DECORATION_HANGING_WIRES})) do
+			get_entity(uid):destroy()
 		end
 	end
 end
@@ -214,7 +221,6 @@ function module.onlevel_touchups()
 	onlevel_replace_border_textures()
 	onlevel_removeborderfloor()
 	onlevel_create_impostorlake()
-	onlevel_remove_boulderstatue()
 	onlevel_remove_cobwebs_on_pushblocks()
 end
 

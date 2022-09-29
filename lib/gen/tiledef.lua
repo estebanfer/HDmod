@@ -9,6 +9,7 @@ feelingslib = require 'lib.feelings'
 slidingwalllib = require 'lib.entities.sliding_wall'
 local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
+spikeslib = require 'lib.entities.spikes'
 
 local module = {}
 
@@ -357,32 +358,7 @@ module.HD_TILENAME = {
 			[2] = {
 				default = {
 					function(x, y, l)
-						local floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
-						-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
-						
-						if #floorsAtOffset > 0 then
-							
-							local floor_uid = floorsAtOffset[1]
-							---@type Floor
-							local floor = get_entity(floor_uid)
-							local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
-							if (
-								state.theme == THEME.DWELLING
-								and floor.type.id == ENT_TYPE.FLOORSTYLED_MINEWOOD
-							) then
-								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-								texture_def.texture_path = "res/wood_spikes.png"
-								local deco_texture = define_texture(texture_def)
-
-								floor:add_decoration(FLOOR_SIDE.TOP)
-								
-								if floor.deco_top ~= -1 then
-									local deco = get_entity(floor.deco_top)
-									deco:set_texture(deco_texture)
-									deco.animation_frame = math.random(101, 103)
-								end
-							end
-						end
+						spikeslib.detect_floor_and_create_spikes(x, y, l)
 					end,
 					function(x, y, l) return 0 end
 				},
@@ -1231,16 +1207,25 @@ module.HD_TILENAME = {
 						else
 							coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
 						end
-						if coffin_uid ~= nil then
+						if (
+							coffin_uid ~= nil
+							and (
+								state.theme == THEME.EGGPLANT_WORLD
+								or state.theme == THEME.NEO_BABYLON
+							)
+						) then
+							local coffin_e = get_entity(coffin_uid)
+							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
 							if state.theme == THEME.EGGPLANT_WORLD then
-								local coffin_e = get_entity(coffin_uid)
 								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
 								coffin_e.velocityx = 0
 								coffin_e.velocityy = 0
-								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
 								texture_def.texture_path = "res/coffins_worm.png"
-								coffin_e:set_texture(define_texture(texture_def))
 							end
+							if state.theme == THEME.NEO_BABYLON then
+								texture_def.texture_path = "res/coffins_mothership.png"
+							end
+							coffin_e:set_texture(define_texture(texture_def))
 						end
 					end
 				},
@@ -1467,55 +1452,7 @@ module.HD_TILENAME = {
 			[2] = {
 				default = {
 					function(x, y, l)
-						local floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)
-						-- # TOTEST: If gems/gold/items are spawning over this, move this method to run after gems/gold/items get embedded. Then here, detect and remove any items already embedded.
-						
-						if #floorsAtOffset > 0 then
-							local floor_uid = floorsAtOffset[1]
-							---@type Floor
-							local floor = get_entity(floor_uid)
-							local spikes_uid = spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1)
-							if (
-								state.theme == THEME.DWELLING
-								and floor.type.id == ENT_TYPE.FLOORSTYLED_MINEWOOD
-							) then
-								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-								texture_def.texture_path = "res/wood_spikes.png"
-								local deco_texture = define_texture(texture_def)
-
-								floor:add_decoration(FLOOR_SIDE.TOP)
-								
-								if floor.deco_top ~= -1 then
-									local deco = get_entity(floor.deco_top)
-									deco:set_texture(deco_texture)
-									deco.animation_frame = math.random(101, 103)
-								end
-							elseif state.theme == THEME.EGGPLANT_WORLD then
-								local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0)
-								local deco_texture = define_texture(texture_def)
-
-								floor:add_decoration(FLOOR_SIDE.TOP)
-								
-								if floor.deco_top ~= -1 then
-									local deco = get_entity(floor.deco_top)
-									deco:set_texture(deco_texture)
-									deco.animation_frame = math.random(101, 103)
-								end
-							elseif state.theme == THEME.VOLCANA then
-								-- need subchunkid of what room we're in
-								local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-								local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-								if (
-									_subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
-									or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
-									or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
-								) then
-									local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
-									texture_def.texture_path = "res/vladspikes.png"
-									get_entity(spikes_uid):set_texture(define_texture(texture_def))
-								end
-							end
-						end
+						spikeslib.detect_floor_and_create_spikes(x, y, l)
 					end,
 				}
 			}

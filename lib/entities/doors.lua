@@ -77,7 +77,7 @@ function module.create_door_exit(x, y, l)
 	set_door_target(door_target, _w, _l, _t)
 	-- spawn_door(x, y, l, state.world_next, state.level_next, state.theme_next)
 
-	-- state.level_gen.exits.door1_x, state.level_gen.exits.door1_y = x, y
+	roomgenlib.global_levelassembly.exit = {x = x, y = y}
 	
 	-- local format_name = F'levelcode_bake_spawn(): Created Exit Door with targets: {state.world_next}, {state.level_next}, {state.theme_next}'
 	-- message(format_name)

@@ -1,4 +1,5 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
+local removelib = require 'lib.spawning.remove'
 
 local module = {}
 
@@ -151,19 +152,6 @@ function module.create_regenblock(x, y, l)
 	regen_bg.hitboxx, regen_bg.hitboxy = regen_bg.width/2, regen_bg.height/2
 end
 
-function module.create_damsel(x, y, l)
-	local pet_setting = get_setting(GAME_SETTING.PET_STYLE)
-	local pet_type = math.random(ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_CAT+2)
-	if pet_setting == 0 then
-		pet_type = ENT_TYPE.MONS_PET_DOG
-	elseif pet_setting == 1 then
-		pet_type = ENT_TYPE.MONS_PET_CAT
-	elseif pet_setting == 2 then
-		pet_type = ENT_TYPE.MONS_PET_HAMSTER
-	end
-	spawn_grid_entity(pet_type, x, y, l)
-end
-
 function module.create_idol(x, y, l)
 	idollib.IDOL_X, idollib.IDOL_Y = x, y
 	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
@@ -198,7 +186,7 @@ function module.create_locked_chest_and_key(x, y, l)
 	else
 		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
 	end
-	removelib.remove_damsel_spawn_item(x, y, l)
+	removelib.remove_items_for_hideyhole_spawn(x, y, l)
 end
 
 function module.create_succubus(x, y, l) end

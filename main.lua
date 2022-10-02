@@ -132,6 +132,8 @@ set_callback(function()
 				backwalllib.set_backwall_bg()
 				
 				decorlib.change_decorations()
+				
+				touchupslib.postlevelgen_remove_door_items()
 			end
 		end
 	end

@@ -10,6 +10,7 @@ slidingwalllib = require 'lib.entities.sliding_wall'
 local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
 spikeslib = require 'lib.entities.spikes'
+local damsellib = require 'lib.entities.damsel'
 
 local module = {}
 
@@ -457,7 +458,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						createlib.create_damsel(x, y, l)
+						damsellib.create_damsel(x, y, l)
 						createlib.create_idol(x+1, y, l)
 					end,
 				},
@@ -594,7 +595,7 @@ module.HD_TILENAME = {
 
 				end},
 				tutorial = {
-					function(x, y, l) createlib.create_damsel(x, y, l) end,
+					function(x, y, l) damsellib.create_damsel(x, y, l) end,
 				},
 			}
 		},
@@ -1584,9 +1585,9 @@ module.HD_TILENAME = {
 								end
 							end
 						end
-						spawn_entity(ENT_TYPE.ITEM_VAULTCHEST, x+1, y-2, l, 0, 0)
-						spawn_entity(ENT_TYPE.ITEM_VAULTCHEST, x+2, y-2, l, 0, 0)
-						local shopkeeper_uid = spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l, 0, 0)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_VAULTCHEST, x+1, y-2, l)
+						spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_VAULTCHEST, x+2, y-2, l)
+						local shopkeeper_uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l)
 						local shopkeeper = get_entity(shopkeeper_uid)
 						
 						if state.shoppie_aggro_next <= 0 then

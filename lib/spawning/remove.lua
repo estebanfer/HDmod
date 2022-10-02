@@ -1,3 +1,4 @@
+local validlib = require 'lib.spawning.valid'
 local module = {}
 
 function module.remove_embedded_at(x, y, l)
@@ -54,22 +55,37 @@ function module.remove_floor_and_embedded_at(x, y, l)
     end
 end
 
-function module.remove_damsel_spawn_item(x, y, l)
-    local entity_uids = get_entities_at({
-		ENT_TYPE.ITEM_CHEST,
-		ENT_TYPE.ITEM_CRATE,
-		ENT_TYPE.ITEM_RUBY,
-		ENT_TYPE.ITEM_SAPPHIRE,
-		ENT_TYPE.ITEM_EMERALD,
-		ENT_TYPE.ITEM_GOLDBAR,
-		ENT_TYPE.ITEM_GOLDBARS
-	}, 0, x, y, l, 0.5)
-	if #entity_uids ~= 0 then
-		move_entity(entity_uids[1], 1000, 0, 0, 0)
-	end
+function module.remove_items_for_hideyhole_spawn(x, y, l)
+    for i,v in pairs(get_entities_at(0, MASK.ITEM, x, y, l, 0.4)) do
+        local ent = get_entity(v)
+        if commonlib.has(validlib.hideyhole_items_to_keep, ent.type.id) then return false end
+        ent:destroy()
+    end
+    return true
 end
 
 
+function module.remove_non_held_item(items, x, y)
+	local hitbox_items = get_entities_overlapping_hitbox(
+		items,
+		MASK.ITEM,
+		AABB:new(
+			x-.5,
+			y+.5,
+			x+.5,
+			y-.5
+		),
+		LAYER.FRONT
+	)
+	for _, item_uid in ipairs(hitbox_items) do
+		for _, pl in ipairs(players) do
+			if entity_has_item_uid(pl.uid, item_uid) == false then
+				local ent = get_entity(item_uid)
+				ent:destroy()
+			end
+		end
+	end
+end
 
 --[[
 	SPAWN EXCEPTIONS

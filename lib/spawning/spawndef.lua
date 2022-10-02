@@ -15,6 +15,7 @@ turretlib = require 'lib.entities.laser_turret'
 greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
 tikitraplib = require 'lib.entities.tikitrap'
+local damsellib = require 'lib.entities.damsel'
 
 local module = {}
 
@@ -25,9 +26,11 @@ local module = {}
 
 module.global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, validlib.is_valid_blackmarket_spawn, 0, 0)
 
-module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_damsel_spawn, 0, 0)
+module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_hideyhole_spawn, 0, 0)
 
-module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_damsel_spawn, 0, 0)
+module.global_spawn_extra_damsel = define_extra_spawn(damsellib.create_damsel_procedural, validlib.is_valid_damsel_spawn, 0, 0)
+
+module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_hideyhole_spawn, 0, 0)
 
 module.global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x+1, y, l, 0, 0) end, validlib.is_valid_queenbee_spawn, 0, 0)
 
@@ -201,6 +204,15 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 function module.set_chances(room_gen_ctx)
     if options.hd_debug_scripted_levelgen_disable == false then
         if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+            if (
+                feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
+                and state.theme ~= THEME.OLMEC
+            ) then
+                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_damsel, 1, 0)
+            else
+                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_damsel, 0, 0)
+            end
+
             if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
                 room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_locked_chest_and_key, 2, 0)
             else -- unset

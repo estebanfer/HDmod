@@ -15,6 +15,7 @@ turretlib = require 'lib.entities.laser_turret'
 greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
 tikitraplib = require 'lib.entities.tikitrap'
+local damsellib = require 'lib.entities.damsel'
 
 local module = {}
 
@@ -27,7 +28,7 @@ module.global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_
 
 module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_hideyhole_spawn, 0, 0)
 
-module.global_spawn_extra_damsel = define_extra_spawn(createlib.create_damsel_procedural, validlib.is_valid_damsel_spawn, 0, 0)
+module.global_spawn_extra_damsel = define_extra_spawn(damsellib.create_damsel_procedural, validlib.is_valid_damsel_spawn, 0, 0)
 
 module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_hideyhole_spawn, 0, 0)
 

@@ -10,6 +10,7 @@ slidingwalllib = require 'lib.entities.sliding_wall'
 local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
 spikeslib = require 'lib.entities.spikes'
+local damsellib = require 'lib.entities.damsel'
 
 local module = {}
 
@@ -457,7 +458,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						createlib.create_damsel(x, y, l)
+						damsellib.create_damsel(x, y, l)
 						createlib.create_idol(x+1, y, l)
 					end,
 				},
@@ -594,7 +595,7 @@ module.HD_TILENAME = {
 
 				end},
 				tutorial = {
-					function(x, y, l) createlib.create_damsel(x, y, l) end,
+					function(x, y, l) damsellib.create_damsel(x, y, l) end,
 				},
 			}
 		},

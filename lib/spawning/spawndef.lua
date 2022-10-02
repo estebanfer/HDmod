@@ -25,11 +25,11 @@ local module = {}
 
 module.global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, validlib.is_valid_blackmarket_spawn, 0, 0)
 
-module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_special_spawn, 0, 0)
+module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_hideyhole_spawn, 0, 0)
 
 module.global_spawn_extra_damsel = define_extra_spawn(createlib.create_damsel_procedural, validlib.is_valid_damsel_spawn, 0, 0)
 
-module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_special_spawn, 0, 0)
+module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_hideyhole_spawn, 0, 0)
 
 module.global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x+1, y, l, 0, 0) end, validlib.is_valid_queenbee_spawn, 0, 0)
 

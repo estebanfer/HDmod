@@ -165,8 +165,8 @@ function module.create_damsel(x, y, l)
 end
 
 function module.create_damsel_procedural(x, y, l)
+	removelib.remove_items_for_hideyhole_spawn(x, y, l)
 	module.create_damsel(x, y, l)
-	removelib.remove_damsel_spawn_item(x, y, l)
 end
 
 
@@ -204,7 +204,7 @@ function module.create_locked_chest_and_key(x, y, l)
 	else
 		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
 	end
-	removelib.remove_damsel_spawn_item(x, y, l)
+	removelib.remove_items_for_hideyhole_spawn(x, y, l)
 end
 
 function module.create_succubus(x, y, l) end

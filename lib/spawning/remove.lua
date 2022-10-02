@@ -1,3 +1,4 @@
+local validlib = require 'lib.spawning.valid'
 local module = {}
 
 function module.remove_embedded_at(x, y, l)
@@ -54,19 +55,13 @@ function module.remove_floor_and_embedded_at(x, y, l)
     end
 end
 
-function module.remove_damsel_spawn_item(x, y, l)
-    local entity_uids = get_entities_at({
-		ENT_TYPE.ITEM_CHEST,
-		ENT_TYPE.ITEM_CRATE,
-		ENT_TYPE.ITEM_RUBY,
-		ENT_TYPE.ITEM_SAPPHIRE,
-		ENT_TYPE.ITEM_EMERALD,
-		ENT_TYPE.ITEM_GOLDBAR,
-		ENT_TYPE.ITEM_GOLDBARS
-	}, 0, x, y, l, 0.5)
-	if #entity_uids ~= 0 then
-		move_entity(entity_uids[1], 1000, 0, 0, 0)
-	end
+function module.remove_items_for_hideyhole_spawn(x, y, l)
+    for i,v in pairs(get_entities_at(0, MASK.ITEM, x, y, l, 0.4)) do
+        local ent = get_entity(v)
+        if commonlib.has(validlib.hideyhole_items_to_keep, ent.type.id) then return false end
+        ent:destroy()
+    end
+    return true
 end
 
 

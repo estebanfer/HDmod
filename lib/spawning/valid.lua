@@ -50,6 +50,7 @@ local module = {}
 						-- HD doesn't check for this
 --]]
 
+module.hideyhole_items_to_keep = {ENT_TYPE.ITEM_CURSEDPOT, ENT_TYPE.ITEM_LOCKEDCHEST, ENT_TYPE.ITEM_LOCKEDCHEST_KEY}
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
@@ -129,7 +130,9 @@ local function detect_solid_nonshop_nontree(x, y, l)
 end
 
 local function is_solid_grid_entity(x, y, l)
-    return test_flag(get_entity_flags(get_grid_entity_at(x, y, l)), ENT_FLAG.SOLID)
+    local ent = get_entity(get_grid_entity_at(x, y, l))
+    if not ent then return false end
+    return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
 local function is_valid_monster_floor(x, y, l)
@@ -176,80 +179,42 @@ local function spiderlair_ground_monster_condition(x, y, l)
 		and default_ground_monster_condition(x, y, l)
 end
 
--- Only spawn in a space that has floor above, below, and at least one left or right of it
-function module.is_valid_special_spawn(x, y, l)
-    local entity_uids = get_entities_at({
-		ENT_TYPE.FLOOR_GENERIC,
-		ENT_TYPE.FLOOR_BORDERTILE,
-		ENT_TYPE.FLOORSTYLED_MINEWOOD,
-		ENT_TYPE.FLOORSTYLED_STONE,
-		ENT_TYPE.ACTIVEFLOOR_POWDERKEG,
-		ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK,
-		ENT_TYPE.FLOOR_LADDER,
-		ENT_TYPE.FLOOR_LADDER_PLATFORM,
-		ENT_TYPE.MONS_PET_DOG,
-		ENT_TYPE.MONS_PET_CAT,
-		ENT_TYPE.MONS_PET_HAMSTER,
-		ENT_TYPE.ITEM_BONES,
-		ENT_TYPE.ITEM_POT,
-		ENT_TYPE.ITEM_SKULL,
-		ENT_TYPE.ITEM_ROCK,
-		ENT_TYPE.ITEM_CURSEDPOT,
-		ENT_TYPE.ITEM_WEB,
-		ENT_TYPE.MONS_SKELETON,
+local function only_useless_items_at(x, y, l)
+	if #get_entities_at(0, MASK.MONSTER | MASK.ACTIVEFLOOR, x, y, l, 0.4) > 0 then return false end
+	for i,v in pairs(get_entities_at(0, MASK.ITEM, x, y, l, 0.4)) do
+		local ent = get_entity(v)
+		if commonlib.has(module.hideyhole_items_to_keep, ent.type.id) then return false end
+	end
+	return true
+end
 
-		ENT_TYPE.ITEM_LOCKEDCHEST_KEY,
-		ENT_TYPE.ITEM_LOCKEDCHEST,
-	}, 0, x, y, l, 0.5)
-	local not_entity_here = #entity_uids == 0
+-- Only spawn in a space that has floor above, below, and at least one left or right of it
+function module.is_valid_hideyhole_spawn(x, y, l)
+	if detect_shop_room_template(x, y, l) then return false end
+    if not default_spawn_is_valid(x, y, l) then return false end
 	if (
 		(
 			x == roomgenlib.global_levelassembly.exit.x
 			and y == roomgenlib.global_levelassembly.exit.y
 		)
-		-- or (
-		-- 	x == roomgenlib.global_levelassembly.entrance.x
-		-- 	and y == roomgenlib.global_levelassembly.entrance.y
-		-- )
+		or (
+			x == roomgenlib.global_levelassembly.entrance.x
+			and y == roomgenlib.global_levelassembly.entrance.y
+		)
 	) then
 		return false
 	end
-    if not_entity_here == true then
-		local entity_uid = get_grid_entity_at(x, y - 1, l)
-        local entity_below = entity_uid ~= -1 and (
-			test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-		)
-
-		local entity_uid = get_grid_entity_at(x, y + 1, l)
-        local entity_above = entity_uid ~= -1 and (
-			test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-		)
-        if entity_below == true and entity_above == true then
-			local entity_uid = get_grid_entity_at(x - 1, y, l)
-            local entity_left = entity_uid ~= -1 and (
-				test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-			)
-
-			entity_uid = get_grid_entity_at(x + 1, y, l)
-            local entity_right = entity_uid ~= -1 and (
-				test_flag(get_entity_flags(entity_uid), ENT_FLAG.SOLID)
-			)
-            if (
-				(entity_left == true or entity_right == true)
-				and detect_shop_room_template(x, y, l) == false
-			) then
-				return true
-			end
-        end
+    if is_solid_grid_entity(x, y-1, l) and is_solid_grid_entity(x, y+1, l) and (is_solid_grid_entity(x-1, y, l) or is_solid_grid_entity(x+1, y, l)) then
+        return only_useless_items_at(x, y, l)
     end
     return false
 end
 
 function module.is_valid_damsel_spawn(x, y, l)
-	if #get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) > 0 then
-		return false
-	end
-	return module.is_valid_special_spawn(x, y, l)
+	return (
+		#get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) == 0
+		and module.is_valid_hideyhole_spawn(x, y, l)
+	)
 end
 
 -- 4 spaces available

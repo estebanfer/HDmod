@@ -101,7 +101,7 @@ module.HD_FEELING_DEFAULTS = {
 	},
 	[module.FEELING_ID.SACRIFICIALPIT] = {
 		chance = 10,
-		-- chance = 0,
+		-- chance = 1,
 		themes = { THEME.TEMPLE },
 		message = "You hear prayers to Kali!"
 	},

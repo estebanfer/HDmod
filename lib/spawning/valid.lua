@@ -246,9 +246,9 @@ function module.is_valid_special_spawn(x, y, l)
 end
 
 function module.is_valid_damsel_spawn(x, y, l)
-	-- if #get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) > 0 then
-	-- 	return false
-	-- end
+	if #get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) > 0 then
+		return false
+	end
 	return module.is_valid_special_spawn(x, y, l)
 end
 

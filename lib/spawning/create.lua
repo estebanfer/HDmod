@@ -152,16 +152,16 @@ function module.create_regenblock(x, y, l)
 end
 
 function module.create_damsel(x, y, l)
-	local pet_setting = get_setting(GAME_SETTING.PET_STYLE)
-	local pet_type = math.random(ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_CAT+2)
-	if pet_setting == 0 then
-		pet_type = ENT_TYPE.MONS_PET_DOG
-	elseif pet_setting == 1 then
-		pet_type = ENT_TYPE.MONS_PET_CAT
-	elseif pet_setting == 2 then
-		pet_type = ENT_TYPE.MONS_PET_HAMSTER
-	end
-	prinspect(spawn_grid_entity(pet_type, x, y, l))
+	-- local pet_setting = get_setting(GAME_SETTING.PET_STYLE)
+	local pet_type = ENT_TYPE.MONS_PET_CAT--math.random(ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_CAT+2)
+	-- if pet_setting == 0 then
+	-- 	pet_type = ENT_TYPE.MONS_PET_DOG
+	-- elseif pet_setting == 1 then
+	-- 	pet_type = ENT_TYPE.MONS_PET_CAT
+	-- elseif pet_setting == 2 then
+	-- 	pet_type = ENT_TYPE.MONS_PET_HAMSTER
+	-- end
+	spawn_entity_snapped_to_floor(pet_type, x, y, l)
 end
 
 function module.create_damsel_procedural(x, y, l)

@@ -224,57 +224,10 @@ end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD_TOP)
 
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
-        print("BYE PET")
+        -- print("BYE PET")
         return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
     end
-    print("HI PET")
+    -- print("HI PET")
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
-
--- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	print("HI DOGGIE")
--- 	return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
--- end, SPAWN_TYPE.SYSTEMIC, 0, ENT_TYPE.MONS_PET_DOG)
-
--- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	print("HELLO HAMPTER")
--- 	return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
--- end, SPAWN_TYPE.SYSTEMIC, 0, ENT_TYPE.MONS_PET_HAMSTER)
-
--- set_pre_tile_code_callback(function(x, y, layer)
-	-- if state.theme == THEME.JUNGLE then
-		-- if detect_s2market() == true and layer == LAYER.FRONT and y < 88 then
-			-- -- spawn(ENT_TYPE., x, y, layer, 0, 0)
-			-- return true
-		-- end
-	-- end
-	-- spawn(ENT_TYPE.FLOOR_GENERIC, x, y, layer, 0, 0)
-	
-	-- return true
--- end, "floor")
-
--- `set_pre_tile_code_callback` todos:
-	-- “floor” -- if state.camp and shortcuts discovered, then
-		-- if state.transition, if transition between worm and next level then
-			-- replace floor with worm guts
-		-- end
-		-- if transition from jungle to ice caves then
-			-- replace stone with floor_jungle end if transition from ice caves to temple then replace quicksand with stone
-		-- end
-		-- if state.level and detect_s2market()
-			-- if (within the coordinates of where water should be)
-				-- replace with water
-			-- if (within the coordinates of where border should be)
-				-- return false
-			-- if (within the coordinates of where void should be)
-				-- replace with nothing
-			-- end
-	-- “border(?)” see if you can change styles from here
-		-- if detect_s2market() and `within the coordinates of where water should be` then
-			-- replace with water
-		-- end
-
-	-- “treasure” if state.theme == THEME.OLMEC (or temple?) then use the hd tilecode chance for treasure when in temple/olmec
-	-- “regenerating_wall50%” if state.theme == THEME.EGGPLANTWORLD then use the hd tilecode chance for floor50%(“2”) when in the worm
-
 
 return module

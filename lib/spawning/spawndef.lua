@@ -16,6 +16,7 @@ greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
 tikitraplib = require 'lib.entities.tikitrap'
 local damsellib = require 'lib.entities.damsel'
+local arrowtraplib = require 'lib.entities.arrowtrap'
 
 local module = {}
 
@@ -157,7 +158,7 @@ module.global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedura
 module.global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
+module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
 module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 

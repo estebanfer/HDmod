@@ -157,36 +157,6 @@ local function onlevel_remove_cobwebs_on_pushblocks()
 	end
 end
 
--- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	-- SORRY NOTHING
--- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_YAMA_PLATFORM)
-
--- set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
--- 	-- SORRY NOTHING
--- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.BG_YAMA_BODY)
-
--- set_post_entity_spawn(function(entity)
---     entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.TAKE_NO_DAMAGE) -- Unneeded(?)
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
--- end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_YAMA)
--- # TODO: Relocate MONS_YAMA to a better place. Can't move him to back layer, it triggers the slow music :(
-	-- OR: improve hiding him. Could use set_post_entity_spawn.
-local function onlevel_hide_yama()
-    if state.theme == THEME.EGGPLANT_WORLD then
-        -- kill_entity(get_entities_by_type(ENT_TYPE.BG_YAMA_BODY)[1])
-        -- for i, yama_floor in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_YAMA_PLATFORM)) do
-        -- 	kill_entity(yama_floor)
-        -- end
-
-        -- local yama = get_entity(get_entities_by_type(ENT_TYPE.MONS_YAMA)[1])
-        -- yama.flags = set_flag(yama.flags, ENT_FLAG.INVISIBLE)
-        -- yama.flags = set_flag(yama.flags, ENT_FLAG.TAKE_NO_DAMAGE) -- Unneeded(?)
-        -- yama.flags = set_flag(yama.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
-        -- move_entity(0, 1000, 0, 0)
-    end
-end
-
 function module.postlevelgen_remove_door_items()
 	if state.theme ~= THEME.OLMEC then
 		local items_to_remove = {
@@ -217,7 +187,6 @@ end
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
-	onlevel_hide_yama()
 	onlevel_replace_border_textures()
 	onlevel_removeborderfloor()
 	onlevel_create_impostorlake()

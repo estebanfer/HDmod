@@ -587,27 +587,27 @@ module.HD_TILENAME = {
 					function(x, y, l)
 						if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == true then
 							if math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							elseif math.random(5) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
 							elseif math.random(2) == 2 then
-								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 							else
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							end
 						else
 							if math.random(15) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							elseif math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
 							elseif math.random(12) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_RUBY, x, y, l)
 							elseif math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
 							elseif math.random(8) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
 							elseif math.random(6) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_EMERALD, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_EMERALD, x, y, l)
 							else
 								local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
 								if state.theme == THEME.OLMEC then

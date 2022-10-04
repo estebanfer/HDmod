@@ -567,32 +567,6 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {function(x, y, l)
 					slidingwalllib.spawn_slidingwall(x, y, l, true)
-					
-					-- local slidingwall_ceiling = get_entity(spawn_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, l, 0.0, 0.0))
-					-- local slidingwall_chain = get_entity(spawn_over(ENT_TYPE.ITEM_SLIDINGWALL_CHAIN_LASTPIECE, slidingwall_ceiling.uid, 0, 0))
-					-- local slidingwall = get_entity(spawn_over(ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, slidingwall_chain.uid, 0, -1.5))
-					
-					-- if state.theme == THEME.TEMPLE then
-					-- 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
-					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-					-- 	slidingwall_ceiling:set_texture(define_texture(texture_def))
-					-- 	slidingwall_chain:set_texture(define_texture(texture_def))
-		
-					-- 	texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
-					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-					-- 	slidingwall:set_texture(define_texture(texture_def))
-					-- end
-
-					-- spawn_entity(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH, x+1, y-1, l, 0, 0)
-
-					--[[ this code causes the game to crash
-					slidingwall_ceiling.active_floor_part_uid = slidingwall.uid
-					slidingwall_ceiling.state = 1
-					slidingwall_chain.attached_to_uid = -1
-					slidingwall_chain.timer = -1
-					slidingwall.ceiling = slidingwall_ceiling
-					--]]
-
 				end},
 				tutorial = {
 					function(x, y, l) damsellib.create_damsel(x, y, l) end,

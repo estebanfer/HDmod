@@ -16,9 +16,4 @@ function module.create_damsel(x, y, l)
 	spawn_entity_snapped_to_floor(pet_type, x, y, l)
 end
 
-function module.create_damsel_procedural(x, y, l)
-	removelib.remove_items_for_hideyhole_spawn(x, y, l)
-	module.create_damsel(x, y, l)
-end
-
 return module

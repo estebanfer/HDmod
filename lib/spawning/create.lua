@@ -5,11 +5,9 @@ local validlib = require 'lib.spawning.valid'
 local module = {}
 
 module.GIANTSPIDER_SPAWNED = false
-module.LOCKEDCHEST_KEY_SPAWNED = false
 
 function module.init()
 	module.GIANTSPIDER_SPAWNED = false
-	module.LOCKEDCHEST_KEY_SPAWNED = false
 end
 
 function module.create_coffin_coop(x, y, l)
@@ -178,16 +176,6 @@ end
 
 function module.create_anubis(x, y, l)
 	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
-end
-
-function module.create_locked_chest_and_key(x, y, l)
-	if module.LOCKEDCHEST_KEY_SPAWNED == false then
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST_KEY, x, y, l)
-		module.LOCKEDCHEST_KEY_SPAWNED = true
-	else
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
-	end
-	removelib.remove_items_for_hideyhole_spawn(x, y, l)
 end
 
 function module.create_succubus(x, y, l) end

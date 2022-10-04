@@ -1,4 +1,5 @@
 local spikeslib = require 'lib.entities.spikes'
+local hideyholelib = require 'lib.entities.hideyhole'
 
 local module = {}
 
@@ -33,6 +34,7 @@ local function init_onlevel()
 	tombstonelib.init()
 	roomdeflib.init()
 	spikeslib.init()
+	hideyholelib.init()
 end
 
 --[[

@@ -211,13 +211,6 @@ function module.is_valid_hideyhole_spawn(x, y, l)
     return false
 end
 
-function module.is_valid_damsel_spawn(x, y, l)
-	return (
-		#get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER}, MASK.MONSTER, LAYER.FRONT) == 0
-		and module.is_valid_hideyhole_spawn(x, y, l)
-	)
-end
-
 -- 4 spaces available
 function module.is_valid_anubis_spawn(x, y, l)
 	local cx, cy = x+.5, y-.5

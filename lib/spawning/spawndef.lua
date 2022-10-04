@@ -16,6 +16,8 @@ greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
 tikitraplib = require 'lib.entities.tikitrap'
 local damsellib = require 'lib.entities.damsel'
+local arrowtraplib = require 'lib.entities.arrowtrap'
+local hideyholelib = require 'lib.entities.hideyhole'
 
 local module = {}
 
@@ -26,11 +28,7 @@ local module = {}
 
 module.global_spawn_extra_blackmarket = define_extra_spawn(doorslib.create_door_exit_to_blackmarket, validlib.is_valid_blackmarket_spawn, 0, 0)
 
-module.global_spawn_extra_locked_chest_and_key = define_extra_spawn(createlib.create_locked_chest_and_key, validlib.is_valid_hideyhole_spawn, 0, 0)
-
-module.global_spawn_extra_damsel = define_extra_spawn(damsellib.create_damsel_procedural, validlib.is_valid_damsel_spawn, 0, 0)
-
-module.global_spawn_extra_succubus = define_extra_spawn(createlib.create_succubus, validlib.is_valid_hideyhole_spawn, 0, 0)
+module.global_spawn_hideyhole = define_extra_spawn(hideyholelib.create_hideyhole_spawn, validlib.is_valid_hideyhole_spawn, 0, 0)
 
 module.global_spawn_extra_hive_queenbee = define_extra_spawn(function(x, y, l) spawn_entity(ENT_TYPE.MONS_QUEENBEE, x+1, y, l, 0, 0) end, validlib.is_valid_queenbee_spawn, 0, 0)
 
@@ -157,7 +155,7 @@ module.global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedura
 module.global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", createlib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
+module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
 module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
@@ -204,20 +202,21 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 function module.set_chances(room_gen_ctx)
     if options.hd_debug_scripted_levelgen_disable == false then
         if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+            local num_of_spawns = 0
             if (
                 feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
                 and state.theme ~= THEME.OLMEC
             ) then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_damsel, 1, 0)
-            else
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_damsel, 0, 0)
+                if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then
+                    num_of_spawns = 3
+                elseif state.theme == THEME.VOLCANA then
+                    num_of_spawns = 2
+                else
+                    num_of_spawns = 1
+                end
             end
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_hideyhole, num_of_spawns, 0)
 
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then -- set udjat global_spawn_extra
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_locked_chest_and_key, 2, 0)
-            else -- unset
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_locked_chest_and_key, 0, 0)
-            end
             
             if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantspider, 0)
@@ -344,7 +343,6 @@ function module.set_chances(room_gen_ctx)
                 end
 
                 if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
-                    room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_succubus, 0, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_imp, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_jiangshi, 0)
@@ -353,7 +351,6 @@ function module.set_chances(room_gen_ctx)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikitrap, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spikeball, 0)
                 else
-                    room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_succubus, 1, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_bat, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_imp, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_jiangshi, 0)
@@ -362,8 +359,6 @@ function module.set_chances(room_gen_ctx)
                     -- room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_tikitrap, 0)
                     room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_spikeball, 0)
                 end
-            else
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_succubus, 0, 0)
             end
 
             --[[ procedural/extra spawn assign template

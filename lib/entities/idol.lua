@@ -10,6 +10,13 @@ local idoltrap_timeout = 0
 module.idoltrap_blocks = {}
 module.sliding_wall_ceilings = {}
 
+local idoltrap_ceiling_texture_id
+do
+    local idoltrap_ceiling_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
+    idoltrap_ceiling_texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
+    idoltrap_ceiling_texture_id = define_texture(idoltrap_ceiling_texture_def)
+end
+
 function module.init()
 	IDOLTRAP_TRIGGER = false
 	module.IDOL_X = nil
@@ -26,6 +33,7 @@ local function idol_disturbance()
 		local x, y, l = get_position(module.IDOL_UID)
         ---@type Idol
 		local _entity = get_entity(module.IDOL_UID)
+        if not _entity then return true end
 		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
 	end
 end
@@ -81,9 +89,7 @@ set_callback(function()
                     local ent = get_entity(sliding_wall_ceiling)
                     ent.state = 0
                 end
-
-                local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-                texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
+                
                 for i = 1, #module.idoltrap_blocks, 1 do
                     local floor = get_entity(module.idoltrap_blocks[i])
                     -- Code provided by Dregu
@@ -95,7 +101,7 @@ set_callback(function()
                         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                         block.velocityy = -0.01
                         
-                        block:set_texture(define_texture(texture_def))
+                        block:set_texture(idoltrap_ceiling_texture_id)
                         block.animation_frame = 27
                     end
                 end

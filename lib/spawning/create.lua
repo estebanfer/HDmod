@@ -1,14 +1,13 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
 local removelib = require 'lib.spawning.remove'
+local validlib = require 'lib.spawning.valid'
 
 local module = {}
 
 module.GIANTSPIDER_SPAWNED = false
-module.LOCKEDCHEST_KEY_SPAWNED = false
 
 function module.init()
 	module.GIANTSPIDER_SPAWNED = false
-	module.LOCKEDCHEST_KEY_SPAWNED = false
 end
 
 function module.create_coffin_coop(x, y, l)
@@ -179,16 +178,6 @@ function module.create_anubis(x, y, l)
 	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
 end
 
-function module.create_locked_chest_and_key(x, y, l)
-	if module.LOCKEDCHEST_KEY_SPAWNED == false then
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST_KEY, x, y, l)
-		module.LOCKEDCHEST_KEY_SPAWNED = true
-	else
-		spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LOCKEDCHEST, x, y, l)
-	end
-	removelib.remove_items_for_hideyhole_spawn(x, y, l)
-end
-
 function module.create_succubus(x, y, l) end
 
 function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
@@ -278,40 +267,6 @@ end
 function module.create_spikeball(x, y, l)
 	removelib.remove_floor_and_embedded_at(x, y, l)
 	spikeballlib.create_spikeball_trap(x, y, l)
-end
-
-function module.create_arrowtrap(x, y, l)
-	-- local entity_here = get_grid_entity_at(x, y, l)
-	-- if entity_here ~= -1 then
-    --     -- get_entity(entity_here):destroy()
-	-- 	kill_entity(entity_here)
-	-- end
-	removelib.remove_floor_and_embedded_at(x, y, l)
-    local uid = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
-    local left = get_grid_entity_at(x-1, y, l)
-    local right = get_grid_entity_at(x+1, y, l)
-	local flip = false
-	if left == -1 and right == -1 then
-		--math.randomseed(read_prng()[5])
-		if prng:random() < 0.5 then
-			flip = true
-		end
-	elseif left == -1 then
-		flip = true
-	end
-	if flip == true then
-		flip_entity(uid)
-	end
-	if test_flag(state.level_flags, 18) == true then
-		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, uid, 0, 0.35)
-	end
-
-	if state.theme == THEME.CITY_OF_GOLD then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-		texture_def.texture_path = "res/floormisc_gold_trap.png"
-		get_entity(uid):set_texture(define_texture(texture_def))
-	end
-
 end
 
 function module.create_giantspider(x, y, l)

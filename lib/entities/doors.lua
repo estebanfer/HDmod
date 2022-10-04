@@ -240,6 +240,8 @@ function module.create_door_ending(x, y, l)
 		set_interval(exit_yama, 1)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
+	
+	roomgenlib.global_levelassembly.exit = {x = x, y = y}
 end
 
 return module

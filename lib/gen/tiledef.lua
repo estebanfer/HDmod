@@ -548,7 +548,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+						local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
 						local block = get_entity(block_uid)
 						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
 						block.more_flags = set_flag(block.more_flags, 17)

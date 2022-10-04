@@ -129,7 +129,7 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
-local function is_solid_grid_entity(x, y, l)
+function module.is_solid_grid_entity(x, y, l)
     local ent = get_entity(get_grid_entity_at(x, y, l))
     if not ent then return false end
     return test_flag(ent.flags, ENT_FLAG.SOLID)
@@ -149,7 +149,7 @@ end
 
 local function default_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
-	and is_solid_grid_entity(x, y+1, l)
+	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
 	and detect_entrance_room_template(x, y, l) == false
@@ -204,7 +204,7 @@ function module.is_valid_hideyhole_spawn(x, y, l)
 	) then
 		return false
 	end
-    if is_solid_grid_entity(x, y-1, l) and is_solid_grid_entity(x, y+1, l) and (is_solid_grid_entity(x-1, y, l) or is_solid_grid_entity(x+1, y, l)) then
+    if module.is_solid_grid_entity(x, y-1, l) and module.is_solid_grid_entity(x, y+1, l) and (module.is_solid_grid_entity(x-1, y, l) or module.is_solid_grid_entity(x+1, y, l)) then
         return only_useless_items_at(x, y, l)
     end
     return false
@@ -421,7 +421,7 @@ function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Imple
 
 function module.is_valid_mshiplight_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
-		and is_solid_grid_entity(x, y+1, l)
+		and module.is_solid_grid_entity(x, y+1, l)
 end -- # TODO: Implement method for valid mshiplight spawn
 
 module.is_valid_lantern_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid lantern spawn
@@ -478,16 +478,16 @@ function module.is_valid_spikeball_spawn(x, y, l)
 end -- # TODO: Implement method for valid spikeball spawn
 
 function module.is_valid_arrowtrap_spawn(x, y, l)
-	local rx, ry = get_room_index(x, y)
+	local rx, _ = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
     local floor = get_grid_entity_at(x, y, l)
-    local left = get_grid_entity_at(x-1, y, l)
-    local left2 = get_grid_entity_at(x-2, y, l)
-    local right = get_grid_entity_at(x+1, y, l)
-    local right2 = get_grid_entity_at(x+2, y, l)
+    local left = module.is_solid_grid_entity(x-1, y, l)
+    local left2 = module.is_solid_grid_entity(x-2, y, l)
+    local right = module.is_solid_grid_entity(x+1, y, l)
+    local right2 = module.is_solid_grid_entity(x+2, y, l)
     if floor ~= -1 and (
-		(left == -1 and left2 == -1 and right ~= -1)
-		or (left ~= -1 and right == -1 and right2 == -1)
+		(not left and not left2 and right and not is_liquid_at(x-1, y))
+		or (left and not right and not right2 and not is_liquid_at(x+1, y))
 	) then
         return commonlib.has(valid_floors, get_entity_type(floor))
     end
@@ -661,8 +661,8 @@ function module.is_valid_giantspider_spawn(x, y, l)
 	)
 	return (
 		#entity_uids == 0
-		and is_solid_grid_entity(x, y+1, l)
-		and is_solid_grid_entity(x+1, y+1, l)
+		and module.is_solid_grid_entity(x, y+1, l)
+		and module.is_solid_grid_entity(x+1, y+1, l)
 		and createlib.GIANTSPIDER_SPAWNED == false
 		and detect_entrance_room_template(x, y, l) == false
 	)
@@ -694,10 +694,10 @@ function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 	and not is_liquid_at(x, y)
 	and (
-		is_solid_grid_entity(x, y+1, l)
-		or is_solid_grid_entity(x+1, y, l)
-		or is_solid_grid_entity(x, y-1, l)
-		or is_solid_grid_entity(x-1, y, l)
+		module.is_solid_grid_entity(x, y+1, l)
+		or module.is_solid_grid_entity(x+1, y, l)
+		or module.is_solid_grid_entity(x, y-1, l)
+		or module.is_solid_grid_entity(x-1, y, l)
 	)
 end -- # TODO: Implement method for valid bacterium spawn
 

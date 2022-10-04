@@ -1,5 +1,6 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
 local removelib = require 'lib.spawning.remove'
+local validlib = require 'lib.spawning.valid'
 
 local module = {}
 
@@ -288,15 +289,15 @@ function module.create_arrowtrap(x, y, l)
 	-- end
 	removelib.remove_floor_and_embedded_at(x, y, l)
     local uid = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
-    local left = get_grid_entity_at(x-1, y, l)
-    local right = get_grid_entity_at(x+1, y, l)
+    local left = validlib.is_solid_grid_entity(x-1, y, l)
+    local right = validlib.is_solid_grid_entity(x+1, y, l)
 	local flip = false
-	if left == -1 and right == -1 then
+	if not left and not right then
 		--math.randomseed(read_prng()[5])
 		if prng:random() < 0.5 then
 			flip = true
 		end
-	elseif left == -1 then
+	elseif not left then
 		flip = true
 	end
 	if flip == true then

@@ -1,4 +1,4 @@
-mammothlib = require 'lib.entities.mammoth'
+local mammothlib = require 'lib.entities.mammoth'
 
 local module = {}
 
@@ -13,6 +13,3 @@ set_post_entity_spawn(function(ent)
 end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_FREEZERAYSHOT)
 
 return module
-
-
-

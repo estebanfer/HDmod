@@ -226,24 +226,6 @@ function module.create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE,
 
 function module.create_mshiplight(x, y, l) end
 
-function module.create_webnest(x, y, l)
-	local block_uid = get_grid_entity_at(x, y+1, l)
-	if block_uid ~= -1 then
-		local lantern_uid = spawn_entity_over(ENT_TYPE.ITEM_REDLANTERN, block_uid, 0, -1)
-		-- local lantern_flames = get_entities_by_type(ENT_TYPE.ITEM_REDLANTERNFLAME)
-		-- if #lantern_flames ~= 0 then
-		-- 	-- local lantern_flame = get_entity(lantern_flames[1])
-		-- 	-- lantern_flame.flags = set_flag(lantern_flame, ENT_FLAG.DEAD)
-
-		-- 	-- move_entity(lantern_flames[1].uid, 1000, 0, 0, 0)
-		-- end
-		local entity = get_entity(lantern_uid)
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-		texture_def.texture_path = "res/items_spiderlair_spidernest.png"
-		entity:set_texture(define_texture(texture_def))
-	end
-end -- spawn_entity_over(ENT_TYPE.ITEM_REDLANTERN) the floor above (I think?)
-
 -- powderkeg / pushblock
 function module.create_pushblock_powderkeg(x, y, l)
 	-- local entity_here = get_grid_entity_at(x, y, l)

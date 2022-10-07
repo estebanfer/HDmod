@@ -8,15 +8,27 @@ do
     web_ball_texture_id = define_texture(web_ball_texture_def)
 end
 local function generate_web_ball_contents()
-    local roll = math.random(4)
-    if roll == 1 then
-        return ENT_TYPE.ITEM_NUGGET_SMALL
-    elseif roll == 2 then
-        return ENT_TYPE.MONS_SPIDER
-    elseif roll == 3 then
+    if math.random(32) == 1 then
         return ENT_TYPE.MONS_CAVEMAN
-    elseif roll == 4 then
+    elseif math.random(24) == 1 then
+        -- # TODO: Revise this method to allow 3 critter spiders to spawn
+        return ENT_TYPE.FX_SHADOW
+    elseif math.random(15) == 1 then
+        return ENT_TYPE.ITEM_SKULL
+    elseif math.random(6) == 1 then
+        return ENT_TYPE.MONS_SPIDER
+    elseif math.random(15) == 1 then
         return ENT_TYPE.ITEM_RUBY
+    elseif math.random(12) == 1 then
+        return ENT_TYPE.ITEM_SAPPHIRE
+    elseif math.random(7) == 1 then
+        return ENT_TYPE.ITEM_EMERALD
+    elseif math.random(7) == 1 then
+        return ENT_TYPE.ITEM_NUGGET
+    elseif math.random(4) == 1 then
+        return ENT_TYPE.ITEM_NUGGET_SMALL
+    else
+        return ENT_TYPE.FX_SHADOW
     end
 end
 local function web_ball_destroy(ent)

@@ -567,32 +567,6 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {function(x, y, l)
 					slidingwalllib.spawn_slidingwall(x, y, l, true)
-					
-					-- local slidingwall_ceiling = get_entity(spawn_entity(ENT_TYPE.FLOOR_SLIDINGWALL_CEILING, x, y, l, 0.0, 0.0))
-					-- local slidingwall_chain = get_entity(spawn_over(ENT_TYPE.ITEM_SLIDINGWALL_CHAIN_LASTPIECE, slidingwall_ceiling.uid, 0, 0))
-					-- local slidingwall = get_entity(spawn_over(ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, slidingwall_chain.uid, 0, -1.5))
-					
-					-- if state.theme == THEME.TEMPLE then
-					-- 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
-					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-					-- 	slidingwall_ceiling:set_texture(define_texture(texture_def))
-					-- 	slidingwall_chain:set_texture(define_texture(texture_def))
-		
-					-- 	texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
-					-- 	texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
-					-- 	slidingwall:set_texture(define_texture(texture_def))
-					-- end
-
-					-- spawn_entity(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH, x+1, y-1, l, 0, 0)
-
-					--[[ this code causes the game to crash
-					slidingwall_ceiling.active_floor_part_uid = slidingwall.uid
-					slidingwall_ceiling.state = 1
-					slidingwall_chain.attached_to_uid = -1
-					slidingwall_chain.timer = -1
-					slidingwall.ceiling = slidingwall_ceiling
-					--]]
-
 				end},
 				tutorial = {
 					function(x, y, l) damsellib.create_damsel(x, y, l) end,
@@ -613,27 +587,27 @@ module.HD_TILENAME = {
 					function(x, y, l)
 						if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == true then
 							if math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							elseif math.random(5) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
 							elseif math.random(2) == 2 then
-								spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 							else
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							end
 						else
 							if math.random(15) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CHEST, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							elseif math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
 							elseif math.random(12) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_RUBY, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_RUBY, x, y, l)
 							elseif math.random(10) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
 							elseif math.random(8) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
 							elseif math.random(6) == 1 then
-								spawn_grid_entity(ENT_TYPE.ITEM_EMERALD, x, y, l)
+								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_EMERALD, x, y, l)
 							else
 								local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
 								if state.theme == THEME.OLMEC then

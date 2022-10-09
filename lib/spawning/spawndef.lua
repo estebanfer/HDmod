@@ -18,6 +18,8 @@ tikitraplib = require 'lib.entities.tikitrap'
 local damsellib = require 'lib.entities.damsel'
 local arrowtraplib = require 'lib.entities.arrowtrap'
 local hideyholelib = require 'lib.entities.hideyhole'
+local webballlib = require 'lib.entities.web_ball'
+local critterratlib = require 'lib.entities.critterrat'
 
 local module = {}
 
@@ -86,7 +88,7 @@ module.global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_
 
 module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, validlib.is_valid_scorpionfly_spawn)
 
-module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", createlib.create_critter_rat, validlib.is_valid_critter_rat_spawn)
+module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", critterratlib.create_critterrat, validlib.is_valid_critter_rat_spawn)
 
 module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, validlib.is_valid_critter_frog_spawn)
 
@@ -147,7 +149,7 @@ module.global_spawn_procedural_turret = define_procedural_spawn("hd_procedural_t
 module.global_spawn_procedural_ufofeeling_turret = define_procedural_spawn("hd_procedural_ufofeeling_turret", turretlib.spawn_turret, validlib.is_valid_turret_spawn)
 module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("hd_procedural_mshipentrance_turret", turretlib.spawn_turret, validlib.is_valid_turret_spawn)
 
-module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", createlib.create_webnest, validlib.is_valid_webnest_spawn)
+module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", webballlib.create_webball, validlib.is_valid_webnest_spawn)
 
 module.global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
 module.global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)

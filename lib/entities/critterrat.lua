@@ -1,0 +1,97 @@
+local celib = require "lib.entities.custom_entities"
+
+local module = {}
+
+-- local critterrat_texture_id
+-- do
+--     local critterrat_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS02_1)
+--     critterrat_texture_def.texture_path = 'res/critterrat.png'
+--     critterrat_texture_id = define_texture(critterrat_texture_def)
+-- end
+-- local critterrat_standing_texture_id
+-- do
+--     local critterrat_standing_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS02_1)
+--     critterrat_standing_texture_def.texture_path = 'res/critterrat_standing.png'
+--     critterrat_standing_texture_id = define_texture(critterrat_standing_texture_def)
+-- end
+
+-- local function critterrat_set(uid)
+--     ---@type Movable
+--     local ent = get_entity(uid)
+--     ent:set_texture(critterrat_texture_id)
+--     ent.walk_pause_timer = math.random(150, 300) --randomize this so they dont all stand up at the same time
+-- end
+-- local function critterrat_update(ent)
+--     ent:set_texture(critterrat_texture_id)
+--     --flip entity based on movex
+--     if ent.movex == -1 then
+--         ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+--     end
+--     if ent.movex == 1 then
+--         ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+--     end
+--     if ent.movex ~= 0 then
+--         ent.x = ent.x + 0.03*ent.movex
+--     end
+--     --cancel walk_pause_timer early and use it for the standing
+--     if ent.move_state == 5 and ent.walk_pause_timer < 5 then
+--         ent.move_state = 1
+--         ent.walk_pause_timer = 230 + math.random(-15, 15)
+--     end
+--     if ent.move_state == 1 and ent.walk_pause_timer < 90 then
+--         ent.move_state = 5
+--         ent.movex = 0
+--         ent.walk_pause_timer = 25
+--     end
+--     if ent.move_state == 5 then
+--         ent:set_texture(critterrat_standing_texture_id)
+--         if ent.walk_pause_timer <= 25 and ent.walk_pause_timer > 21 then
+--             ent.animation_frame = 0
+--         elseif ent.walk_pause_timer <= 21 and ent.walk_pause_timer > 17 then
+--             ent.animation_frame = 1
+--         elseif ent.walk_pause_timer <= 17 and ent.walk_pause_timer > 13 then
+--             ent.animation_frame = 2
+--         elseif ent.walk_pause_timer <= 13 and ent.walk_pause_timer > 9 then
+--             ent.animation_frame = 3
+--         else
+--             ent.animation_frame = 4
+--         end
+--         --hacky solution to stop from getting frozen in this state when the player is nearby
+--         for _, player in ipairs(players) do
+--             local x, y, _ = get_position(ent.uid)
+--             local px, py, _ = get_position(player.uid)
+--             if math.abs(px-x) < 3 and math.abs(py-y) < 1 then
+--                 ent.move_state = 1
+--                 ent.walk_pause_timer = 230 + math.random(-15, 15)
+--             end
+--         end
+--     end
+--     --sfx when hitting walls
+--     if math.abs(ent.velocityx) + math.abs(ent.velocityy) > 0.03 then --make sure overall velocity is high enough for these checks
+--         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
+--             commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
+--             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND)
+--         end
+--         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL) then
+--             commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
+--             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL)
+--         end
+--     end
+--     if ent.overlay ~= nil then
+--         ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND)
+--         ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL)
+--     end
+-- end
+
+function module.create_critterrat(x, y, l)
+    -- local critterrat = spawn(ENT_TYPE.MONS_CRITTERCRAB, x, y, l, 0, 0)
+    -- critterrat_set(critterrat)
+    -- set_post_statemachine(critterrat, critterrat_update)
+end
+
+-- register_option_button("spawn_critterrat", "spawn_critterrat", 'spawn_critterrat', function()
+--      local x, y, l = get_position(players[1].uid)
+--      module.create_critterrat(x-5, y, l)
+-- end)
+
+return module

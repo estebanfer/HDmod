@@ -198,8 +198,6 @@ function module.create_hawkman(x, y, l) end
 
 function module.create_scorpionfly(x, y, l) end
 
-function module.create_critter_rat(x, y, l) end
-
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end

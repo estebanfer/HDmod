@@ -19,6 +19,7 @@ local damsellib = require 'lib.entities.damsel'
 local arrowtraplib = require 'lib.entities.arrowtrap'
 local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
+local critterratlib = require 'lib.entities.critterrat'
 
 local module = {}
 
@@ -87,7 +88,7 @@ module.global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_
 
 module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, validlib.is_valid_scorpionfly_spawn)
 
-module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", createlib.create_critter_rat, validlib.is_valid_critter_rat_spawn)
+module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", critterratlib.create_critterrat, validlib.is_valid_critter_rat_spawn)
 
 module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, validlib.is_valid_critter_frog_spawn)
 

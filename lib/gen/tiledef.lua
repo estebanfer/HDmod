@@ -1577,7 +1577,7 @@ module.HD_TILENAME = {
 	["~"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end,},
+				default = {function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end,},
 			}
 		},
 		description = "Bounce Trap",

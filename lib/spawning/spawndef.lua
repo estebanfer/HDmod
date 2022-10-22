@@ -49,7 +49,7 @@ module.global_spawn_procedural_spiderlair_ground_enemy = define_procedural_spawn
 
 module.global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
 
-module.global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
+module.global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
 
 module.global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)
 module.global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)

@@ -113,7 +113,8 @@ local nonshop_nontree_solids = {
 	ENT_TYPE.FLOOR_TREE_BASE,
 	ENT_TYPE.FLOOR_TREE_TRUNK,
 	ENT_TYPE.FLOOR_TREE_TOP,
-	ENT_TYPE.FLOOR_IDOL_BLOCK
+	ENT_TYPE.FLOOR_IDOL_BLOCK,
+	ENT_TYPE.FLOOR_TOTEM_TRAP
 }
 local function detect_solid_nonshop_nontree(x, y, l)
     local entity_here = get_grid_entity_at(x, y, l)

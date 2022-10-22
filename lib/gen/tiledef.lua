@@ -11,6 +11,7 @@ local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
 spikeslib = require 'lib.entities.spikes'
 local damsellib = require 'lib.entities.damsel'
+local hell_minibosslib = require 'lib.entities.hell_miniboss'
 
 local module = {}
 
@@ -1033,7 +1034,13 @@ module.HD_TILENAME = {
 					[THEME.ICE_CAVES] = {function(x, y, l) return 0 end},
 					[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end},
 					-- Horse Head & Ox Face
-					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
+					[THEME.VOLCANA] = {function(x, y, l)
+						if x < 22 then
+							hell_minibosslib.create_horsehead(x, y, l)
+						else
+							hell_minibosslib.create_oxface(x, y, l)
+						end
+					end},
 				}
 			}
 		},

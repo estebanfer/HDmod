@@ -11,6 +11,8 @@ local crysknifelib = require 'lib.entities.crysknife'
 treelib = require 'lib.entities.tree'
 spikeslib = require 'lib.entities.spikes'
 local damsellib = require 'lib.entities.damsel'
+local hell_minibosslib = require 'lib.entities.hell_miniboss'
+local alienlordlib = require 'lib.entities.alienlord'
 
 local module = {}
 
@@ -1019,21 +1021,16 @@ module.HD_TILENAME = {
 				default = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_GIANTSPIDER, x+0.5, y, l, 0, 0) end,},
 				alternate = {
 					-- Alien Lord
-					--[[
-						erictran:
-						"he shouldnt be too hard to program, just take something like yeti king / queen,
-						disable their AI, retexture them to use the alien lord from s1 and make him
-						periodically spawn the anubis projectiles.
-						
-						well dont literally disable their ai, but set their move_state and state values
-						to some arbitrary value to stop them from moving."
-						-- Change projectile speed with `ScepterShot::speed`
-					--]]
-
-					[THEME.ICE_CAVES] = {function(x, y, l) return 0 end},
-					[THEME.NEO_BABYLON] = {function(x, y, l) return 0 end},
+					[THEME.ICE_CAVES] = {alienlordlib.create_alienlord},
+					[THEME.NEO_BABYLON] = {alienlordlib.create_alienlord},
 					-- Horse Head & Ox Face
-					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
+					[THEME.VOLCANA] = {function(x, y, l)
+						if x < 22 then
+							hell_minibosslib.create_horsehead(x, y, l)
+						else
+							hell_minibosslib.create_oxface(x, y, l)
+						end
+					end},
 				}
 			}
 		},
@@ -1580,7 +1577,7 @@ module.HD_TILENAME = {
 	["~"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end,},
+				default = {function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end,},
 			}
 		},
 		description = "Bounce Trap",

@@ -24,7 +24,7 @@ local function critterbabyspider_set(uid)
     ent.flags = set_flag(ent.flags, ENT_FLAG.THROWABLE_OR_KNOCKBACKABLE)
 end
 local function critterbabyspider_update(ent)
-    print(tostring(ent.movex))
+    -- print(tostring(ent.movex))
     if ent.overlay ~= nil then
         ent.movex = 0
         ent.lock_input_timer = 30

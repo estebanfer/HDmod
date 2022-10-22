@@ -329,7 +329,7 @@ function module.is_valid_bouncetrap_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	local ent = get_grid_entity_at(x, y-1, l)
-	if (ent ~= -1 and get_entity(ent).type.id == ENT_TYPE.FLOOR_ALTAR) then return false end
+	if (ent ~= -1 and commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_FORCEFIELD, ENT_TYPE.FLOOR_TIMED_FORCEFIELD}, get_entity(ent).type.id)) then return false end
 	return default_ground_monster_condition(x, y, l)
 	and check_empty_space(x, y+4, l, 1, 4)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING

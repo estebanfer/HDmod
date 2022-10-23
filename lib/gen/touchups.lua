@@ -198,6 +198,16 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     end
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.ITEM_ROCK, ENT_TYPE.ITEM_POT)
 
+-- remove spiderwebs from tutorial
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if (
+		spawn_flags & SPAWN_TYPE.SCRIPT == 0
+		and worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
+	) then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.ITEM_WEB)
+
 function module.postlevelgen_remove_items()
 	remove_door_items()
 end

@@ -10,7 +10,7 @@ do
     critterrat_texture_def.height = 256
     critterrat_texture_def.tile_width = 128
     critterrat_texture_def.tile_height = 128
-    critterrat_texture_def.texture_path = 'res/critterrat.png'
+    critterrat_texture_def.texture_path = 'res/gustaf.png'
     critterrat_texture_id = define_texture(critterrat_texture_def)
 end
 

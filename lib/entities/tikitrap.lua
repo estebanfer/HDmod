@@ -1,7 +1,20 @@
 local module = {}
 local gold_spear_texture_id
+local spear_texture_id
 do
-    local gold_spear_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+    local spear_texture_def = TextureDefinition.new()
+    spear_texture_def.width = 128
+    spear_texture_def.height = 128
+    spear_texture_def.tile_width = 128
+    spear_texture_def.tile_height = 128
+    spear_texture_def.texture_path = "res/spear_head.png"
+    spear_texture_id = define_texture(spear_texture_def)
+
+    local gold_spear_texture_def = TextureDefinition.new()
+    gold_spear_texture_def.width = 128
+    gold_spear_texture_def.height = 128
+    gold_spear_texture_def.tile_width = 128
+    gold_spear_texture_def.tile_height = 128
     gold_spear_texture_def.texture_path = "res/spear_head_gold.png"
     gold_spear_texture_id = define_texture(gold_spear_texture_def)
 end
@@ -48,9 +61,7 @@ set_post_entity_spawn(function(entity)
 end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.FLOOR_TOTEM_TRAP)
 
 set_post_entity_spawn(function(entity)
-    if state.theme == THEME.CITY_OF_GOLD then
-        entity:set_texture(gold_spear_texture_id)
-    end
+    entity:set_texture(state.theme == THEME.CITY_OF_GOLD and gold_spear_texture_id or spear_texture_id)
 end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_LION_SPEAR)
 
 return module

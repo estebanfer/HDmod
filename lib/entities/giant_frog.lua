@@ -3,7 +3,7 @@ local celib = require "lib.entities.custom_entities"
 
 local function b(flag) return (1 << (flag-1)) end
 
-ANIM_STATE = {
+local ANIM_STATE = {
     IDLE = 0,
     IDLE_ANIM = 1,
     JUMPING = 2,
@@ -13,7 +13,7 @@ ANIM_STATE = {
 }
 local FRAME_TIME = 4
 
-ANIMATIONS = {
+local ANIMATIONS = {
     [ANIM_STATE.IDLE_ANIM] = {1, 2, 1, frames = 3},
     [ANIM_STATE.SPITTING] = {8, 7, 6, 5, 4, 3, frames = 6},
     [ANIM_STATE.JUMPING] = {11, 10, 9, frames = 3},

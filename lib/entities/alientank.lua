@@ -1,6 +1,9 @@
 local module = {}
--- WIP: Animationlib, changing direction anim, shooting duration, bomb spawn,
+-- WIP: Animationlib, shooting duration, bomb spawn,
 -- player detection zone, movement when there's no floor next, ...?
+
+--Distance to rotate towards target: 4
+--Distance to shoot bomb: 6
 local animationlib = require "animation"
 
 local function b(flag) return (1 << (flag-1)) end
@@ -47,6 +50,7 @@ local function alientank_update(tank)
       floors = filter_entities(floors, function(e) return test_flag(e.flags, ENT_FLAG.SOLID) end)
       if floors[1] then
         tank_data.state = TANK_STATE.CHANGING_DIRECTION
+        animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
         tank.velocityx = 0
         tank.idle_counter = 0
       end
@@ -81,18 +85,21 @@ local function alientank_update(tank)
       end
     end
   elseif tank_data.state == TANK_STATE.CHANGING_DIRECTION then
+    -- messpect(tank_data.state, tank_data.animation_state)
     if tank_data.animation_timer == 0 then
       tank_data.state = TANK_STATE.IDLE
       animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
       tank.flags = tank.flags ~ b(ENT_FLAG.FACING_LEFT)
     end
   elseif tank_data.state == TANK_STATE.RELOADING then
-    if tank_data.animation_timer == 0 then
+    if tank_data.animation_state == ANIMATIONS.SHOOTING and tank_data.animation_timer == 0 then
       animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
       tank_data.state = TANK_STATE.IDLE
       local dir = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
       local x, y, layer = get_position(tank.uid)
-      spawn(ENT_TYPE.ITEM_BOMB, x + 0.12 * dir, y, layer, 0.08*dir, 0.05)
+      spawn(ENT_TYPE.ITEM_BOMB, x + 0.6 * dir, y + 0.1, layer, 0.12*dir, 0.08)
+    elseif tank_data.animation_state == ANIMATIONS.IDLE and tank_data.reload_timer == 0 then
+      tank_data.state = TANK_STATE.IDLE
     end
   end
   --messpect(tank_data.animation_state, tank_data.animation_timer)

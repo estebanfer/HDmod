@@ -43,7 +43,8 @@ meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
 register_option_bool("hd_debug_boss_exits_unlock", "Debug: Unlock boss exits",														false)
-register_option_bool("hd_debug_custom_music_disable", "Debug: Disable custom music for special levels",								false)
+register_option_bool("hd_debug_custom_level_music_disable", "Debug: Disable custom music for special levels",						false)
+register_option_bool("hd_debug_custom_title_music_disable", "Debug: Disable custom music for the title screen",						false)
 register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-enduced feeling toasts",								false)
 register_option_bool("hd_debug_info_boss", "Debug: Info - Bossfight",																false)
 register_option_bool("hd_debug_info_boulder", "Debug: Info - Boulder",																false)
@@ -158,5 +159,9 @@ set_callback(function()
 	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
 	if state.loading == 2 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
 		custommusiclib.on_end_level()
+	end
+	-- Check whether custom title music has been enabled/disabled in the options right before loading the title screen.
+	if state.loading == 1 and state.screen_next == ON.TITLE then
+		custommusiclib.update_custom_title_music_enabled()
 	end
 end, ON.LOADING)

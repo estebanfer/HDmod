@@ -161,7 +161,8 @@ set_callback(function()
 		custommusiclib.on_end_level()
 	end
 	-- Check whether custom title music has been enabled/disabled in the options right before loading the title screen.
-	if state.loading == 1 and state.screen_next == ON.TITLE then
+	-- Two loading events are checked because the script API sometimes misses one of them the first time the title screen loads.
+	if (state.loading == 1 or state.loading == 2) and state.screen_next == ON.TITLE then
 		custommusiclib.update_custom_title_music_enabled()
 	end
 end, ON.LOADING)

@@ -1,5 +1,10 @@
 local module = {}
--- WIP: Animationlib, shooting duration, bomb spawn,
+-- WIP: Animationlib?
+-- also: the alientank bounces off the floor when touches it on air instead of staying still on the x axis
+
+-- Original on Spelunky HD:
+-- if quiet on one tile: only decrease reload timer on reloading state
+-- if moving: always decrease reload timer (though doesn't seem correct)
 
 local animationlib = require "animation"
 
@@ -68,6 +73,7 @@ local function alientank_update(tank)
             if (px - x < 0) ~= test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
               tank_data.state = TANK_STATE.CHANGING_DIRECTION
               animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
+              tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
               tank.idle_counter = 0
             end
           end
@@ -84,7 +90,7 @@ local function alientank_update(tank)
         end
       end
     end
-    tank_data.bomb_timer = tank_data.bomb_timer - 1
+    tank_data.bomb_timer = math.max(tank_data.bomb_timer - 1, 0)
     -- for alien as base
     -- if tank.state == 9 and tank.move_state == 1 then
     --   tank.move_state = 2
@@ -101,7 +107,6 @@ local function alientank_update(tank)
         end
         tank_data.state = TANK_STATE.RELOADING;
         tank_data.bomb_timer = 150
-        tank_data.reload_timer = 200
         spotted_player = true
         animationlib.set_animation(tank_data, ANIMATIONS.SHOOTING, ANIMATIONS.SHOOTING.frame_time)
       end
@@ -130,6 +135,7 @@ local function alientank_update(tank)
     end
     if tank_data.animation_state == ANIMATIONS.IDLE and tank_data.reload_timer == 0 then
       tank_data.state = TANK_STATE.IDLE
+      tank_data.reload_timer = 200
     else
       tank_data.reload_timer = tank_data.reload_timer - 1
     end
@@ -141,8 +147,8 @@ end
 ---@param x integer
 ---@param y integer
 ---@param layer integer
-local function alientank_spawn(x, y, layer)
-  local uid = spawn(ENT_TYPE.MONS_FROG, x+1, y, layer, 0, 0)
+function module.create_alientank(x, y, layer)
+  local uid = spawn(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
   local tank = get_entity(uid)
   tank.type = alientank_type
   tank.width, tank.height = 1.25, 1.25
@@ -161,6 +167,9 @@ local function alientank_spawn(x, y, layer)
   set_post_statemachine(uid, alientank_update)
 end
 
-register_option_button("spawn_alien", "spawn alien", "", function() alientank_spawn(get_position(players[1].uid)) end)
+register_option_button("spawn_alien", "spawn alien", "", function()
+  local x, y, l = get_position(players[1].uid)
+  module.create_alientank(x+1, y, l)
+end)
 
 return module

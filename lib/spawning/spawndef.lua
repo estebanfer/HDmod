@@ -12,6 +12,7 @@ local piranhalib = require 'lib.entities.piranha'
 wormtonguelib = require 'lib.entities.wormtongue'
 tombstonelib = require 'lib.entities.tombstone'
 turretlib = require 'lib.entities.laser_turret'
+local alientanklib = require "lib.entities.alientank"
 greenknightlib = require 'lib.entities.green_knight'
 mammothlib = require 'lib.entities.mammoth'
 tikitraplib = require 'lib.entities.tikitrap'
@@ -108,7 +109,7 @@ module.global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedur
 
 module.global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", greenknightlib.create_greenknight, validlib.is_valid_greenknight_spawn)
 
-module.global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", createlib.create_alientank, validlib.is_valid_alientank_spawn)
+module.global_spawn_procedural_alientank = define_procedural_spawn("hd_procedural_alientank", alientanklib.create_alientank, validlib.is_valid_alientank_spawn)
 
 module.global_spawn_procedural_critter_fish = define_procedural_spawn("hd_procedural_critter_fish", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERFISH, x, y, l) end, validlib.is_valid_critter_fish_spawn)
 

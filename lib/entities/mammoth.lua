@@ -48,11 +48,11 @@ local function mammoth_update(ent)
     end
 
     --only decrease timer if the ent isnt stopped by anything
-    if ent.lock_input_timer == 0 and ent.frozen_timer == 0 then
+    if ent.lock_input_timer == 0 and ent.frozen_timer == 0 and ent.stun_timer == 0 then
         ent.price = ent.price - 1
     end
-    if ent.price == 0 or ent.frozen_timer ~= 0 then
-        ent.price = 90
+    if ent.price == 0  then
+      ent.price = 90
     end
     if ent.price == 4 then --create attack hitbox
         local x, y, l = get_position(ent.uid)

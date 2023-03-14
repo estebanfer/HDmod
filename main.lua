@@ -134,7 +134,7 @@ set_callback(function()
 				
 				decorlib.change_decorations()
 				
-				touchupslib.postlevelgen_remove_door_items()
+				touchupslib.postlevelgen_remove_items()
 			end
 		end
 	end

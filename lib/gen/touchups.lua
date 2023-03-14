@@ -157,7 +157,7 @@ local function onlevel_remove_cobwebs_on_pushblocks()
 	end
 end
 
-function module.postlevelgen_remove_door_items()
+local function remove_door_items()
 	if state.theme ~= THEME.OLMEC then
 		local items_to_remove = {
 			ENT_TYPE.ITEM_POT,
@@ -182,6 +182,55 @@ function module.postlevelgen_remove_door_items()
 			roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y
 		)
 	end
+end
+
+-- remove pots and rocks that weren't placed via scripting
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if (
+		spawn_flags & SPAWN_TYPE.SCRIPT == 0
+		and (
+			worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
+			or state.theme == THEME.NEO_BABYLON
+			or feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR)
+		)
+	) then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.ITEM_ROCK, ENT_TYPE.ITEM_POT)
+
+-- remove spiderwebs from tutorial
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if (
+		spawn_flags & SPAWN_TYPE.SCRIPT == 0
+		and worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
+	) then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.ITEM_WEB)
+
+-- remove nonscript critters
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end,
+	SPAWN_TYPE.ANY,-- SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL,
+	0,
+	ENT_TYPE.MONS_CRITTERANCHOVY,
+	ENT_TYPE.MONS_CRITTERBUTTERFLY,
+	ENT_TYPE.MONS_CRITTERCRAB,
+	ENT_TYPE.MONS_CRITTERDRONE,
+	ENT_TYPE.MONS_CRITTERDUNGBEETLE,
+	ENT_TYPE.MONS_CRITTERFIREFLY,
+	ENT_TYPE.MONS_CRITTERFISH,
+	ENT_TYPE.MONS_CRITTERLOCUST,
+	ENT_TYPE.MONS_CRITTERPENGUIN,
+	ENT_TYPE.MONS_CRITTERSLIME,
+	ENT_TYPE.MONS_CRITTERSNAIL
+)
+
+function module.postlevelgen_remove_items()
+	remove_door_items()
 end
 
 function module.onlevel_touchups()

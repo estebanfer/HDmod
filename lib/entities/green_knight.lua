@@ -27,7 +27,7 @@ local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, 
     if damage_dealer.type.id == ENT_TYPE.ITEM_WHIP and ent.price == 0 and ent.health > 2 then
         generate_world_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
         ent.price = 10 --cooldown
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, ent.uid)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid)
         return true
     end
 end

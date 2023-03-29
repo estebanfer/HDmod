@@ -58,10 +58,14 @@ local function mammoth_update(ent)
         local x, y, l = get_position(ent.uid)
         commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid)
         if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.5, l, -0.25, 0))
+            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.65, l, -0.25, 0))
+            freezeray.owner_uid = ent.uid
+            freezeray.last_owner_uid = ent.uid
             freezeray.angle = math.pi
         else
-            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x+1, y-0.5, l, 0.25, 0))
+            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x+1, y-0.65, l, 0.25, 0))
+            freezeray.owner_uid = ent.uid
+            freezeray.last_owner_uid = ent.uid
         end
     end
 end
@@ -77,6 +81,21 @@ function module.create_mammoth(x, y, l)
         ent.x = -900 --destroy() and remove() both crash the game ????
     end)
 end
+
+--to stop UFOs from targetting the mammoth, we are going to add some pre and post statemachine code to the UFO that temporarily turns the mammoths ENT_TYPE to 0 so they wont target them
+--since the switch should only last the extent of the UFOs statemachine code, it shouldn't effect anything else about the mammoth
+--thanks to JayTheBusinessGoose and Dregu for helping me figure out this technique
+local lamassu_db = get_type(ENT_TYPE.MONS_LAMASSU)
+set_post_entity_spawn(function(ufo)
+    ufo:set_pre_update_state_machine(function()
+        lamassu_db.id = 0
+        return false
+    end)
+    ufo:set_post_update_state_machine(function()
+        lamassu_db.id = ENT_TYPE.MONS_LAMASSU
+        return false
+    end)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_UFO)
 
 -- register_option_button("spawn_mammoth", "spawn_mammoth", 'spawn_mammoth', function ()
 --     local x, y, l = get_position(players[1].uid)

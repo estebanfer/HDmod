@@ -36,6 +36,10 @@ local function alienlord_set(uid)
     if _subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD_LEFT then
         ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
     end
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_ALIENLORD;
+    };
     -- ent.walk_pause_timer = 300
     set_timeout(function()
         ent:set_texture(alienlord_texture_id)

@@ -26,6 +26,10 @@ local function set_piranha_skeleton(ent)
     nosacrifice.add_uid(ent.uid)
 	ent.animation_frame = 105
     ent:set_texture(piranha_skeleton_tex_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_PIRANHA;
+    };
 end
 
 local function get_solids_overlapping(hitbox, layer)

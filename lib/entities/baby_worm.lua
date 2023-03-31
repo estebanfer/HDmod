@@ -11,10 +11,6 @@ local function baby_worm_set(uid)
     local ent = get_entity(uid)
     ent.price = 0 --exit_chase_timer
     ent:set_texture(baby_worm_texture_id)
-    -- user_data
-    ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_BABY_WORM;
-    };
 end
 local function baby_worm_update(ent)
     --chase timer

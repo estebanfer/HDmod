@@ -11,11 +11,8 @@ end
 local function mammoth_set(uid)
     local ent = get_entity(uid)
     local x, y, l = get_position(uid)
+
     ent:set_texture(mammoth_texture_id)
-    -- user_data
-    ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_MAMMOTH;
-    };
 
     --we are using price as a variable to keep track of when mammoth will shoot a freezray blast
     ent.price = 90

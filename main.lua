@@ -37,9 +37,6 @@ tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 
-require "lib.entities.hdentnew"
-require "lib.entities.custom_death_messages"
-
 meta.name = "HDmod - Demo"
 meta.version = "1.03.1"
 meta.description = "Spelunky HD's campaign in Spelunky 2"

@@ -16,10 +16,6 @@ local function green_knight_set(uid)
     ent.move_state = 0
     ent.state = 1
     ent:set_texture(green_knight_texture_id)
-    -- user_data
-    ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_GREEN_KNIGHT;
-    };
 end
 local function green_knight_update(ent)
     --manage price timer

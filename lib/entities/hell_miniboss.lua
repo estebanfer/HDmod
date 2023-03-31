@@ -41,6 +41,10 @@ local function hell_miniboss_set(uid, texture_id)
     local ent = get_entity(uid)
     ent:set_texture(texture_id)
     local x, y, l = get_position(uid)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
+    };
     --repurposed variables
     ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER --logic
     ent.price = 0 --cooldown so whip doesnt hit multiple times

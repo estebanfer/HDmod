@@ -91,6 +91,10 @@ local function bacterium_set(ent, _, _, attach_dir)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_BACTERIUM;
+    };
     set_on_damage(ent.uid, bacterium_damage)
     set_on_kill(ent.uid, bacterium_kill) --Telefrag
 

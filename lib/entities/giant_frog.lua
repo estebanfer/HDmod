@@ -73,6 +73,10 @@ local function giant_frog_set(ent)
     ent.width, ent.height = 2.0, 2.0
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_GIANT_FROG;
+    };
     ---@param dead_ent Frog
     set_on_kill(ent.uid, function (dead_ent)
         local x, y, l = get_position(dead_ent.uid)

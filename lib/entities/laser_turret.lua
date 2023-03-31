@@ -54,6 +54,10 @@ end
 local function laser_set(laser)
     ---@param _laser LightShot
     ---@param collider Movable
+    -- user_data
+    laser.user_data = {
+        ent_type = HD_ENT_TYPE.ITEM_LASER_TURRET;
+    };
     set_pre_collision2(laser.uid, function (_laser, collider)
         if collider.type.search_flags & (MASK.PLAYER | MASK.MOUNT | MASK.MONSTER) ~= 0 then
             if collider.invincibility_frames_timer == 0 then

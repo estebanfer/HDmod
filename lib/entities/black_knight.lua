@@ -15,6 +15,12 @@ local function black_knight_set(uid)
     ent:set_texture(black_knight_texture_id)
     local x, y, l = get_position(uid)
     local shield = get_entity(spawn(ENT_TYPE.ITEM_METAL_SHIELD, x, y, l, 0, 0))
+
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_BLACK_KNIGHT;
+    };
+
     --remove any item black knight may have
     local held_item = get_entity(ent.holding_uid)
     if held_item ~= nil then

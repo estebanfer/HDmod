@@ -16,9 +16,8 @@ function module.add_snow_to_floor()
                     and deco_top.animation_frame ~= 103
                 ) then
                     deco_top.animation_frame = deco_top.animation_frame - 24
-                    if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(40, PRNG_CLASS.LEVEL_DECO) then
+                    if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(60, PRNG_CLASS.LEVEL_DECO) then
                         -- Add a snowman decoration to the floor.
-                        -- # TODO: Verify exact spawn chance and requirements for snowmen in HD code.
                         local scale = 0.6 + (0.2 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
                         local offset_x = -0.15 + (0.3 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
                         local offset_y = 0.5 + (0.4 * scale)

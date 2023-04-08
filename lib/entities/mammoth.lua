@@ -8,6 +8,17 @@ do
     mammoth_texture_def.texture_path = 'res/mammoth.png'
     mammoth_texture_id = define_texture(mammoth_texture_def)
 end
+
+--modify ITEM_FREEZERAYSHOT to ignore lamassu with mammoth texture
+local function ignore_mammoth(ent, collision_ent)
+    if collision_ent:get_texture() == mammoth_texture_id then
+        return true
+    end
+end
+set_post_entity_spawn(function(ent)
+    ent:set_pre_on_collision2(ignore_mammoth)
+end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_FREEZERAYSHOT)
+
 local function mammoth_set(uid)
     local ent = get_entity(uid)
     local x, y, l = get_position(uid)

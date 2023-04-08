@@ -37,6 +37,7 @@ tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 snowballlib = require 'lib.entities.snowball'
+require "lib.entities.mammoth"
 
 require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"

@@ -16,6 +16,18 @@ function module.add_snow_to_floor()
                     and deco_top.animation_frame ~= 103
                 ) then
                     deco_top.animation_frame = deco_top.animation_frame - 24
+                    if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(60, PRNG_CLASS.LEVEL_DECO) then
+                        -- Add a snowman decoration to the floor.
+                        local scale = 0.6 + (0.2 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
+                        local offset_x = -0.15 + (0.3 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
+                        local offset_y = 0.5 + (0.4 * scale)
+                        local snowman = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_GENERIC, floor_uid, offset_x, offset_y))
+                        snowman:set_texture(TEXTURE.DATA_TEXTURES_ITEMS_0)
+                        snowman.animation_frame = 221
+                        snowman:set_draw_depth(12)
+                        snowman.width = prng:random_chance(2, PRNG_CLASS.LEVEL_DECO) and scale or -scale
+                        snowman.height = scale
+                    end
                 end
             end
         end

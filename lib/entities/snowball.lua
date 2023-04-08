@@ -62,10 +62,7 @@ end
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     if (
 		spawn_flags & SPAWN_TYPE.SCRIPT == 0
-        and (
-            feelingslib.feeling_check(feelingslib.FEELING_ID.SNOWING)
-            or feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
-        )
+        and feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
     ) then
         return module.create_snowball(x, y, l)
     end

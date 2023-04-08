@@ -34,10 +34,7 @@ function module.set_icecaves_diamonddust_particles(custom)
     end
 end
 function module.add_snow_to_floor()
-    if (
-        feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)
-        or feelingslib.feeling_check(feelingslib.FEELING_ID.SNOWING)
-    ) then
+    if (feelingslib.feeling_check(feelingslib.FEELING_ID.SNOW)) then
         local floors = get_entities_by_type(ENT_TYPE.FLOOR_GENERIC)
         for _, floor_uid in pairs(floors) do
             local floor = get_entity(floor_uid)

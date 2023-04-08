@@ -2,7 +2,6 @@ local module = {}
 local celib = require "lib.entities.custom_entities"
 local feelingslib = require "lib.feelings"
 local commonlib = require "lib.common"
---#TODO: turn into a rock upon hitting floors 
 
 celib.init()
 

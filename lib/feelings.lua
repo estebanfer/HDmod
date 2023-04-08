@@ -254,7 +254,7 @@ function module.onlevel_set_feelings()
 		if (
 			state.level >= 3
 		) then
-			module.feeling_set_once(module.FEELING_ID.SPIDERLAIR, {state.level})
+			module.feeling_set(module.FEELING_ID.SPIDERLAIR, {state.level})
 		end
 
 		-- spiderlair and snakepit cannot happen at the same time
@@ -262,7 +262,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.SPIDERLAIR) == false
 			and state.level ~= 1
 		) then
-			module.feeling_set_once(module.FEELING_ID.SNAKEPIT, {state.level})
+			module.feeling_set(module.FEELING_ID.SNAKEPIT, {state.level})
 		end
 	end
 	--[[
@@ -276,7 +276,7 @@ function module.onlevel_set_feelings()
 
 		-- Restless cannot happen on haunted castle
 		if module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false then
-			module.feeling_set_once(module.FEELING_ID.RESTLESS, {state.level})
+			module.feeling_set(module.FEELING_ID.RESTLESS, {state.level})
 			feeling_set(module.FEELING_ID.HIVE, {state.level})
 		end
 
@@ -285,7 +285,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false
 			and module.feeling_check(module.FEELING_ID.BLACKMARKET) == false
 		) then
-			module.feeling_set_once(module.FEELING_ID.RUSHING_WATER, {state.level})
+			module.feeling_set(module.FEELING_ID.RUSHING_WATER, {state.level})
 			
 			-- tikivillage levels cannot be restless
 			-- tikivillage and rushing water cannot happen at the same time
@@ -293,7 +293,7 @@ function module.onlevel_set_feelings()
 				module.feeling_check(module.FEELING_ID.RESTLESS) == false and
 				module.feeling_check(module.FEELING_ID.RUSHING_WATER) == false
 			) then
-				module.feeling_set_once(module.FEELING_ID.TIKIVILLAGE, {state.level})
+				module.feeling_set(module.FEELING_ID.TIKIVILLAGE, {state.level})
 			end
 		end
 	end
@@ -317,7 +317,7 @@ function module.onlevel_set_feelings()
 	--]]
 	if state.theme == THEME.ICE_CAVES then
 		
-		module.feeling_set_once(module.FEELING_ID.SNOW, {state.level})
+		module.feeling_set(module.FEELING_ID.SNOW, {state.level})
 
 		-- # TODO: Exception for MOAI spawn:
 			-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
@@ -330,7 +330,7 @@ function module.onlevel_set_feelings()
 				module.feeling_set_once(module.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
 			else
 				global_feelings[module.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-				module.feeling_set_once(module.FEELING_ID.YETIKINGDOM, {state.level})
+				module.feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
 			end
 			-- This level feeling only, and always, occurs on level 3-4.
 				-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
@@ -342,7 +342,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.MOAI) == false
 			and state.level ~= 4
 		) then
-			module.feeling_set_once(module.FEELING_ID.YETIKINGDOM, {state.level})
+			module.feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
 		end
 		
 		-- # TODO: Verify exactly when UFO is allowed to spawn
@@ -350,7 +350,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and state.level ~= 4
 		) then
-			module.feeling_set_once(module.FEELING_ID.UFO, {state.level})
+			module.feeling_set(module.FEELING_ID.UFO, {state.level})
 		end
 		
 		-- # TODO: Verify exactly when pools are allowed to spawn
@@ -358,14 +358,14 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and module.feeling_check(module.FEELING_ID.UFO) == false
 		) then
-			module.feeling_set_once(module.FEELING_ID.ICE_CAVES_POOL, {state.level})
+			module.feeling_set(module.FEELING_ID.ICE_CAVES_POOL, {state.level})
 		end
 	end
 	--[[
 		Temple
 	--]]
 	if state.theme == THEME.TEMPLE then
-		module.feeling_set_once(module.FEELING_ID.SACRIFICIALPIT, {state.level})
+		module.feeling_set(module.FEELING_ID.SACRIFICIALPIT, {state.level})
 	end
 	
 	-- Currently hardcoded but keeping this here just in case

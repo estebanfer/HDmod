@@ -47,11 +47,11 @@ function module.remove_embedded_at(x, y, l)
 end
 
 function module.remove_floor_and_embedded_at(x, y, l)
-    local floor = get_grid_entity_at(x, y, l)
-    if floor ~= -1 then
+    local uid = get_grid_entity_at(x, y, l)
+    if uid ~= -1 then
 		module.remove_embedded_at(x, y, l)
-        -- get_entity(floor):destroy()
-		kill_entity(floor)
+        local floor = get_entity(uid)
+		floor:destroy() -- kill_entity(uid)
     end
 end
 

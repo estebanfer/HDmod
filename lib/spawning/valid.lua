@@ -623,23 +623,15 @@ function module.is_valid_giantfrog_spawn(x, y, l)
 end -- # TODO: Implement method for valid giantfrog spawn
 
 function module.is_valid_mammoth_spawn(x, y, l)
-	local cx, cy = x-1.5, y+1.5
-	local w, h = 4, 2
-    local entity_uids = get_entities_overlapping_hitbox(
-		0, MASK.FLOOR,
-		AABB:new(
-			cx-(w/2),
-			cy+(h/2),
-			cx+(w/2),
-			cy-(h/2)
-		),
-		l
-	)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	return (
-		#entity_uids == 0
+		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
+		and check_empty_space(x-1, y+1, l, 4, 2)
+		and is_valid_monster_floor(x+1, y-1, l)
 		and default_ground_monster_condition(x, y, l)
 	)
-end -- # TODO: Implement method for valid mammoth spawn
+end
 
 function module.is_valid_giantspider_spawn(x, y, l)
 	local cx, cy = x+.5, y-.5

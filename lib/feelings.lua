@@ -23,15 +23,16 @@ module.FEELING_ID = {
     VLAD = 17,
     VAULT = 18,
     SNOW = 19,
-    SNOWING = 20,
-    ICE_CAVES_POOL = 21,
-    ANUBIS = 22,
-    YAMA = 23
+    ICE_CAVES_POOL = 20,
+    ANUBIS = 21,
+    YAMA = 22
 }
 
 module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.HIVE] = {
 		chance = 10,
+		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.UDJAT] = {
@@ -43,29 +44,34 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.SPIDERLAIR] = {
 		chance = 12,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.DWELLING },
 		message = "My skin is crawling..."
 	},
 	[module.FEELING_ID.SNAKEPIT] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
 	[module.FEELING_ID.RESTLESS] = {
 		chance = 12,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE },
 		message = "The dead are restless!"
 	},
 	[module.FEELING_ID.TIKIVILLAGE] = { -- RESIDENT TIK-EVIL: VILLAGE
 		chance = 15,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.RUSHING_WATER] = {
 		chance = 14,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE },
 		message = "I hear rushing water!"
 	},
@@ -83,11 +89,13 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.YETIKINGDOM] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.ICE_CAVES },
 		message = "It smells like wet fur in here."
 	},
 	[module.FEELING_ID.UFO] = {
 		chance = 12,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES },
 		message = "I sense a psychic presence here!"
@@ -102,6 +110,7 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.SACRIFICIALPIT] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.TEMPLE },
 		message = "You hear prayers to Kali!"
 	},
@@ -124,15 +133,13 @@ module.HD_FEELING_DEFAULTS = {
 	},
 	[module.FEELING_ID.SNOW] = {
 		chance = 4,
-		themes = { THEME.ICE_CAVES }
-	},
-	[module.FEELING_ID.SNOWING] = {
-		chance = 4,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES }
 	},
 	[module.FEELING_ID.ICE_CAVES_POOL] = {
 		chance = 15,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES }
 	},

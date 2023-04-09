@@ -51,15 +51,15 @@ end
 local mothership_light_id = celib.new_custom_entity(mothership_light_set, mothership_light_update)
 celib.init()
 
-register_option_button("spawn_mlight", "spawn mlight", "", function ()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
+function module.create_mshiplight(x, y, l)
     local uid = spawn_over(ENT_TYPE.ITEM_ICESPIRE, get_grid_entity_at(x, y+1, l), 0.0, -1.0)
     celib.set_custom_entity(uid, mothership_light_id)
+end
+
+optionslib.register_entity_spawner("Mothership light", function()
+    local x, y, l = get_position(players[1].uid)
+    x, y = math.floor(x), math.floor(y)
+    module.create_mshiplight(x, y, l)
 end)
 
-function module.create_mshiplight(x, y, l)
-	local uid = spawn_over(ENT_TYPE.ITEM_ICESPIRE, get_grid_entity_at(x, y+1, l), 0.0, -1.0)
-    celib.set_custom_entity(uid, mothership_light_id)
-end
 return module

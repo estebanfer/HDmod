@@ -96,9 +96,9 @@ function module.create_critterrat(x, y, l)
     set_post_statemachine(critterrat, critterrat_update)
 end
 
-register_option_button("spawn_critterrat", "spawn_critterrat", 'spawn_critterrat', function()
-     local x, y, l = get_position(players[1].uid)
-     module.create_critterrat(x-5, y, l)
+optionslib.register_entity_spawner("Rat", function()
+    local x, y, l = get_position(players[1].uid)
+    module.create_critterrat(x-5, y, l)
 end)
 
 return module

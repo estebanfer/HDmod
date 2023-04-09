@@ -202,9 +202,9 @@ function module.create_spikeball_trap(x, y, l)
     set_post_statemachine(chain3, spikeball_chain_update)
 end
 
--- register_option_button("spawn_spikeball_trap", "spawn_spikeball_trap", 'spike_spikeball_trap', function ()
---     local x, y, l = get_position(players[1].uid)
---     module.create_spikeball_trap(x+3, y, l)
--- end)
+optionslib.register_entity_spawner("Spike ball trap", function()
+    local x, y, l = get_position(players[1].uid)
+    module.create_spikeball_trap(x+4, y, l)
+end)
 
 return module

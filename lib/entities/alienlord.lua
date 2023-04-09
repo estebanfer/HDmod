@@ -144,7 +144,7 @@ function module.create_alienlord(x, y, l)
     return alienlord
 end
 
-register_option_button("spawn_alienlord", "spawn_alienlord", 'spawn_alienlord', function()
+optionslib.register_entity_spawner("Alien lord", function()
     local x, y, l = get_position(players[1].uid)
     module.create_alienlord(x-5, y, l)
 end)

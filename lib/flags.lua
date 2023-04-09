@@ -212,7 +212,8 @@ local function onloading_levelrules()
 
 	-- Demo Handling
 	if (
-		state.level == 4
+		not options.hd_debug_demo_enable_all_worlds
+		and state.level == 4
 		and state.world == demolib.DEMO_MAX_WORLD
 		and state.screen_next ~= ON.DEATH
 	) then

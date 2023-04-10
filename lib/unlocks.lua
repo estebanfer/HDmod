@@ -91,18 +91,16 @@ function module.init()
 end
 
 -- # TODO: When placing an AREA_RAND* character coffin in the level, set an ON.FRAME check for unlocking it; if check passes, set RUN_UNLOCK_AREA[state.theme] = true
-set_callback(function(save_ctx)
-	local save_areaUnlocks_str = json.encode(module.RUN_UNLOCK_AREA)
-	save_ctx:save(save_areaUnlocks_str)
-end, ON.SAVE)
+savelib.register_save_callback(function(save_data)
+	save_data.character_unlock_areas = module.RUN_UNLOCK_AREA
+end)
 
 -- Load bools of the areas you've unlocked AREA_RAND* characters in
-set_callback(function(load_ctx)
-	local load_areaUnlocks_str = load_ctx:load()
-	if load_areaUnlocks_str ~= "" then
-		module.RUN_UNLOCK_AREA = json.decode(load_areaUnlocks_str)
+savelib.register_load_callback(function(load_data)
+	if load_data.character_unlock_areas then
+		module.RUN_UNLOCK_AREA = load_data.character_unlock_areas
 	end
-end, ON.LOAD)
+end)
 
 set_callback(function()
 	module.unlocks_load()

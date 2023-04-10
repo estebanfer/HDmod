@@ -1,5 +1,6 @@
 ---@diagnostic disable: lowercase-global
 commonlib = require 'lib.common'
+savelib = require 'lib.save'
 optionslib = require 'lib.options'
 demolib = require 'lib.demo'
 worldlib = require 'lib.worldstate'

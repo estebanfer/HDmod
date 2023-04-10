@@ -7,24 +7,31 @@ local registered_options = {}
 local warp_reset_run = false
 local entity_spawners = {}
 
-function module.register_option_bool(id, label, desc, initial_value, is_debug)
+local function reset_options()
+    options = {}
+    for _, option in ipairs(registered_options) do
+        options[option.id] = option.default_value
+    end
+end
+
+function module.register_option_bool(id, label, desc, default_value, is_debug)
     table.insert(registered_options, {
         id = id,
         type = "bool",
         label = label,
         desc = desc,
-        initial_value = initial_value,
+        default_value = default_value,
         is_debug = is_debug == true
     })
 end
 
-function module.register_option_string(id, label, desc, initial_value, is_debug)
+function module.register_option_string(id, label, desc, default_value, is_debug)
     table.insert(registered_options, {
         id = id,
         type = "string",
         label = label,
         desc = desc,
-        initial_value = initial_value,
+        default_value = default_value,
         is_debug = is_debug == true
     })
 end
@@ -60,6 +67,11 @@ end
 
 local function draw_gui(ctx)
     draw_registered_options(ctx, false)
+    if ctx:win_button("Reset options") then
+        reset_options()
+    end
+    ctx:win_text("Reset all options to their default values. This only affects script options, not saved game data such as shortcuts or character unlocks.")
+
     ctx:win_section("Dev Tools", function()
         ctx:win_indent(INDENT)
         ctx:win_text("These features are meant for HDmod testing and development. They may be broken or unstable. Use them at your own risk.")
@@ -162,11 +174,22 @@ end)
 
 register_option_callback("", options, draw_gui)
 
-set_callback(function()
-    options = {}
-    for _, option in ipairs(registered_options) do
-        options[option.id] = option.initial_value
+savelib.register_save_callback(function(save_data)
+    save_data.options = options
+end)
+
+savelib.register_load_callback(function(load_data)
+    -- Reset the options to their default values, and then overwrite them with any valid options in the load data.
+    -- Options missing from the load data will keep their default values. Unrecognized options in the load data will be ignored.
+    reset_options()
+    if load_data.options then
+        for _, option in ipairs(registered_options) do
+            local load_value = load_data.options[option.id]
+            if load_value ~= nil then
+                options[option.id] = load_value
+            end
+        end
     end
-end, ON.LOAD)
+end)
 
 return module

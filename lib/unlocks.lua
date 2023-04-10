@@ -183,8 +183,13 @@ function module.get_unlock()
 				end
 			end
 			rand_pool = commonlib.CompactList(rand_pool, n)
-			chunkPool_rand_index = math.random(1, #rand_pool)
-			unlock = rand_pool[chunkPool_rand_index]
+			if #rand_pool > 0 then
+				chunkPool_rand_index = math.random(1, #rand_pool)
+				unlock = rand_pool[chunkPool_rand_index]
+			else
+				-- # TODO: It's possible for there to be no area characters left to unlock if RUN_UNLOCK_AREA gets out of sync with the savegame data, which can happen if save.dat is deleted without also resetting character unlocks. This check is a failsafe to prevent this scenario from throwing an error. Is there a way to avoid this scenario entirely?
+				print("Warning: Attempted to spawn area unlock coffin with no valid characters left to unlock.")
+			end
 		else -- feeling/theme-based unlocks
 			local unlockconditions_feeling = {}
 			local unlockconditions_theme = {}

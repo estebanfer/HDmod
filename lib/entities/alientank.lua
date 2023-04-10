@@ -1,10 +1,10 @@
 local module = {}
--- WIP: Animationlib?
--- also: the alientank bounces off the floor when touches it on air instead of staying still on the x axis
 
 -- Original on Spelunky HD:
 -- if quiet on one tile: only decrease reload timer on reloading state
 -- if moving: always decrease reload timer (though doesn't seem correct)
+-- Reload timer: time it stays without moving after shooting
+-- Bomb timer: time til it will be able to shoot
 
 local animationlib = require "animation"
 
@@ -22,7 +22,7 @@ end
 local TANK_STATE <const> = {
   IDLE = 0,
   CHANGING_DIRECTION = 1,
-  RELOADING = 2 --waiting after shooting
+  RELOADING = 2 --shooting / waiting after shooting
 }
 local FRAME_TIME <const> = 4
 local ANIMATIONS <const> = {
@@ -30,6 +30,7 @@ local ANIMATIONS <const> = {
   SHOOTING = {9, 8, 7, 6, frames = 4, frame_time = 2},
   CHANGING_DIRECTION = {5, 4, 3, frames = 3}
 }
+local TANK_VELOCITY <const> = 0.025
 
 local alien_tank_texture_id
 do
@@ -44,111 +45,163 @@ do
 end
 
 local alientank_type = EntityDB:new(get_type(ENT_TYPE.MONS_FROG))
-alientank_type.friction = 0
---alientank_type.sound_killed_by_player = VANILLA_SOUND
+alientank_type.friction = 0.0
+
+local function alientank_update_onfloor(tank, tank_data)
+  local x, y, layer = get_position(tank.uid)
+  local dir_sign = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
+  if (is_floor_at(x + (0.6 * dir_sign), y, layer)
+      or not is_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
+  then
+    if (not is_floor_at(x + (0.6 * -dir_sign), y, layer)
+      and is_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
+    then
+      tank_data.state = TANK_STATE.CHANGING_DIRECTION
+      animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
+      tank.velocityx = 0.0
+      tank.idle_counter = 0
+    else
+      tank.velocityx = 0.0
+      local target = get_entities_at(0, MASK.PLAYER, x, y, layer, 4.0)[1]
+      if target then
+        local px = get_position(target)
+        if (px - x < 0) ~= test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
+          tank_data.state = TANK_STATE.CHANGING_DIRECTION
+          animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
+          tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
+          tank.idle_counter = 0
+        end
+      end
+    end
+  else
+    tank.velocityx = TANK_VELOCITY
+    if test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
+      tank.velocityx = tank.velocityx * -1
+    end
+    tank_data.reload_timer = tank_data.reload_timer - 1
+    if tank_data.reload_timer <= 0 then
+      tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
+    end
+  end
+end
+
+local function alientank_update_idle(tank, tank_data)
+  if tank_data.animation_timer == 0 then
+    animationlib.set_animation(tank_data, tank_data.animation_state, FRAME_TIME)
+  end
+  if tank.stun_timer > 0 then
+    if tank.standing_on_uid ~= -1 then
+      tank.velocityx = 0
+    end
+    return
+  end
+  
+  if tank.standing_on_uid == -1 then
+    -- do not bounce on walls when on air
+    if (tank.velocityx > 0) == test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
+      tank.velocityx = 0
+    end
+    -- Continue moving after touching spring trap
+    -- The tank gets updated as it was on floor when touching the spring trap in HD,
+    -- making it to not be stuck there on certain situations, so we have to do the same
+    if tank.velocityy > 0.28
+        and get_entity_type(get_grid_entity_at(math.floor(tank.x+.5), math.floor(tank.y+.5), tank.layer)) == ENT_TYPE.FLOOR_SPRING_TRAP
+    then
+      -- make it be closer to the floor for the floor checks
+      tank.y = tank.y - 0.5
+      alientank_update_onfloor(tank, tank_data)
+      tank.y = tank.y + 0.5
+    end
+  else
+    alientank_update_onfloor(tank, tank_data)
+  end
+  tank_data.bomb_timer = math.max(tank_data.bomb_timer - 1, 0)
+  local spotted_player = false
+  if tank_data.bomb_timer <= 0 then
+    local x, y, layer = get_position(tank.uid)
+    local target = get_entities_at(0, MASK.PLAYER, x, y, layer, 6.0)[1]
+    local px, py = get_position(target or -1)
+    if target and (px - x < 0) == test_flag(tank.flags, ENT_FLAG.FACING_LEFT)
+      and y - 2.0 <= py then
+      tank_data.state = TANK_STATE.RELOADING;
+      tank_data.bomb_timer = 150
+      spotted_player = true
+      animationlib.set_animation(tank_data, ANIMATIONS.SHOOTING, ANIMATIONS.SHOOTING.frame_time)
+    end
+  end
+end
+
+local function alientank_update_reloading(tank, tank_data)
+  if tank_data.animation_timer == 0 then
+    if tank_data.animation_state == ANIMATIONS.SHOOTING then
+      -- tank_data.state = TANK_STATE.IDLE
+      local dir = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
+      local x, y, layer = get_position(tank.uid)
+      spawn(ENT_TYPE.ITEM_BOMB, x + 0.6 * dir, y + 0.1, layer, 0.12*dir, 0.08)
+    end
+    animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
+  end
+
+  if tank.stun_timer > 0 then return end
+
+  if tank_data.animation_state == ANIMATIONS.IDLE and tank_data.reload_timer <= 0 then
+    tank_data.state = TANK_STATE.IDLE
+    tank_data.reload_timer = 200
+  else
+    tank_data.reload_timer = tank_data.reload_timer - 1
+    -- stop moving, not immediately
+    if tank.standing_on_uid ~= -1 then
+      if math.abs(tank.velocityx) > 0.015 then
+        tank.velocityx = tank.velocityx + (0.015 * (tank.velocityx > 0 and -1.0 or 1.0))
+      else
+        tank.velocityx = 0.0
+      end
+    end
+  end
+end
 
 ---@param tank Frog
 local function alientank_update(tank)
   tank.pause = true
   local tank_data = tank.user_data
+
+  -- check for camera stun (stun timer is set to 1 when camera-stunned, couldn't find any better way to detect camera stun)
+  if tank.stun_timer == 1 then
+    if not tank_data.is_stunned or (
+        --make sure to not un-stun if someone took a photo again
+        tank_data.last_stun_timer == 2
+        and test_flag(tank.flags, ENT_FLAG.FACING_LEFT) == tank_data.was_facing_left
+    ) then
+      tank_data.is_stunned = not tank_data.is_stunned
+    end
+    if tank_data.is_stunned then
+      --undo frog camera stun flip
+      tank.flags = tank_data.was_facing_left
+        and set_flag(tank.flags, ENT_FLAG.FACING_LEFT)
+        or clr_flag(tank.flags, ENT_FLAG.FACING_LEFT)
+      tank.stun_timer = 75
+      tank.velocityx = 0.0
+    end
+  end
+  tank_data.last_stun_timer = tank.stun_timer
+  
   if tank_data.state == TANK_STATE.IDLE then
-    local dir_sign = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-    if tank.standing_on_uid ~= -1 then
-      local x, y, layer = get_position(tank.uid)
-      if (is_floor_at(x + (0.6 * dir_sign), y, layer)
-          or not is_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
-      then
-        if (not is_floor_at(x + (0.6 * -dir_sign), y, layer)
-          and is_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
-        then
-          tank_data.state = TANK_STATE.CHANGING_DIRECTION
-          animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
-          tank.velocityx = 0.0
-          tank.idle_counter = 0
-        else
-          tank.velocityx = 0.0
-          local target = get_entities_at(0, MASK.PLAYER, x, y, layer, 4.0)[1]
-          if target then
-            local px = get_position(target)
-            if (px - x < 0) ~= test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
-              tank_data.state = TANK_STATE.CHANGING_DIRECTION
-              animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
-              tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
-              tank.idle_counter = 0
-            end
-          end
-        end
-      else
-        tank.velocityx = 0.025
-        if test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
-          tank.velocityx = tank.velocityx * -1
-        end
-        --TODO:
-        tank_data.reload_timer = tank_data.reload_timer - 1
-        if tank_data.reload_timer <= 0 then
-          tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
-        end
-      end
-    end
-    tank_data.bomb_timer = math.max(tank_data.bomb_timer - 1, 0)
-    -- for alien as base
-    -- if tank.state == 9 and tank.move_state == 1 then
-    --   tank.move_state = 2
-    -- end
-    local spotted_player = false
-    if tank_data.bomb_timer <= 0 then
-      local x, y, layer = get_position(tank.uid)
-      local target = get_entities_at(0, MASK.PLAYER, x, y, layer, 6.0)[1]
-      local px, py = get_position(target or -1)
-      if target and (px - x < 0) == test_flag(tank.flags, ENT_FLAG.FACING_LEFT)
-        and y - 2.0 <= py then
-        if tank.standing_on_uid ~= -1 then
-          tank.velocityx = 0.0
-        end
-        tank_data.state = TANK_STATE.RELOADING;
-        tank_data.bomb_timer = 150
-        spotted_player = true
-        animationlib.set_animation(tank_data, ANIMATIONS.SHOOTING, ANIMATIONS.SHOOTING.frame_time)
-      end
-    end
-    if not spotted_player then
-      if tank_data.animation_timer == 0 then
-        animationlib.set_animation(tank_data, tank_data.animation_state, FRAME_TIME)
-      end
-    end
+    alientank_update_idle(tank, tank_data)
   elseif tank_data.state == TANK_STATE.CHANGING_DIRECTION then
-    -- messpect(tank_data.state, tank_data.animation_state)
     if tank_data.animation_timer == 0 then
       tank_data.state = TANK_STATE.IDLE
       animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
-      tank.flags = tank.flags ~ b(ENT_FLAG.FACING_LEFT)
+      tank.flags = flip_flag(tank.flags, ENT_FLAG.FACING_LEFT)
+      tank_data.was_facing_left = test_flag(tank.flags, ENT_FLAG.FACING_LEFT)
     end
   elseif tank_data.state == TANK_STATE.RELOADING then
-    if tank_data.animation_timer == 0 then
-      if tank_data.animation_state == ANIMATIONS.SHOOTING then
-        -- tank_data.state = TANK_STATE.IDLE
-        local dir = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-        local x, y, layer = get_position(tank.uid)
-        spawn(ENT_TYPE.ITEM_BOMB, x + 0.6 * dir, y + 0.1, layer, 0.12*dir, 0.08)
-      end
-      animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
-    end
-    if tank_data.animation_state == ANIMATIONS.IDLE and tank_data.reload_timer == 0 then
-      tank_data.state = TANK_STATE.IDLE
-      tank_data.reload_timer = 200
-    else
-      tank_data.reload_timer = tank_data.reload_timer - 1
-    end
+    alientank_update_reloading(tank, tank_data)
   end
   tank.animation_frame = animationlib.get_animation_frame(tank_data.animation_state, tank_data.animation_timer)
   tank_data.animation_timer = tank_data.animation_timer - 1
 end
 
----@param x integer
----@param y integer
----@param layer integer
-function module.create_alientank(x, y, layer)
-  local uid = spawn(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
+function set_alientank(uid)
   local tank = get_entity(uid)
   tank.type = alientank_type
   tank.width, tank.height = 1.25, 1.25
@@ -158,18 +211,36 @@ function module.create_alientank(x, y, layer)
   tank:set_texture(alien_tank_texture_id)
   tank.user_data = {
     bomb_timer = 60,
-    reload_timer = 0,
+    reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES),
     state = 0,
     animation_state = ANIMATIONS.IDLE,
-    animation_timer = 0
+    animation_timer = 0,
+    -- To detect if the facing direction was changed by camera
+    was_facing_left = test_flag(tank.flags, ENT_FLAG.FACING_LEFT),
+    -- More variables to make camera stun work properly
+    last_stun_timer = 0,
+    is_stunned = false,
   }
   animationlib.set_animation(tank.user_data, ANIMATIONS.IDLE, FRAME_TIME)
   set_post_statemachine(uid, alientank_update)
 end
 
+function spawn_alientank(x, y, layer)
+  local uid = spawn(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
+  set_alientank(uid)
+end
+
+---@param x integer
+---@param y integer
+---@param layer integer
+function module.create_alientank(x, y, layer)
+  local uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
+  set_alientank(uid)
+end
+
 register_option_button("spawn_alien", "spawn alien", "", function()
   local x, y, l = get_position(players[1].uid)
-  module.create_alientank(x+1, y, l)
+  spawn_alientank(x+1, y, l)
 end)
 
 return module

@@ -4,6 +4,16 @@
     hash_to_stringid
     original string
 ]]
+-- BASIC GUIDE ON HOW TO IMPLEMENT CUSTOM DEATH MESSAGES FOR FUTURE ENTITIES:
+--[[
+    1: Make sure your custom entity has a user_data table that contains a value called "ent_type",
+    2: This value should contain an HD_ENT_TYPE value, you can add to this in the file "hdentnew.lua"
+    3: Find the hash for your base entities death messages. So if our custom entity was based on MONS_SNAKE, we would need that one
+    4: Add them to this local table "strings", following the semantic laid out already.
+    5: Do the same for the local table "I". Your new values should increment the same way the others are.
+    6: Now that you've added all the necessary data for the sysytem, it's time to do add the if statement
+    7: You need to check for your HD_ENT_TYPE, then follow the already existing semantic for changing the strings.
+]]
 local strings = {
     --GENERIC DEATH TITLE
     hash_to_stringid(0xfa9ebccc);
@@ -59,6 +69,12 @@ local strings = {
     --LAMASSU TEXT
     hash_to_stringid(0xa954e7a6);
     get_string(hash_to_stringid(0xa954e7a6));
+    --ANUBIS TITLE
+    hash_to_stringid(0xe640fd5c);
+    get_string(hash_to_stringid(0xe640fd5c));
+    --ANUBIS TEXT
+    hash_to_stringid(0x2a8b3bd5);
+    get_string(hash_to_stringid(0x2a8b3bd5));
 }
 local I = {
     GENERIC_DEATH_TITLE_ID = 1; 
@@ -97,6 +113,10 @@ local I = {
     LAMASSU_TITLE_STRING = 34;
     LAMASSU_TEXT_ID = 35;
     LAMASSU_TEXT_STRING = 36;
+    ANUBIS_TITLE_ID = 37;
+    ANUBIS_TITLE_STRING = 38;
+    ANUBIS_TEXT_ID = 39;
+    ANUBIS_TEXT_STRING = 40;
 }
 local function reset_strings()
     for i=1, #strings do
@@ -106,17 +126,17 @@ local function reset_strings()
     end
 end
 local function update_custom_death_messages()
-    players[1]:set_post_kill(function(self, corpse_destroyed, responsible)
-        if responsible == nil then return end
+    players[1]:set_pre_kill(function(self, corpse_destroyed, responsible)
+        if responsible == nil or self == nil then return false end
         if type(responsible.user_data) == "table" then
             local d = responsible.user_data
             if d.ent_type == HD_ENT_TYPE.MONS_BLACK_KNIGHT then
                 change_string(strings[I.TIKIMAN_TITLE_ID], "DETHRONED")
-                change_string(strings[I.TIKIMAN_TEXT_ID], "The dark fiend has decided your fate")
+                change_string(strings[I.TIKIMAN_TEXT_ID], "The dark fiend has decided your fate.")
             end
             if d.ent_type == HD_ENT_TYPE.MONS_GREEN_KNIGHT then
                 change_string(strings[I.CAVEMAN_TITLE_ID], "FELLED")
-                change_string(strings[I.CAVEMAN_TEXT_ID], "Art thou slain by thy verdant knight")                
+                change_string(strings[I.CAVEMAN_TEXT_ID], "Art thou slain by thy verdant knight.")                
             end
             if d.ent_type == HD_ENT_TYPE.MONS_BABY_WORM then
                 change_string(strings[I.ALIEN_TITLE_ID], "BITTEN")
@@ -124,15 +144,15 @@ local function update_custom_death_messages()
             end
             if d.ent_type == HD_ENT_TYPE.MONS_BACTERIUM then
                 change_string(strings[I.MANTRAP_TITLE_ID], "INFECTED")
-                change_string(strings[I.MANTRAP_TEXT_ID], "I should've kept some distance")   
+                change_string(strings[I.MANTRAP_TEXT_ID], "I should've kept some distance!")   
             end
             if d.ent_type == HD_ENT_TYPE.MONS_GIANT_FROG then
                 change_string(strings[I.FROG_TITLE_ID], "CROAKED")
-                change_string(strings[I.FROG_TEXT_ID], "I've been hopped till I dropped")                   
+                change_string(strings[I.FROG_TEXT_ID], "I've been hopped till I dropped.")                   
             end
             if d.ent_type == HD_ENT_TYPE.MONS_HELL_MINIBOSS then
                 change_string(strings[I.QUILLBACK_TITLE_ID], "CLOBBERED")
-                change_string(strings[I.QUILLBACK_TEXT_ID], "I Got butchered by an ungulate...")                   
+                change_string(strings[I.QUILLBACK_TEXT_ID], "I Got butchered by an ungulate.")                   
             end
             if d.ent_type == HD_ENT_TYPE.MONS_PIRANHA then
                 change_string(strings[I.TADPOLE_TITLE_ID], "MUNCHED")
@@ -140,9 +160,14 @@ local function update_custom_death_messages()
             end
             if d.ent_type == HD_ENT_TYPE.MONS_MAMMOTH then
                 change_string(strings[I.LAMASSU_TITLE_ID], "CRUSHED")
-                change_string(strings[I.LAMASSU_TEXT_ID], "The no longer extinct mammoth used me as a welcome mat")                   
+                change_string(strings[I.LAMASSU_TEXT_ID], "The no longer extinct mammoth used me as a welcome mat.")                   
+            end
+            if d.ent_type == HD_ENT_TYPE.MONS_ALIENLORD then
+                change_string(strings[I.ANUBIS_TITLE_ID], "BRAIN WIPED")
+                change_string(strings[I.ANUBIS_TEXT_ID], "The Queen's subjugates saw me as an experiment.")                   
             end
         end
+        return false
     end)
 end
 

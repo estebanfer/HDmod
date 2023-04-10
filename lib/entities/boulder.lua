@@ -1,5 +1,10 @@
 local module = {}
 
+optionslib.register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers", nil, false) -- Defaults to HD
+-- # TODO: Influence the velocity of the boulder on every frame.
+-- optionslib.register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", nil, false)
+optionslib.register_option_bool("hd_debug_boulder_info", "Boulder - Show info", nil, false, true)
+
 local BOULDER_UID = nil
 local BOULDER_SX = nil
 local BOULDER_SY = nil
@@ -71,7 +76,7 @@ function module.onframe_ownership_crush_prevention()
             for _, block in ipairs(blocks) do
                 kill_entity(block)
             end
-            if options.hd_debug_info_boulder == true then
+            if options.hd_debug_boulder_info == true then
                 local touching = get_entities_overlapping_hitbox(
                     0,
                     0x1,
@@ -92,7 +97,7 @@ end
 
 ---@param draw_ctx GuiDrawContext
 set_callback(function(draw_ctx)
-	if options.hd_debug_info_boulder == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_boulder_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if (
 			state.theme == THEME.DWELLING and
 			(state.level == 2 or state.level == 3 or state.level == 4)

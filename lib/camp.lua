@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_testing_door", "Enable testing door in camp", nil, false, true)
+
 module.DOOR_TESTING_UID = nil
 module.DOOR_TUTORIAL_UID = nil
 

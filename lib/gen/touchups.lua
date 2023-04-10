@@ -2,6 +2,8 @@ local removelib = require 'lib.spawning.remove'
 
 local module = {}
 
+optionslib.register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning", nil, false) -- Defaults to HD
+
 local function onlevel_create_impostorlake()
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
 		local x, y = 22.5, 88.5--80.5

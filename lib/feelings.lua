@@ -3,6 +3,9 @@
 
 local module = {}
 
+optionslib.register_option_bool("hd_debug_feelings_toast_disable", "Feelings - Disable script-enduced toasts", nil, false, true)
+optionslib.register_option_bool("hd_debug_feelings_info", "Feelings - Show info", nil, false, true)
+
 module.FEELING_ID = {
     UDJAT = 1,
     WORMTONGUE = 2,
@@ -419,7 +422,7 @@ end
 function module.onlevel_toastfeeling()
 	if (
 		MESSAGE_FEELING ~= nil and
-		options.hd_debug_feelingtoast_disable == false
+		options.hd_debug_feelings_toast_disable == false
 	) then
 		cancel_toast()
 		set_timeout(function()
@@ -449,7 +452,7 @@ end, ON.TOAST)
 
 ---@params draw_ctx GuiDrawContext
 set_callback(function(draw_ctx)
-	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_feelings_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		local text_x = -0.95
 		local text_y = -0.35
 		local white = rgba(255, 255, 255, 255)

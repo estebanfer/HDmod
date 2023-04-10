@@ -16,6 +16,8 @@ local alienlordlib = require 'lib.entities.alienlord'
 
 local module = {}
 
+optionslib.register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple", nil, false) -- Defaults to S2
+-- optionslib.register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", nil, false) -- Defaults to S2
 
 -- retains HD tilenames
 module.HD_TILENAME = {

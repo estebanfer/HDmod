@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", nil, false)
+
 local gameframe_cb = -1
 local ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 local acid_tick = ACID_POISONTIME

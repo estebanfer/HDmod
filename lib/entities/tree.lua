@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD", nil, false) -- Defaults to HD
+
 local hauntedface_texture_def
 local hauntedgrass_texture_def
 do

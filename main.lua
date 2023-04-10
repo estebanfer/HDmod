@@ -48,40 +48,9 @@ meta.version = "1.03.1"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
-optionslib.register_option_bool("hd_debug_boss_exits_unlock", "Unlock boss exits", nil,													false, true)
-optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Disable custom music for special levels", nil,					false, true)
-optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Disable custom music for the title screen", nil,				false, true)
-optionslib.register_option_bool("hd_debug_feelingtoast_disable", "Disable script-enduced feeling toasts", nil,							false, true)
-optionslib.register_option_bool("hd_debug_info_boss", "Info - Bossfight", nil,															false, true)
-optionslib.register_option_bool("hd_debug_info_boulder", "Info - Boulder", nil,															false, true)
-optionslib.register_option_bool("hd_debug_info_feelings", "Info - Level Feelings", nil,													false, true)
-optionslib.register_option_bool("hd_debug_info_path", "Info - Path", nil,																false, true)
-optionslib.register_option_bool("hd_debug_info_tongue", "Info - Wormtongue", nil,														false, true)
-optionslib.register_option_bool("hd_debug_info_worldstate", "Info - Worldstate", nil,													false, true)
-optionslib.register_option_bool("hd_debug_scripted_enemies_show", "Enable visibility of entities used in custom enemy behavior", nil,	false, true)
-optionslib.register_option_bool("hd_debug_item_botd_give", "Start with item - Book of the Dead", nil,									false, true)
-optionslib.register_option_bool("hd_debug_scripted_levelgen_disable", "Disable scripted level generation", nil,							false, true)
-optionslib.register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist", "Debug: Blacklist scripted level generation tilecodes", nil, "", true)
-optionslib.register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp", nil,										false, true)
-
-optionslib.register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple", nil,					false) -- Defaults to S2
--- optionslib.register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", nil,				false) -- Defaults to S2
-optionslib.register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers", nil,								false) -- Defaults to HD
-optionslib.register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Allow the ghost to split", nil,									false) -- Defaults to HD
-optionslib.register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed", nil,								false) -- Defaults to S2
-optionslib.register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Use S2 spawntimes: 2:30->3:00 and 2:00->2:30 when cursed.", nil,	false) -- Defaults to HD
-optionslib.register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning", nil,												false) -- Defaults to HD
-optionslib.register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD", nil,							false) -- Defaults to HD
-
--- # TODO: revise from the old system, removing old uses.
--- Then, rename it to `hd_og_use_s2_spawns`
--- Reimplement it into `is_valid_*_spawn` methods to change spawns.
-optionslib.register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of HD procedural spawning conditions", nil, false) -- Defaults to HD
-
--- # TODO: Influence the velocity of the boulder on every frame.
--- optionslib.register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", nil, false)
-
-optionslib.register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", nil, false)
+optionslib.register_option_bool("hd_debug_info_boss", "Boss - Show info", nil, false, true)
+optionslib.register_option_bool("hd_debug_scripted_enemies_show", "Enable visibility of entities used in custom entity behavior", nil, false, true)
+optionslib.register_option_bool("hd_debug_scripted_levelgen_disable", "Level gen - Disable scripted level generation", nil, false, true)
 
 set_callback(function()
 	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05

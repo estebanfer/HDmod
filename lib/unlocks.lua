@@ -97,7 +97,10 @@ end)
 
 -- Load bools of the areas you've unlocked AREA_RAND* characters in
 savelib.register_load_callback(function(load_data)
-	if load_data.character_unlock_areas then
+	if load_data.format == nil and #load_data == 4 then
+		-- Handle the old format where the entire save file is the character unlock areas.
+		module.RUN_UNLOCK_AREA = load_data
+	elseif load_data.character_unlock_areas then
 		module.RUN_UNLOCK_AREA = load_data.character_unlock_areas
 	end
 end)

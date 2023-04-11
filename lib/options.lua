@@ -90,16 +90,13 @@ module.register_dev_section("Debug Options", function(ctx)
     draw_registered_options(ctx, true)
 end)
 
-local function draw_warp_button(ctx, name, world, level, theme, is_tutorial)
+local function draw_warp_button(ctx, name, world, level, theme, world_state)
     if ctx:win_button(name) then
         if warp_reset_run then
             state.quest_flags = QUEST_FLAG.RESET
         end
-        if is_tutorial then
-            worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.TUTORIAL
-        else
-            worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
-        end
+        worldlib.HD_WORLDSTATE_STATE = world_state or worldlib.HD_WORLDSTATE_STATUS.NORMAL
+        -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
         warp(world, level, theme)
     end
 end
@@ -107,11 +104,11 @@ end
 module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Camp", 1, 1, THEME.BASE_CAMP)
     ctx:win_inline()
-    draw_warp_button(ctx, "T1", 1, 1, THEME.DWELLING, true)
+    draw_warp_button(ctx, "Tut 1", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TUTORIAL)
     ctx:win_inline()
-    draw_warp_button(ctx, "T2", 1, 2, THEME.DWELLING, true)
+    draw_warp_button(ctx, "Tut 2", 1, 2, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TUTORIAL)
     ctx:win_inline()
-    draw_warp_button(ctx, "T3", 1, 3, THEME.DWELLING, true)
+    draw_warp_button(ctx, "Tut 3", 1, 3, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TUTORIAL)
 
     draw_warp_button(ctx, "1-1", 1, 1, THEME.DWELLING)
     ctx:win_inline()
@@ -160,6 +157,10 @@ module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "5-3", 5, 3, THEME.VOLCANA)
     ctx:win_inline()
     draw_warp_button(ctx, "5-4", 5, 4, THEME.VOLCANA)
+
+    draw_warp_button(ctx, "Test 1", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
+    ctx:win_inline()
+    draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
     warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
 end)

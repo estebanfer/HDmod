@@ -92,10 +92,6 @@ local function mammoth_update(ent)
         end
     end
 end
-set_callback(function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_mammoth(x-3, y, l)
-end, ON.START)
 function module.create_mammoth(x, y, l)
     local mammoth = spawn(ENT_TYPE.MONS_LAMASSU, x, y, l, 0, 0)
     mammoth_set(mammoth)

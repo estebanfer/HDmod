@@ -10,7 +10,11 @@ local orig_hor_scattering = snow.hor_scattering
 local orig_ver_scattering = snow.ver_scattering
 local orig_hor_velocity = snow.hor_velocity
 local orig_ver_velocity = snow.ver_velocity
-
+do
+    local special_snowman_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+    special_snowman_texture_def.texture_path = 'res/special_snowman.png'
+    special_snowman_texture_id = define_texture(special_snowman_texture_def)
+end
 function module.set_icecaves_diamonddust_particles(custom)
     if custom then
         snow.scale_x = orig_scale_x*1.1
@@ -53,6 +57,10 @@ function module.add_snow_to_floor()
                         local offset_y = 0.5 + (0.4 * scale)
                         local snowman = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_GENERIC, floor_uid, offset_x, offset_y))
                         snowman:set_texture(TEXTURE.DATA_TEXTURES_ITEMS_0)
+                        -- Rare chance for the Guy Spelunky snowman instead of the regular one
+                        if prng:random_chance(5, PRNG_CLASS.LEVEL_DECO) then
+                            snowman:set_texture(special_snowman_texture_id)
+                        end
                         snowman.animation_frame = 221
                         snowman:set_draw_depth(12)
                         snowman.width = prng:random_chance(2, PRNG_CLASS.LEVEL_DECO) and scale or -scale

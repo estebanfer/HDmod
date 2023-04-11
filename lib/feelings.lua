@@ -319,8 +319,6 @@ function module.onlevel_set_feelings()
 		
 		feeling_set(module.FEELING_ID.SNOW, {state.level})
 
-		-- # TODO: Exception for MOAI spawn:
-			-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
 		if state.level == 2 then
 			module.feeling_set_once(module.FEELING_ID.MOAI, {2, 3})
 		end
@@ -366,6 +364,15 @@ function module.onlevel_set_feelings()
 	--]]
 	if state.theme == THEME.TEMPLE then
 		feeling_set(module.FEELING_ID.SACRIFICIALPIT, {state.level})
+	end
+	--[[
+		Neo Bab + Eggplant World
+	]]
+	-- We check if the Moai needs to spawn in 3-4 if we are in the Mothership (Neo Bab) or Worm (Eggplant World) on level 3.
+	if state.theme == THEME.NEO_BABYLON or state.theme == THEME.EGGPLANT_WORLD then
+		if state.level == 3 and state.world == 3 then
+			feeling_set(module.FEELING_ID.MOAI, {4})
+		end
 	end
 	
 	-- Currently hardcoded but keeping this here just in case

@@ -45,9 +45,6 @@ function module.create_critterbabyspider(x, y, l)
     return critterbabyspider
 end
 
-optionslib.register_entity_spawner("Baby spider", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_critterbabyspider(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Baby spider", module.create_critterbabyspider)
 
 return module

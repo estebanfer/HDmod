@@ -210,14 +210,7 @@ function module.create_oxface(x, y, l)
     create_hell_miniboss(x, y, l, false)
 end
 
-optionslib.register_entity_spawner("Horse Head", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_horsehead(x-5, y, l)
-end)
-
-optionslib.register_entity_spawner("Ox Face", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_oxface(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Horse Head", module.create_horsehead)
+optionslib.register_entity_spawner("Ox Face", module.create_oxface)
 
 return module

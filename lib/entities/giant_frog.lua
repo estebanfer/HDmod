@@ -236,9 +236,6 @@ function module.create_giantfrog(grid_x, grid_y, layer)
     celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)
 end
 
-optionslib.register_entity_spawner("Giant frog", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_giantfrog(x+2, y, l)
-end)
+optionslib.register_entity_spawner("Giant frog", module.create_giantfrog)
 
 return module

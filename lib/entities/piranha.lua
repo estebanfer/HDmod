@@ -168,9 +168,6 @@ function module.create_piranha(x, y, l)
 	end
 end
 
-optionslib.register_entity_spawner("Piranha", function ()
-    local x, y, l = get_position(players[1].uid)
-    module.create_piranha(x - 3, y, l)
-end)
+optionslib.register_entity_spawner("Piranha", module.create_piranha)
 
 return module

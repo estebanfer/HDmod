@@ -96,9 +96,6 @@ function module.create_critterrat(x, y, l)
     set_post_statemachine(critterrat, critterrat_update)
 end
 
-optionslib.register_entity_spawner("Rat", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_critterrat(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Rat", module.create_critterrat)
 
 return module

@@ -72,9 +72,6 @@ function module.create_greenknight(x, y, l)
     set_on_destroy(green_knight, become_caveman)
 end
 
-optionslib.register_entity_spawner("Green knight", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_greenknight(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Green knight", module.create_greenknight)
 
 return module

@@ -251,11 +251,7 @@ function module.create_bacterium(x, y, layer)
     spawn_bacterium(x, y, layer, 1)
 end
 
-optionslib.register_entity_spawner("Bacterium", function()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    module.create_bacterium(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Bacterium", module.create_bacterium, true)
 
 module.id = bacterium_id
 return module

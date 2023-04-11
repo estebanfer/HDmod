@@ -226,10 +226,6 @@ function module.spawn_turret(x, y, l)
     celib.set_custom_entity(uid, turret_id)
 end
 
-optionslib.register_entity_spawner("Laser turret", function()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    module.spawn_turret(x, y, l)
-end)
+optionslib.register_entity_spawner("Laser turret", module.spawn_turret, true)
 
 return module

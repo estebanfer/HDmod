@@ -79,10 +79,6 @@ set_post_entity_spawn(function(self)
     end)
 end, SPAWN_TYPE.ANY, MASK.MONSTER | MASK.PLAYER | MASK.MOUNT)
 
-optionslib.register_entity_spawner("Snowball", function()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    module.create_snowball(x+2, y, l)
-end)
+optionslib.register_entity_spawner("Snowball", module.create_snowball, true)
 
 return module

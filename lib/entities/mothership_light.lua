@@ -56,10 +56,6 @@ function module.create_mshiplight(x, y, l)
     celib.set_custom_entity(uid, mothership_light_id)
 end
 
-optionslib.register_entity_spawner("Mothership light", function()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    module.create_mshiplight(x, y, l)
-end)
+optionslib.register_entity_spawner("Mothership light", module.create_mshiplight, true)
 
 return module

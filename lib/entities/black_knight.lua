@@ -156,9 +156,6 @@ function module.create_black_knight(x, y, l)
     set_pre_collision2(black_knight, burst_out_of_mantrap)
 end
 
-optionslib.register_entity_spawner("Black knight", function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_black_knight(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Black knight", module.create_black_knight)
 
 return module

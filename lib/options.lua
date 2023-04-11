@@ -6,6 +6,8 @@ local dev_sections = {}
 local registered_options = {}
 local warp_reset_run = false
 local entity_spawners = {}
+local entity_spawner_choice_string
+local entity_spawner_section_open = false
 
 local function reset_options()
     options = {}
@@ -36,11 +38,22 @@ function module.register_option_string(id, label, desc, default_value, is_debug)
     })
 end
 
-function module.register_entity_spawner(name, spawn_func)
+-- Registers an option that will be included in saves and loads, but will not be automatically displayed in the options UI.
+function module.register_option_hidden(id, default_value)
+    table.insert(registered_options, {
+        id = id,
+        default_value = default_value,
+        is_hidden = true
+    })
+end
+
+function module.register_entity_spawner(name, spawn_func, snap_to_grid)
     table.insert(entity_spawners, {
         name = name,
-        spawn_func = spawn_func
+        spawn_func = spawn_func,
+        snap_to_grid = snap_to_grid == true
     })
+    entity_spawner_choice_string = nil
 end
 
 function module.register_dev_section(name, callback)
@@ -52,7 +65,7 @@ end
 
 local function draw_registered_options(ctx, is_debug)
     for _, option in pairs(registered_options) do
-        if option.is_debug == is_debug then
+        if not option.is_hidden and option.is_debug == is_debug then
             if option.type == "bool" then
                 options[option.id] = ctx:win_check(option.label, options[option.id])
             elseif option.type == "string" then
@@ -165,13 +178,77 @@ module.register_dev_section("Warps", function(ctx)
     warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
 end)
 
-module.register_dev_section("Entity Spawners", function(ctx)
-    for _, entity_spawner in pairs(entity_spawners) do
-        if ctx:win_button(entity_spawner.name) then
-            entity_spawner.spawn_func()
+-- Calculates the selected entity spawner position, or returns nil if the position can't be determined.
+local function compute_entity_spawner_position()
+    if players[1] then
+        local entity_spawner = entity_spawners[options.entity_spawner_index]
+        if entity_spawner then
+            local x, y, l = get_position(players[1].uid)
+            x = x + options.entity_spawner_offset_x
+            y = y + options.entity_spawner_offset_y
+            if entity_spawner.snap_to_grid then
+                x = math.floor(x + 0.5)
+                y = math.floor(y + 0.5)
+            end
+            return x, y, l
+        end
+    end
+end
+
+module.register_option_hidden("entity_spawner_index", 1)
+module.register_option_hidden("entity_spawner_offset_x", -5)
+module.register_option_hidden("entity_spawner_offset_y", 0)
+module.register_option_hidden("entity_spawner_position_visible", true)
+module.register_dev_section("Entity Spawner", function(ctx)
+    entity_spawner_section_open = true
+    if not entity_spawner_choice_string then
+        local choice_names = {}
+        for _, entity_spawner in pairs(entity_spawners) do
+            table.insert(choice_names, entity_spawner.name)
+        end
+        entity_spawner_choice_string = table.concat(choice_names, "\0").."\0\0"
+    end
+    ctx:win_width(0.5)
+    options.entity_spawner_index = ctx:win_combo("Entity", options.entity_spawner_index, entity_spawner_choice_string)
+
+    ctx:win_text("Position (relative to player 1)")
+    ctx:win_text("X")
+    ctx:win_inline()
+    ctx:win_width(0.4)
+    options.entity_spawner_offset_x = ctx:win_drag_float("##entity_spawner_offset_x", options.entity_spawner_offset_x, -8, 8)
+    ctx:win_inline()
+    ctx:win_text("Y")
+    ctx:win_width(0.4)
+    ctx:win_inline()
+    options.entity_spawner_offset_y = ctx:win_drag_float("##entity_spawner_offset_y", options.entity_spawner_offset_y, -4, 4)
+    options.entity_spawner_position_visible = ctx:win_check("Show position in world", options.entity_spawner_position_visible)
+
+    if ctx:win_button("Spawn entity") then
+        local entity_spawner = entity_spawners[options.entity_spawner_index]
+        if entity_spawner then
+            local x, y, l = compute_entity_spawner_position()
+            if x and y and l then
+                entity_spawner.spawn_func(x, y, l)
+            end
         end
     end
 end)
+
+local ENTITY_SPAWNER_LINE_UCOLOR = Color:new(0, 1, 1, 0.2):get_ucolor()
+local ENTITY_SPAWNER_FILL_UCOLOR = Color:new(0, 1, 1, 0.1):get_ucolor()
+set_callback(function(ctx)
+    if entity_spawner_section_open and options.entity_spawner_position_visible then
+        local world_x, world_y = compute_entity_spawner_position()
+        if world_x and world_y then
+            ctx:draw_layer(DRAW_LAYER.BACKGROUND)
+            local screen_x1, screen_y1 = screen_position(world_x - 0.5, world_y + 0.5)
+            local screen_x2, screen_y2 = screen_position(world_x + 0.5, world_y - 0.5)
+            ctx:draw_rect(screen_x1, screen_y1, screen_x2, screen_y2, 2, 5, ENTITY_SPAWNER_LINE_UCOLOR)
+            ctx:draw_rect_filled(screen_x1, screen_y1, screen_x2, screen_y2, 5, ENTITY_SPAWNER_FILL_UCOLOR)
+        end
+    end
+    entity_spawner_section_open = false
+end, ON.GUIFRAME)
 
 register_option_callback("", options, draw_gui)
 

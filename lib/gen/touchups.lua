@@ -28,8 +28,8 @@ local function onlevel_removeborderfloor()
 		local xmin, _, xmax, ymax = get_bounds()
 		for yi = ymax-0.5, (ymax-0.5)-2, -1 do
 			for xi = xmin+0.5, xmax-0.5, 1 do
-				local blocks = get_entities_at(0, MASK.FLOOR, xi, yi, LAYER.FRONT, 0.3)
-				kill_entity(blocks[1])
+				local uid = get_grid_entity_at(xi, yi, LAYER.FRONT)
+				if uid ~= -1 then get_entity(uid):destroy() end
 			end
 		end
 	end

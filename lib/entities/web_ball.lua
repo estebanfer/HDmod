@@ -11,27 +11,28 @@ do
 end
 local function spawn_web_ball_contents(x, y, l)
     local contents = {}
-    -- if math.random(32) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0)
-    -- elseif math.random(24) == 1 then
+    if math.random(32) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0)
+        kill_entity(contents[#contents], false)
+    elseif math.random(24) == 1 then
         for i = 1, 3, 1 do
             contents[#contents+1] = babyspiderlib.create_critterbabyspider(x, y, l)
         end
-    -- elseif math.random(15) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ITEM_SKULL, x, y, l, 0, 0)
-    -- elseif math.random(6) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
-    -- elseif math.random(15) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ITEM_RUBY, x, y, l, 0, 0)
-    -- elseif math.random(12) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ENT_TYPE.ITEM_SAPPHIRE, x, y, l, 0, 0)
-    -- elseif math.random(7) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ENT_TYPE.ITEM_EMERALD, x, y, l, 0, 0)
-    -- elseif math.random(7) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET, x, y, l, 0, 0)
-    -- elseif math.random(4) == 1 then
-    --     contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET_SMALL, x, y, l, 0, 0)
-    -- end
+    elseif math.random(15) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_SKULL, x, y, l, 0, 0)
+    elseif math.random(6) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
+    elseif math.random(15) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_RUBY, x, y, l, 0, 0)
+    elseif math.random(12) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_SAPPHIRE, x, y, l, 0, 0)
+    elseif math.random(7) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, 0, 0)
+    elseif math.random(7) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET, x, y, l, 0, 0)
+    elseif math.random(4) == 1 then
+        contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET_SMALL, x, y, l, 0, 0)
+    end
     return contents
 end
 local function web_ball_destroy(_uid)

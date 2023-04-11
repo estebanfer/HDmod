@@ -59,6 +59,12 @@ local function alienlord_update(ent)
         -- Reset the attack timer
         ent.user_data.attack_timer = ent.user_data.attack_timer_base
     end
+    -- Force the alienlord to face a fixed direction based on if their room template was flipped
+    if ent.user_data.facing_left then
+        ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+    else
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+    end
 end
 
 local function alienlord_set(uid)
@@ -77,6 +83,8 @@ local function alienlord_set(uid)
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_ALIENLORD;
         alien_sound = nil; -- Points to an alienqueen entity that we have completely inactive and only use for accurate squishy meat sounds
+
+        facing_left = false; -- Gets set to true if the room template was flipped
 
         -- ANIMATION
         animation_timer = 1;
@@ -97,7 +105,13 @@ local function alienlord_set(uid)
     ent.user_data.alien_sound:set_post_update_state_machine(function(self)
         self.attack_cooldown_timer = 5
     end)
-    --Alienqueen also creates a midbg below her that we need to remove. It's always her uid+3
+    -- Check if this is a left-facing alienlord
+    local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(ent.x, ent.y)
+    local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+    if _subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD_LEFT then
+        ent.user_data.facing_left = true
+    end
+    -- Alienqueen also creates a midbg below her that we need to remove. It's always her uid+3
     set_timeout(function()
         kill_entity(ent.user_data.alien_sound.uid+3, false)
     end, 1)

@@ -111,6 +111,9 @@ local function alienlord_set(uid)
     if _subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENLORD_LEFT then
         ent.user_data.facing_left = true
     end
+    if _subchunk_id == roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE then
+        ent.user_data.facing_left = true
+    end
     -- Alienqueen also creates a midbg below her that we need to remove. It's always her uid+3
     set_timeout(function()
         kill_entity(ent.user_data.alien_sound.uid+3, false)

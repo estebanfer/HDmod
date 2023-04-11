@@ -4,6 +4,9 @@ local custom_music_engine = require "lib.music.custom_music_engine"
 
 local module = {}
 
+optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Custom music - Disable for special levels", nil, false, true)
+optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom music - Disable for title screen", nil, false, true)
+
 local WORM_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Frog_Belly.ogg")
 local WORM_CUSTOM_MUSIC = WORM_LOOP_SOUND and {
     loop_sounds = {

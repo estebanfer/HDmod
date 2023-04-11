@@ -101,9 +101,6 @@ function module.create_webball(x, y, l)
     end)
 end
 
-register_option_button("spawn_web_ball", "spawn_web_ball", 'spawn_web_ball', function ()
-    local x, y, l = get_position(players[1].uid)
-    module.create_webball(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Web ball", module.create_webball, true)
 
 return module

@@ -78,10 +78,7 @@ set_post_entity_spawn(function(self)
         end
     end)
 end, SPAWN_TYPE.ANY, MASK.MONSTER | MASK.PLAYER | MASK.MOUNT)
-register_option_button("spawn snowball", "spawn snowball", "spawn snowball", function ()
-    local x, y, l = get_position(players[1].uid)
-    x, y = math.floor(x), math.floor(y)
-    module.create_snowball(x+2, y, l)
-end)
+
+optionslib.register_entity_spawner("Snowball", module.create_snowball, true)
 
 return module

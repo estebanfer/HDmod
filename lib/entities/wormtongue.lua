@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_worm_tongue_info", "Worm tongue - Show info", nil, false, true)
+
 local WORMTONGUE_UID = nil
 local WORMTONGUE_BG_UID = nil
 local WORM_BG_UID = nil
@@ -323,7 +325,7 @@ end
 -- debug
 ---@param draw_ctx GuiDrawContext
 set_callback(function(draw_ctx)
-	if options.hd_debug_info_tongue == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_worm_tongue_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.level == 1 and (state.theme == THEME.JUNGLE or state.theme == THEME.ICE_CAVES) then
 			local text_x = -0.95
 			local text_y = -0.45

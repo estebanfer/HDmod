@@ -1,5 +1,6 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_item_botd_give", "Book of the Dead - Start with item", nil, false, true)
 -- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
 -- register_option_float("hd_ui_botd_b_h", "UI: botd height", 0.12, 0.0, 99.0)
 -- register_option_float("hd_ui_botd_c_x", "UI: botd x", 0.2, -999.0, 999.0)

@@ -1,5 +1,10 @@
 local module = {}
 
+optionslib.register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Allow the ghost to split", nil, false) -- Defaults to HD
+optionslib.register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed", nil, false) -- Defaults to S2
+optionslib.register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Use S2 spawn times",
+	"Ghost appears at 3:00 instead of 2:30, or 2:30 instead of 2:00 when cursed.", false) -- Defaults to HD
+
 local GHOST_TIME = 10800
 local GHOST_VELOCITY = 0.7
 local DANGER_GHOST_UIDS = {}

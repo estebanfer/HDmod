@@ -75,9 +75,6 @@ set_pre_entity_spawn(function (e_type, x, y, l)
     return spawn_grid_entity(ENT_TYPE.FX_SHADOW, 0, 0, LAYER.FRONT)
 end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_GRUB)
 
--- register_option_button("spawn_baby_worm", "spawn_baby_worm", 'spawn_baby_worm', function ()
---     local x, y, l = get_position(players[1].uid)
---     module.create_babyworm(x-5, y, l)
--- end)
+optionslib.register_entity_spawner("Baby worm", module.create_babyworm)
 
 return module

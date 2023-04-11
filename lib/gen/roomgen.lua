@@ -3,6 +3,9 @@ local hideyholelib = require 'lib.entities.hideyhole'
 
 local module = {}
 
+optionslib.register_option_bool("hd_debug_scripted_levelgen_path_info", "Level gen - Show path info", nil, false, true)
+optionslib.register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist", "Level gen - Blacklist tilecodes", nil, "", true)
+
 POSTTILE_STARTBOOL = false
 FRAG_PREVENTION_UID = nil
 
@@ -1265,7 +1268,7 @@ end
 ---@param draw_ctx GuiDrawContext
 set_callback(function(draw_ctx)
 	if (
-		options.hd_debug_info_path == true and
+		options.hd_debug_scripted_levelgen_path_info == true and
 		-- (state.pause == 0 and state.screen == 12 and #players > 0) and
 		roomgenlib.global_levelassembly ~= nil
 	) then

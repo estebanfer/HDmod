@@ -169,6 +169,47 @@ local function room_specific()
                 backwall.width, backwall.height = w, h
                 backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
                 backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+            elseif _template_hd == roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE then
+                --first chunk
+                local w, h = 8, 6
+                local _x, _y, _l = corner_x+6.5, corner_y-3.5, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
+                backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
+                backwall.animation_frame = 0
+                backwall:set_draw_depth(46)
+                backwall.width, backwall.height = w, h
+                backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
+                backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+                --smaller second chunk
+                local w, h = 2, 4
+                local _x, _y, _l = corner_x+1.5, corner_y-3.5, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
+                backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
+                backwall.animation_frame = 0
+                backwall:set_draw_depth(46)
+                backwall.width, backwall.height = w, h
+                backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
+                backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+            elseif _template_hd == roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE then
+                local w, h = 10, 6
+                local _x, _y, _l = corner_x+5.5, corner_y-3.5, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
+                backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
+                backwall.animation_frame = 0
+                backwall:set_draw_depth(46)
+                backwall.width, backwall.height = w, h
+                backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
+                backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+            elseif _template_hd == roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE then
+                local w, h = 10, 6
+                local _x, _y, _l = corner_x+5.5, corner_y-3.5, LAYER.FRONT
+                local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, _x, _y, _l, 0, 0))
+                backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_MOTHERSHIP_0)
+                backwall.animation_frame = 0
+                backwall:set_draw_depth(46)
+                backwall.width, backwall.height = w, h
+                backwall.tile_width, backwall.tile_height = backwall.width/10, backwall.height/10
+                backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
             elseif _template_hd and _template_hd >= 1300 and _template_hd < 1400 then
                 local hive2_x, hive2_y = -1, -1
                 do -- find second beehive if exists

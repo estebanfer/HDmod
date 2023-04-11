@@ -16,7 +16,7 @@ function module.create_moai_veil(x, y, l)
 
     decoration:set_texture(define_texture(texture_def))
     decoration.animation_frame = 2
-    decoration:set_draw_depth(7)
+    decoration:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
     decoration.width, decoration.height = 3, 4
 end
 

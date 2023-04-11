@@ -880,8 +880,6 @@ module.HD_TILENAME = {
 		description = "Snake from Snake Pit",
 	},
 	["O"] = {
-		-- # TODO: Moai ankh respawn mechanics
-		-- # TODO: Foreground Entity/Texture
 		phases = {
 			[3] = {
 				default = {
@@ -900,6 +898,7 @@ module.HD_TILENAME = {
 										local moai_block = get_entity(block_uid)
 										moai_block:set_texture(define_texture(texture_def))
 										moai_block.animation_frame = moai_texture_indices[moai_index]
+										moai_block:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
 										moai_index = moai_index + 1
 									end
 								end

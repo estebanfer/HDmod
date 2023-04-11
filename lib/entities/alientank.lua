@@ -238,9 +238,6 @@ function module.create_alientank(x, y, layer)
   set_alientank(uid)
 end
 
-register_option_button("spawn_alien", "spawn alien", "", function()
-  local x, y, l = get_position(players[1].uid)
-  spawn_alientank(x+1, y, l)
-end)
+optionslib.register_entity_spawner("Alien tank", spawn_alientank)
 
 return module

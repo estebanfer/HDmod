@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_boss_exits_unlock", "Unlock boss exits", nil, false, true)
+
 local HD_THEMEORDER = {
 	THEME.DWELLING,
 	THEME.JUNGLE,

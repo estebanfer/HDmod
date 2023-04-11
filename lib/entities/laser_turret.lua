@@ -54,6 +54,10 @@ end
 local function laser_set(laser)
     ---@param _laser LightShot
     ---@param collider Movable
+    -- user_data
+    laser.user_data = {
+        ent_type = HD_ENT_TYPE.ITEM_LASER_TURRET;
+    };
     set_pre_collision2(laser.uid, function (_laser, collider)
         if collider.type.search_flags & (MASK.PLAYER | MASK.MOUNT | MASK.MONSTER) ~= 0 then
             if collider.invincibility_frames_timer == 0 then
@@ -205,18 +209,6 @@ end
 local turret_id = celib.new_custom_entity(set_func, update_func, celib.CARRY_TYPE.HELD, ENT_TYPE.ITEM_ROCK)
 celib.init()
 
--- register_option_button("spawn_trap", "spawn turret", "spawn turret", function ()
---     local x, y, l = get_position(players[1].uid)
---     x, y = math.floor(x), math.floor(y)
---     local over
---     repeat
---         over = get_grid_entity_at(x, y+1, l)
---         y = y + 1
---     until over ~= -1
---     local uid = spawn_over(ENT_TYPE.ITEM_ROCK, over, 0, -1)
---     celib.set_custom_entity(uid, turret_id)
--- end)
-
 function module.spawn_turret(x, y, l)
     local over, uid = get_grid_entity_at(x, y+1, l)
     if over ~= -1 then
@@ -233,5 +225,7 @@ function module.spawn_turret(x, y, l)
     end
     celib.set_custom_entity(uid, turret_id)
 end
+
+optionslib.register_entity_spawner("Laser turret", module.spawn_turret, true)
 
 return module

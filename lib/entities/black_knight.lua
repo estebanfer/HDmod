@@ -15,6 +15,12 @@ local function black_knight_set(uid)
     ent:set_texture(black_knight_texture_id)
     local x, y, l = get_position(uid)
     local shield = get_entity(spawn(ENT_TYPE.ITEM_METAL_SHIELD, x, y, l, 0, 0))
+
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_BLACK_KNIGHT;
+    };
+
     --remove any item black knight may have
     local held_item = get_entity(ent.holding_uid)
     if held_item ~= nil then
@@ -150,9 +156,6 @@ function module.create_black_knight(x, y, l)
     set_pre_collision2(black_knight, burst_out_of_mantrap)
 end
 
--- register_option_button("spawn_black_knight", "spawn_black_knight", 'spawn_black_knight', function()
---      local x, y, l = get_position(players[1].uid)
---      module.create_black_knight(x-5, y, l)
--- end)
+optionslib.register_entity_spawner("Black knight", module.create_black_knight)
 
 return module

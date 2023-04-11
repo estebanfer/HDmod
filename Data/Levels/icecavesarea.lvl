@@ -88,10 +88,10 @@
 \+hd_procedural_piranha 40
 \+hd_procedural_critter_fish 30
 \+hd_procedural_critter_penguin 120, 120, 60, 60
-\+hd_procedural_wetfur_landmine 15
-\+hd_procedural_wetfur_bouncetrap 15
-\+hd_procedural_wetfur_yeti 20, 20, 20, 10
-\+hd_procedural_wetfur_critter_penguin 20
+\+hd_procedural_wetfur_landmine 0 // 15
+\+hd_procedural_wetfur_bouncetrap 0 // 15
+\+hd_procedural_wetfur_yeti 0 // 20, 20, 20, 10
+\+hd_procedural_wetfur_critter_penguin 0 // 20
 \+hd_procedural_ufofeeling_turret 20
 \+hd_procedural_mshipentrance_turret 40
 

@@ -3,6 +3,9 @@
 
 local module = {}
 
+optionslib.register_option_bool("hd_debug_feelings_toast_disable", "Feelings - Disable script-enduced toasts", nil, false, true)
+optionslib.register_option_bool("hd_debug_feelings_info", "Feelings - Show info", nil, false, true)
+
 module.FEELING_ID = {
     UDJAT = 1,
     WORMTONGUE = 2,
@@ -23,15 +26,16 @@ module.FEELING_ID = {
     VLAD = 17,
     VAULT = 18,
     SNOW = 19,
-    SNOWING = 20,
-    ICE_CAVES_POOL = 21,
-    ANUBIS = 22,
-    YAMA = 23
+    ICE_CAVES_POOL = 20,
+    ANUBIS = 21,
+    YAMA = 22
 }
 
 module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.HIVE] = {
 		chance = 10,
+		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.UDJAT] = {
@@ -43,29 +47,34 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.SPIDERLAIR] = {
 		chance = 12,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.DWELLING },
 		message = "My skin is crawling..."
 	},
 	[module.FEELING_ID.SNAKEPIT] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.DWELLING },
 		message = "I hear snakes... I hate snakes!"
 	},
 	[module.FEELING_ID.RESTLESS] = {
 		chance = 12,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE },
 		message = "The dead are restless!"
 	},
 	[module.FEELING_ID.TIKIVILLAGE] = { -- RESIDENT TIK-EVIL: VILLAGE
 		chance = 15,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE }
 	},
 	[module.FEELING_ID.RUSHING_WATER] = {
 		chance = 14,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.JUNGLE },
 		message = "I hear rushing water!"
 	},
@@ -83,11 +92,13 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.YETIKINGDOM] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.ICE_CAVES },
 		message = "It smells like wet fur in here."
 	},
 	[module.FEELING_ID.UFO] = {
 		chance = 12,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES },
 		message = "I sense a psychic presence here!"
@@ -102,6 +113,7 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.SACRIFICIALPIT] = {
 		chance = 10,
 		-- chance = 1,
+		-- chance = 0,
 		themes = { THEME.TEMPLE },
 		message = "You hear prayers to Kali!"
 	},
@@ -124,15 +136,13 @@ module.HD_FEELING_DEFAULTS = {
 	},
 	[module.FEELING_ID.SNOW] = {
 		chance = 4,
-		themes = { THEME.ICE_CAVES }
-	},
-	[module.FEELING_ID.SNOWING] = {
-		chance = 4,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES }
 	},
 	[module.FEELING_ID.ICE_CAVES_POOL] = {
 		chance = 15,
+		-- chance = 1,
 		-- chance = 0,
 		themes = { THEME.ICE_CAVES }
 	},
@@ -247,7 +257,7 @@ function module.onlevel_set_feelings()
 		if (
 			state.level >= 3
 		) then
-			module.feeling_set_once(module.FEELING_ID.SPIDERLAIR, {state.level})
+			feeling_set(module.FEELING_ID.SPIDERLAIR, {state.level})
 		end
 
 		-- spiderlair and snakepit cannot happen at the same time
@@ -255,7 +265,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.SPIDERLAIR) == false
 			and state.level ~= 1
 		) then
-			module.feeling_set_once(module.FEELING_ID.SNAKEPIT, {state.level})
+			feeling_set(module.FEELING_ID.SNAKEPIT, {state.level})
 		end
 	end
 	--[[
@@ -269,7 +279,7 @@ function module.onlevel_set_feelings()
 
 		-- Restless cannot happen on haunted castle
 		if module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false then
-			module.feeling_set_once(module.FEELING_ID.RESTLESS, {state.level})
+			feeling_set(module.FEELING_ID.RESTLESS, {state.level})
 			feeling_set(module.FEELING_ID.HIVE, {state.level})
 		end
 
@@ -278,7 +288,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false
 			and module.feeling_check(module.FEELING_ID.BLACKMARKET) == false
 		) then
-			module.feeling_set_once(module.FEELING_ID.RUSHING_WATER, {state.level})
+			feeling_set(module.FEELING_ID.RUSHING_WATER, {state.level})
 			
 			-- tikivillage levels cannot be restless
 			-- tikivillage and rushing water cannot happen at the same time
@@ -286,7 +296,7 @@ function module.onlevel_set_feelings()
 				module.feeling_check(module.FEELING_ID.RESTLESS) == false and
 				module.feeling_check(module.FEELING_ID.RUSHING_WATER) == false
 			) then
-				module.feeling_set_once(module.FEELING_ID.TIKIVILLAGE, {state.level})
+				feeling_set(module.FEELING_ID.TIKIVILLAGE, {state.level})
 			end
 		end
 	end
@@ -310,10 +320,8 @@ function module.onlevel_set_feelings()
 	--]]
 	if state.theme == THEME.ICE_CAVES then
 		
-		module.feeling_set_once(module.FEELING_ID.SNOW, {state.level})
+		feeling_set(module.FEELING_ID.SNOW, {state.level})
 
-		-- # TODO: Exception for MOAI spawn:
-			-- The Moai is found on either level 3-2 or 3-3, unless the player went to The Worm and The Mothership, in that case The Moai will appear in 3-4 (after The Mothership).
 		if state.level == 2 then
 			module.feeling_set_once(module.FEELING_ID.MOAI, {2, 3})
 		end
@@ -323,7 +331,7 @@ function module.onlevel_set_feelings()
 				module.feeling_set_once(module.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
 			else
 				global_feelings[module.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-				module.feeling_set_once(module.FEELING_ID.YETIKINGDOM, {state.level})
+				feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
 			end
 			-- This level feeling only, and always, occurs on level 3-4.
 				-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
@@ -335,7 +343,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.MOAI) == false
 			and state.level ~= 4
 		) then
-			module.feeling_set_once(module.FEELING_ID.YETIKINGDOM, {state.level})
+			feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
 		end
 		
 		-- # TODO: Verify exactly when UFO is allowed to spawn
@@ -343,7 +351,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and state.level ~= 4
 		) then
-			module.feeling_set_once(module.FEELING_ID.UFO, {state.level})
+			feeling_set(module.FEELING_ID.UFO, {state.level})
 		end
 		
 		-- # TODO: Verify exactly when pools are allowed to spawn
@@ -351,14 +359,23 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and module.feeling_check(module.FEELING_ID.UFO) == false
 		) then
-			module.feeling_set_once(module.FEELING_ID.ICE_CAVES_POOL, {state.level})
+			feeling_set(module.FEELING_ID.ICE_CAVES_POOL, {state.level})
 		end
 	end
 	--[[
 		Temple
 	--]]
 	if state.theme == THEME.TEMPLE then
-		module.feeling_set_once(module.FEELING_ID.SACRIFICIALPIT, {state.level})
+		feeling_set(module.FEELING_ID.SACRIFICIALPIT, {state.level})
+	end
+	--[[
+		Neo Bab + Eggplant World
+	]]
+	-- We check if the Moai needs to spawn in 3-4 if we are in the Mothership (Neo Bab) or Worm (Eggplant World) on level 3.
+	if state.theme == THEME.NEO_BABYLON or state.theme == THEME.EGGPLANT_WORLD then
+		if state.level == 3 and state.world == 3 then
+			feeling_set(module.FEELING_ID.MOAI, {4})
+		end
 	end
 	
 	-- Currently hardcoded but keeping this here just in case
@@ -405,7 +422,7 @@ end
 function module.onlevel_toastfeeling()
 	if (
 		MESSAGE_FEELING ~= nil and
-		options.hd_debug_feelingtoast_disable == false
+		options.hd_debug_feelings_toast_disable == false
 	) then
 		cancel_toast()
 		set_timeout(function()
@@ -435,7 +452,7 @@ end, ON.TOAST)
 
 ---@params draw_ctx GuiDrawContext
 set_callback(function(draw_ctx)
-	if options.hd_debug_info_feelings == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
+	if options.hd_debug_feelings_info == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		local text_x = -0.95
 		local text_y = -0.35
 		local white = rgba(255, 255, 255, 255)

@@ -41,6 +41,10 @@ local function hell_miniboss_set(uid, texture_id)
     local ent = get_entity(uid)
     ent:set_texture(texture_id)
     local x, y, l = get_position(uid)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
+    };
     --repurposed variables
     ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER --logic
     ent.price = 0 --cooldown so whip doesnt hit multiple times
@@ -206,14 +210,7 @@ function module.create_oxface(x, y, l)
     create_hell_miniboss(x, y, l, false)
 end
 
-register_option_button("spawn_horsehead", "spawn_horsehead", 'spawn_horsehead', function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_horsehead(x-5, y, l)
-end)
-
-register_option_button("spawn_oxface", "spawn_oxface", 'spawn_oxface', function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_oxface(x-5, y, l)
-end)
+optionslib.register_entity_spawner("Horse Head", module.create_horsehead)
+optionslib.register_entity_spawner("Ox Face", module.create_oxface)
 
 return module

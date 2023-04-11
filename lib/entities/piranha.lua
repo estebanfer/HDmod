@@ -26,6 +26,10 @@ local function set_piranha_skeleton(ent)
     nosacrifice.add_uid(ent.uid)
 	ent.animation_frame = 105
     ent:set_texture(piranha_skeleton_tex_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_PIRANHA;
+    };
 end
 
 local function get_solids_overlapping(hitbox, layer)
@@ -138,12 +142,6 @@ local function piranha_update(ent)
     end
 end
 
---[[register_option_button("spawn_piranha", "spawn_piranha", "spawn_piranha", function ()
-    local x, y, l = get_position(players[1].uid)
-    local uid = spawn(ENT_TYPE.MONS_TADPOLE, x, y, l, 0, 0)
-    set_post_statemachine(uid, piranha_update)
-end)]]
-
 local function spawn_piranha_skeleton_rubble(x, y, l, amount)
     for _=1, amount do
         get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l, 0, 0)).animation_frame = 6
@@ -169,5 +167,7 @@ function module.create_piranha(x, y, l)
         end)
 	end
 end
+
+optionslib.register_entity_spawner("Piranha", module.create_piranha)
 
 return module

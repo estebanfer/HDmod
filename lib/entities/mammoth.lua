@@ -8,11 +8,26 @@ do
     mammoth_texture_def.texture_path = 'res/mammoth.png'
     mammoth_texture_id = define_texture(mammoth_texture_def)
 end
+
+--modify ITEM_FREEZERAYSHOT to ignore lamassu with mammoth texture
+local function ignore_mammoth(ent, collision_ent)
+    if collision_ent:get_texture() == mammoth_texture_id then
+        return true
+    end
+end
+set_post_entity_spawn(function(ent)
+    ent:set_pre_on_collision2(ignore_mammoth)
+end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_FREEZERAYSHOT)
+
 local function mammoth_set(uid)
     local ent = get_entity(uid)
     local x, y, l = get_position(uid)
-
     ent:set_texture(mammoth_texture_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_MAMMOTH;
+        stun_frame = 6; -- Sometimes changes to 7 in statemachine (rare stun)
+    };
 
     --we are using price as a variable to keep track of when mammoth will shoot a freezray blast
     ent.price = 90
@@ -46,26 +61,37 @@ local function mammoth_update(ent)
     elseif ent.price <= 4 then
         ent.animation_frame = 5
     end
-
     --only decrease timer if the ent isnt stopped by anything
-    if ent.lock_input_timer == 0 and ent.frozen_timer == 0 then
+    if ent.lock_input_timer == 0 and ent.frozen_timer == 0 and ent.stun_timer == 0 and ent.animation_frame <= 12 then
         ent.price = ent.price - 1
+        ent.user_data.stun_frame = 6
+        if prng:random_chance(10, PRNG_CLASS.EXTRA_SPAWNS) then
+            ent.user_data.stun_frame = 7
+        end
     end
-    if ent.price == 0 or ent.frozen_timer ~= 0 then
-        ent.price = 90
+    -- Mammoth camera stun (i don't believe there's any other way to stun the mammoth so this approach should be fine)
+    if ent.stun_timer > 0 then
+        ent.animation_frame = ent.user_data.stun_frame
     end
+    if ent.price == 0  then
+      ent.price = 90
+    end
+    --mammoth stun texture
     if ent.price == 4 then --create attack hitbox
         local x, y, l = get_position(ent.uid)
         commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid)
         if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.5, l, -0.25, 0))
+            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.65, l, -0.25, 0))
+            freezeray.owner_uid = ent.uid
+            freezeray.last_owner_uid = ent.uid
             freezeray.angle = math.pi
         else
-            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x+1, y-0.5, l, 0.25, 0))
+            local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x+1, y-0.65, l, 0.25, 0))
+            freezeray.owner_uid = ent.uid
+            freezeray.last_owner_uid = ent.uid
         end
     end
 end
-
 function module.create_mammoth(x, y, l)
     local mammoth = spawn(ENT_TYPE.MONS_LAMASSU, x, y, l, 0, 0)
     mammoth_set(mammoth)
@@ -73,14 +99,30 @@ function module.create_mammoth(x, y, l)
     set_on_kill(mammoth, function()
         local ent = get_entity(mammoth)
         local x, y, l = get_position(mammoth)
+        -- 1/10 chance to drop a freezeray
+        if prng:random_chance(10, PRNG_CLASS.EXTRA_SPAWNS) then
+            spawn(ENT_TYPE.ITEM_FREEZERAY, x, y, l, 0, 0.08)
+        end
         kill_entity(spawn(ENT_TYPE.MONS_AMMIT, x+0.2, y-0.6, l, 0, 0))
         ent.x = -900 --destroy() and remove() both crash the game ????
     end)
 end
 
--- register_option_button("spawn_mammoth", "spawn_mammoth", 'spawn_mammoth', function ()
---     local x, y, l = get_position(players[1].uid)
---     module.create_mammoth(x-3, y, l)
--- end)
+--to stop UFOs from targetting the mammoth, we are going to add some pre and post statemachine code to the UFO that temporarily turns the mammoths ENT_TYPE to 0 so they wont target them
+--since the switch should only last the extent of the UFOs statemachine code, it shouldn't effect anything else about the mammoth
+--thanks to JayTheBusinessGoose and Dregu for helping me figure out this technique
+local lamassu_db = get_type(ENT_TYPE.MONS_LAMASSU)
+set_post_entity_spawn(function(ufo)
+    ufo:set_pre_update_state_machine(function()
+        lamassu_db.id = 0
+        return false
+    end)
+    ufo:set_post_update_state_machine(function()
+        lamassu_db.id = ENT_TYPE.MONS_LAMASSU
+        return false
+    end)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_UFO)
+
+optionslib.register_entity_spawner("Mammoth", module.create_mammoth)
 
 return module

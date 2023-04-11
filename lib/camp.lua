@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_testing_door", "Enable testing door in camp", nil, false, true)
+
 module.DOOR_TESTING_UID = nil
 module.DOOR_TUTORIAL_UID = nil
 
@@ -11,7 +13,7 @@ function module.create_door_testing(x, y, l)
 end
 
 function module.create_door_tutorial(x, y, l)
-	if demolib.DEMO_TUTORIAL_AVAILABLE == true then
+	if options.hd_debug_demo_enable_tutorial then
 		module.DOOR_TUTORIAL_UID = spawn_door(x, y, l, 1, 1, THEME.DWELLING)
 	else
 		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
@@ -82,7 +84,7 @@ local function oncamp_shortcuts(x, y, l)
 	local shortcut_available = false
 	for i, flagtocheck in ipairs(shortcut_flagstocheck) do
 		if (
-			shortcut_worlds[i] <= demolib.DEMO_MAX_WORLD
+			(shortcut_worlds[i] <= demolib.DEMO_MAX_WORLD or options.hd_debug_demo_enable_all_worlds)
 			-- and savegame.shortcuts >= flagtocheck
 		) then
 			spawn_door(new_x, y, l, shortcut_worlds[i], shortcut_levels[i], shortcut_themes[i])

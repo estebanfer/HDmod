@@ -1,5 +1,7 @@
 local module = {}
 
+optionslib.register_option_bool("hd_debug_info_worldstate", "World state - Show info", nil, false, true)
+
 module.HD_WORLDSTATE_STATUS = { ["NORMAL"] = 1, ["TUTORIAL"] = 2, ["TESTING"] = 3}
 module.HD_WORLDSTATE_STATE = module.HD_WORLDSTATE_STATUS.NORMAL
 

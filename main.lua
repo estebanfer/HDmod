@@ -1,5 +1,7 @@
 ---@diagnostic disable: lowercase-global
 commonlib = require 'lib.common'
+savelib = require 'lib.save'
+optionslib = require 'lib.options'
 demolib = require 'lib.demo'
 worldlib = require 'lib.worldstate'
 camplib = require 'lib.camp'
@@ -36,47 +38,20 @@ doorslib = require 'lib.entities.doors'
 tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
+snowballlib = require 'lib.entities.snowball'
+require "lib.entities.mammoth"
+
+require "lib.entities.hdentnew"
+require "lib.entities.custom_death_messages"
 
 meta.name = "HDmod - Demo"
 meta.version = "1.03.1"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
-register_option_bool("hd_debug_boss_exits_unlock", "Debug: Unlock boss exits",														false)
-register_option_bool("hd_debug_custom_music_disable", "Debug: Disable custom music for special levels",								false)
-register_option_bool("hd_debug_feelingtoast_disable", "Debug: Disable script-enduced feeling toasts",								false)
-register_option_bool("hd_debug_info_boss", "Debug: Info - Bossfight",																false)
-register_option_bool("hd_debug_info_boulder", "Debug: Info - Boulder",																false)
-register_option_bool("hd_debug_info_feelings", "Debug: Info - Level Feelings",														false)
-register_option_bool("hd_debug_info_path", "Debug: Info - Path",																	false)
-register_option_bool("hd_debug_info_tongue", "Debug: Info - Wormtongue",															false)
-register_option_bool("hd_debug_info_worldstate", "Debug: Info - Worldstate",														false)
-register_option_bool("hd_debug_scripted_enemies_show", "Debug: Enable visibility of entities used in custom enemy behavior",		false)
-register_option_bool("hd_debug_item_botd_give", "Debug: Start with item - Book of the Dead",										false)
-register_option_bool("hd_debug_scripted_levelgen_disable", "Debug: Disable scripted level generation",								false)
-register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist",
-	"Debug: Blacklist scripted level generation tilecodes",
-	""
-)
-register_option_bool("hd_debug_testing_door", "Debug: Enable testing door in camp",													false)
-register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple",							false)	-- Defaults to S2
--- register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD",							false)	-- Defaults to S2
-register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers",										false)	-- Defaults to HD
-register_option_bool("hd_og_ghost_nosplit_disable", "OG: Ghost - Allow the ghost to split",											false)	-- Defaults to HD
-register_option_bool("hd_og_ghost_slow_enable", "OG: Ghost - Set the ghost to its HD speed",										false)	-- Defaults to S2
-register_option_bool("hd_og_ghost_time_disable", "OG: Ghost - Use S2 spawntimes: 2:30->3:00 and 2:00->2:30 when cursed.",			false)	-- Defaults to HD
-register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning",														false)	-- Defaults to HD
-register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD",									false)	-- Defaults to HD
-
--- # TODO: revise from the old system, removing old uses.
--- Then, rename it to `hd_og_use_s2_spawns`
--- Reimplement it into `is_valid_*_spawn` methods to change spawns.
-register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of HD procedural spawning conditions",				false)	-- Defaults to HD
-
--- # TODO: Influence the velocity of the boulder on every frame.
--- register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD",									false)
-
-register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", "", false)
+optionslib.register_option_bool("hd_debug_info_boss", "Boss - Show info", nil, false, true)
+optionslib.register_option_bool("hd_debug_scripted_enemies_show", "Enable visibility of entities used in custom entity behavior", nil, false, true)
+optionslib.register_option_bool("hd_debug_scripted_levelgen_disable", "Level gen - Disable scripted level generation", nil, false, true)
 
 set_callback(function()
 	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
@@ -133,7 +108,7 @@ set_callback(function()
 				
 				decorlib.change_decorations()
 				
-				touchupslib.postlevelgen_remove_door_items()
+				touchupslib.postlevelgen_remove_items()
 			end
 		end
 	end
@@ -158,5 +133,10 @@ set_callback(function()
 	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
 	if state.loading == 2 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
 		custommusiclib.on_end_level()
+	end
+	-- Check whether custom title music has been enabled/disabled in the options right before loading the title screen.
+	-- Two loading events are checked because the script API sometimes misses one of them the first time the title screen loads.
+	if (state.loading == 1 or state.loading == 2) and state.screen_next == ON.TITLE then
+		custommusiclib.update_custom_title_music_enabled()
 	end
 end, ON.LOADING)

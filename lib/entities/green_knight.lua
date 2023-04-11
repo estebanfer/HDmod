@@ -16,6 +16,10 @@ local function green_knight_set(uid)
     ent.move_state = 0
     ent.state = 1
     ent:set_texture(green_knight_texture_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_GREEN_KNIGHT;
+    };
 end
 local function green_knight_update(ent)
     --manage price timer
@@ -27,7 +31,7 @@ local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, 
     if damage_dealer.type.id == ENT_TYPE.ITEM_WHIP and ent.price == 0 and ent.health > 2 then
         generate_world_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
         ent.price = 10 --cooldown
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, ent.uid)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid)
         return true
     end
 end
@@ -68,9 +72,6 @@ function module.create_greenknight(x, y, l)
     set_on_destroy(green_knight, become_caveman)
 end
 
--- register_option_button("spawn_green_knight", "spawn_green_knight", 'spawn_green_knight', function ()
---    local x, y, l = get_position(players[1].uid)
---    module.create_greenknight(x-5, y, l)
--- end)
+optionslib.register_entity_spawner("Green knight", module.create_greenknight)
 
 return module

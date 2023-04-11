@@ -91,18 +91,19 @@ function module.init()
 end
 
 -- # TODO: When placing an AREA_RAND* character coffin in the level, set an ON.FRAME check for unlocking it; if check passes, set RUN_UNLOCK_AREA[state.theme] = true
-set_callback(function(save_ctx)
-	local save_areaUnlocks_str = json.encode(module.RUN_UNLOCK_AREA)
-	save_ctx:save(save_areaUnlocks_str)
-end, ON.SAVE)
+savelib.register_save_callback(function(save_data)
+	save_data.character_unlock_areas = module.RUN_UNLOCK_AREA
+end)
 
 -- Load bools of the areas you've unlocked AREA_RAND* characters in
-set_callback(function(load_ctx)
-	local load_areaUnlocks_str = load_ctx:load()
-	if load_areaUnlocks_str ~= "" then
-		module.RUN_UNLOCK_AREA = json.decode(load_areaUnlocks_str)
+savelib.register_load_callback(function(load_data)
+	if load_data.format == nil and #load_data == 4 then
+		-- Handle the old format where the entire save file is the character unlock areas.
+		module.RUN_UNLOCK_AREA = load_data
+	elseif load_data.character_unlock_areas then
+		module.RUN_UNLOCK_AREA = load_data.character_unlock_areas
 	end
-end, ON.LOAD)
+end)
 
 set_callback(function()
 	module.unlocks_load()
@@ -185,8 +186,13 @@ function module.get_unlock()
 				end
 			end
 			rand_pool = commonlib.CompactList(rand_pool, n)
-			chunkPool_rand_index = math.random(1, #rand_pool)
-			unlock = rand_pool[chunkPool_rand_index]
+			if #rand_pool > 0 then
+				chunkPool_rand_index = math.random(1, #rand_pool)
+				unlock = rand_pool[chunkPool_rand_index]
+			else
+				-- # TODO: It's possible for there to be no area characters left to unlock if RUN_UNLOCK_AREA gets out of sync with the savegame data, which can happen if save.dat is deleted without also resetting character unlocks. This check is a failsafe to prevent this scenario from throwing an error. Is there a way to avoid this scenario entirely?
+				print("Warning: Attempted to spawn area unlock coffin with no valid characters left to unlock.")
+			end
 		else -- feeling/theme-based unlocks
 			local unlockconditions_feeling = {}
 			local unlockconditions_theme = {}

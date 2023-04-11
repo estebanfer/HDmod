@@ -73,6 +73,10 @@ local function giant_frog_set(ent)
     ent.width, ent.height = 2.0, 2.0
     ent.flags = clr_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
     ent:set_texture(giant_frog_texture_id)
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_GIANT_FROG;
+    };
     ---@param dead_ent Frog
     set_on_kill(ent.uid, function (dead_ent)
         local x, y, l = get_position(dead_ent.uid)
@@ -228,15 +232,10 @@ end
 
 local giant_frog_id = celib.new_custom_entity(giant_frog_set, giant_frog_update, nil, ENT_TYPE.MONS_FROG, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
---[[local function spawn_frog_debug()
-    local x, y, l = get_position(players[1].uid)
-    celib.set_custom_entity(spawn(ENT_TYPE.MONS_FROG, x+2, y, l, 0, 0), giant_frog_id)
-end
-register_option_button("spawn_frog", "spawn giant frog", "", spawn_frog_debug)]]
-
 function module.create_giantfrog(grid_x, grid_y, layer)
     celib.spawn_custom_entity(giant_frog_id, grid_x+0.5, grid_y+0.465, layer, 0, 0)
 end
 
+optionslib.register_entity_spawner("Giant frog", module.create_giantfrog)
 
 return module

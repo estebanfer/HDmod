@@ -133,14 +133,45 @@ function module.play_sound_at_entity(snd, uid, volume)
       d = screen_distance(distance(ent.uid, players[1].uid))
   end
   audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx))
-  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy))
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+  audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
   audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)
   
   audio:set_pause(false)
+
+  return audio 
 end
 
+-- When we use looped sounds, a function like this is useful for appropriately updating the panning and volume of a sound
+function module.update_sound_volume(snd, uid, volume)
+  local v = 0.5
+  if volume ~= nil then
+      v = volume
+  end
+  local ent = get_entity(uid)
+  local x, y, _ = get_position(ent.uid)
+  local sx, sy = screen_position(x, y)
+  local d = screen_distance(distance(ent.uid, ent.uid))
+  if players[1] ~= nil then
+      d = screen_distance(distance(ent.uid, players[1].uid))
+  end
+  snd:set_pan(d)
+  snd:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+  snd:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)
+end
+
+-- Useful for doing animations, check if an entity is within a certain distance of another, etc.
+function module.in_range(x, y1, y2)
+  if x >= y1 and x <= y2 then
+      return true
+  end
+  return false
+end
 
 return module

@@ -45,9 +45,9 @@ function module.add_snow_to_floor()
             if floor.deco_top ~= -1 then
                 local deco_top = get_entity(floor.deco_top)
                 if (
-                    deco_top.animation_frame ~= 101
-                    and deco_top.animation_frame ~= 102
-                    and deco_top.animation_frame ~= 103
+                    deco_top.animation_frame == 77
+                    or deco_top.animation_frame == 78
+                    or deco_top.animation_frame == 79
                 ) then
                     deco_top.animation_frame = deco_top.animation_frame - 24
                     if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(60, PRNG_CLASS.LEVEL_DECO) then
@@ -62,9 +62,12 @@ function module.add_snow_to_floor()
                             snowman:set_texture(special_snowman_texture_id)
                         end
                         snowman.animation_frame = 221
-                        snowman:set_draw_depth(12)
-                        snowman.width = prng:random_chance(2, PRNG_CLASS.LEVEL_DECO) and scale or -scale
+                        snowman:set_draw_depth(deco_top.draw_depth + 1)
+                        snowman.width = scale
                         snowman.height = scale
+                        if prng:random_chance(2, PRNG_CLASS.LEVEL_DECO) then
+                            snowman.flags = set_flag(snowman.flags, ENT_FLAG.FACING_LEFT)
+                        end
                     end
                 end
             end

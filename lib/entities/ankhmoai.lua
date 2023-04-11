@@ -1,14 +1,15 @@
 local module = {}
 
-module.moai_veil = nil
+local moai_veil
+local moai_diamond_cb
 
 function module.init()
-	module.moai_veil = nil
+	moai_veil = nil
 end
 
 function module.create_moai_veil(x, y, l)
-    module.moai_veil = spawn_entity(ENT_TYPE.DECORATION_GENERIC, x+1, y-1.5, l, 0, 0)
-    local decoration = get_entity(module.moai_veil)
+    moai_veil = spawn_entity(ENT_TYPE.DECORATION_GENERIC, x+1, y-1.5, l, 0, 0)
+    local decoration = get_entity(moai_veil)
     local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
     texture_def.texture_path = "res/moai_overlay.png"
     texture_def.width, texture_def.height = 384, 512
@@ -18,6 +19,13 @@ function module.create_moai_veil(x, y, l)
     decoration.animation_frame = 2
     decoration:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
     decoration.width, decoration.height = 3, 4
+end
+
+local function remove_moai_veil()
+	if moai_veil then
+		kill_entity(moai_veil)
+		moai_veil = nil
+	end
 end
 
 local function players_in_moai()
@@ -38,51 +46,51 @@ end
 
 set_callback(function()
 	if options.hd_debug_scripted_levelgen_disable == false then
-		set_timeout(function()
-			local cb_moai_diamond = -1
-			local cb_moai_hedjet = -1
-			-- # TODO: Investigate if breaking/teleporting into the Moai in HD disables being able to get the hedjet.
-			if feelingslib.feeling_check(feelingslib.FEELING_ID.MOAI) == true then
-				cb_moai_diamond = set_interval(function()
-					if players_in_moai() then
-						kill_entity(module.moai_veil)
-						spawn_entity(ENT_TYPE.ITEM_DIAMOND, roomgenlib.global_levelassembly.moai_exit.x, roomgenlib.global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
-						local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-						if sound ~= nil then sound:play() end
-						clear_callback(cb_moai_hedjet)
-						return false
-					end
-				end, 1)
-				cb_moai_hedjet = set_interval(function()
-					for i = 1, #players, 1 do
-						if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[i].health == 0 then
-							set_timeout(function()
-								move_entity(players[i].uid, roomgenlib.global_levelassembly.moai_exit.x, roomgenlib.global_levelassembly.moai_exit.y, LAYER.FRONT, 0, 0)
-								kill_entity(module.moai_veil)
-								spawn_entity(ENT_TYPE.ITEM_PICKUP_HEDJET, roomgenlib.global_levelassembly.moai_exit.x, roomgenlib.global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
-								local sound = get_sound(VANILLA_SOUND.UI_SECRET)
-								if sound ~= nil then sound:play() end
-								clear_callback(cb_moai_diamond)
-							end, 3)
-							return false
-						end
-					end
-				end, 1)
-			else
-				set_interval(function()
-					for i = 1, #players, 1 do
-						if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_ANKH) and players[i].health == 0 then
-							set_timeout(function()
-								move_entity(players[1].uid, roomgenlib.global_levelassembly.entrance.x, roomgenlib.global_levelassembly.entrance.y, LAYER.FRONT, 0, 0)
-							end, 3)
-							return false
-						end
-					end
-				end, 1)
-			end
-
-		end, 15)
+		if feelingslib.feeling_check(feelingslib.FEELING_ID.MOAI) then
+			moai_diamond_cb = set_interval(function()
+				if players_in_moai() then
+					remove_moai_veil()
+					spawn_entity(ENT_TYPE.ITEM_DIAMOND, roomgenlib.global_levelassembly.moai_exit.x, roomgenlib.global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
+					local sound = get_sound(VANILLA_SOUND.UI_SECRET)
+					if sound then sound:play() end
+					moai_diamond_cb = nil
+					return false
+				end
+			end, 1)
+		end
 	end
 end, ON.LEVEL)
+
+set_post_entity_spawn(function(ent)
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.MOAI) then
+		local pre_update_spawn_x, pre_update_spawn_y
+		ent:set_pre_update_state_machine(function(ent)
+			if ent.timer1 == 324 then
+				-- The ankh is going to move the player to the spawn point during this update. Set the spawn point to be inside the moai.
+				pre_update_spawn_x = state.level_gen.spawn_x
+				pre_update_spawn_y = state.level_gen.spawn_y
+				state.level_gen.spawn_x = roomgenlib.global_levelassembly.moai_exit.x
+				state.level_gen.spawn_y = roomgenlib.global_levelassembly.moai_exit.y
+				clear_callback()
+			end
+		end)
+		ent:set_post_update_state_machine(function(ent)
+			if pre_update_spawn_x then
+				-- The player has been moved to inside the moai. Set the spawn point back to its original value and spawn the hedjet.
+				state.level_gen.spawn_x = pre_update_spawn_x
+				state.level_gen.spawn_y = pre_update_spawn_y
+				remove_moai_veil()
+				spawn_entity(ENT_TYPE.ITEM_PICKUP_HEDJET, roomgenlib.global_levelassembly.moai_exit.x, roomgenlib.global_levelassembly.moai_exit.y + 2, LAYER.FRONT, 0, 0)
+				local sound = get_sound(VANILLA_SOUND.UI_SECRET)
+				if sound then sound:play() end
+				if moai_diamond_cb then
+					clear_callback(moai_diamond_cb)
+					moai_diamond_cb = nil
+				end
+				clear_callback()
+			end
+		end)
+	end
+end, SPAWN_TYPE.ANY, MASK.LOGICAL, ENT_TYPE.ITEM_POWERUP_ANKH)
 
 return module

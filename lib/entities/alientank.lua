@@ -10,13 +10,27 @@ local animationlib = require "animation"
 
 local function b(flag) return (1 << (flag-1)) end
 
-local function is_floor_at(x, y, layer)
-  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
-  if test_flag(get_entity_flags(floor), ENT_FLAG.SOLID) then return true end
-
+local function is_activefloor_at(x, y, layer)
   local hitbox = AABB:new(x - 0.05, y+0.05, x + 0.05, y - 0.05)
   local activefloors = get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, hitbox, layer)
   return activefloors[1] ~= nil
+end
+
+local function is_solid_floor_at(x, y, layer)
+  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
+  if test_flag(get_entity_flags(floor), ENT_FLAG.SOLID) then return true end
+
+  return is_activefloor_at(x, y, layer)
+end
+
+local function is_standable_floor_at(x, y, layer)
+  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
+  local flags = get_entity_flags(floor)
+  if floor ~= 0 and (test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)) then
+    return true
+  end
+
+  return is_activefloor_at(x, y, layer)
 end
 
 local TANK_STATE <const> = {
@@ -26,9 +40,10 @@ local TANK_STATE <const> = {
 }
 local FRAME_TIME <const> = 4
 local ANIMATIONS <const> = {
-  IDLE = {2, 1, 0, loop = true, frames = 3},
+  NONE = {0, loop = true, frames = 1, frame_time = 4},
+  IDLE = {2, 1, 0, loop = true, frames = 3, frame_time = 4},
   SHOOTING = {9, 8, 7, 6, frames = 4, frame_time = 2},
-  CHANGING_DIRECTION = {5, 4, 3, frames = 3}
+  CHANGING_DIRECTION = {5, 4, 3, frames = 3, frame_time = 4}
 }
 local TANK_VELOCITY <const> = 0.025
 
@@ -50,14 +65,14 @@ alientank_type.friction = 0.0
 local function alientank_update_onfloor(tank, tank_data)
   local x, y, layer = get_position(tank.uid)
   local dir_sign = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-  if (is_floor_at(x + (0.6 * dir_sign), y, layer)
-      or not is_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
+  if (is_solid_floor_at(x + (0.6 * dir_sign), y, layer)
+      or not is_standable_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
   then
-    if (not is_floor_at(x + (0.6 * -dir_sign), y, layer)
-      and is_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
+    if (not is_solid_floor_at(x + (0.6 * -dir_sign), y, layer)
+      and is_standable_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
     then
       tank_data.state = TANK_STATE.CHANGING_DIRECTION
-      animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
+      animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION)
       tank.velocityx = 0.0
       tank.idle_counter = 0
     else
@@ -67,7 +82,7 @@ local function alientank_update_onfloor(tank, tank_data)
         local px = get_position(target)
         if (px - x < 0) ~= test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
           tank_data.state = TANK_STATE.CHANGING_DIRECTION
-          animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION, FRAME_TIME)
+          animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION)
           tank_data.reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES)
           tank.idle_counter = 0
         end
@@ -86,8 +101,10 @@ local function alientank_update_onfloor(tank, tank_data)
 end
 
 local function alientank_update_idle(tank, tank_data)
-  if tank_data.animation_timer == 0 then
-    animationlib.set_animation(tank_data, tank_data.animation_state, FRAME_TIME)
+  if tank_data.animation_state == ANIMATIONS.IDLE and tank.velocityx == 0.0 then
+    animationlib.set_animation(tank_data, ANIMATIONS.NONE)
+  elseif tank_data.animation_state == ANIMATIONS.NONE and tank.velocityx ~= 0.0 then
+    animationlib.set_animation(tank_data, ANIMATIONS.IDLE)
   end
   if tank.stun_timer > 0 then
     if tank.standing_on_uid ~= -1 then
@@ -95,7 +112,7 @@ local function alientank_update_idle(tank, tank_data)
     end
     return
   end
-  
+
   if tank.standing_on_uid == -1 then
     -- do not bounce on walls when on air
     if (tank.velocityx > 0) == test_flag(tank.flags, ENT_FLAG.FACING_LEFT) then
@@ -116,7 +133,6 @@ local function alientank_update_idle(tank, tank_data)
     alientank_update_onfloor(tank, tank_data)
   end
   tank_data.bomb_timer = math.max(tank_data.bomb_timer - 1, 0)
-  local spotted_player = false
   if tank_data.bomb_timer <= 0 then
     local x, y, layer = get_position(tank.uid)
     local target = get_entities_at(0, MASK.PLAYER, x, y, layer, 6.0)[1]
@@ -125,26 +141,34 @@ local function alientank_update_idle(tank, tank_data)
       and y - 2.0 <= py then
       tank_data.state = TANK_STATE.RELOADING;
       tank_data.bomb_timer = 150
-      spotted_player = true
-      animationlib.set_animation(tank_data, ANIMATIONS.SHOOTING, ANIMATIONS.SHOOTING.frame_time)
+      animationlib.set_animation(tank_data, ANIMATIONS.SHOOTING)
     end
   end
 end
 
 local function alientank_update_reloading(tank, tank_data)
-  if tank_data.animation_timer == 0 then
-    if tank_data.animation_state == ANIMATIONS.SHOOTING then
-      -- tank_data.state = TANK_STATE.IDLE
-      local dir = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-      local x, y, layer = get_position(tank.uid)
-      spawn(ENT_TYPE.ITEM_BOMB, x + 0.6 * dir, y + 0.1, layer, 0.12*dir, 0.08)
+  if tank_data.animation_state == ANIMATIONS.SHOOTING
+      and tank_data.animation_timer == 4
+  then
+    local dir = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
+    local x, y, layer = get_position(tank.uid)
+    local bomb_uid = spawn(ENT_TYPE.ITEM_BOMB, x + 0.6 * dir, y + 0.1, layer, 0.12*dir, 0.08)
+    local floor_at = get_entities_overlapping_hitbox(0, MASK.FLOOR | MASK.ACTIVEFLOOR, get_hitbox(bomb_uid), layer)[1]
+    if floor_at and test_flag(get_entity_flags(floor_at), ENT_FLAG.SOLID) then
+      local bomb = get_entity(bomb_uid)
+      local floor_x = get_position(floor_at)
+      bomb.x = floor_x + ((get_entity(floor_at).hitboxx + bomb.hitboxx) * -dir)
     end
-    animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
+    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMEC_BOMB_SPAWN, tank.uid):set_pitch(1.15)
+  end
+  if tank_data.animation_timer == 0 then
+    animationlib.set_animation(tank_data, ANIMATIONS.NONE)
   end
 
   if tank.stun_timer > 0 then return end
 
-  if tank_data.animation_state == ANIMATIONS.IDLE and tank_data.reload_timer <= 0 then
+  if tank_data.animation_state == ANIMATIONS.NONE and tank_data.reload_timer <= 0 then
+    animationlib.set_animation(tank_data, ANIMATIONS.IDLE)
     tank_data.state = TANK_STATE.IDLE
     tank_data.reload_timer = 200
   else
@@ -190,7 +214,7 @@ local function alientank_update(tank)
   elseif tank_data.state == TANK_STATE.CHANGING_DIRECTION then
     if tank_data.animation_timer == 0 then
       tank_data.state = TANK_STATE.IDLE
-      animationlib.set_animation(tank_data, ANIMATIONS.IDLE, FRAME_TIME)
+      animationlib.set_animation(tank_data, ANIMATIONS.IDLE)
       tank.flags = flip_flag(tank.flags, ENT_FLAG.FACING_LEFT)
       tank_data.was_facing_left = test_flag(tank.flags, ENT_FLAG.FACING_LEFT)
     end
@@ -198,7 +222,7 @@ local function alientank_update(tank)
     alientank_update_reloading(tank, tank_data)
   end
   tank.animation_frame = animationlib.get_animation_frame(tank_data.animation_state, tank_data.animation_timer)
-  tank_data.animation_timer = tank_data.animation_timer - 1
+  tank_data.animation_timer = animationlib.update_timer(tank_data.animation_state, tank_data.animation_timer)
 end
 
 function set_alientank(uid)
@@ -221,7 +245,7 @@ function set_alientank(uid)
     last_stun_timer = 0,
     is_stunned = false,
   }
-  animationlib.set_animation(tank.user_data, ANIMATIONS.IDLE, FRAME_TIME)
+  animationlib.set_animation(tank.user_data, ANIMATIONS.IDLE)
   set_post_statemachine(uid, alientank_update)
 end
 

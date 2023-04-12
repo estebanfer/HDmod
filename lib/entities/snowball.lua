@@ -72,7 +72,10 @@ end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE
 set_post_entity_spawn(function(self)
     self:set_pre_damage(function(self, damage_dealer)
         if damage_dealer ~= nil then
-            if damage_dealer.type.id == ENT_TYPE.ITEM_ROCK and damage_dealer.animation_frame ~= 16 then
+            if damage_dealer.type.id == ENT_TYPE.ITEM_ROCK
+                and celib.get_custom_entity(damage_dealer.uid, snowball_id)
+                and damage_dealer.animation_frame ~= 16
+            then
                 turn_into_rock(damage_dealer)
             end
         end

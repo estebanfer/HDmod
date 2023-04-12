@@ -52,12 +52,12 @@ end
 
 ---@param laser LightShot
 local function laser_set(laser)
-    ---@param _laser LightShot
-    ---@param collider Movable
     -- user_data
     laser.user_data = {
         ent_type = HD_ENT_TYPE.ITEM_LASER_TURRET;
     };
+    ---@param _laser LightShot
+    ---@param collider Movable
     set_pre_collision2(laser.uid, function (_laser, collider)
         if collider.type.search_flags & (MASK.PLAYER | MASK.MOUNT | MASK.MONSTER) ~= 0 then
             if collider.invincibility_frames_timer == 0 then
@@ -88,6 +88,7 @@ local function set_func(ent)
     end
     ent.flags = clr_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
     ent.flags = clr_flag(ent.flags, 22)
+    ---@param e Movable
     set_on_kill(ent.uid, function (e)
         local x, y, l = get_position(e.uid)
         get_entity(spawn(ENT_TYPE.FX_EXPLOSION, x, y, l, 0, 0)).last_owner_uid = e.last_owner_uid
@@ -113,11 +114,11 @@ local function shoot_laser(ent, xdiff, ydiff)
     commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_LASERTRAP_TRIGGER, ent.uid)
 end
 
-local function shoot_straight_laser(ent)
+local function shoot_horizontal_laser(ent)
     local x, y, l = get_position(ent.uid)
     local dir_x = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -1 or 1
     local laser = get_entity(spawn(ENT_TYPE.ITEM_LASERTRAP_SHOT, x+dir_x*0.74, y, l, dir_x*0.4, 0))
-    laser.last_owner_uid = ent.uid
+    laser.last_owner_uid = ent.overlay.uid
     laser_set(laser)
     laser.angle = ent.angle
     commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_LASERTRAP_TRIGGER, ent.uid)
@@ -128,7 +129,7 @@ local function move_to_angle(ent, to_angle, vel)
     if math.abs(diff) < vel then
         ent.angle = to_angle
     else
-        ent.angle = diff > 0 and ent.angle + vel or ent.angle - vel 
+        ent.angle = diff > 0 and ent.angle + vel or ent.angle - vel
     end
 end
 
@@ -188,7 +189,7 @@ local function update_func(ent, c_data)
         else --update, unattached
             if ent.overlay.type.search_flags & (MASK.PLAYER | MASK.MONSTER | MASK.MOUNT) ~= 0 then
                 if ent.idle_counter > 240 then
-                    shoot_straight_laser(ent)
+                    shoot_horizontal_laser(ent)
                     ent.idle_counter = 0
                 else
                     ent.idle_counter = ent.idle_counter + 1

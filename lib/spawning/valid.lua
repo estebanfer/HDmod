@@ -374,7 +374,14 @@ function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implem
 
 module.is_valid_greenknight_spawn = default_ground_monster_condition -- # TODO: Implement method for valid greenknight spawn
 
-function module.is_valid_alientank_spawn(x, y, l) return false end -- # TODO: Implement method for valid alientank spawn
+function module.is_valid_alientank_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
+	return (
+		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
+		and get_grid_entity_at(x, y+1, l) == -1
+		and default_ground_monster_condition(x, y, l)
+	)
+end
 
 function module.is_valid_critter_fish_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_fish spawn
 

@@ -150,11 +150,13 @@ set_post_entity_spawn(function(ent)
 						end, SPAWN_TYPE.ANY, MASK.FX, ENT_TYPE.ITEM_RUBBLE)
 						floor_ent:kill(false, nil)
 						clear_callback(rubble_spawn_cb)
-						add_moai_break_decoration(x - 1, y, l, FLOOR_SIDE.RIGHT)
-						add_moai_break_decoration(x + 1, y, l, FLOOR_SIDE.LEFT)
-						add_moai_break_decoration(x, y - 1, l, FLOOR_SIDE.TOP)
-						add_moai_break_decoration(x, y + 1, l, FLOOR_SIDE.BOTTOM)
 						remove_moai_veil()
+						if y >= roomgenlib.global_levelassembly.moai_exit.y then
+							add_moai_break_decoration(x - 1, y, l, FLOOR_SIDE.RIGHT)
+							add_moai_break_decoration(x + 1, y, l, FLOOR_SIDE.LEFT)
+							add_moai_break_decoration(x, y - 1, l, FLOOR_SIDE.TOP)
+							add_moai_break_decoration(x, y + 1, l, FLOOR_SIDE.BOTTOM)
+						end
 					end
 				end
 			end

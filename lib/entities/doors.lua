@@ -92,6 +92,7 @@ end
 
 function module.create_door_exit_moai(x, y, l)
 	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	get_entity(door_bg).animation_frame = 1
 	local _w, _l, _t = hd_exit_levelhandling()

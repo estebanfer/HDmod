@@ -880,16 +880,12 @@ module.HD_TILENAME = {
 		description = "Snake from Snake Pit",
 	},
 	["O"] = {
-		-- # TODO: Moai ankh respawn mechanics
-		-- # TODO: Foreground Entity/Texture
 		phases = {
 			[3] = {
 				default = {
 					function(x, y, l)
 						local moai_texture_indices = { 0, 1, 8, 9, 16, 17, 24, 25, 32 } -- yada yada lazy programming yada yada
 						local moai_index = 1
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
-						texture_def.texture_path = "res/border_main_moai.png"
 						for yi = 0, -3, -1 do
 							for xi = 0, 2, 1 do
 								if (yi ~= 0 and xi == 1) then
@@ -898,8 +894,9 @@ module.HD_TILENAME = {
 									local block_uid = get_grid_entity_at(x+xi, y+yi, l)
 									if block_uid ~= -1 then
 										local moai_block = get_entity(block_uid)
-										moai_block:set_texture(define_texture(texture_def))
+										moai_block:set_texture(moailib.MOAI_BORDER_MAIN_TEXTURE)
 										moai_block.animation_frame = moai_texture_indices[moai_index]
+										moai_block:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
 										moai_index = moai_index + 1
 									end
 								end
@@ -930,7 +927,7 @@ module.HD_TILENAME = {
 							end
 						end
 						doorslib.create_door_exit_moai(x+1, y-3, l)
-						ankhmoailib.create_moai_veil(x, y, l)
+						moailib.create_moai_veil(x, y, l)
 					end,
 				},
 			},

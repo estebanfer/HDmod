@@ -75,6 +75,12 @@ local strings = {
     --ANUBIS TEXT
     hash_to_stringid(0x2a8b3bd5);
     get_string(hash_to_stringid(0x2a8b3bd5));
+    --EGGPLANT WORLD TITLE (AKA The Worm)
+    hash_to_stringid(0x719fb97e);
+    get_string(hash_to_stringid(0x719fb97e));
+    --EGGPLANT WORLD TEXT (AKA The Worm)
+    hash_to_stringid(0x3b418250);
+    get_string(hash_to_stringid(0x3b418250));
 }
 local I = {
     GENERIC_DEATH_TITLE_ID = 1; 
@@ -117,6 +123,10 @@ local I = {
     ANUBIS_TITLE_STRING = 38;
     ANUBIS_TEXT_ID = 39;
     ANUBIS_TEXT_STRING = 40;
+    EGGPLANT_WORLD_TITLE_ID = 41;
+    EGGPLANT_WORLD_TITLE_STRING = 42;
+    EGGPLANT_WORLD_TEXT_ID = 43;
+    EGGPLANT_WORLD_TEXT_STRING = 44;
 }
 local function reset_strings()
     for i=1, #strings do
@@ -140,11 +150,15 @@ local function update_custom_death_messages()
             end
             if d.ent_type == HD_ENT_TYPE.MONS_BABY_WORM then
                 change_string(strings[I.ALIEN_TITLE_ID], "BITTEN")
-                change_string(strings[I.ALIEN_TEXT_ID], "I hope I taste good atleast!")                
+                change_string(strings[I.ALIEN_TEXT_ID], "I hope I taste good atleast!")         
+                change_string(strings[I.EGGPLANT_WORLD_TITLE_ID], "BITTEN")
+                change_string(strings[I.EGGPLANT_WORLD_TEXT_ID], "I hope I taste good atleast!")               
             end
             if d.ent_type == HD_ENT_TYPE.MONS_BACTERIUM then
                 change_string(strings[I.MANTRAP_TITLE_ID], "INFECTED")
-                change_string(strings[I.MANTRAP_TEXT_ID], "I should've kept some distance!")   
+                change_string(strings[I.MANTRAP_TEXT_ID], "I should've kept some distance!")  
+                change_string(strings[I.EGGPLANT_WORLD_TITLE_ID], "INFECTED")
+                change_string(strings[I.EGGPLANT_WORLD_TEXT_ID], "I should've kept some distance!")   
             end
             if d.ent_type == HD_ENT_TYPE.MONS_GIANT_FROG then
                 change_string(strings[I.FROG_TITLE_ID], "CROAKED")

@@ -10,6 +10,7 @@ local tongue_tick = TONGUE_ACCEPTTIME
 local TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
 local TONGUE_STATE = nil
 local TONGUE_STATECOMPLETE = false
+local WORMTONGUE_RUMBLE_SOUND = nil -- Refers to a looped sound that we need to stop either on a new screen or shortly after the worm leaves
 
 module.tongue_spawned = false
 
@@ -61,7 +62,7 @@ local function tongue_exit()
 		local exit_x, exit_y, _ = get_position(exitdoor)
 		for _, damsel_uid in ipairs(damsels) do
 			local damsel = get_entity(damsel_uid)
-			local stuck_in_web = test_flag(damsel.more_flags, 9)
+			local stuck_in_web = test_flag(damsel.more_flags, 8)
 			local dead = test_flag(damsel.flags, ENT_FLAG.DEAD)
 			if (
 				(stuck_in_web == true)
@@ -93,6 +94,15 @@ local function tongue_exit()
 			
 			if options.hd_debug_scripted_enemies_show == false then
 				ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
+				-- Also make the players back item and held items invisible
+				if get_entity(ensnaredplayer.holding_uid) ~= nil then
+					local item = get_entity(ensnaredplayer.holding_uid)
+					item.flags = set_flag(item.flags, ENT_FLAG.INVISIBLE)
+				end
+				if get_entity(ensnaredplayer:worn_backitem()) ~= nil then
+					local item = get_entity(ensnaredplayer:worn_backitem())
+					item:remove()
+				end
 			end
 				-- disable interactions with anything else that may interfere with entering the door
 			ensnaredplayer.flags = clr_flag(ensnaredplayer.flags, ENT_FLAG.INTERACT_WITH_WEBS)-- disable interaction with webs
@@ -102,17 +112,20 @@ local function tongue_exit()
 			-- -- teleport player to the newly created invisible door (platform is at y+0.05)
 			-- move_entity(ensnaredplayer_uid, x, y+0.15, 0, 0)
 		end
-		
 		set_timeout(function()
-			
+			state.fadeout = 15
+		end, 115)
+		set_timeout(function()
+			state.fadein = 15
+		end, 145)
+		set_timeout(function()
+			state.loading = 1--SCREEN.INTRO?
 			state.screen_next = SCREEN.TRANSITION
 			state.world_next = state.world
 			state.level_next = state.level+1
 			state.theme_next = THEME.EGGPLANT_WORLD
-			state.loading = 1--SCREEN.INTRO?
 			state.pause = 0
-
-		end, 55)
+		end, 146)
 	end
 	
 	-- hide worm tongue
@@ -139,7 +152,6 @@ local function onframe_tonguetimeout()
 						(stuck_in_web == true)
 					) then
 						if tongue_tick <= 0 then
-							spawn_entity(ENT_TYPE.LOGICAL_BOULDERSPAWNER, x, y, l, 0, 0)
 							TONGUE_STATE = TONGUE_SEQUENCE.RUMBLE
 						else
 							tongue_tick = tongue_tick - 1
@@ -149,23 +161,32 @@ local function onframe_tonguetimeout()
 					end
 				end
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
+				-- Start the rumble sound and shake screen
+				if WORMTONGUE_RUMBLE_SOUND == nil then
+					commonlib.shake_camera(180, 180, 3, 3, 3, false)
+					WORMTONGUE_RUMBLE_SOUND = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1)
+				end
 				set_timeout(function()
 					if WORMTONGUE_BG_UID ~= nil then
 						local worm_background = get_entity(WORMTONGUE_BG_UID)
 						worm_background.animation_frame = 7
 					else message("WORMTONGUE_BG_UID is nil :(") end
 					
-					-- # TODO: Method to animate rubble better.
-					for _ = 1, 3, 1 do
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
-						spawn_entity(ENT_TYPE.ITEM_RUBBLE, x, y, l, ((math.random()*1.5)-1), ((math.random()*1.5)-1))
+					for _ = 1, 45, 1 do
+						local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
+						-- Area specific rubble
+						if state.theme == THEME.JUNGLE then
+							rubble.animation_frame = 8
+						end
+						if state.theme == THEME.ICE_CAVES then
+							rubble.animation_frame = 40
+						end
 					end
 					
 					local blocks_to_break = get_entities_at(
 						0, MASK.FLOOR,
 						x, y, l,
-						2.0
+						3.0
 					)
 					for _, block_uid in pairs(blocks_to_break) do
 						local entity_type = get_entity(block_uid).type.id
@@ -184,6 +205,8 @@ local function onframe_tonguetimeout()
 					local ent_texture = define_texture(texture_def)
 					
 					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+					commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_BG_UID, 1)
+					commonlib.shake_camera(20, 20, 12, 12, 12, false)
 					local worm_background = get_entity(WORM_BG_UID)
 					worm_background:set_texture(ent_texture)
 					worm_background.animation_frame = 5
@@ -208,7 +231,7 @@ local function onframe_tonguetimeout()
 										return false
 									end
 								else
-									ent.width, ent.height = ent.width + 0.1, ent.height + 0.1
+									ent.width, ent.height = ent.width + 0.08, ent.height + 0.08
 								end
 							end
 						end
@@ -252,10 +275,26 @@ local function onframe_tonguetimeout()
 				end, 40)
 				TONGUE_STATECOMPLETE = true
 			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then
+				-- Quick fix: the player can become visible again during this sequence if they have iFrames during it, so let's keep setting them to invisible to avoid this
+				local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
+				if #ensnaredplayers > 0 then
+					for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
+						local ensnaredplayer = get_entity(ensnaredplayer_uid)				
+						if options.hd_debug_scripted_enemies_show == false then
+							ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
+							-- Also make the players back item and held items invisible
+							if get_entity(ensnaredplayer.holding_uid) ~= nil then
+								local item = get_entity(ensnaredplayer.holding_uid)
+								item.flags = set_flag(item.flags, ENT_FLAG.INVISIBLE)
+							end
+							if get_entity(ensnaredplayer:worn_backitem()) ~= nil then
+								local item = get_entity(ensnaredplayer:worn_backitem())
+								item:remove()
+							end
+						end
+					end
+				end
 				set_timeout(function()
-					-- message("boulder deletion at state.time_level: " .. tostring(state.time_level))
-					local boulder_spawners = get_entities_by_type(ENT_TYPE.LOGICAL_BOULDERSPAWNER)
-					kill_entity(boulder_spawners[1])
 					
 					local entity = get_entity(WORMTONGUE_UID)
 					entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
@@ -265,7 +304,14 @@ local function onframe_tonguetimeout()
 
 					TONGUE_STATE = TONGUE_SEQUENCE.GONE
 				end, 40)
-				
+				set_timeout(function()
+					-- Stop the rumble grumble
+					if WORMTONGUE_RUMBLE_SOUND ~= nil then
+						WORMTONGUE_RUMBLE_SOUND:stop()
+					end			
+					WORMTONGUE_RUMBLE_SOUND = nil
+				end, 50)
+
 				TONGUE_STATECOMPLETE = true
 				
 				return false
@@ -273,6 +319,42 @@ local function onframe_tonguetimeout()
 		end
 	end
 end
+-- If we don't stop the rumble sound in the timeout, we need to stop it here
+set_callback(function()
+	if WORMTONGUE_RUMBLE_SOUND ~= nil then
+		WORMTONGUE_RUMBLE_SOUND:stop()
+	end
+	WORMTONGUE_RUMBLE_SOUND = nil
+end, ON.SCREEN)
+-- Fix having the wrong tileset on transition
+set_callback(function()
+    if state.screen == SCREEN.TRANSITION then
+        if state.theme_next == THEME.EGGPLANT_WORLD then
+            for _, v in ipairs(get_entities_by({ENT_TYPE.FLOOR_TUNNEL_NEXT, ENT_TYPE.FLOOR_TUNNEL_CURRENT}, MASK.ANY, LAYER.BOTH)) do
+                local fx, fy, fl = get_position(v)
+                local old_floor = get_entity(v)
+                old_floor:remove()
+                local new_floor = get_entity(spawn_on_floor(ENT_TYPE.FLOORSTYLED_GUTS, fx, fy, fl))
+				new_floor.animation_frame = 31
+				set_global_timeout(function()
+					new_floor:decorate_internal()
+				end, 1)
+            end
+			for _, v in ipairs(get_entities_by({ENT_TYPE.BG_DOOR}, MASK.ANY, LAYER.BOTH)) do
+				local ent = get_entity(v)
+				ent:set_texture(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_2)
+			end
+			for _, v in ipairs(get_entities_by({ENT_TYPE.BG_LEVEL_BACKWALL}, MASK.ANY, LAYER.BOTH)) do
+				local ent = get_entity(v)
+				ent:set_texture(TEXTURE.DATA_TEXTURES_BG_EGGPLANT_0)
+			end
+			for _, v in ipairs(get_entities_by({ENT_TYPE.MIDBG}, MASK.ANY, LAYER.BOTH)) do
+				local ent = get_entity(v)
+				ent:destroy()
+			end
+        end
+    end
+end, ON.POST_LOAD_SCREEN)
 
 function module.create_wormtongue(x, y, l)
 	-- message("created wormtongue:")
@@ -283,14 +365,64 @@ function module.create_wormtongue(x, y, l)
 	local sticky = get_entity(stickytrap_uid)
 	sticky.flags = set_flag(sticky.flags, ENT_FLAG.INVISIBLE)
 	sticky.flags = clr_flag(sticky.flags, ENT_FLAG.SOLID)
+	sticky.user_data = {
+		orig_x = x; -- Original x position
+		orig_y = y; -- Original y position
+		xelas = 0; -- A multiplier for the jiggle effect
+		yelas = 0;
+		counter = 0; -- Counts up, used for cos and sin functions
+	}
 	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
 	local balls = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL) -- HAH balls
+	-- Cool elastic effect when an entity sticks onto the tongue
+	sticky:set_post_update_state_machine(function(self)
+		--check if an entity is in the tongue
+		local sx, sy, _ = get_position(self.uid)
+		local d = self.user_data
+		local checkradius = 1
+		for _, v in ipairs(get_entities_at(0, MASK.PLAYER | MASK.MONSTER | MASK.ITEM, sx, sy-1, self.layer, checkradius)) do
+			if v ~= sticky.uid then
+				local mons = get_entity(v)
+				d.xelas = d.xelas + math.abs(mons.velocityx)*1.1
+				d.yelas = d.yelas + math.abs(mons.velocityy)
+				if d.xelas > 0.125 then d.xelas = 0.125 end
+				if d.yelas > 0.125 then d.yelas = 0.125 end
+				-- if the tongue is bobbing at all, move all entities downwards a bit but dont use velocity so it doesnt bob the tongue anymore
+				--[[
+				for reasons beyond my understanding, trying to directly manipulate the entity that is stuck onto the sticky trap
+				moves the sticky trap itself. i have absolutely no idea why it does this, and i cant figure out how to fix it.
+				good luck!
+				~erictran
+				if test_flag(mons.flags, ENT_FLAG.INTERACT_WITH_WEBS) and (d.xelas ~= 0 or d.yelas ~= 0) then
+					mons.y = mons.y - 0.01
+				end
+				]]
+			end
+		end
+		-- Decrease counters and our cos and sin multipliers
+		d.counter = d.counter + 0.36
+		if d.xelas > 0 then
+			d.xelas = d.xelas - 0.0075
+		end
+		if d.yelas > 0 then
+			d.yelas = d.yelas - 0.0075
+		end
+		if d.xelas < 0.015 then
+			d.xelas = 0
+		end
+		if d.yelas < 0.015 then
+			d.yelas = 0
+		end
+		-- Jiggle effect
+		self.x = d.orig_x+math.cos(d.counter)*d.xelas
+		self.y = d.orig_y+math.sin(d.counter)*d.yelas
+	end)
 	if #balls > 0 then
 		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
 		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
 		local ent_texture = define_texture(texture_def)
 		
-		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y-1.4, l, 0, 0)
 		local worm_background = get_entity(WORMTONGUE_BG_UID)
 		worm_background:set_texture(ent_texture)
 		worm_background.animation_frame = 8

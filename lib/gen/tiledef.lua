@@ -17,6 +17,7 @@ local alienlordlib = require 'lib.entities.alienlord'
 local module = {}
 
 optionslib.register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple", nil, false) -- Defaults to S2
+optionslib.register_option_bool("hd_unused_iceblockempty", "Unused: Enable unused Iceblock/empty tiles", nil, false)
 -- optionslib.register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", nil, false) -- Defaults to S2
 
 -- retains HD tilenames
@@ -1264,7 +1265,11 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					-- function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l) end,
+					function(x, y, l)
+						if (options.hd_unused_iceblockempty) then
+							spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l)
+						else return 0 end
+					end,
 					function(x, y, l) return 0 end,
 				},
 			}

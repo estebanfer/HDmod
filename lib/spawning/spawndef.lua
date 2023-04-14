@@ -49,8 +49,10 @@ module.global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, v
 module.global_spawn_procedural_spiderlair_ground_enemy = define_procedural_spawn("hd_procedural_spiderlair_ground_enemy", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use it for ground enemy spawns
 
 module.global_spawn_procedural_landmine = define_procedural_spawn("hd_procedural_landmine", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
+module.global_spawn_procedural_wetfur_landmine = define_procedural_spawn("hd_procedural_wetfur_landmine", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_LANDMINE, x, y, l) end, validlib.is_valid_landmine_spawn)
 
 module.global_spawn_procedural_bouncetrap = define_procedural_spawn("hd_procedural_bouncetrap", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
+module.global_spawn_procedural_wetfur_bouncetrap = define_procedural_spawn("hd_procedural_wetfur_bouncetrap", function(x, y, l) spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_SPRING_TRAP, x, y, l) end, validlib.is_valid_bouncetrap_spawn)
 
 module.global_spawn_procedural_caveman = define_procedural_spawn("hd_procedural_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)
 module.global_spawn_procedural_worm_jungle_caveman = define_procedural_spawn("hd_procedural_worm_jungle_caveman", createlib.create_caveman, validlib.is_valid_caveman_spawn)
@@ -81,6 +83,7 @@ module.global_spawn_procedural_hcastle_frog = define_procedural_spawn("hd_proced
 module.global_spawn_procedural_worm_jungle_frog = define_procedural_spawn("hd_procedural_worm_jungle_frog", createlib.create_frog, validlib.is_valid_frog_spawn)
 
 module.global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
+module.global_spawn_procedural_wetfur_yeti = define_procedural_spawn("hd_procedural_wetfur_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 module.global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 
 module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, validlib.is_valid_hawkman_spawn)
@@ -96,6 +99,7 @@ module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_proced
 module.global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, validlib.is_valid_critter_maggot_spawn)
 
 module.global_spawn_procedural_critter_penguin = define_procedural_spawn("hd_procedural_critter_penguin", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERPENGUIN, x, y, l) end, validlib.is_valid_critter_penguin_spawn)
+module.global_spawn_procedural_wetfur_critter_penguin = define_procedural_spawn("hd_procedural_wetfur_critter_penguin", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERPENGUIN, x, y, l) end, validlib.is_valid_critter_penguin_spawn)
 
 module.global_spawn_procedural_critter_locust = define_procedural_spawn("hd_procedural_critter_locust", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CRITTERLOCUST, x, y, l) end, validlib.is_valid_critter_locust_spawn)
 
@@ -320,11 +324,18 @@ function module.set_chances(room_gen_ctx)
                 end
             end
             
-            -- # TODO: Yeti Kingdom procedural spawn settings. Investigate HD's code to verify what needs to be set/restricted here.
-            -- if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
-            -- 	room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
-            -- else
-            -- end
+            -- # TODO: Yeti Kingdom procedural spawn validation differences. Investigate HD's code to verify what needs to be set/restricted.
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_landmine, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bouncetrap, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yeti, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_penguin, 0)
+            else
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_landmine, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_bouncetrap, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_yeti, 0)
+            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_critter_penguin, 0)
+            end
 
             if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
                 room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_ufofeeling_turret, 0)

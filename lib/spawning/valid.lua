@@ -364,7 +364,7 @@ function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO:
 
 function module.is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
 
-function module.is_valid_critter_penguin_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_penguin spawn
+module.is_valid_critter_penguin_spawn = default_ground_monster_condition
 
 function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 
@@ -682,7 +682,14 @@ function module.is_valid_queenbee_spawn(x, y, l)
 	return _template_hd >= 1300 and _template_hd < 1400 and check_empty_space(x, y, l, 3, 3)
 end
 
-module.is_valid_ufo_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid ufo spawn
+function module.is_valid_ufo_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
+	return (
+		-- HD also avoids the coffin rooms here, but I think the API already accounts for that since we set S2 coffin rooms
+		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
+		and default_ceiling_entity_condition
+	)
+end
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1

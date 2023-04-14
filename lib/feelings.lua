@@ -154,9 +154,16 @@ module.HD_FEELING_DEFAULTS = {
 
 local global_feelings = nil
 local MESSAGE_FEELING = nil
+local tongue_spawned = false
+local worm_visited = false
+local mothership_visited = false
 
+-- Should be used at the start of a run or warping into a run as a part of testing.
 function module.init()
 	global_feelings = commonlib.TableCopy(module.HD_FEELING_DEFAULTS)
+	tongue_spawned = false
+	worm_visited = false
+	mothership_visited = false
 end
 
 set_callback(function()
@@ -234,8 +241,9 @@ end
 
 -- Set level feelings (not to be confused with `feeling_set`)
 function module.onlevel_set_feelings()
+	-- at the start of each world, reset all feelings
 	if state.level == 1 then
-		module.init()
+		global_feelings = commonlib.TableCopy(module.HD_FEELING_DEFAULTS)
 	end
 
 	-- Vaults
@@ -301,9 +309,16 @@ function module.onlevel_set_feelings()
 		end
 	end
 	
+	--[[
+		Worm
+	]]
+	if state.theme == THEME.EGGPLANT_WORLD then
+		worm_visited = true
+	end
+
 	-- Worm Tongue
 	if (
-		wormtonguelib.tongue_spawned == false
+		tongue_spawned == false
 		and state.level == 1
 		and (
 			state.theme == THEME.JUNGLE or
@@ -312,7 +327,7 @@ function module.onlevel_set_feelings()
 		and module.feeling_check(module.FEELING_ID.RESTLESS) == false
 	) then
 		module.feeling_set_once(module.FEELING_ID.WORMTONGUE, {1})
-		wormtonguelib.tongue_spawned = true
+		tongue_spawned = true
 	end
 
 	--[[
@@ -328,15 +343,19 @@ function module.onlevel_set_feelings()
 		
 		if state.level == 4 then
 			if global_feelings[module.FEELING_ID.MOTHERSHIP_ENTRANCE].load == nil then
+				-- This level feeling only, and always, occurs on level 3-4.
+					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
+					-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
+					-- Only available once in a run
 				module.feeling_set_once(module.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
 			else
 				global_feelings[module.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
-				feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
+				if (worm_visited and mothership_visited) then
+					feeling_set(module.FEELING_ID.MOAI, {4})
+				else 
+					feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
+				end
 			end
-			-- This level feeling only, and always, occurs on level 3-4.
-				-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
-				-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
-				-- Only available once in a run
 		end
 		
 		if (
@@ -369,13 +388,10 @@ function module.onlevel_set_feelings()
 		feeling_set(module.FEELING_ID.SACRIFICIALPIT, {state.level})
 	end
 	--[[
-		Neo Bab + Eggplant World
+		Mothership
 	]]
-	-- We check if the Moai needs to spawn in 3-4 if we are in the Mothership (Neo Bab) or Worm (Eggplant World) on level 3.
-	if state.theme == THEME.NEO_BABYLON or state.theme == THEME.EGGPLANT_WORLD then
-		if state.level == 3 and state.world == 3 then
-			feeling_set(module.FEELING_ID.MOAI, {4})
-		end
+	if state.theme == THEME.NEO_BABYLON then
+		mothership_visited = true
 	end
 	
 	-- Currently hardcoded but keeping this here just in case

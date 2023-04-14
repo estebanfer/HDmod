@@ -51,9 +51,7 @@ local function init_posttile_onstart()
 		POSTTILE_STARTBOOL = true
 
 		feelingslib.init()
-		wormtonguelib.tongue_spawned = false
 	end
-	-- message("wormtonguelib.tongue_spawned: " .. tostring(wormtonguelib.tongue_spawned))
 end
 
 local function levelcreation_init()

@@ -12,8 +12,6 @@ local TONGUE_STATE = nil
 local TONGUE_STATECOMPLETE = false
 local WORMTONGUE_RUMBLE_SOUND = nil -- Refers to a looped sound that we need to stop either on a new screen or shortly after the worm leaves
 
-module.tongue_spawned = false
-
 function module.init()
 	WORMTONGUE_UID = nil
 	WORMTONGUE_BG_UID = nil

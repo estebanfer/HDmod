@@ -13,7 +13,12 @@ local function spawn_web_ball_contents(x, y, l)
     local contents = {}
     if math.random(32) == 1 then
         contents[#contents+1] = spawn(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0)
-        kill_entity(contents[#contents], false)
+        local caveman = get_entity(contents[#contents])
+        caveman.health = 0
+        caveman.last_state = caveman.state
+        caveman.state = 22
+        caveman.stand_counter = 0
+        caveman.flags = set_flag(caveman.flags, ENT_FLAG.DEAD)
     elseif math.random(24) == 1 then
         for i = 1, 3, 1 do
             contents[#contents+1] = babyspiderlib.create_critterbabyspider(x, y, l)

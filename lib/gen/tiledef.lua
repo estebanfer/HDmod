@@ -18,7 +18,6 @@ local module = {}
 
 optionslib.register_option_bool("hd_og_floorstyle_temple", "OG: Set temple's floorstyle to stone instead of temple", nil, false) -- Defaults to S2
 optionslib.register_option_bool("hd_unused_iceblockempty", "Unused: Enable unused Iceblock/empty tiles", nil, false)
--- optionslib.register_option_bool("hd_og_ankhprice", "OG: Set the Ankh price to a constant $50,000 like it was in HD", nil, false) -- Defaults to S2
 
 -- retains HD tilenames
 module.HD_TILENAME = {
@@ -1076,12 +1075,7 @@ module.HD_TILENAME = {
 						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 						spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
 						spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
-
-						-- if options.hd_og_ankhprice == true then
-							ankh_mov.price = 50000
-						-- else
-							-- ankh_mov.price = -- # TODO: Figure out what S2 does to calculate hedject shop price
-						-- end
+						ankh_mov.price = 50000
 					end,
 				},
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l) end,},

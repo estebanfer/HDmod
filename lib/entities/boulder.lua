@@ -1,8 +1,5 @@
 local module = {}
 
-optionslib.register_option_bool("hd_og_boulder_agro_disable", "OG: Boulder - Don't enrage shopkeepers", nil, false) -- Defaults to HD
--- # TODO: Influence the velocity of the boulder on every frame.
--- optionslib.register_option_bool("hd_og_boulder_phys", "OG: Boulder - Adjust to have the same physics as HD", nil, false)
 optionslib.register_option_bool("hd_debug_boulder_info", "Boulder - Show info", nil, false, true)
 
 local BOULDER_UID = nil
@@ -35,12 +32,10 @@ function module.onframe_ownership_crush_prevention()
         if boulders[1] then
             BOULDER_UID = boulders[1]
             -- Obtain the last owner of the idol upon disturbing it. If no owner caused it, THEN select the first player alive.
-            if options.hd_og_boulder_agro_disable == false then
-                local boulder = get_entity(BOULDER_UID)
+            local boulder = get_entity(BOULDER_UID)
 
-                for i, player in ipairs(players) do
-                    boulder.last_owner_uid = player.uid
-                end
+            for i, player in ipairs(players) do
+                boulder.last_owner_uid = player.uid
             end
         end
     else -- boulder crush prevention

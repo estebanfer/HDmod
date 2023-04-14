@@ -2,11 +2,6 @@
 
 local module = {}
 
--- # TODO: revise from the old system, removing old uses.
--- Then, rename it to `hd_og_use_s2_spawns`
--- Reimplement it into `is_valid_*_spawn` methods to change spawns.
-optionslib.register_option_bool("hd_og_procedural_spawns_disable", "OG: Use S2 instead of HD procedural spawning conditions", nil, false) -- Defaults to HD
-
 module.HD_COLLISIONTYPE = {
 	AIR_TILE_1 = 1,
 	AIR_TILE_2 = 2,
@@ -1023,10 +1018,10 @@ local function conflictdetection_floortrap(hdctype, x, y, l)
 	local conflict = false
 	local scan_width = 1 -- check 1 across
 	local scan_height = 1 -- check the space above
-	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP and options.hd_og_procedural_spawns_disable == true then
+	if hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP then
 		scan_width = 1 -- check 1 across (1 on each side)
 		scan_height = 0 -- check the space above + 1 more
-	elseif hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL and options.hd_og_procedural_spawns_disable == true then
+	elseif hdctype == hdtypelib.HD_COLLISIONTYPE.FLOORTRAP_TALL then
 		scan_width = 3 -- check 3 across (1 on each side)
 		scan_height = 2 -- check the space above + 1 more
 	end

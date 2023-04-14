@@ -139,6 +139,8 @@ module.HD_SUBCHUNKID = {
     
     YETIKINGDOM_YETIKING = 301,
     YETIKINGDOM_YETIKING_NOTOP = 302,
+    YETIKINGDOM_YETIKING_DROP = 303,
+    YETIKINGDOM_YETIKING_DROP_NOTOP = 304,
     
     ICE_CAVES_ROW_FIVE = 355,
     
@@ -2197,6 +2199,12 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM] = {
 		[module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP] = {
 			{"ii000000iijiii00iiij0jj0000jj0000000000000000000000000Y0000000::00::00iiiiiiiiii"}
 		},
+		[module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP] = {
+			{"iiiiiiiiiijiiiiiiiij0jjjjjjjj0000000000000000000000000Y0000000::00::00iii----iii"}
+		},
+		[module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP] = {
+			{"ii000000iijiii00iiij0jj0000jj0000000000000000000000000Y0000000::00::00iii----iii"}
+		},
 		[module.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"0:::000000i-----i000i00000i000ig0000ii00i--0001i00i0000011i01sssss11101111111111"}},
 		[module.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"000000:::0000i-----i000i00000i00ii000g0i00i1000--i0i1100000i0111sssss11111111111"}},
 		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000000000000000000000000g0000001--11--10010000001011ssssss111111111111"}},
@@ -2328,10 +2336,11 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.YETIKINGDOM].postPathMethod
 	local spot = spots[math.random(#spots)]
 	local subchunk_id_yeti = module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
 	if spot.subchunk_id ~= nil then
-		if (
-			spot.subchunk_id == module.HD_SUBCHUNKID.PATH_NOTOP or
-			spot.subchunk_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP
-		) then
+		if spot.subchunk_id == module.HD_SUBCHUNKID.PATH_DROP_NOTOP then
+			subchunk_id_yeti = module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
+		elseif spot.subchunk_id == module.HD_SUBCHUNKID.PATH_DROP then
+			subchunk_id_yeti = module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP
+		elseif spot.subchunk_id == module.HD_SUBCHUNKID.PATH_NOTOP then
 			subchunk_id_yeti = module.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 		end
 	end

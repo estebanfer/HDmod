@@ -10,10 +10,10 @@ local mute_pick_sound = false
 
 local crysknife_texture_id
 do
-    local crysknife_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+	local crysknife_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
 
-    crysknife_texture_def.texture_path = "res/crysknife.png"
-    crysknife_texture_id = define_texture(crysknife_texture_def)
+	crysknife_texture_def.texture_path = "res/crysknife.png"
+	crysknife_texture_id = define_texture(crysknife_texture_def)
 end
 
 set_callback(function ()
@@ -23,7 +23,12 @@ end, ON.PRE_LEVEL_GENERATION)
 -- I should update the custom entities lib to make it not necessary to make a custom powerup for a pickup
 local function crysknife_powerup_set(entity)
 	set_pre_statemachine(entity.uid, function (p)
-		p_uid = p.uid
+		if test_flag(p.flags, ENT_FLAG.DEAD) and not entity_has_item_type(p.uid, ENT_TYPE.ITEM_POWERUP_ANKH) then
+			p_uid = -1
+			clear_callback()
+		else
+			p_uid = p.uid
+		end
 	end)
 end
 
@@ -63,7 +68,7 @@ local function crysknife_pickup_set(entity)
 end
 
 local function crysknife_picked(_, player, _)
-    celib.do_pickup_effect(player.uid, crysknife_texture_id, 144)
+	celib.do_pickup_effect(player.uid, crysknife_texture_id, 144)
 end
 
 crysknife_powerup_id = celib.new_custom_powerup(crysknife_powerup_set, crysknife_powerup_update, crysknife_texture_id, 9, 0, nil, celib.UPDATE_TYPE.POST_STATEMACHINE)
@@ -73,8 +78,12 @@ celib.set_powerup_drop(crysknife_powerup_id, crysknife_pickup_id)
 local module = {}
 
 function module.create_crysknife(x, y, l)
-	return celib.set_custom_entity(spawn_on_floor(ENT_TYPE.ITEM_PICKUP_COMPASS, x, y, l),
-									crysknife_pickup_id)
+	return celib.set_custom_entity(
+		spawn_on_floor(ENT_TYPE.ITEM_PICKUP_COMPASS, x, y, l),
+		crysknife_pickup_id
+	)
 end
+
+optionslib.register_entity_spawner("Crysknife", module.create_crysknife)
 
 return module

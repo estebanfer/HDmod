@@ -45,7 +45,7 @@ require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
 
 meta.name = "HDmod - Demo"
-meta.version = "1.03.1"
+meta.version = "1.04"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 

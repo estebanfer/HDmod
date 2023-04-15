@@ -6,29 +6,53 @@ local alienlord_texture_id
 do
     local alienlord_texture_def = TextureDefinition.new()
     alienlord_texture_def.width = 1024
-    alienlord_texture_def.height = 256
+    alienlord_texture_def.height = 512
     alienlord_texture_def.tile_width = 256
     alienlord_texture_def.tile_height = 256
     alienlord_texture_def.texture_path = 'res/alienlord.png'
     alienlord_texture_id = define_texture(alienlord_texture_def)
 end
-
+local ANIMATION_INFO = {
+    IDLE = {
+        start = 0;
+        finish = 3;
+        speed = 5;
+    };
+    IDLE_FAST = {
+        start = 0;
+        finish = 3;
+        speed = 7;
+    };
+    ATTACK = {
+        start = 4;
+        finish = 6;
+        speed = 6;
+    };
+    CAMERA_STUN = {
+        start = 7;
+        finish = 7;
+        speed = 1;
+    };
+}
 local function alienlord_update(ent)
     ent.x, ent.y = ent.spawn_x, ent.spawn_y
+    --- ANIMATION
     -- Increase animation timer
     ent.user_data.animation_timer = ent.user_data.animation_timer + 1
     --- Animate the entity and reset the timer
-    if ent.user_data.animation_timer >= ent.user_data.animation_speed then
+    if ent.user_data.animation_timer >= ent.user_data.animation_info.speed then
         ent.user_data.animation_timer = 1
         -- Advance the animation
         ent.user_data.animation_frame = ent.user_data.animation_frame + 1
         -- Loop if the animation has reached the end
-        if ent.user_data.animation_frame > ent.user_data.animation_end then
-            ent.user_data.animation_frame = ent.user_data.animation_start
+        if ent.user_data.animation_frame > ent.user_data.animation_info.finish then
+            ent.user_data.animation_frame = ent.user_data.animation_info.start
         end
     end
     -- Change the actual animation frame
     ent.animation_frame = ent.user_data.animation_frame
+    ---
+
     -- Stop the base entity from attacking
     ent.next_attack_timer = 5
     -- Our own attack timer and spawning system
@@ -40,24 +64,39 @@ local function alienlord_update(ent)
                 player_in_range = true
             end
         end
-        if player_in_range then
+        if player_in_range or ent.user_data.attack_timer <= 12 then
             ent.user_data.attack_timer = ent.user_data.attack_timer - 1
             -- Update the animation speed to reflect this
-            ent.user_data.animation_speed = 5
+            ent.user_data.animation_info = ANIMATION_INFO.IDLE
         else
-            ent.user_data.animation_speed = 7
+            ent.user_data.animation_info = ANIMATION_INFO.IDLE_FAST
         end
     end
-    -- Perform an attack
-    if ent.user_data.attack_timer <= 0 then
-        -- Spawn the shot
-        local x, y, l = get_position(ent.uid)
-        local lor = 1
-        if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then lor = -1 end
-        local atk = get_entity(spawn(ENT_TYPE.ITEM_SCEPTER_ANUBISSHOT, x+(0.5*lor), y+0.15, l, 0, 0))
-        atk.last_owner_uid = ent.uid
+    -- Update animation info right before an attack
+    if ent.user_data.attack_timer == 12 then
+        ent.user_data.animation_info = ANIMATION_INFO.ATTACK
+        ent.user_data.animation_timer = 0
+        ent.user_data.animation_frame = ent.user_data.animation_info.start
+    end
+    if ent.user_data.attack_timer < 12 then
+        ent.user_data.animation_info = ANIMATION_INFO.ATTACK        
+    end
+    if ent.user_data.attack_timer == 0 then
         -- Reset the attack timer
         ent.user_data.attack_timer = ent.user_data.attack_timer_base
+        -- Perform an attack
+        local x, y, l = get_position(ent.uid)
+        local lor = 1
+        if ent.user_data.facing_left then lor = -1 end
+        local atk = get_entity(spawn(ENT_TYPE.ITEM_SCEPTER_ANUBISSHOT, x+(0.5*lor), y+0.15, l, 0, 0))
+        atk.last_owner_uid = ent.uid
+    end
+    -- Camera stun
+    if ent.stun_timer > 0 then
+        ent.user_data.animation_info = ANIMATION_INFO.CAMERA_STUN
+    end
+    if ent.user_data.attack_timer <= 0 then
+
     end
     -- Force the alienlord to face a fixed direction based on if their room template was flipped
     if ent.user_data.facing_left then
@@ -88,16 +127,14 @@ local function alienlord_set(uid)
 
         -- ANIMATION
         animation_timer = 1;
-        animation_speed = 5; -- Number of game frames before the animation_frame is increased
-        animation_start = 0; -- What frame the animation goes back to before looping
-        animation_end = 3; -- When the animation is this number, it will loop back to the start instead of increasing animation_frame
-        animation_frame = 0; -- We need our own animation frame because the actual animation frame keeps getting changed by the statemachine
+        animation_frame = 0;
+        animation_info = ANIMATION_INFO.IDLE; -- Info about animation speed, start frame, stop frame
 
         -- ATTACK
         attack_timer = 50;
         attack_timer_base = 150; -- Not sure what the HD value is but we can just change it in the future
     };
-    ent.animation_frame = ent.user_data.animation_start
+    ent.animation_frame = ent.user_data.animation_info.start
     -- Create an inactive alienqueen that gets removed whenever our active entity dies. We do this for the squishy alien SFX
     ent.user_data.alien_sound = get_entity(spawn(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0))
     ent.user_data.alien_sound.flags = set_flag(ent.user_data.alien_sound.flags, ENT_FLAG.INVISIBLE)
@@ -146,7 +183,6 @@ local function alienlord_set(uid)
 end
 set_post_entity_spawn(function(ent)
     if state.theme ~= THEME.TEMPLE then
-        -- prinspect(ent.speed)
         ent.speed = 0.05
     end
 end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_SCEPTER_ANUBISSHOT)
@@ -162,5 +198,19 @@ register_option_button("spawn_alienlord", "spawn_alienlord", 'spawn_alienlord', 
     local x, y, l = get_position(players[1].uid)
     module.create_alienlord(x-5, y, l)
 end)
+
+-- Stop the alienqueen from taking damage from the alienlord's attacks
+set_post_entity_spawn(function(self)
+    self:set_pre_damage(function(self, other)
+        if other.last_owner_uid ~= -1 then
+            local attacker = get_entity(other.last_owner_uid)
+            if type(attacker.user_data) == "table" then
+                if attacker.user_data.ent_type == HD_ENT_TYPE.MONS_ALIENLORD then
+                    return true
+                end
+            end
+        end
+    end)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_ALIENQUEEN)
 
 return module

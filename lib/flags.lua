@@ -207,15 +207,20 @@ local function onloading_levelrules()
 	-- 	-- Build Yama in Tiamat's chamber.
 	-- changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,THEME.TIAMAT)
 
-	-- -- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
-	-- -- message(format_name)
+	-- if (
+	-- 	state.screen_next == SCREEN.TRANSITION
+	-- ) then
+	-- 	message(F'onloading_levelrules(): Set loading target: state.*_next: s{state.screen_next}, w{state.world_next}, l{state.level_next}, t{state.theme_next}')
+	-- end
+
 
 	-- Demo Handling
 	if (
 		not options.hd_debug_demo_enable_all_worlds
 		and state.level == 4
+		and state.level_next == 1
 		and state.world == demolib.DEMO_MAX_WORLD
-		and state.screen_next ~= ON.DEATH
+		and state.screen_next == SCREEN.TRANSITION
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
 		set_global_timeout(function()

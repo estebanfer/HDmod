@@ -104,9 +104,12 @@ function module.onlevel_decorate_trees()
 				get_entity(floor_at_uid):destroy()
 			end
 
-			-- Update decoration if it isn't the top branch, that doesn't use DECORATION_TREE_VINE_TOP
-			if get_entity_type(get_grid_entity_at(x-1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP and
-					get_entity_type(get_grid_entity_at(x+1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP then
+			-- Update decoration if it isn't the top branch (or is RESTLESS or HAUNTEDCASTLE), that doesn't use DECORATION_TREE_VINE_TOP
+			if (get_entity_type(get_grid_entity_at(x-1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP and
+					get_entity_type(get_grid_entity_at(x+1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP) or
+					feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true or
+					feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+			then
 				local branch_uid = get_grid_entity_at(x, top_y-1, LAYER.FRONT)
 				get_entity(entity_get_items_by(branch_uid, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1]):destroy()
 				decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid, 0.03, 0.47, 0.5, false)

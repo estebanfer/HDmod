@@ -1,7 +1,5 @@
 local module = {}
 
-optionslib.register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD", nil, false) -- Defaults to HD
-
 local hauntedface_texture_def
 local hauntedgrass_texture_def
 do
@@ -85,19 +83,18 @@ end
 local vine_top_positions = {}
 -- Since once the VINE_TREE_TOP spawns over a branch, it can't be fixed, we have to prevent it from spawning. Another way would be to just spawn another branch
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
-	if options.hd_og_tree_spawn == false then
-		local uid_at = get_grid_entity_at(x, y, layer)
-		vine_top_positions[#vine_top_positions+1] = {x, y}
-		if uid_at ~= -1 then
-			return uid_at
-		end
+	if spawn_flags & SPAWN_TYPE.SCRIPT ~= 0 then return end
+	-- messpect("Removed tree vine at:", x, y)
+	local uid_at = get_grid_entity_at(x, y, layer)
+	vine_top_positions[#vine_top_positions+1] = {x, y}
+	if uid_at ~= -1 then
+		return uid_at
 	end
-end, SPAWN_TYPE.ANY, MASK.FLOOR, ENT_TYPE.FLOOR_VINE_TREE_TOP)
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_VINE_TREE_TOP)
 
 function module.onlevel_decorate_trees()
 	if (
-		(state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE) and
-		options.hd_og_tree_spawn == false
+		state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE
 	) then
 		-- remove tree vines
 		for _, pos in pairs(vine_top_positions) do

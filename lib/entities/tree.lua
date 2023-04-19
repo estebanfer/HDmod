@@ -1,7 +1,5 @@
 local module = {}
 
-optionslib.register_option_bool("hd_og_tree_spawn", "OG: Tree spawns - Spawn trees in S2 style instead of HD", nil, false) -- Defaults to HD
-
 local hauntedface_texture_def
 local hauntedgrass_texture_def
 do
@@ -82,108 +80,56 @@ local function fix_branch(branch_uid)
 	end
 end
 
+local vine_top_positions = {}
+-- Since once the VINE_TREE_TOP spawns over a branch, it can't be fixed, we have to prevent it from spawning. Another way would be to just spawn another branch
+set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT ~= 0 then return end
+	-- messpect("Removed tree vine at:", x, y)
+	local uid_at = get_grid_entity_at(x, y, layer)
+	vine_top_positions[#vine_top_positions+1] = {x, y}
+	if uid_at ~= -1 then
+		return uid_at
+	end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_VINE_TREE_TOP)
+
 function module.onlevel_decorate_trees()
 	if (
-		(state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE) and
-		options.hd_og_tree_spawn == false
+		state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE
 	) then
 		-- remove tree vines
-		local treeParts = get_entities_by_type(ENT_TYPE.FLOOR_TREE_BRANCH)
-		for _, treebranch in ipairs(treeParts) do
-			if entity_has_item_type(treebranch, ENT_TYPE.DECORATION_TREE_VINE_TOP) then
-				-- local leaf_decor = entity_get_items_by(treebranch, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1]
-				-- -- prinspect(leaf_decor)
-				-- local b_x, b_y, b_l = get_position(leaf_decor)
-
-				-- local branches = get_entities_at(ENT_TYPE.FLOOR_TREE_BRANCH, 0, b_x, b_y+1, b_l, 1)
-				-- local branch_above = -1
-				-- if #branches ~= 0 then
-				-- 	branch_above = branches[1]
-				-- end
-
-				-- local b_x, b_y, b_l = get_position(treebranch)
-				-- local branch_above = get_entities_at(ENT_TYPE.FLOOR_TREE_BRANCH, 0, b_x, b_y+1, b_l, 1)
-				-- local tmp_branch = -1
-				-- if branch_above ~= -1 then
-				-- 	branch_above = get_entity(branch_above)
-				-- 	if (
-				-- 		branch_above.type.id == ENT_TYPE.FLOOR_VINE_TREE_TOP
-				-- 	) then
-				-- 		kill_entity(branch_above.uid)
-				-- 		tmp_branch = get_grid_entity_at(b_x, b_y+1, b_l)
-				-- 		if tmp_branch ~= -1 then
-				-- 			branch_above = tmp_branch
-				-- 		end
-				-- 	end
-				-- 	if (
-				-- 		branch_above.type.id == ENT_TYPE.FLOOR_TREE_BRANCH
-				-- 	) then
-				-- 		-- prinspect(branch_above.uid)
-				-- 		fix_branch(branch_above.uid)
-				-- 	end
-				-- end
-
-				-- local is_right = false
-				-- local is_top = true
-				-- local treeTop = -1
-				
-				-- local treeTops = get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, b_x+1, b_y+1, b_l, 1)
-				-- if #treeTops ~= 0 then
-				-- 	treeTop = treeTops[1]
-				-- 	is_right = true
-				-- end
-				-- treeTops = get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, b_x-1, b_y+1, b_l, 1)
-				-- if #treeTops ~= 0 then
-				-- 	treeTop = treeTops[1]
-				-- end
-				-- if treeTop == -1 then
-				-- 	is_top = false
-				-- end
-
-
-				if (
-					branch_above ~= -1
-					-- is_top == false
-					-- #get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, b_x-1, b_y-1, b_l, 1) == 0
-					-- and #get_entities_at(ENT_TYPE.FLOOR_TREE_TOP, 0, b_x+1, b_y-1, b_l, 1) == 0
-				) then
-					-- fix_branch(branch_above)
-
-					-- kill_entity(leaf_decor)
-					-- local vine_artifacts = get_entities_at(ENT_TYPE.FLOOR_VINE_TREE_TOP, 0, b_x, b_y+1, b_l, 1)
-					-- if #vine_artifacts ~= 0 then
-					-- 	kill_entity(vine_artifacts[1])
-					-- end
-					-- vine_artifacts = get_entities_at(ENT_TYPE.DECORATION_TREE_VINE, 0, b_x, b_y, b_l, 1)
-					-- if #vine_artifacts ~= 0 then
-					-- 	kill_entity(vine_artifacts[1])
-					-- end
-					-- vine_artifacts = get_entities_at(ENT_TYPE.FLOOR_VINE, 0, b_x, b_y-2, b_l, 1)
-					-- if #vine_artifacts ~= 0 then
-					-- 	kill_entity(vine_artifacts[1])
-					-- end
-
-
-				end
-				-- kill_entity(get_entities_at(ENT_TYPE.FLOOR_VINE, 0, b_x, b_y-2, b_l, 1)[1])
-				-- kill_entity(entity_get_items_by(treebranch, ENT_TYPE.DECORATION_TREE_VINE, 0)[1])
+		for _, pos in pairs(vine_top_positions) do
+			local x, top_y = pos[1], pos[2]
+			local floor_at_uid = get_grid_entity_at(x, top_y, LAYER.FRONT)
+			if get_entity_type(floor_at_uid) == ENT_TYPE.FLOOR_VINE_TREE_TOP then
+				get_entity(floor_at_uid):destroy()
 			end
+
+			-- Update decoration if it isn't the top branch (or is RESTLESS or HAUNTEDCASTLE), that doesn't use DECORATION_TREE_VINE_TOP
+			if (get_entity_type(get_grid_entity_at(x-1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP and
+					get_entity_type(get_grid_entity_at(x+1, top_y-1, LAYER.FRONT)) ~= ENT_TYPE.FLOOR_TREE_TOP) or
+					feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true or
+					feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+			then
+				local branch_uid = get_grid_entity_at(x, top_y-1, LAYER.FRONT)
+				get_entity(entity_get_items_by(branch_uid, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1]):destroy()
+				decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid, 0.03, 0.47, 0.5, false)
+			end
+
+			local y = top_y
+			repeat
+				y = y - 1
+				local branch_vine_uid = get_grid_entity_at(x, y, LAYER.FRONT)
+				if entity_has_item_type(branch_vine_uid, ENT_TYPE.DECORATION_TREE_VINE) then
+					local vine_decor_uid = entity_get_items_by(branch_vine_uid, ENT_TYPE.DECORATION_TREE_VINE, MASK.DECORATION)[1]
+					get_entity(vine_decor_uid):destroy()
+					set_entity_flags(branch_vine_uid, clr_flag(get_entity_flags(branch_vine_uid), ENT_FLAG.CLIMBABLE))
+				elseif get_entity_type(branch_vine_uid) == ENT_TYPE.FLOOR_VINE then
+					get_entity(branch_vine_uid):destroy()
+				end
+			until get_entity_type(branch_vine_uid) ~= ENT_TYPE.FLOOR_TREE_BRANCH and get_entity_type(branch_vine_uid) ~= ENT_TYPE.FLOOR_VINE
 		end
-		-- treeParts = get_entities_by_type(ENT_TYPE.FLOOR_VINE_TREE_TOP)
-		-- for _, leaf_decor in ipairs(treeParts) do
-		-- 	kill_entity(leaf_decor)
-		-- end
-
-
-		-- find the decoration below it
-		-- get the grid entity below it, add decoration to it. if it's 
-
-		-- -- add branches to tops of trees, add leaf decorations
-		-- treeParts = get_entities_by_type(ENT_TYPE.FLOOR_TREE_TOP)
-		-- for _, treetop in ipairs(treeParts) do
-		-- 	add_top_branches(treetop)
-		-- end
 	end
+	vine_top_positions = {}
 end
 
 function module.create_hd_tree(x, y, l)

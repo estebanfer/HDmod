@@ -13,6 +13,7 @@ spikeslib = require 'lib.entities.spikes'
 local damsellib = require 'lib.entities.damsel'
 local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
+local hawkmanlib = require "lib.entities.hawkman"
 
 local module = {}
 

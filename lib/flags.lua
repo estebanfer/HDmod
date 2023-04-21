@@ -187,7 +187,7 @@ local function onloading_levelrules()
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
 		set_global_timeout(function()
-			if state.screen ~= ON.LEVEL then toast("Demo over. Thanks for playing!") end
+			if state.screen ~= ON.LEVEL then toast_override("Demo over. Thanks for playing!") end
 		end, 30)
 	end
 

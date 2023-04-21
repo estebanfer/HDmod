@@ -237,7 +237,19 @@ function module.feeling_check(feeling)
 	) then return true end
 	return false
 end
-
+-- If there is an already existing speechbubble or toast, these will override it instead of not displaying.
+function say_override(uid, message, sound, top)
+    cancel_speechbubble()
+    set_timeout(function()    
+        say(uid, message, sound, top)
+    end, 1)
+end
+function toast_override(message)
+    cancel_toast()
+    set_timeout(function()    
+        toast(message)
+    end, 1)
+end
 
 -- Set level feelings (not to be confused with `feeling_set`)
 function module.onlevel_set_feelings()
@@ -440,7 +452,7 @@ function module.onlevel_toastfeeling()
 	) then
 		cancel_toast()
 		set_timeout(function()
-			toast(MESSAGE_FEELING)
+			toast_override(MESSAGE_FEELING)
 		end, 1)
 	end
 end

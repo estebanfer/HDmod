@@ -1,7 +1,6 @@
 blackknightlib = require 'lib.entities.black_knight'
 turretlib = require 'lib.entities.laser_turret'
 spikeballlib = require 'lib.entities.spikeball_trap'
-snaillib = require 'lib.entities.snail'
 tombstonelib = require 'lib.entities.tombstone'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'
@@ -363,9 +362,10 @@ module.HD_TILENAME = {
 			[2] = {
 				default = {
 					function(x, y, l)
-						spikeslib.detect_floor_and_create_spikes(x, y, l)
+						if math.random(3) == 1 then
+							spikeslib.detect_floor_and_create_spikes(x, y, l)
+						end
 					end,
-					function(x, y, l) return 0 end
 				},
 			}
 		},
@@ -455,7 +455,7 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		description = "World-specific Enemy Spawn",--"Scorpion from Mines Coffin",
+		description = "World-specific Enemy Spawn",
 	},
 	[";"] = {
 		phases = {
@@ -523,7 +523,7 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		description = "Idol Platform", --"Mines Idol Platform",
+		description = "Idol Platform",
 	},
 	["B"] = {
 		phases = {
@@ -564,7 +564,7 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		description = "Temple Idol Trap Ceiling Block",--"Nonmovable Pushblock", -- also idol trap ceiling blocks
+		description = "Temple Idol Trap Ceiling Block",
 	},
 	["D"] = {
 		phases = {
@@ -577,9 +577,7 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		--#TOTEST: Also used in tutorial level 3 placement {3, 4} as Damsel
-		-- # TODO: door creation (should be same door as "%")
-		description = "Door Gate", -- also used in temple idol trap
+		description = "Door Gate",
 	},
 	["E"] = {
 		phases = {
@@ -859,7 +857,6 @@ module.HD_TILENAME = {
 	["N"] = {
 		phases = {
 			[1] = {
-				-- # TODO: In HD this seems to be a chance of either a snake or a cobra
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end,},
 				default = {
 					function(x, y, l)
@@ -1083,9 +1080,6 @@ module.HD_TILENAME = {
 		},
 		description = "Ankh/Pot",
 	},
-	-- # TODO:
-		-- Add alternative shop floor of FLOOR_GENERIC
-		-- Modify all HD shop roomcodes to accommodate this.
 	["b"] = {
 		phases = {
 			[1] = {
@@ -1216,8 +1210,6 @@ module.HD_TILENAME = {
 							texture_def.texture_path = "res/deco_basecamp_hauntedcastle_banner.png"
 							get_entity(ent_uid):set_texture(define_texture(texture_def))
 							
-							-- # TODO: I think I'm screwing the sizing on this haunted castle altar bg entirely.
-								-- Please fix (both here and the .ase file)
 							ent_uid = spawn_entity(ENT_TYPE.BG_KALI_STATUE, x+.5, y+0.6, l, 0, 0)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
 							texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
@@ -1237,8 +1229,7 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		description = "Vlad's Castle Brick",--Hell Terrain",
-		--#TODO: in HD it's also the haunted castle altar
+		description = "Vlad's Castle Brick",
 	},
 	["i"] = {
 		phases = {
@@ -1377,13 +1368,10 @@ module.HD_TILENAME = {
 		description = "Rock",
 	},
 	["p"] = {
-		-- Appears to go unused.
-		-- In HD it has no tilecode case, so I'm pretty sure it's unused.
 		-- Appears in corners of the crystal idol room and at the bottom of a few ladders outside in the notop_drop rooms outside of the haunted castle.
-		description = "Unused",--Treasure/Damsel",
+		description = "Unused (Was skeleton spawn in classic)",
 	},
 	["q"] = {
-		-- # TODO: Trap Prevention.
 		phases = {
 			[1] = {
 				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,},
@@ -1417,7 +1405,6 @@ module.HD_TILENAME = {
 		},
 	},
 	["s"] = {
-		-- # TODO: Use phase 3 to spawn on bedrock floor
 		phases = {
 			[2] = {
 				default = {
@@ -1447,7 +1434,6 @@ module.HD_TILENAME = {
 				}
 			}
 		},
-		-- # TODO: ????? Investigate in HD.
 		description = "Temple/Castle Terrain",
 	},
 	["u"] = {

@@ -127,7 +127,7 @@ set_callback(function()
         for i = 1, #players, 1 do
             if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
                 -- # TODO: Move into the method that spawns Anubis II in COG
-                toast("Death to the defiler!")
+                toast_override("Death to the defiler!")
                 module.OBTAINED_BOOKOFDEAD = true
                 set_timeout(function() remove_player_item(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) end, 1)
             end

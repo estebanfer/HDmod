@@ -1,4 +1,4 @@
--- hdtypelib = require 'entities.hdtype'
+local hdtypelib = require 'lib.entities.hdtype'
 local module = {}
 
 local HELL_Y = 86
@@ -25,12 +25,12 @@ local function cutscene_move_olmec_pre()
 	local olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
 		OLMEC_UID = olmecs[1]
-		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)--100.500, 0, 0)
+		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)
 	end
 end
 
 local function cutscene_move_olmec_post()
-	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)--22.500, 99.500, 0, 0)
+	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)
 end
 
 local function cutscene_move_cavemen()
@@ -89,22 +89,16 @@ local function onframe_olmec_behavior()
 	---@type Olmec
 	local olmec = get_entity(OLMEC_UID)
 	if olmec ~= nil then
-		-- Ground Pound behavior:
-			-- # TODO: Shift OLMEC down enough blocks to match S2's OLMEC. Currently the spelunker is crushed between Olmec and the ceiling.
-			-- This is due to HD's olmec having a much shorter jump and shorter hop curve and distance.
-			-- Decide whether or not we restore this behavior or if we raise the ceiling generation.
-		-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 		-- Enemy Spawning: Detect when olmec is about to smash down
 		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
 			local x, y, l = get_position(OLMEC_UID)
-			-- random chance (maybe 20%?) each time olmec groundpounds, shoots 3 out in random directions upwards.
+			-- 1/3 random chance each time olmec groundpounds, shoots 3 out in random directions upwards.
 			-- if math.random() >= 0.5 then
-				-- # TODO: Currently fires twice. Idea: Use a timeout variable to check time to refire.
+				-- # TODO: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
 				olmec_attack(x, y+2, l)
 				-- olmec_attack(x, y+2.5, l)
 				-- olmec_attack(x, y+2.5, l)
-				
 			-- end
 		elseif olmec.velocityy < -0.400 then
 			OLMEC_STATE = OLMEC_SEQUENCE.FALL
@@ -148,24 +142,21 @@ end, ON.FRAME)
 set_callback(function(draw_ctx)
 	if options.hd_debug_info_boss == true and (state.pause == 0 and state.screen == 12 and #players > 0) then
 		if state.theme == THEME.OLMEC and OLMEC_UID ~= nil then
+			---@type Olmec
 			local olmec = get_entity(OLMEC_UID)
 			local text_x = -0.95
 			local text_y = -0.50
 			local white = rgba(255, 255, 255, 255)
 			if olmec ~= nil then
-				---@type Olmec
-				olmec = get_entity(OLMEC_UID)
-				
-				-- OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 				local olmec_attack_state = "UNKNOWN"
 				if OLMEC_STATE == OLMEC_SEQUENCE.STILL then olmec_attack_state = "STILL"
 				elseif OLMEC_STATE == OLMEC_SEQUENCE.FALL then olmec_attack_state = "FALL" end
 				
 				-- BOSS_SEQUENCE = { ["CUTSCENE"] = 1, ["FIGHT"] = 2, ["DEAD"] = 3 }
 				local boss_attack_state = "UNKNOWN"
-				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then BOSS_attack_state = "CUTSCENE"
-				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then BOSS_attack_state = "FIGHT"
-				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then BOSS_attack_state = "DEAD" end
+				if BOSS_STATE == BOSS_SEQUENCE.CUTSCENE then boss_attack_state = "CUTSCENE"
+				elseif BOSS_STATE == BOSS_SEQUENCE.FIGHT then boss_attack_state = "FIGHT"
+				elseif BOSS_STATE == BOSS_SEQUENCE.DEAD then boss_attack_state = "DEAD" end
 				
 				draw_ctx:draw_text(text_x, text_y, 0, "OLMEC_STATE: " .. olmec_attack_state, white)
 				text_y = text_y - 0.1

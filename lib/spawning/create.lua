@@ -17,7 +17,6 @@ function module.create_coffin_coop(x, y, l)
 	return coffin_uid
 end
 
--- # TODO: determining character unlock for coffin creation
 function module.create_coffin_unlock(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	if unlockslib.LEVEL_UNLOCK ~= nil then
@@ -185,8 +184,6 @@ function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN,
 function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 
 function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
-
-function module.create_snail(x, y, l) spawn_on_floor(ENT_TYPE.MONS_HERMITCRAB, x, y, l) end
 
 function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 

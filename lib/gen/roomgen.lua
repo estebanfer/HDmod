@@ -12,7 +12,6 @@ FRAG_PREVENTION_UID = nil
 
 module.global_levelassembly = nil
 
--- # TODO: For development of the new scripted level gen system, move tables/variables into here from init_onlevel() as needed.
 function module.init_posttile_door()
 	module.global_levelassembly = {}
 end
@@ -240,7 +239,7 @@ function module.onlevel_generation_execution_phase_two()
 	gen_levelcode_phase(2, true)
 end
 
--- # TODO: More phases to fix crashing entities
+-- More phases to fix crashing entities
 	-- water
 	-- chain(/vine?)
 function module.onlevel_generation_execution_phase_three()
@@ -809,29 +808,6 @@ function gen_levelrooms_nonpath(prePath)
 			end
 		end
 	end
-
--- # TODO: Coffin Unlock Methods inside of the methods above
--- # TODO: Other Coffin Unlock Methods
---[[
-	to right or left of path:
-		- world unlock coffins
-		- Mothership coffin
-		- Yetikingdom
-	top room, random x coord:
-		- Olmec
-	11th room down, replace path room at random x coord:
-		- Worm
-	top room, leftmost or rightmost:
-		- COG
-	replace specific roomid(s):
-		- Spiderlair
-		- Haunted Castle
-		- Rushing Water
-	middle two rows, replace path_drop or path_notop_drop:
-		- Tikivillage
-	replace shop:
-		- Black Market
---]]
 end
 
 --[[

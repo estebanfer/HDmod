@@ -22,6 +22,7 @@ local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
 local hawkmanlib = require "lib.entities.hawkman"
+local snaillib = require 'lib.entities.snail'
 
 local module = {}
 
@@ -71,9 +72,9 @@ module.global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd
 module.global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
 module.global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
 
-module.global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
-module.global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
-module.global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
 
 module.global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
 module.global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
@@ -196,7 +197,7 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 --[[ Template for defining procedural spawns:
 
 	local function create_*(x, y, l) end
-	local function is_valid_*_spawn(x, y, l) return false end -- # TODO: Implement method for valid * spawn
+	local function is_valid_*_spawn(x, y, l) return false end
 	local global_spawn_procedural_* = define_procedural_spawn("hd_procedural_*", create_*, is_valid_*_spawn)
 --]]
 
@@ -325,7 +326,6 @@ function module.set_chances(room_gen_ctx)
                 end
             end
             
-            -- # TODO: Yeti Kingdom procedural spawn validation differences. Investigate HD's code to verify what needs to be set/restricted.
             if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
             	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_landmine, 0)
             	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bouncetrap, 0)

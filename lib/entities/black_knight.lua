@@ -19,6 +19,9 @@ local function black_knight_set(uid)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_BLACK_KNIGHT;
+        hit_ground = true;
+        jingle_timer = 40; -- Makes the knights armor jingle when 0
+        picked_up = false; -- Used for custom pickup sound
     };
 
     --remove any item black knight may have
@@ -31,35 +34,92 @@ local function black_knight_set(uid)
     pick_up(uid, shield.uid)
 end
 local function black_knight_update(ent)
+    -- clang sound when landing
+    if not ent.user_data.hit_ground and ent:can_jump() then
+        if not test_flag(ent.flags, ENT_FLAG.DEAD) then
+            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            audio:set_volume(0.65)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+            audio:set_pitch(math.random(60, 80)/100)
+        end
+        -- Camera Shake
+        -- Make sure a player is close enough first
+        for _, v in ipairs(get_entities_by(0, MASK.PLAYER, ent.layer)) do
+            local player = get_entity(v)
+            if player ~= nil and not test_flag(ent.flags, ENT_FLAG.DEAD) then
+                local dist = distance(ent.uid, player.uid)
+                if dist <= 11.5 then
+                    commonlib.shake_camera(10, 10, 3, 3, 3, false)
+                    break
+                end
+            end
+        end
+        ent.user_data.hit_ground = true
+    end
+    if ent.standing_on_uid == -1 then ent.user_data.hit_ground = false end
+    -- more clangs when picking him up
+    --[[ nah nvm
+    if ent.overlay ~= nil then
+        if not ent.user_data.picked_up then
+            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            audio:set_volume(0.4)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+            audio:set_pitch(math.random(70, 90)/100)
+        end
+        ent.user_data.picked_up = true
+    end
+    if ent.overlay == nil then
+        ent.user_data.picked_up = false
+    end
+    ]]
+    -- Jingle jangle jingle
+    if ent:can_jump() and ent.movex ~= 0 then
+        ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1
+        if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
+        if ent.user_data.jingle_timer <= 0 then
+            ent.user_data.jingle_timer = math.random(30, 40)
+            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            audio:set_volume(0.4)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+            audio:set_pitch(math.random(90, 120)/100)
+        end
+    end
     if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
     --wait for player to get near
-    for _, player in ipairs(players) do
+    for _, v in ipairs(get_entities_by(0, MASK.PLAYER, ent.layer)) do
+        local player = get_entity(v)
         if player ~= nil then
             local dist = distance(ent.uid, player.uid)
-            if dist <= 9 then
+            if dist <= 6.5 then
                 ent.chased_target_uid = player.uid
                 ent.move_state = 6
                 break
             end
         end
     end
-
     --give the tikiman a speedbost to his movement (as fast as shoppie)
     if ent.movex ~= 0 then
         ent.x = ent.x + 0.025*ent.movex
     end
     if ent.move_state == 6 then
         --aggro shoppie behavior from scratch
-        for _, player in ipairs(players) do
-            local px, py, pl = get_position(player.uid)
+        for _, v in ipairs(get_entities_by(0, MASK.PLAYER, ent.layer)) do
+            local char = get_entity(v)
+            if char == nil then return end
+            -- Make sure the character is alive before targetting
+            if test_flag(char.flags, ENT_FLAG.DEAD) then return end
+            local px, py, pl = get_position(char.uid)
             local x, y, l = get_position(ent.uid)
-            if py > y and ent.standing_on_uid ~= -1 then
+            -- Jump when player is above us
+            if py > y and ent:can_jump() then
                 ent.velocityy = 0.23
+                -- SFX
+                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+                audio:set_volume(0.33)
+                audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+                audio:set_pitch(math.random(105, 130)/100)
             end
             if math.abs(px-x) > 5 then
-                if ent.standing_on_uid ~= -1 then
-                    ent.velocityy = 0.23
-                end
                 --face the player when out of range
                 local held_item = get_entity(ent.holding_uid)
                 if held_item ~= nil then
@@ -73,6 +133,32 @@ local function black_knight_update(ent)
                     end
                     ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
                     ent.movex = 1
+                end
+            end
+            -- Flip when hitting a wall
+            local held_item = get_entity(ent.holding_uid)
+            local hb = get_hitbox(ent.uid, 0, 0.19, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                    if held_item ~= nil then
+                        held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                    end
+                    ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = -1
+                    ent.x = ent.x-0.1                  
+                end
+            end
+            local hb = get_hitbox(ent.uid, 0, -0.19, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                    if held_item ~= nil then
+                        held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                    end
+                    ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = 1
+                    ent.x = ent.x+0.1                  
                 end
             end
             --pick up any shields
@@ -131,6 +217,13 @@ local function burst_out_of_mantrap(ent, collision_ent)
     end
 end
 local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
+    -- We'll always do a little damgage sound effect when he gets hurt
+    if not test_flag(ent.flags, ENT_FLAG.DEAD) then
+        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+        audio:set_volume(0.65)
+        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+        audio:set_pitch(math.random(90, 110)/100)
+    end
     if ent.health - damage_amount <= 0 then
         --set it temporarily to tikiman makes no sound on death then set it back 1 frame later
         --technically its possible that if a tikiman and black knight die on the same frame, tikiman makes no sound, but he should never be near a black knight anyways
@@ -144,7 +237,9 @@ local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, 
             tikiman_db.sound_killed_by_other = sound_killed_by_other
         end, 1)
         --play a death sound, sounds weird otherwise
-        commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
+        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
+        audio:set_volume(1)
+        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 1)
     end
 end
 
@@ -155,7 +250,6 @@ function module.create_black_knight(x, y, l)
     set_on_damage(black_knight, black_knight_death)
     set_pre_collision2(black_knight, burst_out_of_mantrap)
 end
-
 optionslib.register_entity_spawner("Black knight", module.create_black_knight)
 
 return module

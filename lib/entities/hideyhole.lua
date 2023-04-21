@@ -43,7 +43,7 @@ function module.create_hideyhole_spawn(x, y, l)
 			damsellib.create_damsel(x, y, l)
 		else
             removelib.remove_items_for_hideyhole_spawn(x, y, l)
-			-- # TODO: create succubus
+			-- # TODO: create succubus here
 		end
 	elseif module.DAMSEL_SPAWNED == false then
         module.DAMSEL_SPAWNED = true

@@ -49,49 +49,12 @@ local function changestate_onloading_targets(w_a, l_a, t_a, w_b, l_b, t_b)
 	end
 end
 
--- Used to "fake" world/theme/level
-local function changestate_onlevel_fake(w_a, l_a, t_a, w_b, l_b, t_b)
-	if roomgenlib.detect_same_levelstate(t_a, l_a, w_a) == true then
-		state.level = l_b
-		state.world = w_b
-		state.theme = t_b
-	end
-end
-
 local function changestate_samelevel_applyquestflags(w_a, l_a, t_a, flags_set, flags_clear)--w_b, l_b, t_b, flags_set, flags_clear)
 	flags_set = flags_set or {}
 	flags_clear = flags_clear or {}
 	if roomgenlib.detect_same_levelstate(t_a, l_a, w_a) == true then
 		applyflags_to_quest({flags_set, flags_clear})
 	end
-end
-
-
--- # TODO: Revise `applyflags_to_*` method's `flags` parameter.
-	-- From this:
-		-- flags = {
-			-- {ENT_FLAG.NO_GRAVITY},					-- set
-			-- {ENT_FLAG.SOLID, ENT_FLAG.PICKUPABLE}	-- clear
-		-- }
-	-- To this:
-		-- flags = {
-			-- [ENT_FLAG.SOLID] = false,
-			-- [ENT_FLAG.NO_GRAVITY] = true,
-			-- [ENT_FLAG.PICKUPABLE] = false
-		-- }
-local function applyflags_to_level(flags)
-    if #flags > 0 then
-        local flags_set = flags[1]
-        for _, flag in ipairs(flags_set) do
-            state.level_flags = set_flag(state.level_flags, flag)
-        end
-        if #flags > 1 then
-            local flags_clear = flags[2]
-            for _, flag in ipairs(flags_clear) do
-                state.level_flags = clr_flag(state.level_flags, flag)
-            end
-        end
-    else message("No level flags") end
 end
 
 -- LEVEL HANDLING
@@ -207,19 +170,24 @@ local function onloading_levelrules()
 	-- 	-- Build Yama in Tiamat's chamber.
 	-- changestate_onloading_targets(5,3,THEME.VOLCANA,5,4,THEME.TIAMAT)
 
-	-- -- local format_name = F'onloading_levelrules(): Set loading target. state.*_next: {state.world_next}, {state.level_next}, {state.theme_next}'
-	-- -- message(format_name)
+	-- if (
+	-- 	state.screen_next == SCREEN.TRANSITION
+	-- ) then
+	-- 	message(F'onloading_levelrules(): Set loading target: state.*_next: s{state.screen_next}, w{state.world_next}, l{state.level_next}, t{state.theme_next}')
+	-- end
+
 
 	-- Demo Handling
 	if (
 		not options.hd_debug_demo_enable_all_worlds
 		and state.level == 4
+		and state.level_next == 1
 		and state.world == demolib.DEMO_MAX_WORLD
-		and state.screen_next ~= ON.DEATH
+		and state.screen_next == SCREEN.TRANSITION
 	) then
 		changestate_onloading_targets(state.world,state.level,state.theme,1,1,THEME.BASE_CAMP)
 		set_global_timeout(function()
-			if state.screen ~= ON.LEVEL then toast("Demo over. Thanks for playing!") end
+			if state.screen ~= ON.LEVEL then toast_override("Demo over. Thanks for playing!") end
 		end, 30)
 	end
 
@@ -236,50 +204,6 @@ local function onloading_applyquestflags()
 		if test_flag(state.quest_flags, flags_failsafe[i]) == false then state.quest_flags = set_flag(state.quest_flags, flags_failsafe[i]) end
 	end
 end
-
-
--- LEVEL HANDLING
--- For cases where room generation is hardcoded to a theme's level
--- and as a result we need to fake the world/level number
-local function onlevel_levelrules()
-	-- Dwelling 1-5 = 1-4 (Dwelling 1-3 -> Dwelling 1-4)
-	-- changestate_onlevel_fake(1,5,THEME.DWELLING,1,4,THEME.DWELLING)
-	
-	-- TOTEST:
-	-- Use S2 Black Market as Flooded Feeling
-		-- HD and S2 differences:
-			-- S2 black market spawns are 2-2..4
-			-- HD spawns are 2-1..3
-				-- Prevents the black market from being accessed upon exiting the worm
-				-- Gives room for the next level to load as black market
-
-	-- Disable dark levels and vaults "before" you enter the world:
-		-- Technically load into a total of 4 hell levels; 5-5 and 5-1..3
-		-- on.load 5-5, set state.quest_flags 3 and 2, then warp the player to 5-1
-		
-		-- -- Jungle 2-0 = 2-1
-		-- -- Disable Moon challenge.
-		-- changestate_onlevel_fake_applyquestflags(2,1,THEME.JUNGLE, {25}, {})
-		-- -- Ice Caves 3-0 = 3-1
-		-- -- Disable Waddler's
-		-- changestate_onlevel_fake_applyquestflags(3,1,THEME.ICE_CAVES, {10}, {})
-		-- -- Temple 4-0 = 4-1
-		-- -- Disable Star challenge.
-		-- changestate_onlevel_fake_applyquestflags(4,1,THEME.TEMPLE, {26}, {})
-		-- -- Volcana 5-5 = 5-1
-		-- -- Disable Moon challenge and drill
-		-- 	-- OR: disable drill until you get to level 4, then enable it if you want to use drill level for yama
-		-- changestate_onlevel_fake_applyquestflags(5,1,THEME.VOLCANA, {19, 25}, {})
-		
-	-- -- Volcana 5-1 -> Volcana 5-2
-	-- changestate_onlevel_fake(5,5,THEME.VOLCANA,5,2,THEME.VOLCANA)
-	-- -- Volcana 5-2 -> Volcana 5-3
-	-- changestate_onlevel_fake(5,6,THEME.VOLCANA,5,3,THEME.VOLCANA)
-end
-
-set_callback(function()
-	set_timeout(onlevel_levelrules, 20)
-end, ON.LEVEL)
 
 -- ON.START
 set_callback(function()

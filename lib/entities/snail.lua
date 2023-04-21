@@ -23,4 +23,11 @@ set_post_entity_spawn(function(entity)
         clear_callback()
     end)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_HERMITCRAB)
+
+function module.create_snail(x, y, l)
+    spawn_on_floor(ENT_TYPE.MONS_HERMITCRAB, x, y, l)
+end
+
+optionslib.register_entity_spawner("Snail", module.create_snail, false)
+
 return module

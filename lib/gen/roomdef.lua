@@ -1082,11 +1082,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.VAULT] = {
 	end
 }
 
--- # TODO: Make method to remove pots during spiderlair
--- pots will not spawn on this level.
--- Spiders, spinner spiders, and webs appear much more frequently.
--- Spawn web nests (probably RED_LANTERN, remove  and reskin it)
--- Move pots into the void
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.SPIDERLAIR] = {
 	rooms = {
 		[module.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE] = {
@@ -1226,7 +1221,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
-	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
 	if state.level ~= 4 then
 		roomgenlib.level_generation_method_nonaligned(
 			{
@@ -1247,7 +1241,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = 
 	end
 end
 
--- # TODO: Replace haunted castle roomcode altar tilecodes with new tilecode (or re-used) for torches
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.BLACKMARKET] = {
 	chunkRules = {
 		obstacleBlocks = {
@@ -1439,14 +1432,16 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 		{
 			subchunk_id = module.HD_SUBCHUNKID.HAUNTEDCASTLE_UNLOCK,
 			placement = {1, 1},
-			roomcodes = {{"00000000000t0t0t0t0ttttttttttttttttttttt000400000tg00tt0000tttttU00000tttttttttt"}}
+			roomcodes = {
+				-- # TODO: find out if this coffin-less room is supposed to be placed here. According to HD Toolbox, this never spawns, but I'm not so sure.
+				-- {"00000000000t0t0t0t0ttttttttttttttttttttt000000000t000000000t0U00000000tttttttttt"},
+				{"00000000000t0t0t0t0ttttttttttttttttttttt000400000tg00tt0000tttttU00000tttttttttt"}
+			}
 		},
 		{
 			subchunk_id = module.HD_SUBCHUNKID.HAUNTEDCASTLE_SETROOM_1_2,
 			placement = {1, 2},
 			roomcodes = {
-				-- # TODO: Figure out why "param_1 == 0" chooses the first roomcode.
-				-- {"00000000000t0t0t0t0ttttttttttttttttttttt000000000t000000000t0U00000000tttttttttt"},
 				{"00000000000t0t0t0t0ttttttttttttttttttttt0000000000tttt00tttt0000000000tttttttttt"},
 			}
 		},
@@ -1627,8 +1622,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE] = {
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.HAUNTEDCASTLE].postPathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
-	-- # TODO: spawn particles for TOMB_FOG or the ghost fog
-	
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	local minw, minh, maxw, maxh = 1, 2, levelw-1, levelh
 
@@ -2067,14 +2060,6 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO] = {
 		},
 	},
 }
---[[
-	# TODO: Provide option to enable safer path method for UFO.
-	Here and in HD, UFO simply replaces subchunks without any concern for the path.
-	This can result in it being significantly harder to traverse the level.
-
-	What should be done is make it so the path at least passes through or around UFO_LEFTSIDE (considering it as a PATH_DROP or PATH_DROP_NOTOP).
-	Note that this implimentation shouldn't be wrapping around UFO subchunks, but forcing the path to drop down and continue from there.
---]]
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.UFO].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	local minw, minh, maxw, maxh = 1, 1, levelw, levelh
@@ -2456,39 +2441,20 @@ end
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL] = {
 	rooms = {
 		[module.HD_SUBCHUNKID.ICE_CAVES_POOL_SINGLE] = {{"000000000021------1221wwwwww12213wwww312013wwww310011333311002111111200022222200"}},
-		-- single room of water
-		-- subchunkid 68
-		-- uses level_generation_method_nonaligned() after path gen
-
-		-- uses level_generation_method_nonaligned() after path gen
 		[module.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_TOP] = {{"000000000021------1221wwwwww12213wwww312213wwww312213wwww312213wwww312213wwww312"}},
-		-- top room of water
-		-- subchunkid 69 *NICE*
 		[module.HD_SUBCHUNKID.ICE_CAVES_POOL_DOUBLE_BOTTOM] = {{"213wwww312213wwww312213wwww312213wwww312013wwww310011333311002111111200022222200"}},
-		-- bottom room of water
-		-- subchunkid 70
 	}
 }
--- # TODO: Ice caves sometimes injects these pool roomcodes into the level.
---[[
-	UPDATE: Found the part of the code that places these rooms.
-	steps:
-		1. Post-path, select an unoccupied space.
-		2. If 3/4 chance passes and the space under it is a sideroom, use two-room.
-			Otherwise, spawn single room.
---]]
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.ICE_CAVES_POOL].postPathMethod = function()
 	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 
 	local spots = {}
-		--{x, y}
 
 	-- build a collection of potential spots
 	for level_hi = 1, levelh, 1 do
 		for level_wi = 1, levelw, 1 do
 			local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 			if subchunk_id == nil then
-				-- add room
 				table.insert(spots, {x = level_wi, y = level_hi})
 			end
 		end
@@ -3089,8 +3055,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 		
 		[module.HD_SUBCHUNKID.COFFIN_UNLOCK_RIGHT] = {{"ttttt11111t000000000tg0t000000ttttI0000000ttttt000ttttttt000rrrrrrrr001111111111"}},
 		[module.HD_SUBCHUNKID.COFFIN_UNLOCK_LEFT] = {{"11111ttttt000000000t000000tg0t00000Itttt000ttttt00000ttttttt00rrrrrrrr1111111111"}},
-		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},       -- # TODO: See if unlock coffins can spawn as these. (I HIGHLY doubt it, though.)
-		-- [genlib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}}, --
 		
 		[module.HD_SUBCHUNKID.COFFIN_COOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
 		[module.HD_SUBCHUNKID.COFFIN_COOP_NOTOP] = {{"0000000000000tttt00000tttttt0000t0000t0000t0000t000000g0000001trrrrt101111111111"}},
@@ -3137,8 +3101,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 }
 module.HD_ROOMOBJECT.WORLDS[THEME.EGGPLANT_WORLD] = {
 	level_dim = {w = 2, h = 12},
-	-- unlockable coffin spawns at roomy == 11
-	-- # TODO: When placing new roomcodes here, replace "v" tiles with "3"
 	
 	setRooms = {
 		{
@@ -3638,7 +3600,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].prePathMethod = function()
 end
 
 module.HD_ROOMOBJECT.WORLDS[THEME.NEO_BABYLON].postPathMethod = function()
-	-- # TODO: Make all module.HD_ROOMOBJECT.method functions have a prePath parameter. Then put below in prePath == false.
 	--[[
 		loop through top to bottom, replace the first two side rooms found with alienlord rooms
 	--]]
@@ -3884,7 +3845,6 @@ module.HD_ROOMOBJECT.WORLDS[THEME.CITY_OF_GOLD] = {
 		{
 			subchunk_id = module.HD_SUBCHUNKID.COG_BOTD_LEFTSIDE,
 			placement = {3, 2},
-			-- # TODO: alter this roomcode's altar (HAHHHH)
 			roomcodes = {{"00000111110000011000000001100000Y00110001111111000000001100#00Y001100A1111111111"}}
 		},
 		{

@@ -19,12 +19,40 @@ local function green_knight_set(uid)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_GREEN_KNIGHT;
+        hit_ground = true;
+        jingle_timer = 40; -- Makes the knights armor jingle when 0
+        armored = true;
     };
 end
 local function green_knight_update(ent)
     --manage price timer
     if ent.price > 0 then
         ent.price = ent.price - 1
+    end
+    -- Clang sound when landing
+    if ent.user_data.armored then
+        if not ent.user_data.hit_ground and ent:can_jump() then
+            if not test_flag(ent.flags, ENT_FLAG.DEAD) then
+                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+                audio:set_volume(0.5)
+                audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+                audio:set_pitch(math.random(70, 90)/100)
+            end
+            ent.user_data.hit_ground = true
+        end
+        if ent.standing_on_uid == -1 then ent.user_data.hit_ground = false end
+        -- Jingle jangle jingle
+        if ent:can_jump() and ent.movex ~= 0 then
+            ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1
+            if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
+            if ent.user_data.jingle_timer <= 0 then
+                ent.user_data.jingle_timer = math.random(28, 40)
+                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+                audio:set_volume(0.3)
+                audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
+                audio:set_pitch(math.random(90, 120)/100)
+            end
+        end
     end
 end
 local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
@@ -36,6 +64,7 @@ local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, 
     end
 end
 local function become_caveman(ent)
+    ent.user_data.armored = false
     if ent:get_texture() ~= ent.type.texture then
         ent:set_texture(ent.type.texture)
         --sfx and green rubble here

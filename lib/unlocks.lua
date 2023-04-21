@@ -240,14 +240,6 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 		)
 	) then
 		local uid = spawn_grid_entity(193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id, x, y, l)
-		-- # TODO: Find a way to manually unlock the character upon liberation from a shop.
-		--[[
-			Cosine: "If you're forced to get hacky, then you could try spawning a coffin out of bounds somewhere with the same character in it. I did this in Overlunky with Liz locked and it worked:
-			You'll have to suppress the unlock dialog since it'll be pointing to wherever the coffin was out of bounds."
-			
-			local coffin_id = spawn_entity(ENT_TYPE.ITEM_COFFIN, -100, -100, LAYER.FRONT, 0, 0)
-			get_entity(coffin_id).inside = ENT_TYPE.CHAR_GREEN_GIRL
-		]]
 		set_post_statemachine(uid, function(ent)
 			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
 				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)

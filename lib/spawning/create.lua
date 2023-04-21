@@ -17,7 +17,6 @@ function module.create_coffin_coop(x, y, l)
 	return coffin_uid
 end
 
--- # TODO: determining character unlock for coffin creation
 function module.create_coffin_unlock(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	if unlockslib.LEVEL_UNLOCK ~= nil then

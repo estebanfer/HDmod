@@ -304,11 +304,6 @@ function module.is_valid_blackmarket_spawn(x, y, l)
 	return false
 end
 
---[[
-	if not in YetiKing room
-	not in left part of psychic presence
-	not in middle part of psychic presence
-]]
 function module.is_valid_landmine_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
@@ -316,15 +311,12 @@ function module.is_valid_landmine_spawn(x, y, l)
 	and get_grid_entity_at(x, y+1, l) == -1
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
 end
 
---[[
-	if not in YetiKing room
-	1x4 space available 4 from 4 spaces above this tile
-	# TODO: make sure this can't spawn on altars or ice platforms
-]]
 function module.is_valid_bouncetrap_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
@@ -334,6 +326,8 @@ function module.is_valid_bouncetrap_spawn(x, y, l)
 	and check_empty_space(x, y+4, l, 1, 4)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
 end
 
 module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
@@ -358,7 +352,7 @@ module.is_valid_crocman_spawn = default_ground_monster_condition
 
 function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
 
-module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition -- # TODO: Implement method for valid critter_rat spawn
+module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
 function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
 
@@ -368,11 +362,11 @@ module.is_valid_critter_penguin_spawn = default_ground_monster_condition
 
 function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_locust spawn
 
-module.is_valid_jiangshi_spawn = default_ground_monster_condition -- # TODO: Implement method for valid jiangshi spawn
+module.is_valid_jiangshi_spawn = default_ground_monster_condition
 
 function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
 
-module.is_valid_greenknight_spawn = default_ground_monster_condition -- # TODO: Implement method for valid greenknight spawn
+module.is_valid_greenknight_spawn = default_ground_monster_condition
 
 function module.is_valid_alientank_spawn(x, y, l)
 	local room = locatelib.get_levelroom_at_game_position(x, y)
@@ -393,7 +387,7 @@ function module.is_valid_piranha_spawn(x, y, l)
 			and room_y == 5
 			and get_grid_entity_at(x, y, l) == -1
 		)
-end -- # TODO: Implement method for valid piranha spawn
+end
 
 function module.is_valid_monkey_spawn(x, y, l)
 	local floor = get_grid_entity_at(x, y, l)
@@ -409,13 +403,13 @@ function module.is_valid_hangspider_spawn(x, y, l)
 		default_ceiling_entity_condition(x, y, l)
 		and get_grid_entity_at(x, y-3, l) == -1
 	)
-end -- # TODO: Implement method for valid hangspider spawn
+end
 
-module.is_valid_bat_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid bat spawn
+module.is_valid_bat_spawn = default_ceiling_entity_condition
 
-module.is_valid_spider_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid spider spawn
+module.is_valid_spider_spawn = default_ceiling_entity_condition
 
-module.is_valid_vampire_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid vampire spawn
+module.is_valid_vampire_spawn = default_ceiling_entity_condition
 
 function module.is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
 
@@ -424,17 +418,17 @@ function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Imple
 function module.is_valid_mshiplight_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 		and module.is_solid_grid_entity(x, y+1, l)
-end -- # TODO: Implement method for valid mshiplight spawn
+end
 
-module.is_valid_lantern_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid lantern spawn
+module.is_valid_lantern_spawn = default_ceiling_entity_condition
 
-module.is_valid_webnest_spawn = default_ceiling_entity_condition -- # TODO: Implement method for valid webnest spawn
+module.is_valid_webnest_spawn = default_ceiling_entity_condition
 
 function module.is_valid_turret_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 		and get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
 		and check_empty_space(x-1, y, l, 3, 3)
-end -- # TODO: Implement method for valid turret spawn
+end
 
 function module.is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath
@@ -477,8 +471,9 @@ function module.is_valid_spikeball_spawn(x, y, l)
 		detect_solid_nonshop_nontree(x, y, l)
 		and detect_solid_nonshop_nontree(x, y - 1, l)
 	)
-end -- # TODO: Implement method for valid spikeball spawn
+end
 
+-- # TOFIX: Prevent arrowtraps from spawning in front of tikitraps (or prevent tiki traps from spawning in front of arrow traps)
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, _ = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
@@ -494,15 +489,9 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
         return commonlib.has(valid_floors, get_entity_type(floor))
     end
     return false
-end -- # TODO: Implement method for valid arrowtrap spawn
+end
 
 function module.is_valid_tikitrap_spawn(x, y, l)
-	-- need subchunkid of what room we're in
-	-- # TOFIX: Prevent tikitraps from spawning in castle rooms.
-	--[[ the following code returns as nil, though it should be showing up at this point...
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-	local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-	--]]
 	-- need subchunkid of what room we're in
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	--prevent spawing in lake
@@ -627,7 +616,7 @@ function module.is_valid_giantfrog_spawn(x, y, l)
 	return default_ground_monster_condition(x, y, l)
 	and is_valid_monster_floor(x+1, y-1, l)
 	and check_empty_space(x, y+1, l, 2, 2)
-end -- # TODO: Implement method for valid giantfrog spawn
+end
 
 function module.is_valid_mammoth_spawn(x, y, l)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
@@ -660,7 +649,7 @@ function module.is_valid_giantspider_spawn(x, y, l)
 		and createlib.GIANTSPIDER_SPAWNED == false
 		and detect_entrance_room_template(x, y, l) == false
 	)
-end -- # TODO: Implement method for valid giantspider spawn
+end
 
 function module.is_valid_bee_spawn(x, y, l)
 	return get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_BEEHIVE
@@ -700,9 +689,9 @@ function module.is_valid_bacterium_spawn(x, y, l)
 		or module.is_solid_grid_entity(x, y-1, l)
 		or module.is_solid_grid_entity(x-1, y, l)
 	)
-end -- # TODO: Implement method for valid bacterium spawn
+end
 
-module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn-- # TODO: Implement method for valid eggsac spawn
+module.is_valid_eggsac_spawn = module.is_valid_bacterium_spawn
 
 local function is_valid_window_spawn(x, y, l)
 	return (

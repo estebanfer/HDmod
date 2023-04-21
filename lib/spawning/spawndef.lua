@@ -196,7 +196,7 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 --[[ Template for defining procedural spawns:
 
 	local function create_*(x, y, l) end
-	local function is_valid_*_spawn(x, y, l) return false end -- # TODO: Implement method for valid * spawn
+	local function is_valid_*_spawn(x, y, l) return false end
 	local global_spawn_procedural_* = define_procedural_spawn("hd_procedural_*", create_*, is_valid_*_spawn)
 --]]
 
@@ -325,7 +325,6 @@ function module.set_chances(room_gen_ctx)
                 end
             end
             
-            -- # TODO: Yeti Kingdom procedural spawn validation differences. Investigate HD's code to verify what needs to be set/restricted.
             if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
             	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_landmine, 0)
             	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bouncetrap, 0)

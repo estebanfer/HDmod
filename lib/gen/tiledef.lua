@@ -362,9 +362,10 @@ module.HD_TILENAME = {
 			[2] = {
 				default = {
 					function(x, y, l)
-						spikeslib.detect_floor_and_create_spikes(x, y, l)
+						if math.random(3) == 1 then
+							spikeslib.detect_floor_and_create_spikes(x, y, l)
+						end
 					end,
-					function(x, y, l) return 0 end
 				},
 			}
 		},

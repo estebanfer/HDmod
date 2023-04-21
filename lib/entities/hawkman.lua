@@ -1,4 +1,5 @@
 local celib = require "lib.entities.custom_entities"
+local optionslib = require "lib.options"
 
 local module = {}
 
@@ -185,9 +186,7 @@ function module.create_hawkman(x, y, l)
     set_post_statemachine(hawkman, hawkman_update)
     set_on_damage(hawkman, hawkman_death)
 end
-set_callback(function()
-    local x, y, l = get_position(players[1].uid)
-    module.create_hawkman(x-4, y, l)
-end, ON.START)
+
+optionslib.register_entity_spawner("Hawkman", module.create_hawkman)
 
 return module

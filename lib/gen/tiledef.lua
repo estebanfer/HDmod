@@ -1,7 +1,6 @@
 blackknightlib = require 'lib.entities.black_knight'
 turretlib = require 'lib.entities.laser_turret'
 spikeballlib = require 'lib.entities.spikeball_trap'
-snaillib = require 'lib.entities.snail'
 tombstonelib = require 'lib.entities.tombstone'
 babywormlib = require 'lib.entities.baby_worm'
 tikitraplib = require 'lib.entities.tikitrap'

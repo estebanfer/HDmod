@@ -21,6 +21,7 @@ local arrowtraplib = require 'lib.entities.arrowtrap'
 local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
+local snaillib = require 'lib.entities.snail'
 
 local module = {}
 
@@ -70,9 +71,9 @@ module.global_spawn_procedural_worm_jungle_mantrap = define_procedural_spawn("hd
 module.global_spawn_procedural_tikiman = define_procedural_spawn("hd_procedural_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
 module.global_spawn_procedural_worm_jungle_tikiman = define_procedural_spawn("hd_procedural_worm_jungle_tikiman", createlib.create_tikiman, validlib.is_valid_tikiman_spawn)
 
-module.global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
-module.global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
-module.global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", createlib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_snail = define_procedural_spawn("hd_procedural_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_hcastle_snail = define_procedural_spawn("hd_procedural_hcastle_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
+module.global_spawn_procedural_worm_jungle_snail = define_procedural_spawn("hd_procedural_worm_jungle_snail", snaillib.create_snail, validlib.is_valid_snail_spawn)
 
 module.global_spawn_procedural_firefrog = define_procedural_spawn("hd_procedural_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)
 module.global_spawn_procedural_hcastle_firefrog = define_procedural_spawn("hd_procedural_hcastle_firefrog", createlib.create_firefrog, validlib.is_valid_firefrog_spawn)

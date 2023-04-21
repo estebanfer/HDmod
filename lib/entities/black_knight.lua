@@ -136,25 +136,31 @@ local function black_knight_update(ent)
                 end
             end
             -- Flip when hitting a wall
-            if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL) then
-                local held_item = get_entity(ent.holding_uid)
-                if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-                    if held_item ~= nil then
-                        held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
-                    end
-                    ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-                    ent.movex = 1
-                    ent.x = ent.x+0.1
-                else
+            local held_item = get_entity(ent.holding_uid)
+            local hb = get_hitbox(ent.uid, 0, 0.19, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
                     if held_item ~= nil then
                         held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
                     end
                     ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
                     ent.movex = -1
-                    ent.x = ent.x-0.1
+                    ent.x = ent.x-0.1                  
                 end
             end
-            ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL)
+            local hb = get_hitbox(ent.uid, 0, -0.19, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                    if held_item ~= nil then
+                        held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                    end
+                    ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = 1
+                    ent.x = ent.x+0.1                  
+                end
+            end
             --pick up any shields
             for _, v in ipairs(get_entities_by_type(ENT_TYPE.ITEM_METAL_SHIELD)) do
                 local shield = get_entity(v)

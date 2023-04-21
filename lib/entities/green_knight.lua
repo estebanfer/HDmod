@@ -24,9 +24,6 @@ local function green_knight_set(uid)
         armored = true;
     };
 end
-set_callback(function()
-    module.create_greenknight(players[1].x+3, players[1].y, players[1].layer)
-end, ON.START)
 local function green_knight_update(ent)
     --manage price timer
     if ent.price > 0 then

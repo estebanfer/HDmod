@@ -1,10 +1,10 @@
 local module = {}
+require "hdentnew"
 
 optionslib.register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", nil, false)
 
 local gameframe_cb = -1
 local ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
-local acid_tick = ACID_POISONTIME
 
 local acid_color = Color:new(0.2, 0.75, 0.2, 1.0)
 local water_color = Color:new(0.05, 0.25, 0.35, 1.0)
@@ -19,22 +19,40 @@ local function liquid_light_update()
     end
 end
 
+local acid_immune_hd_ents = {
+	HD_ENT_TYPE.MONS_BACTERIUM,
+	HD_ENT_TYPE.MONS_BABY_WORM,
+	--TODO: Critter maggot
+}
+
 local function acid_update()
-	for _, player in ipairs(players) do
-		-- local spelunker_mov = get_entity(player):as_movable()
-		local spelunker_swimming = test_flag(player.more_flags, 11)
-		local poisoned = player:is_poisoned()
-		local x, y, l = get_position(player.uid)
-		if spelunker_swimming and player.health ~= 0 and not poisoned then
+	for _, uid in pairs(get_entities_by(0, MASK.PLAYER | MASK.MOUNT | MASK.MONSTER, LAYER.FRONT)) do
+		---@type Movable
+		local ent = get_entity(uid)
+		if not ent.user_data then
+			ent.user_data = { acid_tick = ACID_POISONTIME }
+		elseif not ent.user_data.acid_tick then
+			ent.user_data.acid_tick = ACID_POISONTIME
+		end
+		local acid_tick = ent.user_data.acid_tick
+		local is_swimming = test_flag(ent.more_flags, ENT_MORE_FLAG.SWIMMING)
+		local poisoned = ent:is_poisoned()
+		if is_swimming and ent.health ~= 0 and not poisoned
+				and (not ent.user_data.ent_type or not commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type)) then
 			if acid_tick <= 0 then
-				spawn(ENT_TYPE.ITEM_ACIDSPIT, x, y, l, 0, 0)
-				acid_tick = ACID_POISONTIME
+				poison_entity(uid)
+				ent.user_data.acid_tick = ACID_POISONTIME
+				-- messpect("POISONED", uid)
 			else
-				acid_tick = acid_tick - 1
+				ent.user_data.acid_tick = acid_tick - 1
 			end
 		else
-			acid_tick = ACID_POISONTIME
+			ent.user_data.acid_tick = ACID_POISONTIME
 		end
+		-- if is_swimming and commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type) and not ent.user_data.done then
+		-- 	messpect("NO POISON", ent.uid)
+		-- 	ent.user_data.done = true
+		-- end
 	end
 
 	liquid_light_update()
@@ -83,10 +101,6 @@ function module.spawn_liquid_illumination()
 			gameframe_cb = set_callback(liquid_light_update, ON.GAMEFRAME)
 		end
 	end
-end
-
-function module.init()
-	acid_tick = ACID_POISONTIME
 end
 
 return module

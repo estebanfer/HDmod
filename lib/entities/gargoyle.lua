@@ -28,11 +28,8 @@ local function add_gargoyle(block_uid)
     decoration.draw_depth = 10
 
     set_on_destroy(block_uid, function(entity)
-        -- get_entity(decoration_uid):destroy()
-        -- # TODO: Fix decorations not getting destroyed propperly.
         local decoration = get_entity(decoration_uid)
         decoration.flags = set_flag(decoration.flags, ENT_FLAG.INVISIBLE)
-        -- prinspect(decoration_uid)
     end)
 end
 

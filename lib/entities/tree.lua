@@ -12,9 +12,6 @@ do
 	hauntedgrass_texture_def = define_texture(hauntedgrass_texture_def)
 end
 
--- # TODO: Revise into HD_TILENAME["T"] and improve.
--- Use the following methods for a starting point:
-
 -- HD-style tree decorating methods
 local function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	if p_uid == 0 then return 0 end
@@ -43,7 +40,6 @@ local function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 	return branch_uid
 end
 
-
 local function add_top_branches(treetop)
 	local branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, -1, 0, 0.1, false)
 	local branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop, 1, 0, 0.1, false)
@@ -56,27 +52,6 @@ local function add_top_branches(treetop)
 	else
 		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_left, 0.03, 0.47, 0.5, false)
 		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_right, -0.03, 0.47, 0.5, true)
-		-- # TODO: chance of grabbing the FLOOR_TREE_TRUNK below `treetop` and applying DECORATION_TREE with a reskin of a haunted face
-	end
-end
-
-
-
-local function fix_branch(branch_uid)
-	-- prinspect(branch_uid)
-	local b_x, b_y, b_l = get_position(branch_uid)
-	local tree_trunk = get_grid_entity_at(b_x-1, b_y, b_l)
-	if tree_trunk == -1 then
-		tree_trunk = get_grid_entity_at(b_x+1, b_y, b_l)
-	end
-	if tree_trunk ~= -1 then
-		tree_trunk = get_entity(tree_trunk)
-		if (
-			tree_trunk.type.id == ENT_TYPE.FLOOR_TREE_TOP
-			or tree_trunk.type.id == ENT_TYPE.FLOOR_TREE_TRUNK
-		) then
-			prinspect(tree_trunk.uid)
-		end
 	end
 end
 

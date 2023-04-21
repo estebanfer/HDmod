@@ -365,7 +365,6 @@ function module.onlevel_set_feelings()
 			feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
 		end
 		
-		-- # TODO: Verify exactly when UFO is allowed to spawn
 		if (
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and state.level ~= 4
@@ -373,7 +372,6 @@ function module.onlevel_set_feelings()
 			feeling_set(module.FEELING_ID.UFO, {state.level})
 		end
 		
-		-- # TODO: Verify exactly when pools are allowed to spawn
 		if (
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and module.feeling_check(module.FEELING_ID.UFO) == false

@@ -21,6 +21,7 @@ local arrowtraplib = require 'lib.entities.arrowtrap'
 local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
+local hawkmanlib = require "lib.entities.hawkman"
 
 local module = {}
 
@@ -86,7 +87,7 @@ module.global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yet
 module.global_spawn_procedural_wetfur_yeti = define_procedural_spawn("hd_procedural_wetfur_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 module.global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 
-module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, validlib.is_valid_hawkman_spawn)
+module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", hawkmanlib.create_hawkman, validlib.is_valid_hawkman_spawn)
 
 module.global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, validlib.is_valid_crocman_spawn)
 

@@ -194,8 +194,6 @@ function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y,
 
 function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
 
-function module.create_hawkman(x, y, l) end
-
 function module.create_scorpionfly(x, y, l) end
 
 function module.create_critter_frog(x, y, l) end

@@ -87,13 +87,13 @@ set_callback(function()
                 -- sliding doors
                 for _, sliding_wall_ceiling in ipairs(module.sliding_wall_ceilings) do
                     local ent = get_entity(sliding_wall_ceiling)
-                    ent.state = 0
+                    if (ent) then ent.state = 0 end
                 end
                 
                 for i = 1, #module.idoltrap_blocks, 1 do
                     local floor = get_entity(module.idoltrap_blocks[i])
                     -- Code provided by Dregu
-                    if floor ~= nil then
+                    if floor then
                         local cx, cy, cl = get_position(floor.uid)
                         kill_entity(floor.uid)
                         local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))

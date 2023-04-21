@@ -39,7 +39,8 @@ local function hawkman_update(ent)
     if ent.user_data.throw_state == 0 then
         if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
         --wait for player to get near
-        for _, player in ipairs(players) do
+        for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, ent.layer)) do
+            local player = get_entity(v)
             if player ~= nil then
                 local dist = distance(ent.uid, player.uid)
                 local sx, sy, sl = get_position(ent.uid)
@@ -50,74 +51,51 @@ local function hawkman_update(ent)
                     ent.user_data.throw_state = 1
                     ent.user_data.animation_frame = 160
                 end
-                if dist <= 9 then
-                    ent.chased_target_uid = player.uid
-                    ent.move_state = 6
-                    break
-                end
             end
         end
         --give the tikiman a speedbost to his movement (as fast as shoppie)
-        if ent.movex ~= 0 then
+        if ent.movex ~= 0 and ent.move_state == 6 then
             ent.x = ent.x + 0.025*ent.movex
         end
         if ent.move_state == 6 then
             --aggro shoppie behavior from scratch
-            for _, player in ipairs(players) do
+            for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, ent.layer)) do
+                local player = get_entity(v)
                 local px, py, pl = get_position(player.uid)
                 local x, y, l = get_position(ent.uid)
-                if py > y and ent.standing_on_uid ~= -1 then
+                -- Always jump when aggro'd
+                if py > y and ent:can_jump() then
                     ent.velocityy = 0.23
                 end
-                if math.abs(px-x) > 5 then
-                    if ent.standing_on_uid ~= -1 then
-                        ent.velocityy = 0.23
+                -- Flip when hitting a wall
+                local held_item = get_entity(ent.holding_uid)
+                local hb = get_hitbox(ent.uid, 0, 0.19, 0)
+                for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                    local w = get_entity(v)
+                    if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                        if held_item ~= nil then
+                            held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
+                        end
+                        ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                        ent.movex = -1
+                        ent.x = ent.x-0.1                  
                     end
-                    --face the player when out of range
-                    local held_item = get_entity(ent.holding_uid)
-                    if held_item ~= nil then
-                        held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
-                    end
-                    ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-                    ent.movex = -1
-                    if px > x then
+                end
+                local hb = get_hitbox(ent.uid, 0, -0.19, 0)
+                for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                    local w = get_entity(v)
+                    if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
                         if held_item ~= nil then
                             held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
                         end
                         ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
                         ent.movex = 1
-                    end
-                end
-                --pick up any shields
-                for _, v in ipairs(get_entities_by_type(ENT_TYPE.ITEM_METAL_SHIELD)) do
-                    local shield = get_entity(v)
-                    if shield.overlay == nil then
-                        if shield:overlaps_with(ent) and ent.holding_uid == -1 then
-                            pick_up(ent.uid, v)
-                        end
+                        ent.x = ent.x+0.1                  
                     end
                 end
             end
             if ent.velocityx == 0 then
                 ent.velocityx = 1*ent.movex
-            end
-        end
-
-        --kill any webs the entity may run into
-        for _, v in ipairs(get_entities_by_type(ENT_TYPE.ITEM_WEB)) do
-            local web = get_entity(v)
-            local wx, wy, wl = get_position(v)
-            if web:overlaps_with(ent) then
-                generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
-                for i=1, 3, 1 do
-                    commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, v, 0.25)
-                    local leaf = get_entity(spawn(ENT_TYPE.ITEM_LEAF, wx+(i-1)/3, wy, wl, 0, 0))
-                    leaf.width = 0.75
-                    leaf.height = 0.75
-                    leaf.animation_frame = 47
-                    leaf.fade_away_trigger = true
-                    web:destroy()
-                end
             end
         end
     elseif ent.user_data.throw_state == 1 then
@@ -161,13 +139,14 @@ local function hawkman_update(ent)
                     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
                     set_timeout(function()
                         ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)                
-                    end, 1)
+                    end, 10)
                 end
             end
         end
         -- Once the animation finishes go back to vanilla state
         if ent.user_data.animation_frame == ent.user_data.animation_info.finish and ent.user_data.animation_timer == 2 then
             ent.user_data.throw_state = 0
+            ent.move_state = 6
         end
     end
 end

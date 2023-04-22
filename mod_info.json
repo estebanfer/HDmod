@@ -317,6 +317,24 @@
                     ]
                 }
             ]
+        },
+        "res/motherstatue.png": {
+            "Data/Textures/floorstyled_vlad.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        256,
+                        384
+                    ],
+                    "to": [
+                        1024,
+                        0,
+                        1280,
+                        384
+                    ]
+                }
+            ]
         }
     }
 }

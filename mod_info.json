@@ -3,5 +3,24 @@
     "version": "1.04",
     "description": "Spelunky HD's campaign in Spelunky 2",
     "author": "Super Ninja Fat",
-    "image_map": {}
+    "image_map": {
+        "res/boulder.png": {
+            "Data/Textures/deco_ice.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        256,
+                        256
+                    ],
+                    "to": [
+                        0,
+                        640,
+                        256,
+                        896
+                    ]
+                }
+            ]
+        }
+    }
 }

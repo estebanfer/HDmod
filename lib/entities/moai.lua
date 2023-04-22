@@ -6,11 +6,11 @@ local moai_veil
 local moai_diamond_cb
 
 local MOAI_BORDER_MAIN_TEXTURE_DEF = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
-MOAI_BORDER_MAIN_TEXTURE_DEF.texture_path = "res/border_main_moai.png"
+MOAI_BORDER_MAIN_TEXTURE_DEF.texture_path = "res/moai.png"
 module.MOAI_BORDER_MAIN_TEXTURE = define_texture(MOAI_BORDER_MAIN_TEXTURE_DEF)
 
 local MOAI_VEIL_TEXTURE_DEF = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
-MOAI_VEIL_TEXTURE_DEF.texture_path = "res/border_main_moai.png"
+MOAI_VEIL_TEXTURE_DEF.texture_path = "res/moai.png"
 MOAI_VEIL_TEXTURE_DEF.tile_width = 384
 MOAI_VEIL_TEXTURE_DEF.tile_height = 512
 MOAI_VEIL_TEXTURE_DEF.sub_image_offset_x = 256

@@ -4,11 +4,11 @@ local hauntedface_texture_def
 local hauntedgrass_texture_def
 do
 	hauntedface_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
-	hauntedface_texture_def.texture_path = "res/restless_jungle.png"
+	hauntedface_texture_def.texture_path = "res/restless_deco.png"
 	hauntedface_texture_def = define_texture(hauntedface_texture_def)
 
 	hauntedgrass_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
-	hauntedgrass_texture_def.texture_path = "res/restless_jungle.png"
+	hauntedgrass_texture_def.texture_path = "res/restless_deco.png"
 	hauntedgrass_texture_def = define_texture(hauntedgrass_texture_def)
 end
 

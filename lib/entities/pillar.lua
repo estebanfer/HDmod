@@ -4,7 +4,7 @@ local texture_pillar = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_
 local texture_dragon = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
 do
     texture_pillar.texture_path = "res/pillar_yama.png"
-    texture_dragon.texture_path = "res/hell_fountain.png"
+    texture_dragon.texture_path = "res/fountain_hell.png"
 end
 
 local function create_section(x, y, l, animation_frame)

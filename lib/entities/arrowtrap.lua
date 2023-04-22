@@ -4,11 +4,11 @@ local arrowtrap_gold_texture_id
 local arrowtrap_temple_texture_id
 do
     local arrowtrap_temple_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-    arrowtrap_temple_texture_def.texture_path = "res/temple_arrow_trap.png"
+    arrowtrap_temple_texture_def.texture_path = "res/arrowtrap_temple.png"
     arrowtrap_temple_texture_id = define_texture(arrowtrap_temple_texture_def)
 
     local arrowtrap_gold_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-    arrowtrap_gold_texture_def.texture_path = "res/floormisc_gold_trap.png"
+    arrowtrap_gold_texture_def.texture_path = "res/arrowtrap_gold.png"
     arrowtrap_gold_texture_id = define_texture(arrowtrap_gold_texture_def)
 end
 

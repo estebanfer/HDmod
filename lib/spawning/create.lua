@@ -165,7 +165,7 @@ function module.create_idol_crystalskull(x, y, l)
 
 	local entity = get_entity(idollib.IDOL_UID)
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-	texture_def.texture_path = "res/items_dar_idol.png"
+	texture_def.texture_path = "res/crystal_skull.png"
 	entity:set_texture(define_texture(texture_def))
 end
 
@@ -273,7 +273,7 @@ local function create_window(x, y, l, is_hc)
 
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
 	if is_hc == true then
-		texture_def.texture_path = "res/hc_window.png"
+		texture_def.texture_path = "res/hauntedcastle_window.png"
 	end
 	ent:set_texture(define_texture(texture_def))
 end

@@ -13,7 +13,7 @@ module.sliding_wall_ceilings = {}
 local idoltrap_ceiling_texture_id
 do
     local idoltrap_ceiling_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-    idoltrap_ceiling_texture_def.texture_path = "res/floorstyled_temple_idoltrap_ceiling_post.png"
+    idoltrap_ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
     idoltrap_ceiling_texture_id = define_texture(idoltrap_ceiling_texture_def)
 end
 

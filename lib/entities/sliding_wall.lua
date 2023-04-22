@@ -9,11 +9,11 @@ local hc_slidingdoor_texture_id
 
 do
     local temple_chain_ceiling_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_0)
-    temple_chain_ceiling_texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+    temple_chain_ceiling_texture_def.texture_path = "res/slidingwall_temple.png"
     temple_chain_ceiling_texture_id = define_texture(temple_chain_ceiling_texture_def)
     
     local temple_slidingdoor_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)
-    temple_slidingdoor_texture_def.texture_path = "res/floorstyled_temple_slidingwall.png"
+    temple_slidingdoor_texture_def.texture_path = "res/slidingwall_temple.png"
     temple_slidingdoor_texture_id = define_texture(temple_slidingdoor_texture_def)
     
     local hc_slidingdoor_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_PAGODA_1)

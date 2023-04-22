@@ -18,7 +18,7 @@ local BOOKOFDEAD_SQUASH = (1/BOOKOFDEAD_FRAMES) --options.hd_ui_botd_e_squash
 
 module.OBTAINED_BOOKOFDEAD = false
 
-local UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/bookofdead.png')
+local UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/botd_hud.png')
 local UI_BOTD_PLACEMENT_W = 0.08
 local UI_BOTD_PLACEMENT_H = 0.12
 local UI_BOTD_PLACEMENT_X = 0.2
@@ -28,7 +28,7 @@ function module.create_botd(x, y, l)
     local bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
     local book_ = get_entity(bookofdead_pickup_id)
     local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-    texture_def.texture_path = "res/items_botd.png"
+    texture_def.texture_path = "res/botd_item.png"
     book_:set_texture(define_texture(texture_def))
 end
 

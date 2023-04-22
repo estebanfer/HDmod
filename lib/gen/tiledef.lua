@@ -52,17 +52,17 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
+					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
 				},
 				alternate = {
 					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_gold_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
 					},
 					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_temple_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_temple.png", true) end,
 					},
 					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/hell_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
 					},
 				},
 			}
@@ -421,7 +421,7 @@ module.HD_TILENAME = {
 							-- dar_crown.angle = -0.15
 
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-							texture_def.texture_path = "res/items_dar_crown.png"
+							texture_def.texture_path = "res/restless_crown.png"
 							dar_crown:set_texture(define_texture(texture_def))
 
 							-- 4 tiles down
@@ -536,7 +536,7 @@ module.HD_TILENAME = {
 						block.more_flags = set_flag(block.more_flags, 17)
 
 						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-						texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
+						texture_def.texture_path = "res/idoltrap_floor.png"
 						get_entity(block_uid):set_texture(define_texture(texture_def))
 						block.animation_frame = 27
 
@@ -824,7 +824,7 @@ module.HD_TILENAME = {
 					[THEME.CITY_OF_GOLD] = {
 						function(x, y, l)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/floorstyled_gold_ladders.png"
+							texture_def.texture_path = "res/ladder_gold.png"
 							local ent_texture = define_texture(texture_def)
 							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l)
 							get_entity(ent_uid):set_texture(ent_texture)
@@ -939,7 +939,7 @@ module.HD_TILENAME = {
 					[THEME.CITY_OF_GOLD] = {
 						function(x, y, l)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/floorstyled_gold_ladders.png"
+							texture_def.texture_path = "res/ladder_gold.png"
 							local ent_texture = define_texture(texture_def)
 							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l)
 							get_entity(ent_uid):set_texture(ent_texture)
@@ -1180,7 +1180,7 @@ module.HD_TILENAME = {
 								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
 								coffin_e.velocityx = 0
 								coffin_e.velocityy = 0
-								texture_def.texture_path = "res/coffins_worm.png"
+								texture_def.texture_path = "res/coffin_worm.png"
 							end
 							if state.theme == THEME.NEO_BABYLON then
 								texture_def.texture_path = "res/coffins_mothership.png"
@@ -1207,12 +1207,12 @@ module.HD_TILENAME = {
 						function(x, y, l)
 							local ent_uid = spawn_entity(ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER, x+4, y+2, l, 0, 0)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_3)
-							texture_def.texture_path = "res/deco_basecamp_hauntedcastle_banner.png"
+							texture_def.texture_path = "res/hauntedcastle_banner.png"
 							get_entity(ent_uid):set_texture(define_texture(texture_def))
 							
 							ent_uid = spawn_entity(ENT_TYPE.BG_KALI_STATUE, x+.5, y+0.6, l, 0, 0)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-							texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
+							texture_def.texture_path = "res/hauntedcastle_deco.png"
 							get_entity(ent_uid):set_texture(define_texture(texture_def))
 							get_entity(ent_uid).width = 5.0--5.600
 							get_entity(ent_uid).height = 5.0--7.000

@@ -299,6 +299,24 @@
                     ]
                 }
             ]
+        },
+        "res/floorstyled_stone_bgdeco.png": {
+            "Data/Textures/floorstyled_stone.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        768,
+                        256
+                    ],
+                    "to": [
+                        0,
+                        1024,
+                        768,
+                        1280
+                    ]
+                }
+            ]
         }
     }
 }

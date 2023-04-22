@@ -58,6 +58,14 @@ local function level_specific()
         -- end
     end
 
+    if state.theme == THEME.CITY_OF_GOLD then
+        local bg = get_entity(spawn_entity(ENT_TYPE.BG_KALI_STATUE, 22.5, 103, l, 0, 0))
+        bg.width = 5.6
+        bg.height = 7
+        bg.hitboxx = 2.8
+        bg.hitboxy = 3.5
+    end
+
     if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
         -- throne backwall bricks
         local w, h = 6, 8

@@ -127,6 +127,24 @@
                     ]
                 }
             ]
+        },
+        "res/mothership_doors.png": {
+            "Data/Textures/floor_babylon.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        384,
+                        640
+                    ],
+                    "to": [
+                        0,
+                        896,
+                        384,
+                        1536
+                    ]
+                }
+            ]
         }
     }
 }

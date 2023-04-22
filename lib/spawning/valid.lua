@@ -346,7 +346,7 @@ function module.is_valid_yeti_spawn(x, y, l)
 	and get_grid_entity_at(x, y+1, l) == -1
 end
 
-function module.is_valid_hawkman_spawn(x, y, l) return false end -- # TODO: Implement method for valid hawkman spawn
+module.is_valid_hawkman_spawn = default_ground_monster_condition
 
 module.is_valid_crocman_spawn = default_ground_monster_condition
 

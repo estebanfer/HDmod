@@ -24,6 +24,7 @@ local critterratlib = require 'lib.entities.critterrat'
 local hawkmanlib = require "lib.entities.hawkman"
 local snaillib = require 'lib.entities.snail'
 local scorpionflylib = require 'lib.entities.scorpionfly'
+local devillib = require 'lib.entities.devil'
 
 local module = {}
 

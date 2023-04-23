@@ -1,15 +1,16 @@
 local module = {}
 
 local IDOLTRAP_TRIGGER = false
-module.IDOL_X = nil
-module.IDOL_Y = nil
-module.IDOL_UID = nil
+local IDOL_X = nil
+local IDOL_Y = nil
+local IDOL_UID = nil
 
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 local idoltrap_timeout = 0
 local idoltrap_blocks = {}
 local sliding_wall_ceilings = {}
 
+local skull_texture_id
 local floor_texture_id
 local ceiling_texture_id
 do
@@ -28,24 +29,47 @@ do
     ceiling_texture_def.tile_height = 128
     ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
     ceiling_texture_id = define_texture(ceiling_texture_def)
+
+    local skull_texture_def = TextureDefinition.new()
+    skull_texture_def.width = 128
+    skull_texture_def.height = 128
+    skull_texture_def.tile_width = 128
+    skull_texture_def.tile_height = 128
+    skull_texture_def.texture_path = "res/crystal_skull.png"
+    skull_texture_id = define_texture(skull_texture_def)
 end
 
 function module.init()
 	IDOLTRAP_TRIGGER = false
-	module.IDOL_X = nil
-	module.IDOL_Y = nil
-	module.IDOL_UID = nil
+	IDOL_X = nil
+	IDOL_Y = nil
+	IDOL_UID = nil
 
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	idoltrap_blocks = {}
     sliding_wall_ceilings = {}
 end
 
+function module.create_idol(x, y, l)
+	IDOL_X, IDOL_Y = x, y
+	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, IDOL_X, IDOL_Y, l)
+	if state.theme == THEME.ICE_CAVES then
+		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
+		get_entity(IDOL_UID).trap_triggered = true
+	end
+end
+
+function module.create_crystalskull(x, y, l)
+	IDOL_X, IDOL_Y = x, y
+	IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, IDOL_X, IDOL_Y, l)
+    get_entity(IDOL_UID):set_texture(skull_texture_id)
+end
+
 local function idol_disturbance()
-	if module.IDOL_UID ~= nil then
-		local x, y, l = get_position(module.IDOL_UID)
+	if IDOL_UID ~= nil then
+		local x, y, _ = get_position(IDOL_UID)
         ---@type Idol
-		local _entity = get_entity(module.IDOL_UID)
+		local _entity = get_entity(IDOL_UID)
         if not _entity then return true end
 		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
 	end
@@ -58,7 +82,6 @@ function module.create_idoltrap_floor(x, y, l)
     block.more_flags = set_flag(block.more_flags, 17)
 
     get_entity(block_uid):set_texture(floor_texture_id)
-    block.animation_frame = 27
 
     idoltrap_blocks[#idoltrap_blocks+1] = block_uid
 end
@@ -94,12 +117,12 @@ end
 
 -- Idol trap activation
 set_callback(function()
-    if IDOLTRAP_TRIGGER == false and module.IDOL_UID ~= nil and idol_disturbance() then
+    if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
         IDOLTRAP_TRIGGER = true
         if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
             create_ghost_at_border()
-        elseif state.theme == THEME.DWELLING and module.IDOL_X ~= nil and module.IDOL_Y ~= nil then
-            spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, module.IDOL_X, module.IDOL_Y, LAYER.FRONT, 0, 0)
+        elseif state.theme == THEME.DWELLING and IDOL_X ~= nil and IDOL_Y ~= nil then
+            spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, IDOL_X, IDOL_Y, LAYER.FRONT, 0, 0)
         elseif state.theme == THEME.JUNGLE then
             -- Break the 6 blocks under it in a row, starting with the outside 2 going in
             if #idoltrap_blocks > 0 then
@@ -139,12 +162,11 @@ set_callback(function()
                         block.velocityy = -0.01
                         
                         block:set_texture(ceiling_texture_id)
-                        block.animation_frame = 27
                     end
                 end
             end
         end
-    elseif IDOLTRAP_TRIGGER == true and module.IDOL_UID ~= nil and state.theme == THEME.DWELLING then
+    elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
         boulderlib.onframe_ownership_crush_prevention()
     end
 end, ON.FRAME)

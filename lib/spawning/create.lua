@@ -150,25 +150,6 @@ function module.create_regenblock(x, y, l)
 	regen_bg.hitboxx, regen_bg.hitboxy = regen_bg.width/2, regen_bg.height/2
 end
 
-function module.create_idol(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
-	if state.theme == THEME.ICE_CAVES then
-		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-		get_entity(idollib.IDOL_UID).trap_triggered = true
-	end
-end
-
-function module.create_idol_crystalskull(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
-
-	local entity = get_entity(idollib.IDOL_UID)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-	texture_def.texture_path = "res/crystal_skull.png"
-	entity:set_texture(define_texture(texture_def))
-end
-
 function module.create_yama(x, y, l)-- 20, 117 = 22.5 117.5
 	spawn_entity(ENT_TYPE.MONS_YAMA, x+2.5, y+.5, l, 0, 0)
 end

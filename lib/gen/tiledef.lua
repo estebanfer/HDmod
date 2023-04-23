@@ -464,7 +464,7 @@ module.HD_TILENAME = {
 				default = {
 					function(x, y, l)
 						damsellib.create_damsel(x, y, l)
-						createlib.create_idol(x+1, y, l)
+						idollib.create_idol(x+1, y, l)
 					end,
 				},
 				alternate = {
@@ -720,7 +720,7 @@ module.HD_TILENAME = {
 						) then
 							-- SORRY NOTHING 
 						else
-							createlib.create_idol(x+0.5, y, l)
+							idollib.create_idol(x+0.5, y, l)
 						end
 					end,
 				},
@@ -1080,7 +1080,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) createlib.create_idol_crystalskull(x+0.5, y, l) end,
+					function(x, y, l) idollib.create_crystalskull(x+0.5, y, l) end,
 				},
 				alternate = {
 					[THEME.EGGPLANT_WORLD] = {

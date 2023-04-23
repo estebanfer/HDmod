@@ -1183,7 +1183,7 @@ module.HD_TILENAME = {
 								texture_def.texture_path = "res/coffin_worm.png"
 							end
 							if state.theme == THEME.NEO_BABYLON then
-								texture_def.texture_path = "res/coffins_mothership.png"
+								texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_5)
 							end
 							coffin_e:set_texture(define_texture(texture_def))
 						end

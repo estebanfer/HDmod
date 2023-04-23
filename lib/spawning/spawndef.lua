@@ -22,6 +22,7 @@ local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
 local snaillib = require 'lib.entities.snail'
+local scorpionflylib = require 'lib.entities.scorpionfly'
 
 local module = {}
 

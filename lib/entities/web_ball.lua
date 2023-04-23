@@ -6,7 +6,7 @@ local web_ball_texture_id
 do
     local web_ball_texture_def
     web_ball_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-    web_ball_texture_def.texture_path = 'res/items_spiderlair_spidernest.png'
+    web_ball_texture_def.texture_path = 'res/webnest.png'
     web_ball_texture_id = define_texture(web_ball_texture_def)
 end
 local function spawn_web_ball_contents(x, y, l)

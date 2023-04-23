@@ -21,6 +21,7 @@ local arrowtraplib = require 'lib.entities.arrowtrap'
 local hideyholelib = require 'lib.entities.hideyhole'
 local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
+local hawkmanlib = require "lib.entities.hawkman"
 local snaillib = require 'lib.entities.snail'
 local scorpionflylib = require 'lib.entities.scorpionfly'
 
@@ -88,7 +89,7 @@ module.global_spawn_procedural_yeti = define_procedural_spawn("hd_procedural_yet
 module.global_spawn_procedural_wetfur_yeti = define_procedural_spawn("hd_procedural_wetfur_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 module.global_spawn_procedural_worm_icecaves_yeti = define_procedural_spawn("hd_procedural_worm_icecaves_yeti", createlib.create_yeti, validlib.is_valid_yeti_spawn)
 
-module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", createlib.create_hawkman, validlib.is_valid_hawkman_spawn)
+module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_hawkman", hawkmanlib.create_hawkman, validlib.is_valid_hawkman_spawn)
 
 module.global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, validlib.is_valid_crocman_spawn)
 
@@ -171,7 +172,7 @@ module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
-module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, validlib.is_valid_tombstone_spawn)
+module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
 
 module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", giantfroglib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 

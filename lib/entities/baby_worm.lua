@@ -1,22 +1,22 @@
 local celib = require "lib.entities.custom_entities"
 
 local module = {}
-local baby_worm_texture_id
+local texture_id
 do
-    local baby_worm_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBASIC01_0)
-    baby_worm_texture_def.texture_path = 'res/baby_worm.png'
-    baby_worm_texture_id = define_texture(baby_worm_texture_def)
+    local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBASIC01_0)
+    texture_def.texture_path = 'res/worm_baby.png'
+    texture_id = define_texture(texture_def)
 end
-local function baby_worm_set(uid)
+local function worm_baby_set(uid)
     local ent = get_entity(uid)
     ent.price = 0 --exit_chase_timer
-    ent:set_texture(baby_worm_texture_id)
+    ent:set_texture(texture_id)
     -- user_data
     ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_BABY_WORM;
+        ent_type = HD_ENT_TYPE.MONS_worm_baby;
     };
 end
-local function baby_worm_update(ent)
+local function worm_baby_update(ent)
     --chase timer
     if ent.price > 0 then
         ent.price = ent.price - 1
@@ -64,17 +64,17 @@ local function baby_worm_update(ent)
         end
     end
 end
-function module.create_babyworm(x, y, l)
-    local baby_worm = spawn(ENT_TYPE.MONS_ALIEN, x, y, l, 0, 0)
-    baby_worm_set(baby_worm)
-    set_post_statemachine(baby_worm, baby_worm_update)
+function module.create_worm_baby(x, y, l)
+    local worm_baby = spawn(ENT_TYPE.MONS_ALIEN, x, y, l, 0, 0)
+    worm_baby_set(worm_baby)
+    set_post_statemachine(worm_baby, worm_baby_update)
 end
 
 set_pre_entity_spawn(function (e_type, x, y, l)
-    module.create_babyworm(x, y, l)
+    module.create_worm_baby(x, y, l)
     return spawn_grid_entity(ENT_TYPE.FX_SHADOW, 0, 0, LAYER.FRONT)
 end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_GRUB)
 
-optionslib.register_entity_spawner("Baby worm", module.create_babyworm)
+optionslib.register_entity_spawner("Worm Baby", module.create_worm_baby)
 
 return module

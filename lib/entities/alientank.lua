@@ -55,7 +55,7 @@ do
     alien_tank_texture_def.tile_width = 128
     alien_tank_texture_def.tile_height = 128
 
-    alien_tank_texture_def.texture_path = "res/monsters01_alientank.png"
+    alien_tank_texture_def.texture_path = "res/alientank.png"
     alien_tank_texture_id = define_texture(alien_tank_texture_def)
 end
 

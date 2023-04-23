@@ -1,10 +1,10 @@
 local module = {}
+require "hdentnew"
 
 optionslib.register_option_bool("disable_liquid_illumination", "Performance: Disable liquid illumination (water, acid)", nil, false)
 
 local gameframe_cb = -1
 local ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
-local acid_tick = ACID_POISONTIME
 
 local acid_color = Color:new(0.2, 0.75, 0.2, 1.0)
 local water_color = Color:new(0.05, 0.25, 0.35, 1.0)
@@ -19,34 +19,95 @@ local function liquid_light_update()
     end
 end
 
+local acid_immune_hd_ents = {
+	HD_ENT_TYPE.MONS_BACTERIUM,
+	HD_ENT_TYPE.MONS_BABY_WORM,
+	--TODO: Critter maggot
+}
+
+local INITIAL_ACID_SOUND_TIMER = 80
+
 local function acid_update()
-	for _, player in ipairs(players) do
-		-- local spelunker_mov = get_entity(player):as_movable()
-		local spelunker_swimming = test_flag(player.more_flags, 11)
-		local poisoned = player:is_poisoned()
-		local x, y, l = get_position(player.uid)
-		if spelunker_swimming and player.health ~= 0 and not poisoned then
+	for _, uid in pairs(get_entities_by(0, MASK.PLAYER | MASK.MOUNT | MASK.MONSTER, LAYER.FRONT)) do
+		local ent = get_entity(uid) --[[@as Movable]]
+		if not ent.user_data then
+			ent.user_data = {}
+		end
+		if not ent.user_data.acid_tick then
+			-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+				ent.user_data.acid_sound_timer = 0
+				ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+			-- end
+			ent.user_data.acid_tick = ACID_POISONTIME
+		end
+		local acid_tick = ent.user_data.acid_tick
+		local is_swimming = test_flag(ent.more_flags, ENT_MORE_FLAG.SWIMMING)
+		local poisoned = ent:is_poisoned()
+		if is_swimming and ent.health ~= 0 and not poisoned
+				and (not ent.user_data.ent_type or not commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type)) then
 			if acid_tick <= 0 then
-				spawn(ENT_TYPE.ITEM_ACIDSPIT, x, y, l, 0, 0)
-				acid_tick = ACID_POISONTIME
+				-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+					ent.user_data.acid_sound_timer = 0
+					ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+				-- end
+				poison_entity(uid)
+				ent.user_data.acid_tick = ACID_POISONTIME
+				-- messpect("POISONED", uid)
 			else
-				acid_tick = acid_tick - 1
+				-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+					if ent.user_data.acid_sound_timer <= 0 then
+						ent.user_data.next_sound_timer = ent.user_data.next_sound_timer - 10
+						ent.user_data.acid_sound_timer = ent.user_data.next_sound_timer
+						commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_POISON_WARN, uid):set_pitch(0.7)
+					else
+						ent.user_data.acid_sound_timer = ent.user_data.acid_sound_timer - 1
+					end
+				-- end
+				ent.user_data.acid_tick = acid_tick - 1
 			end
 		else
-			acid_tick = ACID_POISONTIME
+			if ent.user_data.acid_tick ~= ACID_POISONTIME then -- and ent.type.search_flags & MASK.PLAYER ~= 0 then
+				ent.user_data.acid_sound_timer = 0
+				ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+			end
+			ent.user_data.acid_tick = ACID_POISONTIME
 		end
+		-- if is_swimming and commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type) and not ent.user_data.done then
+		-- 	messpect("NO POISON", ent.uid)
+		-- 	ent.user_data.done = true
+		-- end
 	end
 
 	liquid_light_update()
 
 	if get_frame() % 35 == 0 then
 		local fx = get_entities_by_type(ENT_TYPE.FX_WATER_SURFACE)
-		for _,v in ipairs(fx) do
-			local x, y, l = get_position(v)
+		for _, uid in ipairs(fx) do
 			if math.random() < 0.003 then
-				spawn_entity(ENT_TYPE.ITEM_ACIDBUBBLE, x, y, l, 0, 0)
+				---@type ParticleEmitterInfo | nil
+				local bubbles_particle = generate_world_particles(PARTICLEEMITTER.POISONEDEFFECT_BUBBLES_BURST, uid)
+				set_timeout(function ()
+					if get_entity(uid) then
+						local x, y, l = get_position(uid)
+						spawn_entity(ENT_TYPE.ITEM_ACIDBUBBLE, x, y, l, 0, 0)
+					end
+				end, 60)
+				set_interval(function()
+					-- MUST extinguish the particle emitter if the entity doesn't exist anymore (or crash)
+					if not get_entity(uid) or bubbles_particle == nil then
+						---@cast bubbles_particle ParticleEmitterInfo
+						extinguish_particles(bubbles_particle)
+						bubbles_particle = nil
+						return false
+					end
+				end, 1)
+				set_timeout(function()
+					---@cast bubbles_particle ParticleEmitterInfo
+					extinguish_particles(bubbles_particle)
+					bubbles_particle = nil
+				end, 75)
 			end
-			get_entity(v).color = acid_glow_color
+			get_entity(uid).color = acid_glow_color
 		end
 	end
 end
@@ -83,10 +144,6 @@ function module.spawn_liquid_illumination()
 			gameframe_cb = set_callback(liquid_light_update, ON.GAMEFRAME)
 		end
 	end
-end
-
-function module.init()
-	acid_tick = ACID_POISONTIME
 end
 
 return module

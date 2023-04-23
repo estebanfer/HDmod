@@ -13,27 +13,27 @@ do
     spikeball_texture_def.texture_path = 'res/spikeball.png'
     spikeball_texture_id = define_texture(spikeball_texture_def)
 end
-local chain_half_texture_id
+local chain_texture_id
 do
-    local chain_half_texture_def = TextureDefinition.new()
-    chain_half_texture_def.width = 128
-    chain_half_texture_def.height = 128
-    chain_half_texture_def.tile_width = 128
-    chain_half_texture_def.tile_height = 128
+    local chain_texture_def = TextureDefinition.new()
+    chain_texture_def.width = 128
+    chain_texture_def.height = 128
+    chain_texture_def.tile_width = 128
+    chain_texture_def.tile_height = 128
 
-    chain_half_texture_def.texture_path = 'res/chain_half.png'
-    chain_half_texture_id = define_texture(chain_half_texture_def)
+    chain_texture_def.texture_path = 'res/spikeball_chain.png'
+    chain_texture_id = define_texture(chain_texture_def)
 end
-local source_block_texture_id
+local block_texture_id
 do
-    local source_block_texture_def = TextureDefinition.new()
-    source_block_texture_def.width = 128
-    source_block_texture_def.height = 128
-    source_block_texture_def.tile_width = 128
-    source_block_texture_def.tile_height = 128
+    local block_texture_def = TextureDefinition.new()
+    block_texture_def.width = 128
+    block_texture_def.height = 128
+    block_texture_def.tile_width = 128
+    block_texture_def.tile_height = 128
 
-    source_block_texture_def.texture_path = 'res/source_block.png'
-    source_block_texture_id = define_texture(source_block_texture_def)
+    block_texture_def.texture_path = 'res/spikeball_block.png'
+    block_texture_id = define_texture(block_texture_def)
 end
 local function spikeball_trap_set(uid)
     local ent = get_entity(uid)
@@ -53,8 +53,8 @@ local function spikeball_trap_set(uid)
     ent.height = 1
     --spawn the "source" tile, if this is destroyed the custom entity should just turn into a regular old unchained spikeball
     ent.owner_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CHAINEDPUSHBLOCK, x, y, l)
-    local source_block = get_entity(ent.owner_uid)
-    source_block:set_texture(source_block_texture_id)
+    local block = get_entity(ent.owner_uid)
+    block:set_texture(block_texture_id)
     --move_state determines the direction the ball will spin in
     ent.move_state = 1
     if math.random(2) == 1 then
@@ -71,7 +71,7 @@ local function spikeball_trap_update(ent)
     ent.animation_frame = 208
 
     --move from a fixed position based on the source block
-    local source_block = get_entity(ent.owner_uid)
+    local block = get_entity(ent.owner_uid)
     local sx, sy, sl = get_position(ent.owner_uid)
     local x, y, l = get_position(ent.uid)
     local move_dir = 1
@@ -80,14 +80,14 @@ local function spikeball_trap_update(ent)
     end
     local angle = move_dir*ent.stand_counter/ent.health
 
-    if source_block == nil then
+    if block == nil then
         local spikeball = get_entity(spawn(ENT_TYPE.ACTIVEFLOOR_UNCHAINED_SPIKEBALL, x, y, l, math.random(-1, 1), 1))
         spikeball.velocityx = -12*math.sin(angle)
         spikeball.velocityy = 8*math.cos(angle)
         kill_entity(ent.uid)
     else
-        ent.x = sx + source_block.velocityx + (3*math.cos(angle))
-        ent.y = sy + source_block.velocityy + (3*math.sin(angle))
+        ent.x = sx + block.velocityx + (3*math.cos(angle))
+        ent.y = sy + block.velocityy + (3*math.sin(angle))
 
         ent.angle = angle
     end
@@ -142,7 +142,7 @@ local function spikeball_chain_set(uid, spikeball_uid, distance_from_anchor_bloc
 
     --if this is the last piece of the chain,, change it to the half texture
     if distance_from_anchor_block == 0 then
-        ent:set_texture(chain_half_texture_id)
+        ent:set_texture(chain_texture_id)
     end
 
     ent.flags = set_flag(ent.flags, ENT_FLAG.NO_GRAVITY)
@@ -167,7 +167,7 @@ local function spikeball_chain_update(ent)
     ent.velocityy = 0
 
     --move from a fixed position based on the source block
-    local source_block = get_entity(ent.owner_uid)
+    local block = get_entity(ent.owner_uid)
     local sx, sy, sl = get_position(ent.owner_uid)
     local x, y, l = get_position(ent.uid)
     local move_dir = 1
@@ -176,11 +176,11 @@ local function spikeball_chain_update(ent)
     end
     local angle = move_dir*ent.stand_counter/ent.health
 
-    if source_block == nil then
+    if block == nil then
         kill_entity(ent.uid)
     else
-        ent.x = sx + source_block.velocityx + (ent.price*math.cos(angle))
-        ent.y = sy + source_block.velocityy + (ent.price*math.sin(angle))
+        ent.x = sx + block.velocityx + (ent.price*math.cos(angle))
+        ent.y = sy + block.velocityy + (ent.price*math.sin(angle))
 
         ent.angle = angle+1.5708
     end

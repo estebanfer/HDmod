@@ -150,25 +150,6 @@ function module.create_regenblock(x, y, l)
 	regen_bg.hitboxx, regen_bg.hitboxy = regen_bg.width/2, regen_bg.height/2
 end
 
-function module.create_idol(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
-	if state.theme == THEME.ICE_CAVES then
-		-- .trap_triggered: "if you set it to true for the ice caves or volcano idol, the trap won't trigger"
-		get_entity(idollib.IDOL_UID).trap_triggered = true
-	end
-end
-
-function module.create_idol_crystalskull(x, y, l)
-	idollib.IDOL_X, idollib.IDOL_Y = x, y
-	idollib.IDOL_UID = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_MADAMETUSK_IDOL, idollib.IDOL_X, idollib.IDOL_Y, l)
-
-	local entity = get_entity(idollib.IDOL_UID)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-	texture_def.texture_path = "res/items_dar_idol.png"
-	entity:set_texture(define_texture(texture_def))
-end
-
 function module.create_yama(x, y, l)-- 20, 117 = 22.5 117.5
 	spawn_entity(ENT_TYPE.MONS_YAMA, x+2.5, y+.5, l, 0, 0)
 end
@@ -190,8 +171,6 @@ function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFRO
 function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
 
 function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
-
-function module.create_hawkman(x, y, l) end
 
 function module.create_scorpionfly(x, y, l) end
 
@@ -275,7 +254,7 @@ local function create_window(x, y, l, is_hc)
 
 	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
 	if is_hc == true then
-		texture_def.texture_path = "res/hc_window.png"
+		texture_def.texture_path = "res/hauntedcastle_window.png"
 	end
 	ent:set_texture(define_texture(texture_def))
 end

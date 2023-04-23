@@ -29,7 +29,7 @@ do
     giant_frog_texture_def.tile_width = 256
     giant_frog_texture_def.tile_height = 256
 
-    giant_frog_texture_def.texture_path = "res/giant_frog_hd.png"
+    giant_frog_texture_def.texture_path = "res/giantfrog.png"
     giant_frog_texture_id = define_texture(giant_frog_texture_def)
 end
 

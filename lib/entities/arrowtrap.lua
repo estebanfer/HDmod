@@ -1,15 +1,23 @@
 local module = {}
 
-local arrowtrap_gold_texture_id
-local arrowtrap_temple_texture_id
+local gold_texture_id
+local temple_texture_id
 do
-    local arrowtrap_temple_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-    arrowtrap_temple_texture_def.texture_path = "res/temple_arrow_trap.png"
-    arrowtrap_temple_texture_id = define_texture(arrowtrap_temple_texture_def)
+    local temple_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+	temple_texture_def.width = 128
+	temple_texture_def.height = 128
+	temple_texture_def.tile_width = 128
+	temple_texture_def.tile_height = 128
+    temple_texture_def.texture_path = "res/arrowtrap_temple.png"
+    temple_texture_id = define_texture(temple_texture_def)
 
-    local arrowtrap_gold_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
-    arrowtrap_gold_texture_def.texture_path = "res/floormisc_gold_trap.png"
-    arrowtrap_gold_texture_id = define_texture(arrowtrap_gold_texture_def)
+    local gold_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORMISC_0)
+	gold_texture_def.width = 128
+	gold_texture_def.height = 128
+	gold_texture_def.tile_width = 128
+	gold_texture_def.tile_height = 128
+    gold_texture_def.texture_path = "res/arrowtrap_gold.png"
+    gold_texture_id = define_texture(gold_texture_def)
 end
 
 function module.create_arrowtrap(x, y, l)
@@ -34,9 +42,9 @@ function module.create_arrowtrap(x, y, l)
 	end
 
 	if state.theme == THEME.TEMPLE then
-		get_entity(uid):set_texture(arrowtrap_temple_texture_id)
+		get_entity(uid):set_texture(temple_texture_id)
 	elseif state.theme == THEME.CITY_OF_GOLD then
-		get_entity(uid):set_texture(arrowtrap_gold_texture_id)
+		get_entity(uid):set_texture(gold_texture_id)
 	end
 end
 

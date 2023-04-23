@@ -10,7 +10,11 @@ local mute_pick_sound = false
 
 local crysknife_texture_id
 do
-	local crysknife_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+	local crysknife_texture_def = TextureDefinition.new()
+	crysknife_texture_def.width = 512
+	crysknife_texture_def.height = 128
+	crysknife_texture_def.tile_width = 128
+	crysknife_texture_def.tile_height = 128
 
 	crysknife_texture_def.texture_path = "res/crysknife.png"
 	crysknife_texture_id = define_texture(crysknife_texture_def)

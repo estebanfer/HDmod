@@ -46,7 +46,7 @@ local function green_knight_update(ent)
             ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1
             if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
             if ent.user_data.jingle_timer <= 0 then
-                ent.user_data.jingle_timer = math.random(28, 40)
+                ent.user_data.jingle_timer = math.random(32, 40)
                 local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
                 audio:set_volume(0.3)
                 audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))

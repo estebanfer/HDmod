@@ -76,6 +76,8 @@ local function giant_frog_set(ent)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_GIANT_FROG;
+        hit_ground = true; -- For landing SFX
+        vyprev = 0; -- Previous velocityy value, used for determining if a fall was great enough for landing effects
     };
     ---@param dead_ent Frog
     set_on_kill(ent.uid, function (dead_ent)
@@ -111,6 +113,9 @@ local function giant_frog_jump(ent)
     local vel_x = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -0.0525 or 0.0525
     ent.velocityx = vel_x
     ent.velocityy = 0.175
+    -- Jump SFX
+    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid)
+    audio:set_volume(1)
 end
 
 local function giant_frog_spit(ent)
@@ -164,13 +169,33 @@ local function update_giant_frog_animation(ent, c_data)
     end
     c_data.animation_timer = c_data.animation_timer - 1
 end
-
 ---comment
 ---@param ent Frog
 ---@param c_data any
 local function giant_frog_update(ent, c_data)
     ent.jump_timer = 255
     if ent.frozen_timer > 0 then return end
+
+    -- Landing SFX
+    if not ent.user_data.hit_ground and ent:can_jump() then
+        -- Make sure a player is close enough first
+        for _, v in ipairs(get_entities_by(0, MASK.PLAYER, ent.layer)) do
+            local player = get_entity(v)
+            if player ~= nil and not test_flag(ent.flags, ENT_FLAG.DEAD) and ent.user_data.vyprev < -0.04 then
+                local dist = distance(ent.uid, player.uid)
+                if dist <= 13 then
+                    commonlib.shake_camera(10, 10, 6, 6, 6, false)
+                    -- Landing SFX
+                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid, 1)
+                    audio:set_volume(0.4)
+                    break
+                end
+            end
+        end
+        ent.user_data.hit_ground = true
+    end
+    ent.user_data.vyprev = ent.velocityy
+    if ent.standing_on_uid == -1 then ent.user_data.hit_ground = false end
 
     if ent.standing_on_uid ~= -1 and ent.state ~= CHAR_STATE.JUMPING then
         c_data.action_timer = c_data.action_timer - 1
@@ -189,10 +214,15 @@ local function giant_frog_update(ent, c_data)
                         time = math.random(100, 200)
                     end
                 else
-                    giant_frog_spit(ent)
+                    set_timeout(function()
+                        -- Slight delay to the spawning of the frog so the animation syncs up better
+                        if ent ~= nil then
+                            giant_frog_spit(ent)                         
+                        end
+                    end, 8)
                     c_data.frogs_inside = c_data.frogs_inside - 1
                     set_animation(c_data, ANIM_STATE.SPITTING)
-                    time = 200
+                    time = 200   
                 end
                 ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
                 c_data.action_timer = time

@@ -199,7 +199,7 @@ local function onframe_tonguetimeout()
 
 					--create worm bg
 					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
 					local ent_texture = define_texture(texture_def)
 					
 					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
@@ -417,7 +417,7 @@ function module.create_wormtongue(x, y, l)
 	end)
 	if #balls > 0 then
 		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
 		local ent_texture = define_texture(texture_def)
 		
 		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y-1.4, l, 0, 0)

@@ -13,16 +13,16 @@ do
     spikeball_texture_def.texture_path = 'res/spikeball.png'
     spikeball_texture_id = define_texture(spikeball_texture_def)
 end
-local chain_half_texture_id
+local chain_texture_id
 do
-    local chain_half_texture_def = TextureDefinition.new()
-    chain_half_texture_def.width = 128
-    chain_half_texture_def.height = 128
-    chain_half_texture_def.tile_width = 128
-    chain_half_texture_def.tile_height = 128
+    local chain_texture_def = TextureDefinition.new()
+    chain_texture_def.width = 128
+    chain_texture_def.height = 128
+    chain_texture_def.tile_width = 128
+    chain_texture_def.tile_height = 128
 
-    chain_half_texture_def.texture_path = 'res/chain_half.png'
-    chain_half_texture_id = define_texture(chain_half_texture_def)
+    chain_texture_def.texture_path = 'res/spikeball_chain.png'
+    chain_texture_id = define_texture(chain_texture_def)
 end
 local block_texture_id
 do
@@ -142,7 +142,7 @@ local function spikeball_chain_set(uid, spikeball_uid, distance_from_anchor_bloc
 
     --if this is the last piece of the chain,, change it to the half texture
     if distance_from_anchor_block == 0 then
-        ent:set_texture(chain_half_texture_id)
+        ent:set_texture(chain_texture_id)
     end
 
     ent.flags = set_flag(ent.flags, ENT_FLAG.NO_GRAVITY)

@@ -41,7 +41,7 @@ local function onlevel_remove_s2_generated_gapblocks()
 		state.theme == THEME.NEO_BABYLON
 		or state.theme == THEME.EGGPLANT_WORLD
 	) then
-		for _, uid in pairs(get_entities_by(ENT_TYPE.FLOOR_GENERIC, 0, LAYER.FRONT)) do
+		for _, uid in pairs(get_entities_by(state.theme == THEME.NEO_BABYLON and ENT_TYPE.FLOORSTYLED_BABYLON or ENT_TYPE.FLOOR_GENERIC, 0, LAYER.FRONT)) do
 			get_entity(uid):destroy()
 		end
 	end

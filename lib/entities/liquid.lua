@@ -59,12 +59,32 @@ local function acid_update()
 
 	if get_frame() % 35 == 0 then
 		local fx = get_entities_by_type(ENT_TYPE.FX_WATER_SURFACE)
-		for _,v in ipairs(fx) do
-			local x, y, l = get_position(v)
+		for _, uid in ipairs(fx) do
 			if math.random() < 0.003 then
-				spawn_entity(ENT_TYPE.ITEM_ACIDBUBBLE, x, y, l, 0, 0)
+				---@type ParticleEmitterInfo | nil
+				local bubbles_particle = generate_world_particles(PARTICLEEMITTER.POISONEDEFFECT_BUBBLES_BURST, uid)
+				set_timeout(function ()
+					if get_entity(uid) then
+						local x, y, l = get_position(uid)
+						spawn_entity(ENT_TYPE.ITEM_ACIDBUBBLE, x, y, l, 0, 0)
+					end
+				end, 60)
+				set_interval(function()
+					-- MUST extinguish the particle emitter if the entity doesn't exist anymore (or crash)
+					if not get_entity(uid) or bubbles_particle == nil then
+						---@cast bubbles_particle ParticleEmitterInfo
+						extinguish_particles(bubbles_particle)
+						bubbles_particle = nil
+						return false
+					end
+				end, 1)
+				set_timeout(function()
+					---@cast bubbles_particle ParticleEmitterInfo
+					extinguish_particles(bubbles_particle)
+					bubbles_particle = nil
+				end, 75)
 			end
-			get_entity(v).color = acid_glow_color
+			get_entity(uid).color = acid_glow_color
 		end
 	end
 end

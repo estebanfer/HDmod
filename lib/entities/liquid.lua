@@ -25,13 +25,19 @@ local acid_immune_hd_ents = {
 	--TODO: Critter maggot
 }
 
+local INITIAL_ACID_SOUND_TIMER = 80
+
 local function acid_update()
 	for _, uid in pairs(get_entities_by(0, MASK.PLAYER | MASK.MOUNT | MASK.MONSTER, LAYER.FRONT)) do
-		---@type Movable
-		local ent = get_entity(uid)
+		local ent = get_entity(uid) --[[@as Movable]]
 		if not ent.user_data then
-			ent.user_data = { acid_tick = ACID_POISONTIME }
-		elseif not ent.user_data.acid_tick then
+			ent.user_data = {}
+		end
+		if not ent.user_data.acid_tick then
+			-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+				ent.user_data.acid_sound_timer = 0
+				ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+			-- end
 			ent.user_data.acid_tick = ACID_POISONTIME
 		end
 		local acid_tick = ent.user_data.acid_tick
@@ -40,13 +46,30 @@ local function acid_update()
 		if is_swimming and ent.health ~= 0 and not poisoned
 				and (not ent.user_data.ent_type or not commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type)) then
 			if acid_tick <= 0 then
+				-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+					ent.user_data.acid_sound_timer = 0
+					ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+				-- end
 				poison_entity(uid)
 				ent.user_data.acid_tick = ACID_POISONTIME
 				-- messpect("POISONED", uid)
 			else
+				-- if ent.type.search_flags & MASK.PLAYER ~= 0 then
+					if ent.user_data.acid_sound_timer <= 0 then
+						ent.user_data.next_sound_timer = ent.user_data.next_sound_timer - 10
+						ent.user_data.acid_sound_timer = ent.user_data.next_sound_timer
+						commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_POISON_WARN, uid):set_pitch(0.7)
+					else
+						ent.user_data.acid_sound_timer = ent.user_data.acid_sound_timer - 1
+					end
+				-- end
 				ent.user_data.acid_tick = acid_tick - 1
 			end
 		else
+			if ent.user_data.acid_tick ~= ACID_POISONTIME then -- and ent.type.search_flags & MASK.PLAYER ~= 0 then
+				ent.user_data.acid_sound_timer = 0
+				ent.user_data.next_sound_timer = INITIAL_ACID_SOUND_TIMER
+			end
 			ent.user_data.acid_tick = ACID_POISONTIME
 		end
 		-- if is_swimming and commonlib.has(acid_immune_hd_ents, ent.user_data.ent_type) and not ent.user_data.done then

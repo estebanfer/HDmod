@@ -7,14 +7,27 @@ module.IDOL_UID = nil
 
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
 local idoltrap_timeout = 0
-module.idoltrap_blocks = {}
-module.sliding_wall_ceilings = {}
+local idoltrap_blocks = {}
+local sliding_wall_ceilings = {}
 
-local idoltrap_ceiling_texture_id
+local floor_texture_id
+local ceiling_texture_id
 do
-    local idoltrap_ceiling_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-    idoltrap_ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
-    idoltrap_ceiling_texture_id = define_texture(idoltrap_ceiling_texture_def)
+    local floor_texture_def = TextureDefinition.new()
+    floor_texture_def.width = 128
+    floor_texture_def.height = 128
+    floor_texture_def.tile_width = 128
+    floor_texture_def.tile_height = 128
+    floor_texture_def.texture_path = "res/idoltrap_floor.png"
+    floor_texture_id = define_texture(floor_texture_def)
+
+    local ceiling_texture_def = TextureDefinition.new()
+    ceiling_texture_def.width = 128
+    ceiling_texture_def.height = 128
+    ceiling_texture_def.tile_width = 128
+    ceiling_texture_def.tile_height = 128
+    ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
+    ceiling_texture_id = define_texture(ceiling_texture_def)
 end
 
 function module.init()
@@ -24,8 +37,8 @@ function module.init()
 	module.IDOL_UID = nil
 
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
-	module.idoltrap_blocks = {}
-    module.sliding_wall_ceilings = {}
+	idoltrap_blocks = {}
+    sliding_wall_ceilings = {}
 end
 
 local function idol_disturbance()
@@ -36,6 +49,30 @@ local function idol_disturbance()
         if not _entity then return true end
 		return (x ~= _entity.spawn_x or y ~= _entity.spawn_y)
 	end
+end
+
+function module.create_idoltrap_floor(x, y, l)
+    local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+    local block = get_entity(block_uid)
+    block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+    block.more_flags = set_flag(block.more_flags, 17)
+
+    get_entity(block_uid):set_texture(floor_texture_id)
+    block.animation_frame = 27
+
+    idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+end
+
+function module.create_idoltrap_ceiling(x, y, l)
+    local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
+    local block = get_entity(block_uid)
+    block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+    block.more_flags = set_flag(block.more_flags, 17)
+    idoltrap_blocks[#idoltrap_blocks+1] = block_uid
+end
+
+function module.add_sliding_wall_ceiling(uid)
+    sliding_wall_ceilings[#sliding_wall_ceilings+1] = uid
 end
 
 local function create_ghost_at_border()
@@ -65,33 +102,33 @@ set_callback(function()
             spawn(ENT_TYPE.LOGICAL_BOULDERSPAWNER, module.IDOL_X, module.IDOL_Y, LAYER.FRONT, 0, 0)
         elseif state.theme == THEME.JUNGLE then
             -- Break the 6 blocks under it in a row, starting with the outside 2 going in
-            if #module.idoltrap_blocks > 0 then
-                kill_entity(module.idoltrap_blocks[1])
-                kill_entity(module.idoltrap_blocks[6])
+            if #idoltrap_blocks > 0 then
+                kill_entity(idoltrap_blocks[1])
+                kill_entity(idoltrap_blocks[6])
                 set_timeout(function()
-                    kill_entity(module.idoltrap_blocks[2])
-                    kill_entity(module.idoltrap_blocks[5])
+                    kill_entity(idoltrap_blocks[2])
+                    kill_entity(idoltrap_blocks[5])
                 end, idoltrap_timeout)
                 set_timeout(function()
-                    kill_entity(module.idoltrap_blocks[3])
-                    kill_entity(module.idoltrap_blocks[4])
+                    kill_entity(idoltrap_blocks[3])
+                    kill_entity(idoltrap_blocks[4])
                 end, idoltrap_timeout*2)
             end
         elseif state.theme == THEME.TEMPLE then
             if feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == true then -- Kali pit temple trap
                 -- Break all 4 blocks under it at once
-                for i = 1, #module.idoltrap_blocks, 1 do
-                    kill_entity(module.idoltrap_blocks[i])
+                for i = 1, #idoltrap_blocks, 1 do
+                    kill_entity(idoltrap_blocks[i])
                 end
             else -- Normal temple trap
                 -- sliding doors
-                for _, sliding_wall_ceiling in ipairs(module.sliding_wall_ceilings) do
+                for _, sliding_wall_ceiling in ipairs(sliding_wall_ceilings) do
                     local ent = get_entity(sliding_wall_ceiling)
                     if (ent) then ent.state = 0 end
                 end
                 
-                for i = 1, #module.idoltrap_blocks, 1 do
-                    local floor = get_entity(module.idoltrap_blocks[i])
+                for i = 1, #idoltrap_blocks, 1 do
+                    local floor = get_entity(idoltrap_blocks[i])
                     -- Code provided by Dregu
                     if floor then
                         local cx, cy, cl = get_position(floor.uid)
@@ -101,7 +138,7 @@ set_callback(function()
                         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                         block.velocityy = -0.01
                         
-                        block:set_texture(idoltrap_ceiling_texture_id)
+                        block:set_texture(ceiling_texture_id)
                         block.animation_frame = 27
                     end
                 end

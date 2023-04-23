@@ -37,7 +37,7 @@ function module.spawn_slidingwall(x, y, layer, up)
 
     
     if state.theme == THEME.TEMPLE then
-        idollib.sliding_wall_ceilings[#idollib.sliding_wall_ceilings+1] = ceiling.uid
+        idollib.add_sliding_wall_ceiling(ceiling.uid)
 
         ceiling:set_texture(temple_chain_texture_id)
         chain:set_texture(temple_chain_texture_id)

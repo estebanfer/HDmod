@@ -12,6 +12,7 @@ spikeslib = require 'lib.entities.spikes'
 local damsellib = require 'lib.entities.damsel'
 local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
+local idollib = require 'lib.entities.idol'
 
 local module = {}
 
@@ -529,19 +530,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
-						local block = get_entity(block_uid)
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, 17)
-
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-						texture_def.texture_path = "res/idoltrap_floor.png"
-						get_entity(block_uid):set_texture(define_texture(texture_def))
-						block.animation_frame = 27
-
-						idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
-					end,
+					idollib.create_idoltrap_floor
 				},
 			}
 		},
@@ -551,13 +540,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
-						local block = get_entity(block_uid)
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, 17)
-						idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
-					end,
+					idollib.create_idoltrap_ceiling
 				},
 				alternate = {
 					[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end},

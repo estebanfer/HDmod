@@ -16,7 +16,7 @@ function module.init()
 	module.tombstone_blocks = {}
 end
 
-function module.spawn_tombstone(x, y, l)
+local function _create_tombstone(x, y, l)
     local tomb_uid = spawn(ENT_TYPE.FLOOR_EGGPLANT_ALTAR, x, y, l, 0, 0)
     set_entity_flags2(tomb_uid, set_flag(get_entity_flags2(tomb_uid), 22))
     local tomb = get_entity(tomb_uid)
@@ -24,11 +24,15 @@ function module.spawn_tombstone(x, y, l)
     return tomb_uid, tomb
 end
 
-function module.create_tombstone(x, y, l)
-    local tomb_uid, tomb = module.spawn_tombstone(x, y, l)
+function module.create_tombstone_common(x, y, l)
+    local tomb_uid, tomb = _create_tombstone(x, y, l)
     tomb.animation_frame = 0
 
 	module.tombstone_blocks[#module.tombstone_blocks+1] = tomb_uid
+end
+
+function module.create_tombstone_king(x, y, l)
+    get_entity(_create_tombstone(x, y, l)).animation_frame = 2
 end
 
 function module.set_ash_tombstone()

@@ -13,6 +13,7 @@ local damsellib = require 'lib.entities.damsel'
 local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
 local idollib = require 'lib.entities.idol'
+local kingboneslib = require 'lib.entities.kingbones'
 
 local module = {}
 
@@ -403,30 +404,8 @@ module.HD_TILENAME = {
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
 							doorslib.create_door_exit_to_mothership(x, y, l)
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
-							-- Spawn king's tombstone
-							local block_uid = tombstonelib.spawn_tombstone(x, y, l)
-							get_entity(block_uid).animation_frame = 2
-							
-							-- 2 tiles down
-							-- Spawn skeleton
-							spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l)
-							local skull_uid = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l)
-							flip_entity(skull_uid)
-
-							-- Spawn Crown
-							-- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l))
-							local dar_crown_uid = spawn_entity_over(ENT_TYPE.ITEM_DIAMOND, skull_uid, -0.15, 0.42)
-							local dar_crown = get_entity(dar_crown_uid)
-							-- # TODO: Setting the crown angled results in it staying angled when knocked off.
-							-- Make an on frame method to adjust the angle after dismount
-							-- dar_crown.angle = -0.15
-
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-							texture_def.texture_path = "res/restless_crown.png"
-							dar_crown:set_texture(define_texture(texture_def))
-
-							-- 4 tiles down
-							-- Spawn hidden entrance
+							tombstonelib.create_tombstone_king(x, y, l)
+							kingboneslib.create_kingbones(x, y-2, l)
 							doorslib.create_door_exit_to_hauntedcastle(x, y-4, l)
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_EXIT) then
 							doorslib.create_door_ending(x, y, l)

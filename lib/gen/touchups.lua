@@ -248,6 +248,19 @@ function module.postlevelgen_remove_items()
 	remove_door_items()
 end
 
+function module.postlevelgen_spawn_dar_fog()
+	if not feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return end
+
+	local random_entity = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, MASK.SHADOW, LAYER.FRONT)[1]
+	for rx = 1, state.width, 2 do
+		for ry = 1, state.height, 2 do
+			local part = generate_world_particles(PARTICLEEMITTER.TOMB_FOG, random_entity)
+			part.entity_uid = -1
+			part.x, part.y = get_room_pos(rx, ry)
+		end
+	end
+end
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
@@ -294,5 +307,11 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     end
     -- print("HI PET")
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
+
+-- Prevent fog at the bottom of the worm
+state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(theme)
+	state.level_gen.themes[THEME.DWELLING]:spawn_effects()
+	return true
+end)
 
 return module

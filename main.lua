@@ -108,6 +108,8 @@ set_callback(function()
 				decorlib.change_decorations()
 				
 				touchupslib.postlevelgen_remove_items()
+
+				touchupslib.postlevelgen_spawn_dar_fog()
 			end
 		end
 	end

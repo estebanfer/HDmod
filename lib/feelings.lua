@@ -259,10 +259,10 @@ function module.onlevel_set_feelings()
 	end
 
 	-- Vaults
-	if state.theme ~= THEME.VOLCANA then
-		module.feeling_set_once(module.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
-	elseif state.theme == THEME.TEMPLE then
+	if state.theme == THEME.TEMPLE then
 		module.feeling_set_once(module.FEELING_ID.VAULT, {1, 2, 3})
+	elseif state.theme ~= THEME.VOLCANA then
+		module.feeling_set_once(module.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
 	end
 	
 	--[[

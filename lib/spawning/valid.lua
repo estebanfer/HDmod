@@ -158,6 +158,14 @@ local function default_ceiling_entity_condition(x, y, l)
 	and not is_liquid_at(x, y)
 end
 
+local function default_hell_ceiling_entity_condition(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and module.is_solid_grid_entity(x, y+1, l)
+	and get_grid_entity_at(x, y-1, l) == -1
+	and detect_entrance_room_template(x, y, l) == false
+	and not is_liquid_at(x, y)
+end
+
 local function run_spiderlair_ground_enemy_chance()
 	--[[
 		if not spiderlair
@@ -350,7 +358,7 @@ module.is_valid_hawkman_spawn = default_ground_monster_condition
 
 module.is_valid_crocman_spawn = default_ground_monster_condition
 
-function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
+module.is_valid_scorpionfly_spawn = default_ground_monster_condition
 
 module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
@@ -364,7 +372,7 @@ function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TOD
 
 module.is_valid_jiangshi_spawn = default_ground_monster_condition
 
-function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
+module.is_valid_devil_spawn = default_ground_monster_condition
 
 module.is_valid_greenknight_spawn = default_ground_monster_condition
 
@@ -411,7 +419,7 @@ module.is_valid_spider_spawn = default_ceiling_entity_condition
 
 module.is_valid_vampire_spawn = default_ceiling_entity_condition
 
-function module.is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
+module.is_valid_imp_spawn = default_hell_ceiling_entity_condition
 
 function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Implement method for valid scarab spawn
 

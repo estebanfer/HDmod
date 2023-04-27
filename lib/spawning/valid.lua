@@ -612,6 +612,8 @@ function module.is_valid_tombstone_spawn(x, y, l)
 	)
 end
 
+module.is_valid_dar_decor_spawn = is_liquid_at
+
 function module.is_valid_giantfrog_spawn(x, y, l)
 	return default_ground_monster_condition(x, y, l)
 	and is_valid_monster_floor(x+1, y-1, l)

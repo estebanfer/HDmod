@@ -249,7 +249,10 @@ function module.postlevelgen_remove_items()
 end
 
 function module.postlevelgen_spawn_dar_fog()
-	if not feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return end
+	if (
+		not feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
+		and not feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
+	) then return end
 
 	local random_entity = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, MASK.SHADOW, LAYER.FRONT)[1]
 	for rx = 1, state.width, 2 do

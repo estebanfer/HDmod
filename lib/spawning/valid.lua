@@ -539,17 +539,20 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local left = get_grid_entity_at(x-1, y, l)
 	local right = get_grid_entity_at(x+1, y, l)
 	local num_of_blocks = 0
+	local avoid_both_top = false
 
 	if (
 		topleft ~= -1
 		and commonlib.has(valid_floors, get_entity_type(topleft))
 	) then
+		avoid_both_top = true
 		num_of_blocks = num_of_blocks + 1
 	end
 	if (
 		topright ~= -1
 		and commonlib.has(valid_floors, get_entity_type(topright))
 	) then
+		if avoid_both_top then return false end
 		num_of_blocks = num_of_blocks + 1
 	end
 	if (

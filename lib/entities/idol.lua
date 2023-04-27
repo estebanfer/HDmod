@@ -5,7 +5,7 @@ local IDOL_X = nil
 local IDOL_Y = nil
 local IDOL_UID = nil
 
-local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
+local IDOLTRAP_JUNGLE_ACTIVATETIME = 10
 local idoltrap_timeout = 0
 local idoltrap_blocks = {}
 local sliding_wall_ceilings = {}
@@ -115,6 +115,21 @@ local function create_ghost_at_border()
 	end
 end
 
+---@param block_id integer
+local function break_idoltrap_floor(block_id)
+    ---@type Movable
+    local entity = get_entity(idoltrap_blocks[block_id])
+    if entity then
+        local x, y, l = get_position(entity.uid)
+        kill_entity(entity.uid)
+        for _ = 1, 5, 1 do
+            local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
+            rubble.animation_frame = 3
+        end
+        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55)
+    end
+end
+
 -- Idol trap activation
 set_callback(function()
     if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
@@ -126,15 +141,17 @@ set_callback(function()
         elseif state.theme == THEME.JUNGLE then
             -- Break the 6 blocks under it in a row, starting with the outside 2 going in
             if #idoltrap_blocks > 0 then
-                kill_entity(idoltrap_blocks[1])
-                kill_entity(idoltrap_blocks[6])
+                
+                commonlib.shake_camera(20, 60, 2, 2, 3, false)
+                break_idoltrap_floor(1)
+                break_idoltrap_floor(6)
                 set_timeout(function()
-                    kill_entity(idoltrap_blocks[2])
-                    kill_entity(idoltrap_blocks[5])
+                    break_idoltrap_floor(2)
+                    break_idoltrap_floor(5)
                 end, idoltrap_timeout)
                 set_timeout(function()
-                    kill_entity(idoltrap_blocks[3])
-                    kill_entity(idoltrap_blocks[4])
+                    break_idoltrap_floor(3)
+                    break_idoltrap_floor(4)
                 end, idoltrap_timeout*2)
             end
         elseif state.theme == THEME.TEMPLE then

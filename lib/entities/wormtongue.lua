@@ -277,7 +277,7 @@ local function onframe_tonguetimeout()
 				local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 				if #ensnaredplayers > 0 then
 					for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-						local ensnaredplayer = get_entity(ensnaredplayer_uid)				
+						local ensnaredplayer = get_entity(ensnaredplayer_uid)
 						if options.hd_debug_scripted_enemies_show == false then
 							ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
 							-- Also make the players back item and held items invisible

@@ -1,3 +1,5 @@
+local validlib = require('lib.spawning.valid')
+
 local module = {}
 
 local hauntedface_texture_def
@@ -164,7 +166,11 @@ function module.onlevel_decorate_haunted()
 	-- decorate grass
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
-			if (math.random(2) == 1) then
+			local x, y, _ = get_position(decor)
+			if (
+				not validlib.is_valid_dar_decor_spawn(x, y)
+				and math.random(2) == 1
+			) then
 				get_entity(decor):set_texture(hauntedgrass_texture_def)
 			end
 		end

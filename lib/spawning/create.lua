@@ -1,6 +1,7 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
 local removelib = require 'lib.spawning.remove'
 local validlib = require 'lib.spawning.valid'
+local pushblocklib = require 'lib.entities.pushblock'
 
 local module = {}
 
@@ -204,9 +205,9 @@ function module.create_pushblock_powderkeg(x, y, l)
 		current_powderkeg_chance ~= 0
 		and math.random(current_powderkeg_chance) == 1
 	) then
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0)
+		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+		pushblocklib.create_pushblock(x, y, l)
 	end
 end
 

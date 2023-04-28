@@ -41,7 +41,7 @@ function module.create_arrowtrap(x, y, l)
 		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, uid, 0, 0.35)
 	end
 
-	if state.theme == THEME.TEMPLE then
+	if state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple then
 		get_entity(uid):set_texture(temple_texture_id)
 	elseif state.theme == THEME.CITY_OF_GOLD then
 		get_entity(uid):set_texture(gold_texture_id)

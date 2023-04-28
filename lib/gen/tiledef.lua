@@ -16,6 +16,7 @@ local idollib = require 'lib.entities.idol'
 local kingboneslib = require 'lib.entities.kingbones'
 local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
+local ladderlib = require 'lib.entities.ladder'
 
 local module = {}
 
@@ -768,15 +769,7 @@ module.HD_TILENAME = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/ladder_gold.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_gold },
 				},
 			}
 		},
@@ -883,15 +876,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
 				alternate = {
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/ladder_gold.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_platform_gold },
 				}
 			}
 		},

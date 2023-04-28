@@ -25,6 +25,7 @@ local hawkmanlib = require "lib.entities.hawkman"
 local snaillib = require 'lib.entities.snail'
 local scorpionflylib = require 'lib.entities.scorpionfly'
 local devillib = require 'lib.entities.devil'
+local windowlib = require 'lib.entities.window'
 
 local module = {}
 
@@ -193,8 +194,8 @@ module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn
 module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
-module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", createlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
-module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedural_vlad_window", createlib.create_vlad_window, validlib.is_valid_vlad_window_spawn)
+module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", windowlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
+module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedural_vlad_window", windowlib.create_vlad_window, validlib.is_valid_vlad_window_spawn)
 
 --[[ Template for defining procedural spawns:
 

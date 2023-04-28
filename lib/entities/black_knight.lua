@@ -48,8 +48,11 @@ local function black_knight_update(ent)
             local player = get_entity(v)
             if player ~= nil and not test_flag(ent.flags, ENT_FLAG.DEAD) then
                 local dist = distance(ent.uid, player.uid)
-                if dist <= 11.5 then
-                    commonlib.shake_camera(10, 10, 3, 3, 3, false)
+                if dist <= 13 then
+                    commonlib.shake_camera(10, 10, 4, 4, 4, false)
+                    -- Landing SFX
+                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, ent.uid, 1)
+                    audio:set_volume(0.3)
                     break
                 end
             end
@@ -90,7 +93,7 @@ local function black_knight_update(ent)
         local player = get_entity(v)
         if player ~= nil then
             local dist = distance(ent.uid, player.uid)
-            if dist <= 6.5 then
+            if dist <= 5 then
                 ent.chased_target_uid = player.uid
                 ent.move_state = 6
                 break

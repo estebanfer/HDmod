@@ -1,6 +1,7 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
 local removelib = require 'lib.spawning.remove'
 local validlib = require 'lib.spawning.valid'
+local pushblocklib = require 'lib.entities.pushblock'
 
 local module = {}
 
@@ -172,19 +173,11 @@ function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y,
 
 function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
 
-function module.create_scorpionfly(x, y, l) end
-
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end
 
 function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
-
-function module.create_devil(x, y, l) end
-
-function module.create_alientank(x, y, l) end
-
-function module.create_piranha(x, y, l) end
 
 function module.create_hangspider(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)
@@ -197,8 +190,6 @@ function module.create_bat(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BAT, x, y, l
 function module.create_spider(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SPIDER, x, y, l) end
 
 function module.create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE, x, y, l) end
-
-function module.create_mshiplight(x, y, l) end
 
 -- powderkeg / pushblock
 function module.create_pushblock_powderkeg(x, y, l)
@@ -214,9 +205,9 @@ function module.create_pushblock_powderkeg(x, y, l)
 		current_powderkeg_chance ~= 0
 		and math.random(current_powderkeg_chance) == 1
 	) then
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0)
+		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+		pushblocklib.create_pushblock(x, y, l)
 	end
 end
 

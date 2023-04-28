@@ -5,15 +5,26 @@ local IDOL_X = nil
 local IDOL_Y = nil
 local IDOL_UID = nil
 
-local IDOLTRAP_JUNGLE_ACTIVATETIME = 15
+local IDOLTRAP_JUNGLE_ACTIVATETIME = 10
 local idoltrap_timeout = 0
 local idoltrap_blocks = {}
 local sliding_wall_ceilings = {}
 
 local skull_texture_id
 local floor_texture_id
-local ceiling_texture_id
+local ceiling_spikes_texture_id
+local ceiling_stone_texture_id
+local ceiling_spikes_stone_texture_id
+
 do
+    local ceiling_stone_texture_def = TextureDefinition.new()
+    ceiling_stone_texture_def.width = 128
+    ceiling_stone_texture_def.height = 128
+    ceiling_stone_texture_def.tile_width = 128
+    ceiling_stone_texture_def.tile_height = 128
+    ceiling_stone_texture_def.texture_path = "res/pushblock_temple_stone.png"
+    ceiling_stone_texture_id = define_texture(ceiling_stone_texture_def)
+
     local floor_texture_def = TextureDefinition.new()
     floor_texture_def.width = 128
     floor_texture_def.height = 128
@@ -22,13 +33,21 @@ do
     floor_texture_def.texture_path = "res/idoltrap_floor.png"
     floor_texture_id = define_texture(floor_texture_def)
 
-    local ceiling_texture_def = TextureDefinition.new()
-    ceiling_texture_def.width = 128
-    ceiling_texture_def.height = 128
-    ceiling_texture_def.tile_width = 128
-    ceiling_texture_def.tile_height = 128
-    ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
-    ceiling_texture_id = define_texture(ceiling_texture_def)
+    local ceiling_spikes_texture_def = TextureDefinition.new()
+    ceiling_spikes_texture_def.width = 128
+    ceiling_spikes_texture_def.height = 128
+    ceiling_spikes_texture_def.tile_width = 128
+    ceiling_spikes_texture_def.tile_height = 128
+    ceiling_spikes_texture_def.texture_path = "res/idoltrap_ceiling_spikes.png"
+    ceiling_spikes_texture_id = define_texture(ceiling_spikes_texture_def)
+
+    local ceiling_spikes_stone_texture_def = TextureDefinition.new()
+    ceiling_spikes_stone_texture_def.width = 128
+    ceiling_spikes_stone_texture_def.height = 128
+    ceiling_spikes_stone_texture_def.tile_width = 128
+    ceiling_spikes_stone_texture_def.tile_height = 128
+    ceiling_spikes_stone_texture_def.texture_path = "res/idoltrap_ceiling_spikes.png"
+    ceiling_spikes_stone_texture_id = define_texture(ceiling_spikes_stone_texture_def)
 
     local skull_texture_def = TextureDefinition.new()
     skull_texture_def.width = 128
@@ -89,6 +108,7 @@ end
 function module.create_idoltrap_ceiling(x, y, l)
     local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
     local block = get_entity(block_uid)
+    if options.hd_og_floorstyle_temple then block:set_texture(ceiling_stone_texture_id) end
     block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
     block.more_flags = set_flag(block.more_flags, 17)
     idoltrap_blocks[#idoltrap_blocks+1] = block_uid
@@ -115,6 +135,21 @@ local function create_ghost_at_border()
 	end
 end
 
+---@param block_id integer
+local function break_idoltrap_floor(block_id)
+    ---@type Movable
+    local entity = get_entity(idoltrap_blocks[block_id])
+    if entity then
+        local x, y, l = get_position(entity.uid)
+        kill_entity(entity.uid)
+        for _ = 1, 5, 1 do
+            local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
+            rubble.animation_frame = 3
+        end
+        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55)
+    end
+end
+
 -- Idol trap activation
 set_callback(function()
     if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
@@ -126,15 +161,17 @@ set_callback(function()
         elseif state.theme == THEME.JUNGLE then
             -- Break the 6 blocks under it in a row, starting with the outside 2 going in
             if #idoltrap_blocks > 0 then
-                kill_entity(idoltrap_blocks[1])
-                kill_entity(idoltrap_blocks[6])
+                
+                commonlib.shake_camera(20, 60, 2, 2, 3, false)
+                break_idoltrap_floor(1)
+                break_idoltrap_floor(6)
                 set_timeout(function()
-                    kill_entity(idoltrap_blocks[2])
-                    kill_entity(idoltrap_blocks[5])
+                    break_idoltrap_floor(2)
+                    break_idoltrap_floor(5)
                 end, idoltrap_timeout)
                 set_timeout(function()
-                    kill_entity(idoltrap_blocks[3])
-                    kill_entity(idoltrap_blocks[4])
+                    break_idoltrap_floor(3)
+                    break_idoltrap_floor(4)
                 end, idoltrap_timeout*2)
             end
         elseif state.theme == THEME.TEMPLE then
@@ -161,7 +198,7 @@ set_callback(function()
                         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                         block.velocityy = -0.01
                         
-                        block:set_texture(ceiling_texture_id)
+                        block:set_texture(options.hd_og_floorstyle_temple and ceiling_spikes_stone_texture_id or ceiling_spikes_texture_id)
                     end
                 end
             end

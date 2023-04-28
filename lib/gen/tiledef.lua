@@ -14,6 +14,7 @@ local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
 local idollib = require 'lib.entities.idol'
 local kingboneslib = require 'lib.entities.kingbones'
+local pushblocklib = require 'lib.entities.pushblock'
 
 local module = {}
 
@@ -348,7 +349,7 @@ module.HD_TILENAME = {
 	["4"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l) end,},
+				default = { pushblocklib.create_pushblock },
 			}
 		},
 		description = "Pushblock",

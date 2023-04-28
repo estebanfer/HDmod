@@ -238,24 +238,4 @@ function module.create_honey(x, y, l)
 	end
 end
 
-local function create_window(x, y, l, is_hc)
-	local ent = get_entity(spawn_entity(ENT_TYPE.BG_VLAD_WINDOW, x, y-0.5, l, 0, 0))
-	ent.width, ent.height = 1, 2
-	ent.hitboxx, ent.hitboxy = 0.5, 1
-
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
-	if is_hc == true then
-		texture_def.texture_path = "res/hauntedcastle_window.png"
-	end
-	ent:set_texture(define_texture(texture_def))
-end
-
-function module.create_hcastle_window(x, y, l)
-	create_window(x, y, l, true)
-end
-
-function module.create_vlad_window(x, y, l)
-	create_window(x, y, l, false)
-end
-
 return module

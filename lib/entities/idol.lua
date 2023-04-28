@@ -12,8 +12,19 @@ local sliding_wall_ceilings = {}
 
 local skull_texture_id
 local floor_texture_id
-local ceiling_texture_id
+local ceiling_spikes_texture_id
+local ceiling_stone_texture_id
+local ceiling_spikes_stone_texture_id
+
 do
+    local ceiling_stone_texture_def = TextureDefinition.new()
+    ceiling_stone_texture_def.width = 128
+    ceiling_stone_texture_def.height = 128
+    ceiling_stone_texture_def.tile_width = 128
+    ceiling_stone_texture_def.tile_height = 128
+    ceiling_stone_texture_def.texture_path = "res/pushblock_temple_stone.png"
+    ceiling_stone_texture_id = define_texture(ceiling_stone_texture_def)
+
     local floor_texture_def = TextureDefinition.new()
     floor_texture_def.width = 128
     floor_texture_def.height = 128
@@ -22,13 +33,21 @@ do
     floor_texture_def.texture_path = "res/idoltrap_floor.png"
     floor_texture_id = define_texture(floor_texture_def)
 
-    local ceiling_texture_def = TextureDefinition.new()
-    ceiling_texture_def.width = 128
-    ceiling_texture_def.height = 128
-    ceiling_texture_def.tile_width = 128
-    ceiling_texture_def.tile_height = 128
-    ceiling_texture_def.texture_path = "res/idoltrap_ceiling.png"
-    ceiling_texture_id = define_texture(ceiling_texture_def)
+    local ceiling_spikes_texture_def = TextureDefinition.new()
+    ceiling_spikes_texture_def.width = 128
+    ceiling_spikes_texture_def.height = 128
+    ceiling_spikes_texture_def.tile_width = 128
+    ceiling_spikes_texture_def.tile_height = 128
+    ceiling_spikes_texture_def.texture_path = "res/idoltrap_ceiling_spikes.png"
+    ceiling_spikes_texture_id = define_texture(ceiling_spikes_texture_def)
+
+    local ceiling_spikes_stone_texture_def = TextureDefinition.new()
+    ceiling_spikes_stone_texture_def.width = 128
+    ceiling_spikes_stone_texture_def.height = 128
+    ceiling_spikes_stone_texture_def.tile_width = 128
+    ceiling_spikes_stone_texture_def.tile_height = 128
+    ceiling_spikes_stone_texture_def.texture_path = "res/idoltrap_ceiling_spikes.png"
+    ceiling_spikes_stone_texture_id = define_texture(ceiling_spikes_stone_texture_def)
 
     local skull_texture_def = TextureDefinition.new()
     skull_texture_def.width = 128
@@ -89,6 +108,7 @@ end
 function module.create_idoltrap_ceiling(x, y, l)
     local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
     local block = get_entity(block_uid)
+    if options.hd_og_floorstyle_temple then block:set_texture(ceiling_stone_texture_id) end
     block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
     block.more_flags = set_flag(block.more_flags, 17)
     idoltrap_blocks[#idoltrap_blocks+1] = block_uid
@@ -178,7 +198,7 @@ set_callback(function()
                         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                         block.velocityy = -0.01
                         
-                        block:set_texture(ceiling_texture_id)
+                        block:set_texture(options.hd_og_floorstyle_temple and ceiling_spikes_stone_texture_id or ceiling_spikes_texture_id)
                     end
                 end
             end

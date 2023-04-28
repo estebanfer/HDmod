@@ -1,9 +1,6 @@
-local optionslib = require "lib.options"
-
 local module = {}
 
 local texture_id
-
 do
     local texture_def = TextureDefinition.new()
     texture_def.width = 128

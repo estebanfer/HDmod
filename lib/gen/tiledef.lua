@@ -15,6 +15,7 @@ local alienlordlib = require 'lib.entities.alienlord'
 local idollib = require 'lib.entities.idol'
 local kingboneslib = require 'lib.entities.kingbones'
 local pushblocklib = require 'lib.entities.pushblock'
+local idolplatformlib = require 'lib.entities.idol_platform'
 
 local module = {}
 
@@ -484,24 +485,7 @@ module.HD_TILENAME = {
 	["A"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l))
-						local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l))
-
-						if state.theme ~= THEME.VOLCANA then
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/idol_platform_generic.png"
-							if state.theme == THEME.TEMPLE then
-								texture_def.texture_path = "res/idol_platform_temple.png"
-							end
-
-							idol_block_first:set_texture(define_texture(texture_def))
-							idol_block_second:set_texture(define_texture(texture_def))
-						end
-						idol_block_second.animation_frame = idol_block_second.animation_frame + 1
-					end,
-				},
+				default = { idolplatformlib.create_idol_platform },
 			}
 		},
 		description = "Idol Platform",
@@ -1348,15 +1332,13 @@ module.HD_TILENAME = {
 		description = "Obstacle-Resistant Terrain",
 	},
 	["r"] = {
-		description = "Terrain/Stone", -- old description: Mines Terrain/Temple Terrain/Pushblock
+		description = "Terrain/Stone",
 		-- Used to be used for Temple Obstacle Block but had to be assigned to a new tilecode ("(") to avoid problems
-		-- From 
 		phases = {
 			[1] = {
 				default = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
-					-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 				},
 				alternate = {
 					[THEME.VOLCANA] = {

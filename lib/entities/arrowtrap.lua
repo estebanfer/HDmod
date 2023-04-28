@@ -1,5 +1,3 @@
-local optionslib = require "lib.options"
-
 local module = {}
 
 local gold_texture_id

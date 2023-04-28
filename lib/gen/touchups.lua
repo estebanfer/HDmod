@@ -264,6 +264,26 @@ function module.postlevelgen_spawn_dar_fog()
 	end
 end
 
+function module.postlevelgen_fix_jungle_door_ambient_sound()
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
+			and state.theme == THEME.DWELLING
+			and state.level == 4 then
+		local door = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)[1]
+
+		local old_ambient = entity_get_items_by(door, ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, MASK.LOGICAL)[1]
+		kill_entity(old_ambient)
+
+		--Spawn ambient on the left, so it becomes the jungle ambient
+		local x, y = get_position(door)
+		local left_bordertile = get_grid_entity_at(0, y, LAYER.FRONT)
+		local ambient = spawn_over(ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, left_bordertile, 0, 0)
+
+		--Move it and attach to the door
+		move_entity(ambient, x, y, 0, 0)
+		attach_entity(door, ambient)
+	end
+end
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()

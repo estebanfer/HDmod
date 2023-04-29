@@ -111,6 +111,8 @@ set_callback(function()
 				touchupslib.postlevelgen_remove_items()
 
 				touchupslib.postlevelgen_spawn_dar_fog()
+
+				touchupslib.postlevelgen_fix_jungle_door_ambient_sound()
 			end
 		end
 	end

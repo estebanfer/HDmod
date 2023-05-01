@@ -126,9 +126,11 @@ set_pre_tile_code_callback(function(x, y, layer)
 end, "shop_wall")
 
 -- remove the lephrechaun that spawns with echoes levels and chests
+--[[
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
+]]
 
 function assign_s2_level_height()
 	

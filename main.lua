@@ -39,6 +39,7 @@ tombstonelib = require 'lib.entities.tombstone'
 flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 snowballlib = require 'lib.entities.snowball'
+crystalmonkeylib = require 'lib.entities.crystal_monkey'
 require "lib.entities.mammoth"
 require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
@@ -108,6 +109,10 @@ set_callback(function()
 				decorlib.change_decorations()
 				
 				touchupslib.postlevelgen_remove_items()
+
+				touchupslib.postlevelgen_spawn_dar_fog()
+
+				touchupslib.postlevelgen_fix_jungle_door_ambient_sound()
 			end
 		end
 	end

@@ -199,7 +199,7 @@ local function onframe_tonguetimeout()
 
 					--create worm bg
 					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
 					local ent_texture = define_texture(texture_def)
 					
 					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
@@ -277,7 +277,7 @@ local function onframe_tonguetimeout()
 				local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 				if #ensnaredplayers > 0 then
 					for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-						local ensnaredplayer = get_entity(ensnaredplayer_uid)				
+						local ensnaredplayer = get_entity(ensnaredplayer_uid)
 						if options.hd_debug_scripted_enemies_show == false then
 							ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
 							-- Also make the players back item and held items invisible
@@ -417,7 +417,7 @@ function module.create_wormtongue(x, y, l)
 	end)
 	if #balls > 0 then
 		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/deco_jungle_anim_worm.png" or "res/deco_ice_anim_worm.png")
+		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
 		local ent_texture = define_texture(texture_def)
 		
 		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y-1.4, l, 0, 0)

@@ -99,7 +99,7 @@ local function oncamp_shortcuts(x, y, l)
 
 		-- local sign = get_entity(spawn_entity(ENT_TYPE.ITEM_SHORTCUT_SIGN, new_x+1, y-0.5, LAYER.FRONT, 0, 0))
 		-- local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_1)
-		-- texture_def.texture_path = "res/deco_basecamp_shortcut_signs.png"
+		-- texture_def.texture_path = "res/shortcut_signs.png"
 		-- sign:set_texture(define_texture(texture_def))
 		-- sign.animation_frame = sign.animation_frame + (i-1)
 

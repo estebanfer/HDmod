@@ -157,6 +157,7 @@ local MESSAGE_FEELING = nil
 local tongue_spawned = false
 local worm_visited = false
 local mothership_visited = false
+module.hauntedcastle_spawned = false
 
 -- Should be used at the start of a run or warping into a run as a part of testing.
 function module.init()
@@ -164,6 +165,7 @@ function module.init()
 	tongue_spawned = false
 	worm_visited = false
 	mothership_visited = false
+	module.hauntedcastle_spawned = false
 end
 
 set_callback(function()
@@ -259,10 +261,10 @@ function module.onlevel_set_feelings()
 	end
 
 	-- Vaults
-	if state.theme ~= THEME.VOLCANA then
-		module.feeling_set_once(module.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
-	elseif state.theme == THEME.TEMPLE then
+	if state.theme == THEME.TEMPLE then
 		module.feeling_set_once(module.FEELING_ID.VAULT, {1, 2, 3})
+	elseif state.theme ~= THEME.VOLCANA then
+		module.feeling_set_once(module.FEELING_ID.VAULT, state.theme == THEME.DWELLING and {2, 3, 4} or {1, 2, 3, 4})
 	end
 	
 	--[[

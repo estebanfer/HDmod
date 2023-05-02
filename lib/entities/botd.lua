@@ -6,6 +6,17 @@ optionslib.register_option_bool("hd_debug_item_botd_give", "Book of the Dead - S
 -- register_option_float("hd_ui_botd_c_x", "UI: botd x", 0.2, -999.0, 999.0)
 -- register_option_float("hd_ui_botd_d_y", "UI: botd y", 0.93, -999.0, 999.0)
 -- register_option_float("hd_ui_botd_e_squash", "UI: botd uvx shifting rate", 0.25, -5.0, 5.0)
+local texture_id
+do
+	local texture_def = TextureDefinition.new()
+	texture_def.width = 128
+	texture_def.height = 128
+	texture_def.tile_width = 128
+	texture_def.tile_height = 128
+
+	texture_def.texture_path = "res/botd_item.png"
+	texture_id = define_texture(texture_def)
+end
 
 local BOOKOFDEAD_TIC_LIMIT = 5
 local BOOKOFDEAD_RANGE = 14
@@ -18,7 +29,7 @@ local BOOKOFDEAD_SQUASH = (1/BOOKOFDEAD_FRAMES) --options.hd_ui_botd_e_squash
 
 module.OBTAINED_BOOKOFDEAD = false
 
-local UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/bookofdead.png')
+local UI_BOTD_IMG_ID, UI_BOTD_IMG_W, UI_BOTD_IMG_H = create_image('res/botd_hud.png')
 local UI_BOTD_PLACEMENT_W = 0.08
 local UI_BOTD_PLACEMENT_H = 0.12
 local UI_BOTD_PLACEMENT_X = 0.2
@@ -27,9 +38,8 @@ local UI_BOTD_PLACEMENT_Y = 0.93
 function module.create_botd(x, y, l)
     local bookofdead_pickup_id = spawn(ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY, x+0.5, y, l, 0, 0)
     local book_ = get_entity(bookofdead_pickup_id)
-    local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-    texture_def.texture_path = "res/items_botd.png"
-    book_:set_texture(define_texture(texture_def))
+    book_:set_texture(texture_id)
+	book_.hitboxx = 0.6
 end
 
 function module.init()

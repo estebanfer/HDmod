@@ -8,13 +8,13 @@ local worm_spikes_texture_id
 local vlad_spikes_texture_id
 do
     local wood_spikes_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-    wood_spikes_texture_def.texture_path = "res/wood_spikes.png"
+    wood_spikes_texture_def.texture_path = "res/spikes_wood.png"
     wood_spikes_texture_id = define_texture(wood_spikes_texture_def)
 
     worm_spikes_texture_id = define_texture(get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0))
 
     local vlad_spikes_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0)
-    vlad_spikes_texture_def.texture_path = "res/vladspikes.png"
+    vlad_spikes_texture_def.texture_path = "res/spikes_vlad.png"
     vlad_spikes_texture_id = define_texture(vlad_spikes_texture_def)
 end
 

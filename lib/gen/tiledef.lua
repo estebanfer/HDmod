@@ -12,6 +12,12 @@ spikeslib = require 'lib.entities.spikes'
 local damsellib = require 'lib.entities.damsel'
 local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
+local idollib = require 'lib.entities.idol'
+local kingboneslib = require 'lib.entities.kingbones'
+local pushblocklib = require 'lib.entities.pushblock'
+local idolplatformlib = require 'lib.entities.idol_platform'
+local ladderlib = require 'lib.entities.ladder'
+local succubuslib = require 'lib.entities.succubus'
 
 local module = {}
 
@@ -52,17 +58,17 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/floor_jungle_fountain.png") end,
+					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
 				},
 				alternate = {
 					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_gold_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
 					},
 					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/floorstyled_temple_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_temple.png", true) end,
 					},
 					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/hell_fountain.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
 					},
 				},
 			}
@@ -346,7 +352,7 @@ module.HD_TILENAME = {
 	["4"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l) end,},
+				default = { pushblocklib.create_pushblock },
 			}
 		},
 		description = "Pushblock",
@@ -402,30 +408,8 @@ module.HD_TILENAME = {
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.MOTHERSHIPENTRANCE_TOP) then
 							doorslib.create_door_exit_to_mothership(x, y, l)
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB) then
-							-- Spawn king's tombstone
-							local block_uid = tombstonelib.spawn_tombstone(x, y, l)
-							get_entity(block_uid).animation_frame = 2
-							
-							-- 2 tiles down
-							-- Spawn skeleton
-							spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_BONES, x-0.1, y-2, l)
-							local skull_uid = spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SKULL, x+0.1, y-2, l)
-							flip_entity(skull_uid)
-
-							-- Spawn Crown
-							-- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y-2, l))
-							local dar_crown_uid = spawn_entity_over(ENT_TYPE.ITEM_DIAMOND, skull_uid, -0.15, 0.42)
-							local dar_crown = get_entity(dar_crown_uid)
-							-- # TODO: Setting the crown angled results in it staying angled when knocked off.
-							-- Make an on frame method to adjust the angle after dismount
-							-- dar_crown.angle = -0.15
-
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
-							texture_def.texture_path = "res/items_dar_crown.png"
-							dar_crown:set_texture(define_texture(texture_def))
-
-							-- 4 tiles down
-							-- Spawn hidden entrance
+							tombstonelib.create_tombstone_king(x, y, l)
+							kingboneslib.create_kingbones(x, y-2, l)
 							doorslib.create_door_exit_to_hauntedcastle(x, y-4, l)
 						elseif (_subchunk_id == roomdeflib.HD_SUBCHUNKID.YAMA_EXIT) then
 							doorslib.create_door_ending(x, y, l)
@@ -463,7 +447,7 @@ module.HD_TILENAME = {
 				default = {
 					function(x, y, l)
 						damsellib.create_damsel(x, y, l)
-						createlib.create_idol(x+1, y, l)
+						idollib.create_idol(x+1, y, l)
 					end,
 				},
 				alternate = {
@@ -503,24 +487,7 @@ module.HD_TILENAME = {
 	["A"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l))
-						local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l))
-
-						if state.theme ~= THEME.VOLCANA then
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/idol_platform_generic.png"
-							if state.theme == THEME.TEMPLE then
-								texture_def.texture_path = "res/idol_platform_temple.png"
-							end
-
-							idol_block_first:set_texture(define_texture(texture_def))
-							idol_block_second:set_texture(define_texture(texture_def))
-						end
-						idol_block_second.animation_frame = idol_block_second.animation_frame + 1
-					end,
-				},
+				default = { idolplatformlib.create_idol_platform },
 			}
 		},
 		description = "Idol Platform",
@@ -529,19 +496,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local block_uid = spawn(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
-						local block = get_entity(block_uid)
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, 17)
-
-						local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_TEMPLE_0)
-						texture_def.texture_path = "res/floormisc_idoltrap_floor.png"
-						get_entity(block_uid):set_texture(define_texture(texture_def))
-						block.animation_frame = 27
-
-						idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
-					end,
+					idollib.create_idoltrap_floor
 				},
 			}
 		},
@@ -551,13 +506,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local block_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l)
-						local block = get_entity(block_uid)
-						block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-						block.more_flags = set_flag(block.more_flags, 17)
-						idollib.idoltrap_blocks[#idollib.idoltrap_blocks+1] = block_uid
-					end,
+					idollib.create_idoltrap_ceiling
 				},
 				alternate = {
 					[THEME.VOLCANA] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_CRATE, x, y, l) end},
@@ -737,7 +686,7 @@ module.HD_TILENAME = {
 						) then
 							-- SORRY NOTHING 
 						else
-							createlib.create_idol(x+0.5, y, l)
+							idollib.create_idol(x+0.5, y, l)
 						end
 					end,
 				},
@@ -821,15 +770,7 @@ module.HD_TILENAME = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/floorstyled_gold_ladders.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_gold },
 				},
 			}
 		},
@@ -936,15 +877,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
 				alternate = {
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/floorstyled_gold_ladders.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_platform_gold },
 				}
 			}
 		},
@@ -1097,7 +1030,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) createlib.create_idol_crystalskull(x+0.5, y, l) end,
+					function(x, y, l) idollib.create_crystalskull(x+0.5, y, l) end,
 				},
 				alternate = {
 					[THEME.EGGPLANT_WORLD] = {
@@ -1180,10 +1113,10 @@ module.HD_TILENAME = {
 								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
 								coffin_e.velocityx = 0
 								coffin_e.velocityy = 0
-								texture_def.texture_path = "res/coffins_worm.png"
+								texture_def.texture_path = "res/coffin_worm.png"
 							end
 							if state.theme == THEME.NEO_BABYLON then
-								texture_def.texture_path = "res/coffins_mothership.png"
+								texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_5)
 							end
 							coffin_e:set_texture(define_texture(texture_def))
 						end
@@ -1207,12 +1140,12 @@ module.HD_TILENAME = {
 						function(x, y, l)
 							local ent_uid = spawn_entity(ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER, x+4, y+2, l, 0, 0)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_3)
-							texture_def.texture_path = "res/deco_basecamp_hauntedcastle_banner.png"
+							texture_def.texture_path = "res/hauntedcastle_banner.png"
 							get_entity(ent_uid):set_texture(define_texture(texture_def))
 							
 							ent_uid = spawn_entity(ENT_TYPE.BG_KALI_STATUE, x+.5, y+0.6, l, 0, 0)
 							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-							texture_def.texture_path = "res/deco_jungle_hauntedcastle.png"
+							texture_def.texture_path = "res/hauntedcastle_deco.png"
 							get_entity(ent_uid):set_texture(define_texture(texture_def))
 							get_entity(ent_uid).width = 5.0--5.600
 							get_entity(ent_uid).height = 5.0--7.000
@@ -1385,15 +1318,13 @@ module.HD_TILENAME = {
 		description = "Obstacle-Resistant Terrain",
 	},
 	["r"] = {
-		description = "Terrain/Stone", -- old description: Mines Terrain/Temple Terrain/Pushblock
+		description = "Terrain/Stone",
 		-- Used to be used for Temple Obstacle Block but had to be assigned to a new tilecode ("(") to avoid problems
-		-- From 
 		phases = {
 			[1] = {
 				default = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
-					-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 				},
 				alternate = {
 					[THEME.VOLCANA] = {

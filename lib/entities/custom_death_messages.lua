@@ -180,6 +180,10 @@ local function update_custom_death_messages()
                 change_string(strings[I.ANUBIS_TITLE_ID], "BRAIN WIPED")
                 change_string(strings[I.ANUBIS_TEXT_ID], "The Queen's subjugates saw me as an experiment.")                   
             end
+            if d.ent_type == HD_ENT_TYPE.MONS_SUCCUBUS then
+                change_string(strings[I.GENERIC_DEATH_TITLE_ID], "SCHMECKLEDORFED")
+                change_string(strings[I.GENERIC_DEATH_TEXT_ID], "I'd rather not not talk about it...")                   
+            end
         end
         return false
     end)

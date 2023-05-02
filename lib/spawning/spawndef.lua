@@ -23,6 +23,9 @@ local webballlib = require 'lib.entities.web_ball'
 local critterratlib = require 'lib.entities.critterrat'
 local hawkmanlib = require "lib.entities.hawkman"
 local snaillib = require 'lib.entities.snail'
+local scorpionflylib = require 'lib.entities.scorpionfly'
+local devillib = require 'lib.entities.devil'
+local windowlib = require 'lib.entities.window'
 
 local module = {}
 
@@ -92,7 +95,7 @@ module.global_spawn_procedural_hawkman = define_procedural_spawn("hd_procedural_
 
 module.global_spawn_procedural_crocman = define_procedural_spawn("hd_procedural_crocman", function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CROCMAN, x, y, l) end, validlib.is_valid_crocman_spawn)
 
-module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", createlib.create_scorpionfly, validlib.is_valid_scorpionfly_spawn)
+module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedural_scorpionfly", scorpionflylib.create_scorpionfly, validlib.is_valid_scorpionfly_spawn)
 
 module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", critterratlib.create_critterrat, validlib.is_valid_critter_rat_spawn)
 
@@ -110,8 +113,8 @@ module.global_spawn_procedural_restless_jiangshi = define_procedural_spawn("hd_p
 module.global_spawn_procedural_hcastle_jiangshi = define_procedural_spawn("hd_procedural_hcastle_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
 module.global_spawn_procedural_yama_jiangshi = define_procedural_spawn("hd_procedural_yama_jiangshi", createlib.create_jiangshi, validlib.is_valid_jiangshi_spawn)
 
-module.global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
-module.global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", createlib.create_devil, validlib.is_valid_devil_spawn)
+module.global_spawn_procedural_devil = define_procedural_spawn("hd_procedural_devil", devillib.create_devil, validlib.is_valid_devil_spawn)
+module.global_spawn_procedural_yama_devil = define_procedural_spawn("hd_procedural_yama_devil", devillib.create_devil, validlib.is_valid_devil_spawn)
 
 module.global_spawn_procedural_hcastle_greenknight = define_procedural_spawn("hd_procedural_hcastle_greenknight", greenknightlib.create_greenknight, validlib.is_valid_greenknight_spawn)
 
@@ -171,7 +174,7 @@ module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
-module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone, validlib.is_valid_tombstone_spawn)
+module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
 
 module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", giantfroglib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
@@ -191,8 +194,8 @@ module.global_spawn_procedural_worm_icecaves_bacterium = define_procedural_spawn
 module.global_spawn_procedural_worm_jungle_eggsac = define_procedural_spawn("hd_procedural_worm_jungle_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 module.global_spawn_procedural_worm_icecaves_eggsac = define_procedural_spawn("hd_procedural_worm_icecaves_eggsac", eggsaclib.create_eggsac, validlib.is_valid_eggsac_spawn)
 
-module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", createlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
-module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedural_vlad_window", createlib.create_vlad_window, validlib.is_valid_vlad_window_spawn)
+module.global_spawn_procedural_hcastle_window = define_procedural_spawn("hd_procedural_hcastle_window", windowlib.create_hcastle_window, validlib.is_valid_hcastle_window_spawn)
+module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedural_vlad_window", windowlib.create_vlad_window, validlib.is_valid_vlad_window_spawn)
 
 --[[ Template for defining procedural spawns:
 

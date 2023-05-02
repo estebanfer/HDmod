@@ -1221,7 +1221,10 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
 }
 module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
-	if state.level ~= 4 then
+	if (
+		state.level ~= 4
+		and not feelingslib.hauntedcastle_spawned
+	) then
 		roomgenlib.level_generation_method_nonaligned(
 			{
 				subchunk_id = module.HD_SUBCHUNKID.RESTLESS_TOMB,
@@ -1229,6 +1232,7 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = 
 			}
 			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
 		)
+		feelingslib.hauntedcastle_spawned = true
 	end
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
 		roomgenlib.level_generation_method_nonaligned(

@@ -41,7 +41,7 @@ local function onlevel_remove_s2_generated_gapblocks()
 		state.theme == THEME.NEO_BABYLON
 		or state.theme == THEME.EGGPLANT_WORLD
 	) then
-		for _, uid in pairs(get_entities_by(ENT_TYPE.FLOOR_GENERIC, 0, LAYER.FRONT)) do
+		for _, uid in pairs(get_entities_by(state.theme == THEME.NEO_BABYLON and ENT_TYPE.FLOORSTYLED_BABYLON or ENT_TYPE.FLOOR_GENERIC, 0, LAYER.FRONT)) do
 			get_entity(uid):destroy()
 		end
 	end
@@ -248,6 +248,55 @@ function module.postlevelgen_remove_items()
 	remove_door_items()
 end
 
+function module.postlevelgen_spawn_dar_fog()
+	if (
+		not feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
+		and not feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
+	) then return end
+
+	local random_entity = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, MASK.SHADOW, LAYER.FRONT)[1]
+	for rx = 1, state.width, 2 do
+		for ry = 1, state.height, 2 do
+			local part = generate_world_particles(PARTICLEEMITTER.TOMB_FOG, random_entity)
+			part.entity_uid = -1
+			part.x, part.y = get_room_pos(rx, ry)
+		end
+	end
+end
+
+function module.postlevelgen_fix_jungle_door_ambient_sound()
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+		if state.theme == THEME.DWELLING and state.level == 4 then
+			local door = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)[1]
+
+			local old_ambient = entity_get_items_by(door, ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, MASK.LOGICAL)[1]
+			kill_entity(old_ambient)
+
+			--Spawn ambient on the left, so it becomes the jungle ambient (must have an overlay)
+			local x, y = get_position(door)
+			local left_bordertile = get_grid_entity_at(0, y, LAYER.FRONT)
+			local ambient = spawn_over(ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, left_bordertile, 0, 0)
+
+			--Move it and attach to the door
+			move_entity(ambient, x, y, 0, 0)
+			attach_entity(door, ambient)
+		elseif state.theme == THEME.ICE_CAVES and state.level == 4 then
+			local doors = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)
+			for _, door in pairs(doors) do
+				local x, y = get_position(door)
+				local rx, ry = get_room_index(x, y)
+				local room_template = get_room_template(rx, ry, LAYER.FRONT)
+				--Ignore MS door and moai door
+				if room_template == ROOM_TEMPLATE.EXIT or room_template == ROOM_TEMPLATE.EXIT_NOTOP then
+					-- messpect("main door room", get_room_template_name(room_template))
+					spawn_over(ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, door, 0, 0)
+					break
+				end
+			end
+		end
+	end
+end
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
@@ -294,5 +343,11 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     end
     -- print("HI PET")
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
+
+-- Prevent fog at the bottom of the worm
+state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(theme)
+	state.level_gen.themes[THEME.DWELLING]:spawn_effects()
+	return true
+end)
 
 return module

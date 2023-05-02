@@ -4,7 +4,11 @@ local module = {}
 
 local mammoth_texture_id
 do
-    local mammoth_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBIG03_0)
+    local mammoth_texture_def = TextureDefinition.new()
+    mammoth_texture_def.width = 2048
+    mammoth_texture_def.height = 512
+    mammoth_texture_def.tile_width = 256
+    mammoth_texture_def.tile_height = 256
     mammoth_texture_def.texture_path = 'res/mammoth.png'
     mammoth_texture_id = define_texture(mammoth_texture_def)
 end

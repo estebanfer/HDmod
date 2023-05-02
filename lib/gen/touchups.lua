@@ -264,7 +264,7 @@ function module.postlevelgen_spawn_dar_fog()
 	end
 end
 
-function module.postlevelgen_fix_jungle_door_ambient_sound()
+function module.postlevelgen_fix_door_ambient_sound()
 	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
 		if state.theme == THEME.DWELLING and state.level == 4 then
 			local door = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)[1]
@@ -293,6 +293,19 @@ function module.postlevelgen_fix_jungle_door_ambient_sound()
 					break
 				end
 			end
+		end
+	end
+end
+
+function module.postlevelgen_replace_wooden_shields()
+	local wooden_shields = get_entities_by(ENT_TYPE.ITEM_WOODEN_SHIELD, MASK.ITEM, LAYER.FRONT)
+	for _, uid in pairs(wooden_shields) do
+		local shield = get_entity(uid)
+		local overlay = shield.overlay
+		if overlay.type.id == ENT_TYPE.MONS_TIKIMAN then
+			shield:destroy()
+			local x, y = get_position(overlay.uid)
+			pick_up(overlay.uid, spawn_entity(ENT_TYPE.ITEM_BOOMERANG, x, y, LAYER.FRONT, 0, 0))
 		end
 	end
 end

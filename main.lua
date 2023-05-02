@@ -112,7 +112,9 @@ set_callback(function()
 
 				touchupslib.postlevelgen_spawn_dar_fog()
 
-				touchupslib.postlevelgen_fix_jungle_door_ambient_sound()
+				touchupslib.postlevelgen_fix_door_ambient_sound()
+				
+				touchupslib.postlevelgen_replace_wooden_shields()
 			end
 		end
 	end

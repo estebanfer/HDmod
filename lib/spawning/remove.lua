@@ -56,6 +56,10 @@ function module.remove_floor_and_embedded_at(x, y, l)
 			get_grid_entity_at(x, y-1, l),
 			get_grid_entity_at(x+1, y, l),
 			get_grid_entity_at(x-1, y, l),
+			get_grid_entity_at(x+1, y+1, l),
+			get_grid_entity_at(x-1, y+1, l),
+			get_grid_entity_at(x+1, y-1, l),
+			get_grid_entity_at(x-1, y-1, l),
 		}
 		-- Move grid entity so the decorations can be fixed properly (ent:destroy doesn't update the grid immediately)
 		-- TODO: not a very good fix, but API changes or manually spawning decos might be neccesary for this
@@ -65,8 +69,7 @@ function module.remove_floor_and_embedded_at(x, y, l)
 		floor:destroy() -- kill_entity(uid)
 		for _, neighbor_uid in pairs(neighbors) do
 			if neighbor_uid ~= -1 then
-				---@type Floor
-				local neighbor = get_entity(neighbor_uid)
+				local neighbor = get_entity(neighbor_uid) --[[@as Floor]]
 				if neighbor.type.id < ENT_TYPE.FLOORSTYLED_MINEWOOD then
 					neighbor:fix_decorations(false, true)
 				else

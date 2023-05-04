@@ -54,8 +54,8 @@ optionslib.register_option_bool("hd_debug_scripted_enemies_show", "Enable visibi
 optionslib.register_option_bool("hd_debug_scripted_levelgen_disable", "Level gen - Disable scripted level generation", nil, false, true)
 
 set_callback(function()
-	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
-	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
+	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7025, 0.165
+	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.62, 0.1725
 end, ON.TITLE)
 
 set_callback(function(room_gen_ctx)

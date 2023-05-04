@@ -65,7 +65,10 @@ function module.assign_s2_room_templates(room_gen_ctx)
 					elseif (
 						feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 					) then
-						if (_template_hd == roomdeflib.HD_SUBCHUNKID.YAMA_ENTRANCE) then
+						if (
+							_template_hd == roomdeflib.HD_SUBCHUNKID.YAMA_ENTRANCE
+							or _template_hd == roomdeflib.HD_SUBCHUNKID.YAMA_ENTRANCE_2
+						) then
 							template_to_set = ROOM_TEMPLATE.ENTRANCE
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.YAMA_EXIT) then
 							template_to_set = ROOM_TEMPLATE.EXIT

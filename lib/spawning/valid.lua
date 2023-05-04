@@ -102,9 +102,12 @@ end
 
 local function detect_entrance_room_template(x, y, l) -- is this position inside an entrance room?
 	local rx, ry = get_room_index(x, y)
+	local id = get_room_template(rx, ry, l)
 	return (
-		get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE_DROP
+		id == ROOM_TEMPLATE.ENTRANCE
+		or id == ROOM_TEMPLATE.ENTRANCE_DROP
+		or id == ROOM_TEMPLATE.YAMA_ENTRANCE
+		or id == ROOM_TEMPLATE.YAMA_ENTRANCE_2
 	)
 end
 

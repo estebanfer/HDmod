@@ -302,7 +302,7 @@ function module.postlevelgen_replace_wooden_shields()
 	for _, uid in pairs(wooden_shields) do
 		local shield = get_entity(uid)
 		local overlay = shield.overlay
-		if overlay.type.id == ENT_TYPE.MONS_TIKIMAN then
+		if overlay and overlay.type.id == ENT_TYPE.MONS_TIKIMAN then
 			shield:destroy()
 			local x, y = get_position(overlay.uid)
 			pick_up(overlay.uid, spawn_entity(ENT_TYPE.ITEM_BOOMERANG, x, y, LAYER.FRONT, 0, 0))

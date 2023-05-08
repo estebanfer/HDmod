@@ -1,6 +1,6 @@
 local module = {}
 
-optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "OG: Punish ball can break moai tiles", nil, true, false)
+optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "Punish ball can break moai tiles", nil, true, true)
 
 local moai_veil
 local moai_diamond_cb

@@ -995,18 +995,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local shopkeeper = spawn_shopkeeper(x+3, y, l, ROOM_TEMPLATE.SHOP_LEFT)
-						local ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
-						add_item_to_shop(ankh_uid, shopkeeper)
-						add_custom_name(ankh_uid, "Ankh")
-						local ankh_mov = get_entity(ankh_uid)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-						spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
-						spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
-						ankh_mov.price = 50000
-					end,
+					function(x, y, l) end,
 				},
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l) end,},
 			}

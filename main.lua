@@ -40,6 +40,7 @@ flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 snowballlib = require 'lib.entities.snowball'
 crystalmonkeylib = require 'lib.entities.crystal_monkey'
+shopslib = require 'lib.entities.shops'
 require "lib.entities.mammoth"
 require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
@@ -72,7 +73,7 @@ set_callback(function(room_gen_ctx)
 			-- Perform script-generated chunk creation
 			roomgenlib.onlevel_generation_modification()
 
-			s2roomctxlib.set_blackmarket_shoprooms(room_gen_ctx)
+			shopslib.set_blackmarket_shoprooms(room_gen_ctx)
 
 			roomgenlib.onlevel_generation_execution_phase_one()
 			roomgenlib.onlevel_generation_execution_phase_two()
@@ -101,8 +102,6 @@ set_callback(function()
 				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				tombstonelib.set_ash_tombstone()
-
-				s2roomctxlib.remove_bm_shopkeyp()
 
 				backwalllib.set_backwall_bg()
 				

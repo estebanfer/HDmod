@@ -14,31 +14,6 @@ function module.unmark_setrooms(room_gen_ctx)
     end
 end
 
-function module.set_blackmarket_shoprooms(room_gen_ctx)
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
-		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
-		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
-		unlockslib.UNLOCK_WI, unlockslib.UNLOCK_HI = 0, 0
-		if unlockslib.LEVEL_UNLOCK ~= nil then
-			unlockslib.UNLOCK_WI = math.random(minw, maxw)
-			unlockslib.UNLOCK_HI = math.random(minh, (unlockslib.UNLOCK_WI ~= maxw and maxh or maxh-1))
-		end
-		-- message("wi, hi: " .. unlockslib.UNLOCK_WI .. ", " .. unlockslib.UNLOCK_HI)
-		for hi = minh, maxh, 1 do
-			for wi = minw, maxw, 1 do
-				if (hi == maxh and wi == maxw) then
-					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
-				elseif (hi == unlockslib.UNLOCK_HI and wi == unlockslib.UNLOCK_WI) then
-					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
-				else
-					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, math.random(0, 5))
-				end
-			end
-		end
-		-- room_gen_ctx:set_shop_type(3, 2, LAYER.FRONT, SHOP_TYPE.HEDJET_SHOP)--unneeded
-	end
-end
-
 function module.assign_s2_room_templates(room_gen_ctx)
     
 		local level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
@@ -205,16 +180,6 @@ function module.assign_s2_room_templates(room_gen_ctx)
 				room_gen_ctx:set_room_template(x, level_h, 0, ROOM_TEMPLATE.SIDE)
 			end
 		end
-end
-
--- Since we're using the shop attic s2 room templates, we need to remove the keys given to shopkeepers
-function module.remove_bm_shopkeyp()
-    if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
-        local shopkeeper_uids = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, 0, LAYER.FRONT)
-        for _, shopkeeper_uid in pairs(shopkeeper_uids) do
-            get_entity(shopkeeper_uid).has_key = false
-        end
-    end
 end
 
 return module

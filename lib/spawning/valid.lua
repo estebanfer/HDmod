@@ -504,11 +504,22 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	if (
-		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT
-		and (
-			_subchunk_id >= 200
-			and _subchunk_id <= 213
-		)
+		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SIDE
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
 	) then
 		return false
 	end

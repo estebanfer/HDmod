@@ -274,7 +274,8 @@ local blackmarket_invalid_floors = {
 	ENT_TYPE.FLOORSTYLED_STONE,
 	ENT_TYPE.FLOOR_TREE_BASE,
 	ENT_TYPE.FLOOR_TREE_TRUNK,
-	ENT_TYPE.FLOOR_TREE_TOP
+	ENT_TYPE.FLOOR_TREE_TOP,
+	ENT_TYPE.FLOOR_ALTAR
 }
 function module.is_valid_blackmarket_spawn(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y, l)

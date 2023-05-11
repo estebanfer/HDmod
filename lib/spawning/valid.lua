@@ -285,7 +285,8 @@ local blackmarket_invalid_floors = {
 	ENT_TYPE.FLOORSTYLED_STONE,
 	ENT_TYPE.FLOOR_TREE_BASE,
 	ENT_TYPE.FLOOR_TREE_TRUNK,
-	ENT_TYPE.FLOOR_TREE_TOP
+	ENT_TYPE.FLOOR_TREE_TOP,
+	ENT_TYPE.FLOOR_ALTAR
 }
 function module.is_valid_blackmarket_spawn(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y, l)
@@ -515,11 +516,22 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	if (
-		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.HAUNTEDCASTLE_MOAT
-		and (
-			_subchunk_id >= 200
-			and _subchunk_id <= 213
-		)
+		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SIDE
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
 	) then
 		return false
 	end
@@ -550,17 +562,20 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local left = get_grid_entity_at(x-1, y, l)
 	local right = get_grid_entity_at(x+1, y, l)
 	local num_of_blocks = 0
+	local avoid_both_top = false
 
 	if (
 		topleft ~= -1
 		and commonlib.has(valid_floors, get_entity_type(topleft))
 	) then
+		avoid_both_top = true
 		num_of_blocks = num_of_blocks + 1
 	end
 	if (
 		topright ~= -1
 		and commonlib.has(valid_floors, get_entity_type(topright))
 	) then
+		if avoid_both_top then return false end
 		num_of_blocks = num_of_blocks + 1
 	end
 	if (

@@ -134,10 +134,11 @@ local function detect_solid_nonshop_nontree(x, y, l)
 end
 
 function module.is_solid_grid_entity(x, y, l)
-	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR | MASK.FLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then return true end
-    local ent = get_entity(get_grid_entity_at(x, y, l))
-    if not ent then return false end
-    return test_flag(ent.flags, ENT_FLAG.SOLID)
+	local ent = get_entity(get_grid_entity_at(x, y, l))
+	if not ent then
+		return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+	end
+	return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
 local function is_valid_monster_floor(x, y, l)

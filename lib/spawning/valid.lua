@@ -134,10 +134,11 @@ local function detect_solid_nonshop_nontree(x, y, l)
 end
 
 function module.is_solid_grid_entity(x, y, l)
-	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR | MASK.FLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then return true end
-    local ent = get_entity(get_grid_entity_at(x, y, l))
-    if not ent then return false end
-    return test_flag(ent.flags, ENT_FLAG.SOLID)
+	local ent = get_entity(get_grid_entity_at(x, y, l))
+	if not ent then
+		return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+	end
+	return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
 local function is_valid_monster_floor(x, y, l)
@@ -190,6 +191,17 @@ end
 local function spiderlair_ground_monster_condition(x, y, l)
 	return run_spiderlair_ground_enemy_chance()
 		and default_ground_monster_condition(x, y, l)
+end
+
+function module.is_valid_walltorch_spawn(x, y, layer)
+	local floor_flags = get_entity_flags(get_grid_entity_at(x, y, layer))
+	return get_grid_entity_at(x, y+1, layer) == -1
+			and not module.is_solid_grid_entity(x, y, layer)
+			and not test_flag(floor_flags, ENT_FLAG.IS_PLATFORM)
+			and not test_flag(floor_flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- Doors
+			and module.is_solid_grid_entity(x, y-1, layer)
+			and not is_liquid_at(x, y)
+			and get_entities_overlapping_hitbox(0, MASK.ITEM | MASK.MONSTER | MASK.MOUNT, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), layer)[1] == nil
 end
 
 local function only_useless_items_at(x, y, l)

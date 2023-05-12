@@ -114,6 +114,8 @@ set_callback(function()
 				touchupslib.postlevelgen_fix_door_ambient_sound()
 				
 				touchupslib.postlevelgen_replace_wooden_shields()
+
+				touchupslib.postlevelgen_spawn_walltorches()
 			end
 		end
 	end

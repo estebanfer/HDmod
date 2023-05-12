@@ -310,6 +310,54 @@ function module.postlevelgen_replace_wooden_shields()
 	end
 end
 
+local walltorch_rooms = {
+	ROOM_TEMPLATE.PATH_NORMAL,
+	ROOM_TEMPLATE.PATH_DROP,
+	ROOM_TEMPLATE.PATH_NOTOP,
+	ROOM_TEMPLATE.PATH_DROP_NOTOP,
+	ROOM_TEMPLATE.EXIT,
+	ROOM_TEMPLATE.EXIT_NOTOP,
+}
+
+local function spawn_walltorch_at_room(room_x, room_y)
+	local spots, spot_index = {}, 0
+	local start_x, start_y = get_room_pos(room_x, room_y)
+	start_x, start_y = math.ceil(start_x), math.ceil(start_y)
+	for x = start_x, start_x + CONST.ROOM_WIDTH - 1 do
+		for y = start_y, start_y - CONST.ROOM_HEIGHT + 1, -1 do
+			if validlib.is_valid_walltorch_spawn(x, y, LAYER.FRONT) then
+				spot_index = spot_index + 1
+				spots[spot_index] = {x, y}
+			end
+		end
+	end
+
+	local spawn_x, spawn_y = table.unpack(spots[prng:random_index(spot_index, PRNG_CLASS.PROCEDURAL_SPAWNS)])
+	if spawn_x then
+		return spawn(ENT_TYPE.ITEM_WALLTORCH, spawn_x, spawn_y+.2, LAYER.FRONT, .0, .0)
+	end
+	return -1
+end
+
+function module.postlevelgen_spawn_walltorches()
+	if test_flag(state.level_flags, 18) then
+		for ry = 0, state.height do
+			for rx = 0, state.width do
+				local room = get_room_template(rx, ry, LAYER.FRONT)
+				if commonlib.has(walltorch_rooms, room) then
+					spawn_walltorch_at_room(rx, ry)
+				end
+			end
+		end
+	end
+end
+
+set_pre_entity_spawn(function (_, x, y, layer, _, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+		return spawn_grid_entity(ENT_TYPE.FX_SHADOW, x, y, layer)
+	end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.ITEM, ENT_TYPE.ITEM_WALLTORCH)
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()

@@ -193,6 +193,17 @@ local function spiderlair_ground_monster_condition(x, y, l)
 		and default_ground_monster_condition(x, y, l)
 end
 
+function module.is_valid_walltorch_spawn(x, y, layer)
+	local floor_flags = get_entity_flags(get_grid_entity_at(x, y, layer))
+	return get_grid_entity_at(x, y+1, layer) == -1
+			and not module.is_solid_grid_entity(x, y, layer)
+			and not test_flag(floor_flags, ENT_FLAG.IS_PLATFORM)
+			and not test_flag(floor_flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- Doors
+			and module.is_solid_grid_entity(x, y-1, layer)
+			and not is_liquid_at(x, y)
+			and get_entities_overlapping_hitbox(0, MASK.ITEM | MASK.MONSTER | MASK.MOUNT, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), layer)[1] == nil
+end
+
 local function only_useless_items_at(x, y, l)
 	if #get_entities_at(0, MASK.MONSTER | MASK.ACTIVEFLOOR, x, y, l, 0.4) > 0 then return false end
 	for i,v in pairs(get_entities_at(0, MASK.ITEM, x, y, l, 0.4)) do

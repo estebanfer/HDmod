@@ -1228,7 +1228,7 @@ module.HD_TILENAME = {
 	},
 	["m"] = {
 		phases = {
-			[4] = {
+			[3] = {
 				alternate = {
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l)

@@ -125,8 +125,6 @@ end, ON.POST_LEVEL_GENERATION)
 
 set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
-	roomgenlib.onlevel_generation_execution_phase_four()
-
 	touchupslib.onlevel_touchups()
 
 	olmeclib.onlevel_olmec_init()

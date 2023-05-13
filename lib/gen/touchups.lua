@@ -332,11 +332,9 @@ local function spawn_walltorch_at_room(room_x, room_y)
 		end
 	end
 
+	if spot_index == 0 then return -1 end
 	local spawn_x, spawn_y = table.unpack(spots[prng:random_index(spot_index, PRNG_CLASS.PROCEDURAL_SPAWNS)])
-	if spawn_x then
-		return spawn(ENT_TYPE.ITEM_WALLTORCH, spawn_x, spawn_y+.2, LAYER.FRONT, .0, .0)
-	end
-	return -1
+	return spawn(ENT_TYPE.ITEM_WALLTORCH, spawn_x, spawn_y+.2, LAYER.FRONT, .0, .0)
 end
 
 function module.postlevelgen_spawn_walltorches()

@@ -248,14 +248,6 @@ function module.onlevel_generation_execution_phase_three()
 	gen_levelcode_phase(3, true)
 end
 
--- during on_level
-	-- elevators
-	-- force fields
-function module.onlevel_generation_execution_phase_four()
-	gen_levelcode_phase(4)
-	gen_levelcode_phase(4, true)
-end
-
 function levelrooms_setn_rowfive(levelw)
 	local tw = {}
 	commonlib.setn(tw, levelw)

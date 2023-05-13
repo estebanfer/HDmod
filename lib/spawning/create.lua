@@ -161,23 +161,23 @@ end
 
 function module.create_succubus(x, y, l) end
 
-function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
+function module.create_caveman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
 
-function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
+function module.create_mantrap(x, y, l) spawn_on_floor(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 
-function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
+function module.create_tikiman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 
-function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
+function module.create_firefrog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 
-function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
+function module.create_frog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FROG, x, y, l) end
 
-function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
+function module.create_yeti(x, y, l) spawn_on_floor(ENT_TYPE.MONS_YETI, x, y, l) end
 
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end
 
-function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
+function module.create_jiangshi(x, y, l) spawn_on_floor(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
 
 function module.create_hangspider(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)

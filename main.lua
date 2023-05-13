@@ -104,15 +104,17 @@ set_callback(function()
 				tombstonelib.set_ash_tombstone()
 
 				backwalllib.set_backwall_bg()
-				
+
 				decorlib.change_decorations()
-				
+
+				treelib.postlevelgen_decorate_trees()
+
 				touchupslib.postlevelgen_remove_items()
 
 				touchupslib.postlevelgen_spawn_dar_fog()
 
 				touchupslib.postlevelgen_fix_door_ambient_sound()
-				
+
 				touchupslib.postlevelgen_replace_wooden_shields()
 
 				touchupslib.postlevelgen_spawn_walltorches()
@@ -125,8 +127,6 @@ set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
 	roomgenlib.onlevel_generation_execution_phase_four()
 
-	treelib.onlevel_decorate_trees()
-	
 	touchupslib.onlevel_touchups()
 
 	olmeclib.onlevel_olmec_init()

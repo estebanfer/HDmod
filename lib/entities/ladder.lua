@@ -75,6 +75,7 @@ function module.create_vine(x, y, l)
 end
 
 local function _create_growable_climbable(x, y, l, is_chain)
+    is_chain = is_chain or false
     local ent_to_spawn_over
     if is_chain then
         local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, l, 0.5)
@@ -98,7 +99,8 @@ function module.create_growable_ceiling_chain(x, y, l)
 end
 
 function module.create_growable_vine(x, y, l)
-    spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l)
+    -- spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l)
+    _create_growable_climbable(x, y, l)
 end
 
 return module

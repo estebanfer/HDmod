@@ -859,12 +859,15 @@ module.HD_TILENAME = {
 	["Q"] = {
 		phases = {
 			[3] = {
+				default = {
+					ladderlib.create_growable_vine
+				},
 				alternate = {
 					[THEME.VOLCANA] = { ladderlib.create_growable_ceiling_chain },
 				}
 			},
 			[1] = {
-				default = { ladderlib.create_growable_vine },
+				default = { function(x, y, l) return 0 end },
 				alternate = {
 					[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},

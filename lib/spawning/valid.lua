@@ -117,8 +117,8 @@ end
 
 function module.is_valid_climbable_space(x, y, l)
 	return not (
-		get_entities_at(0, MASK.FLOOR, x, y-1, l, 0.5)[1] ~= nil
-		or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y-2, l, 0.5)[1] ~= nil
+		get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, x, y-1, l, 0.5)[1] ~= nil
+		or get_entities_at(ENT_TYPE.LOGICAL_DOOR, MASK.LOGICAL, x, y-2, l, 0.5)[1] ~= nil
 		or is_liquid_at(x, y-1)
 		or is_fountainhead_at(x, y-1)
 	)

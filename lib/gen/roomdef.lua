@@ -1219,28 +1219,51 @@ module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS] = {
 		},
 	},
 }
-module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].postPathMethod = function()
+module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].prePathMethod = function()
 	state.level_flags = set_flag(state.level_flags, 8)
+	
+	local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+	
+	local levelh_start, levelh_end = 2, levelh-1
+	local levelw_start, levelw_end = 2, levelw-1
+	local spots = {}
+	-- build a collection of potential spots
+	for room_y = levelh_start, levelh_end, 1 do
+		for room_x = levelw_start, levelw_end, 1 do
+			if roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x] == nil then
+				table.insert(spots, {x = room_x, y = room_y})
+			end
+		end
+	end
+
+	local spot1_i = math.random(#spots)
+	local spot1 = spots[spot1_i]
+
 	if (
 		state.level ~= 4
 		and not feelingslib.hauntedcastle_spawned
+		and #spots ~= 0
 	) then
-		roomgenlib.level_generation_method_nonaligned(
-			{
-				subchunk_id = module.HD_SUBCHUNKID.RESTLESS_TOMB,
-				roomcodes = module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[module.HD_SUBCHUNKID.RESTLESS_TOMB]
-			}
-			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+		roomgenlib.levelcode_inject_roomcode(
+			module.HD_SUBCHUNKID.RESTLESS_TOMB,
+			module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[module.HD_SUBCHUNKID.RESTLESS_TOMB],
+			spot1.y, spot1.x
 		)
 		feelingslib.hauntedcastle_spawned = true
 	end
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false then
-		roomgenlib.level_generation_method_nonaligned(
-			{
-				subchunk_id = module.HD_SUBCHUNKID.RESTLESS_IDOL,
-				roomcodes = module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[module.HD_SUBCHUNKID.RESTLESS_IDOL]
-			}
-			,feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER)
+
+	table.remove(spots, spot1_i)
+	local spot2 = spots[math.random(#spots)]
+
+	if (
+		feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == false
+		and spot2
+		and #spots ~= 0
+	) then
+		roomgenlib.levelcode_inject_roomcode(
+			module.HD_SUBCHUNKID.RESTLESS_IDOL,
+			module.HD_ROOMOBJECT.FEELINGS[feelingslib.FEELING_ID.RESTLESS].rooms[module.HD_SUBCHUNKID.RESTLESS_IDOL],
+			spot2.y, spot2.x
 		)
 	end
 end

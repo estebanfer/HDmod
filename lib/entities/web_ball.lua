@@ -5,7 +5,11 @@ local module = {}
 local web_ball_texture_id
 do
     local web_ball_texture_def
-    web_ball_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+    web_ball_texture_def = TextureDefinition.new()
+    web_ball_texture_def.width = 128
+    web_ball_texture_def.height = 128
+    web_ball_texture_def.tile_width = 128
+    web_ball_texture_def.tile_height = 128
     web_ball_texture_def.texture_path = 'res/webnest.png'
     web_ball_texture_id = define_texture(web_ball_texture_def)
 end
@@ -75,6 +79,7 @@ end
 local function web_ball_set(ent)
     ent.flags = set_flag(ent.flags, ENT_FLAG.NO_GRAVITY)
     ent:set_texture(web_ball_texture_id)
+    ent.animation_frame = 0
     ent.inside = ENT_TYPE.FX_SHADOW --having this entity get crushed requires that it opens as well..
     --we can stop the player from seeing this by moving it out of bounds right before the crushing triggers opening..
     --if a bomb bag or box falls out,, once it falls into the abyss it will explode and make SFX..

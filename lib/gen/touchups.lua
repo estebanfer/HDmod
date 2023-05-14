@@ -264,6 +264,98 @@ function module.postlevelgen_spawn_dar_fog()
 	end
 end
 
+function module.postlevelgen_fix_door_ambient_sound()
+	if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+		if state.theme == THEME.DWELLING and state.level == 4 then
+			local door = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)[1]
+
+			local old_ambient = entity_get_items_by(door, ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, MASK.LOGICAL)[1]
+			kill_entity(old_ambient)
+
+			--Spawn ambient on the left, so it becomes the jungle ambient (must have an overlay)
+			local x, y = get_position(door)
+			local left_bordertile = get_grid_entity_at(0, y, LAYER.FRONT)
+			local ambient = spawn_over(ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, left_bordertile, 0, 0)
+
+			--Move it and attach to the door
+			move_entity(ambient, x, y, 0, 0)
+			attach_entity(door, ambient)
+		elseif state.theme == THEME.ICE_CAVES and state.level == 4 then
+			local doors = get_entities_by(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, LAYER.FRONT)
+			for _, door in pairs(doors) do
+				local x, y = get_position(door)
+				local rx, ry = get_room_index(x, y)
+				local room_template = get_room_template(rx, ry, LAYER.FRONT)
+				--Ignore MS door and moai door
+				if room_template == ROOM_TEMPLATE.EXIT or room_template == ROOM_TEMPLATE.EXIT_NOTOP then
+					-- messpect("main door room", get_room_template_name(room_template))
+					spawn_over(ENT_TYPE.LOGICAL_DOOR_AMBIENT_SOUND, door, 0, 0)
+					break
+				end
+			end
+		end
+	end
+end
+
+function module.postlevelgen_replace_wooden_shields()
+	local wooden_shields = get_entities_by(ENT_TYPE.ITEM_WOODEN_SHIELD, MASK.ITEM, LAYER.FRONT)
+	for _, uid in pairs(wooden_shields) do
+		local shield = get_entity(uid)
+		local overlay = shield.overlay
+		if overlay and overlay.type.id == ENT_TYPE.MONS_TIKIMAN then
+			shield:destroy()
+			local x, y = get_position(overlay.uid)
+			pick_up(overlay.uid, spawn_entity(ENT_TYPE.ITEM_BOOMERANG, x, y, LAYER.FRONT, 0, 0))
+		end
+	end
+end
+
+local walltorch_rooms = {
+	ROOM_TEMPLATE.PATH_NORMAL,
+	ROOM_TEMPLATE.PATH_DROP,
+	ROOM_TEMPLATE.PATH_NOTOP,
+	ROOM_TEMPLATE.PATH_DROP_NOTOP,
+	ROOM_TEMPLATE.EXIT,
+	ROOM_TEMPLATE.EXIT_NOTOP,
+}
+
+local function spawn_walltorch_at_room(room_x, room_y)
+	local spots, spot_index = {}, 0
+	local start_x, start_y = get_room_pos(room_x, room_y)
+	start_x, start_y = math.ceil(start_x), math.ceil(start_y)
+	for x = start_x, start_x + CONST.ROOM_WIDTH - 1 do
+		for y = start_y, start_y - CONST.ROOM_HEIGHT + 1, -1 do
+			if validlib.is_valid_walltorch_spawn(x, y, LAYER.FRONT) then
+				spot_index = spot_index + 1
+				spots[spot_index] = {x, y}
+			end
+		end
+	end
+
+	if spot_index == 0 then return -1 end
+	local spawn_x, spawn_y = table.unpack(spots[prng:random_index(spot_index, PRNG_CLASS.PROCEDURAL_SPAWNS)])
+	return spawn(ENT_TYPE.ITEM_WALLTORCH, spawn_x, spawn_y+.2, LAYER.FRONT, .0, .0)
+end
+
+function module.postlevelgen_spawn_walltorches()
+	if test_flag(state.level_flags, 18) then
+		for ry = 0, state.height do
+			for rx = 0, state.width do
+				local room = get_room_template(rx, ry, LAYER.FRONT)
+				if commonlib.has(walltorch_rooms, room) then
+					spawn_walltorch_at_room(rx, ry)
+				end
+			end
+		end
+	end
+end
+
+set_pre_entity_spawn(function (_, x, y, layer, _, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+		return spawn_grid_entity(ENT_TYPE.FX_SHADOW, x, y, layer)
+	end
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.ITEM, ENT_TYPE.ITEM_WALLTORCH)
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()

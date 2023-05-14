@@ -126,9 +126,11 @@ set_pre_tile_code_callback(function(x, y, layer)
 end, "shop_wall")
 
 -- remove the lephrechaun that spawns with echoes levels and chests
+--[[
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return 0
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
+]]
 
 function assign_s2_level_height()
 	
@@ -244,14 +246,6 @@ end
 function module.onlevel_generation_execution_phase_three()
 	gen_levelcode_phase(3)
 	gen_levelcode_phase(3, true)
-end
-
--- during on_level
-	-- elevators
-	-- force fields
-function module.onlevel_generation_execution_phase_four()
-	gen_levelcode_phase(4)
-	gen_levelcode_phase(4, true)
 end
 
 function levelrooms_setn_rowfive(levelw)
@@ -641,37 +635,38 @@ end
 
 function level_generation_method_shops()
 	if (
-		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
-		state.theme ~= THEME.VOLCANA and
-		module.detect_level_non_boss() and
-		module.detect_level_non_special()
+		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false
+		and state.theme ~= THEME.VOLCANA
+		and module.detect_level_non_boss()
+		and module.detect_level_non_special()
+		and (math.random(state.level + ((state.world - 1) * 4)) <= 2)
 	) then
-		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
-			local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
-			local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			-- # TODO: Find real chance of spawning a dice shop.
-			-- This is a temporary solution.
-			if math.random(7) == 1 then
-				state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
-				shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
-				shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
-			-- elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
-			-- 	state.level_gen.shop_type = math.random(0, 5)
-			end
+		local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
+		local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
 
-			module.level_generation_method_aligned(
-				{
-					left = {
-						subchunk_id = shop_id_left,
-						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
-					},
-					right = {
-						subchunk_id = shop_id_right,
-						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
-					}
-				}
-			)
+        -- prinspect(string.format('Prior shop_type: %s', state.level_gen.shop_type))
+		-- # TODO: Find and implement HD chances of shop types
+		if math.random(7) == 1 then
+			state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
+			shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
+			shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+		elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
+			state.level_gen.shop_type = math.random(0, 5)
 		end
+        -- prinspect(string.format('Post-script shop_type: %s', state.level_gen.shop_type))
+
+		module.level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = shop_id_left,
+					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
+				},
+				right = {
+					subchunk_id = shop_id_right,
+					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
+				}
+			}
+		)
 	end
 end
 

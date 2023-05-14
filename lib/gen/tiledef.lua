@@ -14,6 +14,10 @@ local hell_minibosslib = require 'lib.entities.hell_miniboss'
 local alienlordlib = require 'lib.entities.alienlord'
 local idollib = require 'lib.entities.idol'
 local kingboneslib = require 'lib.entities.kingbones'
+local pushblocklib = require 'lib.entities.pushblock'
+local idolplatformlib = require 'lib.entities.idol_platform'
+local ladderlib = require 'lib.entities.ladder'
+local succubuslib = require 'lib.entities.succubus'
 
 local module = {}
 
@@ -348,7 +352,7 @@ module.HD_TILENAME = {
 	["4"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l) end,},
+				default = { pushblocklib.create_pushblock },
 			}
 		},
 		description = "Pushblock",
@@ -483,24 +487,7 @@ module.HD_TILENAME = {
 	["A"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						local idol_block_first = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x, y, l))
-						local idol_block_second = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_IDOL_BLOCK, x+1, y, l))
-
-						if state.theme ~= THEME.VOLCANA then
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/idol_platform_generic.png"
-							if state.theme == THEME.TEMPLE then
-								texture_def.texture_path = "res/idol_platform_temple.png"
-							end
-
-							idol_block_first:set_texture(define_texture(texture_def))
-							idol_block_second:set_texture(define_texture(texture_def))
-						end
-						idol_block_second.animation_frame = idol_block_second.animation_frame + 1
-					end,
-				},
+				default = { idolplatformlib.create_idol_platform },
 			}
 		},
 		description = "Idol Platform",
@@ -783,15 +770,7 @@ module.HD_TILENAME = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/ladder_gold.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_gold },
 				},
 			}
 		},
@@ -898,15 +877,7 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
 				alternate = {
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0)
-							texture_def.texture_path = "res/ladder_gold.png"
-							local ent_texture = define_texture(texture_def)
-							local ent_uid = spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l)
-							get_entity(ent_uid):set_texture(ent_texture)
-						end
-					},
+					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_platform_gold },
 				}
 			}
 		},
@@ -1024,18 +995,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local shopkeeper = spawn_shopkeeper(x+3, y, l, ROOM_TEMPLATE.SHOP_LEFT)
-						local ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
-						add_item_to_shop(ankh_uid, shopkeeper)
-						add_custom_name(ankh_uid, "Ankh")
-						local ankh_mov = get_entity(ankh_uid)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-						spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
-						spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
-						ankh_mov.price = 50000
-					end,
+					function(x, y, l) end,
 				},
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l) end,},
 			}
@@ -1268,7 +1228,7 @@ module.HD_TILENAME = {
 	},
 	["m"] = {
 		phases = {
-			[4] = {
+			[3] = {
 				alternate = {
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l)
@@ -1347,15 +1307,13 @@ module.HD_TILENAME = {
 		description = "Obstacle-Resistant Terrain",
 	},
 	["r"] = {
-		description = "Terrain/Stone", -- old description: Mines Terrain/Temple Terrain/Pushblock
+		description = "Terrain/Stone",
 		-- Used to be used for Temple Obstacle Block but had to be assigned to a new tilecode ("(") to avoid problems
-		-- From 
 		phases = {
 			[1] = {
 				default = {
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,
 					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l) end,
-					-- ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 				},
 				alternate = {
 					[THEME.VOLCANA] = {

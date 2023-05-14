@@ -10,8 +10,13 @@ local orig_hor_scattering = snow.hor_scattering
 local orig_ver_scattering = snow.ver_scattering
 local orig_hor_velocity = snow.hor_velocity
 local orig_ver_velocity = snow.ver_velocity
+local special_snowman_texture_id
 do
-    local special_snowman_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_ITEMS_0)
+    local special_snowman_texture_def = TextureDefinition.new()
+    special_snowman_texture_def.width = 128
+    special_snowman_texture_def.height = 128
+    special_snowman_texture_def.tile_width = 128
+    special_snowman_texture_def.tile_height = 128
     special_snowman_texture_def.texture_path = 'res/special_snowman.png'
     special_snowman_texture_id = define_texture(special_snowman_texture_def)
 end
@@ -60,6 +65,7 @@ function module.add_snow_to_floor()
                         -- Rare chance for the Guy Spelunky snowman instead of the regular one
                         if prng:random_chance(5, PRNG_CLASS.LEVEL_DECO) then
                             snowman:set_texture(special_snowman_texture_id)
+                            snowman.animation_frame = 0
                         end
                         snowman.animation_frame = 221
                         snowman:set_draw_depth(deco_top.draw_depth + 1)

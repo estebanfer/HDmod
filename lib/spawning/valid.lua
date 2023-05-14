@@ -102,9 +102,12 @@ end
 
 local function detect_entrance_room_template(x, y, l) -- is this position inside an entrance room?
 	local rx, ry = get_room_index(x, y)
+	local id = get_room_template(rx, ry, l)
 	return (
-		get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE
-		or get_room_template(rx, ry, l) == ROOM_TEMPLATE.ENTRANCE_DROP
+		id == ROOM_TEMPLATE.ENTRANCE
+		or id == ROOM_TEMPLATE.ENTRANCE_DROP
+		or id == ROOM_TEMPLATE.YAMA_ENTRANCE
+		or id == ROOM_TEMPLATE.YAMA_ENTRANCE_2
 	)
 end
 
@@ -131,10 +134,11 @@ local function detect_solid_nonshop_nontree(x, y, l)
 end
 
 function module.is_solid_grid_entity(x, y, l)
-	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR | MASK.FLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then return true end
-    local ent = get_entity(get_grid_entity_at(x, y, l))
-    if not ent then return false end
-    return test_flag(ent.flags, ENT_FLAG.SOLID)
+	local ent = get_entity(get_grid_entity_at(x, y, l))
+	if not ent then
+		return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+	end
+	return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
 local function is_valid_monster_floor(x, y, l)
@@ -154,6 +158,14 @@ local function default_ceiling_entity_condition(x, y, l)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
+	and detect_entrance_room_template(x, y, l) == false
+	and not is_liquid_at(x, y)
+end
+
+local function default_hell_ceiling_entity_condition(x, y, l)
+	return get_grid_entity_at(x, y, l) == -1
+	and module.is_solid_grid_entity(x, y+1, l)
+	and get_grid_entity_at(x, y-1, l) == -1
 	and detect_entrance_room_template(x, y, l) == false
 	and not is_liquid_at(x, y)
 end
@@ -179,6 +191,17 @@ end
 local function spiderlair_ground_monster_condition(x, y, l)
 	return run_spiderlair_ground_enemy_chance()
 		and default_ground_monster_condition(x, y, l)
+end
+
+function module.is_valid_walltorch_spawn(x, y, layer)
+	local floor_flags = get_entity_flags(get_grid_entity_at(x, y, layer))
+	return get_grid_entity_at(x, y+1, layer) == -1
+			and not module.is_solid_grid_entity(x, y, layer)
+			and not test_flag(floor_flags, ENT_FLAG.IS_PLATFORM)
+			and not test_flag(floor_flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- Doors
+			and module.is_solid_grid_entity(x, y-1, layer)
+			and not is_liquid_at(x, y)
+			and get_entities_overlapping_hitbox(0, MASK.ITEM | MASK.MONSTER | MASK.MOUNT, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), layer)[1] == nil
 end
 
 local function only_useless_items_at(x, y, l)
@@ -351,7 +374,7 @@ module.is_valid_hawkman_spawn = default_ground_monster_condition
 
 module.is_valid_crocman_spawn = default_ground_monster_condition
 
-function module.is_valid_scorpionfly_spawn(x, y, l) return false end -- # TODO: Implement method for valid scorpionfly spawn
+module.is_valid_scorpionfly_spawn = default_ground_monster_condition
 
 module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
@@ -365,7 +388,7 @@ function module.is_valid_critter_locust_spawn(x, y, l) return false end -- # TOD
 
 module.is_valid_jiangshi_spawn = default_ground_monster_condition
 
-function module.is_valid_devil_spawn(x, y, l) return false end -- # TODO: Implement method for valid devil spawn
+module.is_valid_devil_spawn = default_ground_monster_condition
 
 module.is_valid_greenknight_spawn = default_ground_monster_condition
 
@@ -412,7 +435,7 @@ module.is_valid_spider_spawn = default_ceiling_entity_condition
 
 module.is_valid_vampire_spawn = default_ceiling_entity_condition
 
-function module.is_valid_imp_spawn(x, y, l) return false end -- # TODO: Implement method for valid imp spawn
+module.is_valid_imp_spawn = default_hell_ceiling_entity_condition
 
 function module.is_valid_scarab_spawn(x, y, l) return false end -- # TODO: Implement method for valid scarab spawn
 

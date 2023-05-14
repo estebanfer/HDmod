@@ -1,6 +1,7 @@
 spikeballlib = require 'lib.entities.spikeball_trap'
 local removelib = require 'lib.spawning.remove'
 local validlib = require 'lib.spawning.valid'
+local pushblocklib = require 'lib.entities.pushblock'
 
 local module = {}
 
@@ -160,31 +161,23 @@ end
 
 function module.create_succubus(x, y, l) end
 
-function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
+function module.create_caveman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
 
-function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
+function module.create_mantrap(x, y, l) spawn_on_floor(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 
-function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
+function module.create_tikiman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 
-function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
+function module.create_firefrog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 
-function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
+function module.create_frog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FROG, x, y, l) end
 
-function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
-
-function module.create_scorpionfly(x, y, l) end
+function module.create_yeti(x, y, l) spawn_on_floor(ENT_TYPE.MONS_YETI, x, y, l) end
 
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end
 
-function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
-
-function module.create_devil(x, y, l) end
-
-function module.create_alientank(x, y, l) end
-
-function module.create_piranha(x, y, l) end
+function module.create_jiangshi(x, y, l) spawn_on_floor(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
 
 function module.create_hangspider(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)
@@ -197,8 +190,6 @@ function module.create_bat(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_BAT, x, y, l
 function module.create_spider(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SPIDER, x, y, l) end
 
 function module.create_vampire(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_VAMPIRE, x, y, l) end
-
-function module.create_mshiplight(x, y, l) end
 
 -- powderkeg / pushblock
 function module.create_pushblock_powderkeg(x, y, l)
@@ -214,9 +205,9 @@ function module.create_pushblock_powderkeg(x, y, l)
 		current_powderkeg_chance ~= 0
 		and math.random(current_powderkeg_chance) == 1
 	) then
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l, 0, 0)
+		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
-		spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0)
+		pushblocklib.create_pushblock(x, y, l)
 	end
 end
 
@@ -245,26 +236,6 @@ function module.create_honey(x, y, l)
 		if floor == -1 then return end
 		spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, 0.8)
 	end
-end
-
-local function create_window(x, y, l, is_hc)
-	local ent = get_entity(spawn_entity(ENT_TYPE.BG_VLAD_WINDOW, x, y-0.5, l, 0, 0))
-	ent.width, ent.height = 1, 2
-	ent.hitboxx, ent.hitboxy = 0.5, 1
-
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
-	if is_hc == true then
-		texture_def.texture_path = "res/hauntedcastle_window.png"
-	end
-	ent:set_texture(define_texture(texture_def))
-end
-
-function module.create_hcastle_window(x, y, l)
-	create_window(x, y, l, true)
-end
-
-function module.create_vlad_window(x, y, l)
-	create_window(x, y, l, false)
 end
 
 return module

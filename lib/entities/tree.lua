@@ -69,7 +69,7 @@ set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_f
 	end
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_VINE_TREE_TOP)
 
-function module.onlevel_decorate_trees()
+function module.postlevelgen_decorate_trees()
 	if (
 		state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE
 	) then

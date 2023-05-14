@@ -40,6 +40,7 @@ flagslib = require 'lib.flags'
 decorlib = require 'lib.gen.decor'
 snowballlib = require 'lib.entities.snowball'
 crystalmonkeylib = require 'lib.entities.crystal_monkey'
+shopslib = require 'lib.entities.shops'
 require "lib.entities.mammoth"
 require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
@@ -54,8 +55,8 @@ optionslib.register_option_bool("hd_debug_scripted_enemies_show", "Enable visibi
 optionslib.register_option_bool("hd_debug_scripted_levelgen_disable", "Level gen - Disable scripted level generation", nil, false, true)
 
 set_callback(function()
-	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7, 0.05
-	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.55, 0.05
+	game_manager.screen_title.ana_right_eyeball_torch_reflection.x, game_manager.screen_title.ana_right_eyeball_torch_reflection.y = -0.7025, 0.165
+	game_manager.screen_title.ana_left_eyeball_torch_reflection.x, game_manager.screen_title.ana_left_eyeball_torch_reflection.y = -0.62, 0.1725
 end, ON.TITLE)
 
 set_callback(function(room_gen_ctx)
@@ -72,7 +73,7 @@ set_callback(function(room_gen_ctx)
 			-- Perform script-generated chunk creation
 			roomgenlib.onlevel_generation_modification()
 
-			s2roomctxlib.set_blackmarket_shoprooms(room_gen_ctx)
+			shopslib.set_blackmarket_shoprooms(room_gen_ctx)
 
 			roomgenlib.onlevel_generation_execution_phase_one()
 			roomgenlib.onlevel_generation_execution_phase_two()
@@ -102,15 +103,21 @@ set_callback(function()
 			) then
 				tombstonelib.set_ash_tombstone()
 
-				s2roomctxlib.remove_bm_shopkeyp()
-
 				backwalllib.set_backwall_bg()
-				
+
 				decorlib.change_decorations()
-				
+
+				treelib.postlevelgen_decorate_trees()
+
 				touchupslib.postlevelgen_remove_items()
 
 				touchupslib.postlevelgen_spawn_dar_fog()
+
+				touchupslib.postlevelgen_fix_door_ambient_sound()
+
+				touchupslib.postlevelgen_replace_wooden_shields()
+
+				touchupslib.postlevelgen_spawn_walltorches()
 			end
 		end
 	end
@@ -118,10 +125,6 @@ end, ON.POST_LEVEL_GENERATION)
 
 set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
-	roomgenlib.onlevel_generation_execution_phase_four()
-
-	treelib.onlevel_decorate_trees()
-	
 	touchupslib.onlevel_touchups()
 
 	olmeclib.onlevel_olmec_init()

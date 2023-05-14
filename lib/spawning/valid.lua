@@ -111,6 +111,19 @@ local function detect_entrance_room_template(x, y, l) -- is this position inside
 	)
 end
 
+local function is_fountainhead_at(x, y)
+	return locatelib.get_levelcode_at_gpos(x, y) == "&"
+end
+
+function module.is_valid_climbable_space(x, y, l)
+	return not (
+		get_entities_at(0, MASK.FLOOR, x, y-1, l, 0.5)[1] ~= nil
+		or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, y-2, l, 0.5)[1] ~= nil
+		or is_liquid_at(x, y-1)
+		or is_fountainhead_at(x, y-1)
+	)
+end
+
 local nonshop_nontree_solids = {
 	ENT_TYPE.FLOOR_ALTAR,
 	ENT_TYPE.FLOOR_TREE_BASE,

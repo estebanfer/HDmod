@@ -1,5 +1,7 @@
 local module = {}
 
+local validlib = require 'lib.spawning.valid'
+
 local texture_id
 do
     local texture_def = TextureDefinition.new()
@@ -13,6 +15,8 @@ end
 
 function module.create_ladder(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end
 
+function module.create_ladder_platform(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end
+
 function module.create_ladder_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l))
     ent:set_texture(texture_id)
@@ -25,61 +29,29 @@ function module.create_ladder_gold(x, y, l)
     end
 end
 
-function module.create_ladder_platform(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end
-
 function module.create_ladder_platform_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l))
     ent:set_texture(texture_id)
     ent.animation_frame = 2
 end
 
-function module.create_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	if (
-		ent_to_spawn_over ~= nil
-	) then
-		local ent = get_entity(ent_to_spawn_over)
-
-		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-		if (
-			ent.type.id == ENT_TYPE.FLOOR_GENERIC
-			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-		) then
-			get_entity(ent_to_spawn_over).animation_frame = 4
-		end
-	end
+local function _create_chain_single(ent_to_spawn_over)
+    local chain = get_entity(spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over.uid, 0, -1))
+    if (
+        ent_to_spawn_over.type.id == ENT_TYPE.FLOOR_GENERIC
+        or ent_to_spawn_over.type.id == ENT_TYPE.FLOORSTYLED_VLAD
+        or ent_to_spawn_over.type.id == ENT_TYPE.FLOOR_BORDERTILE
+    ) then
+        chain.animation_frame = 4
+    end
+    return chain
 end
 
-function module.create_growable_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	local yi = y
-	while true do
-		if (
-			ent_to_spawn_over ~= nil
-		) then
-			local ent = get_entity(ent_to_spawn_over)
-
-			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-			if (
-				ent.type.id == ENT_TYPE.FLOOR_GENERIC
-				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-			) then
-				get_entity(ent_to_spawn_over).animation_frame = 4
-			end
-			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)[1] ~= nil
-			floors_at_offset = floors_at_offset or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5)[1] ~= nil
-			if floors_at_offset then break end
-		else break end
-	end
+function module.create_ceiling_chain(x, y, l)
+	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
+	if #floors_at_offset > 0 then
+        _create_chain_single(get_entity(floors_at_offset[1]))
+    end
 end
 
 function module.create_vine(x, y, l)
@@ -100,6 +72,29 @@ function module.create_vine(x, y, l)
     ) then
         spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
     end
+end
+
+local function _create_growable_climbable(x, y, l, is_chain)
+    local ent_to_spawn_over
+    if is_chain then
+        local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, l, 0.5)
+        if #floors_at_offset > 0 then ent_to_spawn_over = get_entity(floors_at_offset[1]) else return end
+    end
+
+	local yi = y
+	while true do
+        if is_chain then
+            ent_to_spawn_over = _create_chain_single(ent_to_spawn_over)
+        else
+            spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, yi, l)
+        end
+        yi = yi - 1
+        if not validlib.is_valid_climbable_space(x, yi, l) then break end
+	end
+end
+
+function module.create_growable_ceiling_chain(x, y, l)
+    _create_growable_climbable(x, y, l, true)
 end
 
 function module.create_growable_vine(x, y, l)

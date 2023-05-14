@@ -548,8 +548,6 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 		return false
 	end
 
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
-
 	if get_entity_type(get_grid_entity_at(x, y, l)) == ENT_TYPE.FLOOR_ALTAR
 		or is_liquid_at(x, y) then
 		return false

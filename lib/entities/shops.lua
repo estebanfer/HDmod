@@ -2,6 +2,7 @@ module = {}
 
 function module.set_blackmarket_shoprooms(room_gen_ctx)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+		state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
 		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
 		unlockslib.UNLOCK_WI, unlockslib.UNLOCK_HI = 0, 0
@@ -14,7 +15,7 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 		for hi = minh, maxh, 1 do
 			for wi = minw, maxw, 1 do
 				if (hi == maxh and wi == maxw) then
-					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.DICE_SHOP)
+					-- SORRY NOTHING
 				elseif (hi == unlockslib.UNLOCK_HI and wi == unlockslib.UNLOCK_WI) then
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
 				else

@@ -100,18 +100,10 @@ function module.assign_s2_room_templates(room_gen_ctx)
 	
 						-- shop
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR) then
-							if state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
-								template_to_set = ROOM_TEMPLATE.DICESHOP
-							else
-								template_to_set = ROOM_TEMPLATE.SHOP
-							end
+							template_to_set = ROOM_TEMPLATE.SHOP
 						-- shop left
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT) then
-							if state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
-								template_to_set = ROOM_TEMPLATE.DICESHOP_LEFT
-							else
-								template_to_set = ROOM_TEMPLATE.SHOP_LEFT
-							end
+							template_to_set = ROOM_TEMPLATE.SHOP_LEFT
 						-- prize wheel
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE) then
 							template_to_set = ROOM_TEMPLATE.DICESHOP

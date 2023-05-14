@@ -51,55 +51,6 @@ function module.create_coffin_unlock(x, y, l)
 	return coffin_uid
 end
 
-function module.create_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	if (
-		ent_to_spawn_over ~= nil
-	) then
-		local ent = get_entity(ent_to_spawn_over)
-
-		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-		if (
-			ent.type.id == ENT_TYPE.FLOOR_GENERIC
-			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-		) then
-			get_entity(ent_to_spawn_over).animation_frame = 4
-		end
-	end
-end
-
-function module.create_ceiling_chain_growable(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	local yi = y
-	while true do
-		if (
-			ent_to_spawn_over ~= nil
-		) then
-			local ent = get_entity(ent_to_spawn_over)
-
-			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-			if (
-				ent.type.id == ENT_TYPE.FLOOR_GENERIC
-				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-			) then
-				get_entity(ent_to_spawn_over).animation_frame = 4
-			end
-			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)[1] ~= nil
-			floors_at_offset = floors_at_offset or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5)[1] ~= nil
-			if floors_at_offset then break end
-		else break end
-	end
-end
-
 function module.create_embedded(ent_toembedin, entity_type)
 	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
 		local entity_db = get_type(entity_type)

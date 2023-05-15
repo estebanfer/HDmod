@@ -35,22 +35,24 @@ function module.create_ladder_platform_gold(x, y, l)
     ent.animation_frame = 2
 end
 
-local function _create_chain_single(ent_to_spawn_over)
-    local chain = get_entity(spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over.uid, 0, -1))
+local function _create_climbable_single(x, y, l, ent_to_spawn_over, is_chain)
+    local climbable = get_entity(is_chain and spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over.uid, 0, -1) or spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
     if (
         ent_to_spawn_over.type.id == ENT_TYPE.FLOOR_GENERIC
+        or ent_to_spawn_over.type.id == ENT_TYPE.FLOORSTYLED_STONE
+        or ent_to_spawn_over.type.id == ENT_TYPE.FLOORSTYLED_GUTS
         or ent_to_spawn_over.type.id == ENT_TYPE.FLOORSTYLED_VLAD
         or ent_to_spawn_over.type.id == ENT_TYPE.FLOOR_BORDERTILE
     ) then
-        chain.animation_frame = 4
+        climbable.animation_frame = 4
     end
-    return chain
+    return climbable
 end
 
 function module.create_ceiling_chain(x, y, l)
 	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
 	if #floors_at_offset > 0 then
-        _create_chain_single(get_entity(floors_at_offset[1]))
+        _create_climbable_single(x, y, l, get_entity(floors_at_offset[1]), true)
     end
 end
 
@@ -75,23 +77,18 @@ function module.create_vine(x, y, l)
 end
 
 local function _create_growable_climbable(x, y, l, is_chain)
-    is_chain = is_chain or false
-    local ent_to_spawn_over
-    if is_chain then
-        local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, l, 0.5)
-        if #floors_at_offset > 0 then ent_to_spawn_over = get_entity(floors_at_offset[1]) else return end
-    end
-
-	local yi = y
-	while true do
-        if is_chain then
-            ent_to_spawn_over = _create_chain_single(ent_to_spawn_over)
-        else
-            spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, yi, l)
+    local climbable = get_entity(get_grid_entity_at(x, y+1, l))
+    if climbable then
+        local yi = y
+        while true do
+            climbable = _create_climbable_single(x, yi, l, climbable, is_chain)
+            yi = yi - 1
+            if not validlib.is_valid_climbable_space(x, yi, l) then
+                climbable.animation_frame = 28
+                break
+            end
         end
-        yi = yi - 1
-        if not validlib.is_valid_climbable_space(x, yi, l) then break end
-	end
+    end
 end
 
 function module.create_growable_ceiling_chain(x, y, l)

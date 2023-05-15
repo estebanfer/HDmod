@@ -607,9 +607,7 @@ module.HD_TILENAME = {
 	["G"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,
-				},
+				default = { ladderlib.create_ladder },
 			}
 		},
 		description = "Ladder (Strict)",
@@ -617,9 +615,7 @@ module.HD_TILENAME = {
 	["H"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,
-				},
+				default = { ladderlib.create_ladder_platform },
 			}
 		},
 		description = "Ladder Platform (Strict)",
@@ -728,9 +724,7 @@ module.HD_TILENAME = {
 		phases = {
 			[3] = {
 				alternate = {
-					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_ceiling_chain(x, y, l) end,
-					},
+					[THEME.VOLCANA] = { ladderlib.create_ceiling_chain },
 				}
 			},
 			[2] = {
@@ -741,31 +735,10 @@ module.HD_TILENAME = {
 				}
 			},
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,},
+				default = { ladderlib.create_ladder },
 				alternate = {
-					[THEME.JUNGLE] = {function(x, y, l)
-						local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
-						local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_monkey)
-						if (
-							feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
-							and monkey_chance ~= 0
-							and math.random(monkey_chance) == 1
-						) then
-							spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
-						end
-					end,},
-					[THEME.EGGPLANT_WORLD] = {function(x, y, l)
-						local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
-						local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_worm_jungle_monkey)
-						if (
-							state.world == 2
-							and monkey_chance ~= 0
-							and math.random(monkey_chance) == 1
-						) then
-							spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
-						end
-					end,},
-	
+					[THEME.JUNGLE] = { ladderlib.create_vine },
+					[THEME.EGGPLANT_WORLD] = { ladderlib.create_vine },
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
@@ -875,7 +848,7 @@ module.HD_TILENAME = {
 	["P"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
+				default = { ladderlib.create_ladder_platform },
 				alternate = {
 					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_platform_gold },
 				}
@@ -886,12 +859,15 @@ module.HD_TILENAME = {
 	["Q"] = {
 		phases = {
 			[3] = {
+				default = {
+					ladderlib.create_growable_vine
+				},
 				alternate = {
-					[THEME.VOLCANA] = {function(x, y, l) createlib.create_ceiling_chain_growable(x, y, l) end},
+					[THEME.VOLCANA] = { ladderlib.create_growable_ceiling_chain },
 				}
 			},
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l) end,},
+				default = { function(x, y, l) return 0 end },
 				alternate = {
 					[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},

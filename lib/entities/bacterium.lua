@@ -226,12 +226,12 @@ local function bacterium_update(ent, ent_info)
     end
 end
 
-bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.MONS_MANTRAP, celib.UPDATE_TYPE.POST_STATEMACHINE)
+bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.MONS_FROG, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
 celib.init()
 
 local function spawn_bacterium(grid_x, grid_y, layer, attach_dir)
-    local uid = spawn(ENT_TYPE.MONS_MANTRAP, grid_x, grid_y, layer, 0, 0)
+    local uid = spawn(ENT_TYPE.MONS_FROG, grid_x, grid_y, layer, 0, 0)
     celib.set_custom_entity(uid, bacterium_id, attach_dir)
     local off_x, off_y = DIR_MAP[attach_dir][1], DIR_MAP[attach_dir][2]
     off_x = off_x - off_x * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2

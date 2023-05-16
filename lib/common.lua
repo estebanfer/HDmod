@@ -174,4 +174,28 @@ function module.in_range(x, y1, y2)
   return false
 end
 
+local function is_activefloor_at(x, y, layer)
+  local hitbox = AABB:new(x - 0.05, y+0.05, x + 0.05, y - 0.05)
+  local activefloors = get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, hitbox, layer)
+  return activefloors[1] ~= nil
+end
+module.is_activefloor_at = is_activefloor_at
+
+function module.is_solid_floor_at(x, y, layer)
+  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
+  if test_flag(get_entity_flags(floor), ENT_FLAG.SOLID) then return true end
+
+  return is_activefloor_at(x, y, layer)
+end
+
+function module.is_standable_floor_at(x, y, layer)
+  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
+  local flags = get_entity_flags(floor)
+  if floor ~= 0 and (test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)) then
+    return true
+  end
+
+  return is_activefloor_at(x, y, layer)
+end
+
 return module

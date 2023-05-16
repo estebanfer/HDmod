@@ -18,14 +18,13 @@ local ANIMATION = {
 local BWORM_VELOCITY = 0.025
 local BWORM_VELOCITY_CHASING = 0.045
 
-local function update_onfloor(worm)
+local function update_onfloor(worm, chasing_player)
     local x, y, layer = get_position(worm.uid)
     local dir_sign = test_flag(worm.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
     local is_wall_ahead = commonlib.is_solid_floor_at(x + (0.6 * dir_sign), y, layer)
     local is_wall_behind = commonlib.is_solid_floor_at(x + (0.6 * -dir_sign), y, layer)
     local is_floor_ahead = commonlib.is_standable_floor_at(x + (0.6 * dir_sign), y-0.8, layer)
     local is_floor_behind = commonlib.is_standable_floor_at(x + (0.6 * -dir_sign), y-0.8, layer)
-    local chasing_player = worm.user_data.chasing_player
 
     if is_wall_ahead and is_wall_behind then
         worm.velocityx = 0.0
@@ -43,6 +42,9 @@ local function update_onfloor(worm)
                 worm.velocityx = worm.velocityx * -1
             end
         else
+            if is_wall_ahead then
+                worm.flags = flip_flag(worm.flags, ENT_FLAG.FACING_LEFT)
+            end
             worm.velocityx = 0.0
         end
     else
@@ -63,12 +65,11 @@ local function worm_baby_set(uid)
     ent.offsety = -0.11
     ent.hitboxy = 0.325
     ent.pause = true
-    ent.price = 0 --exit_chase_timer
+    ent.price = 50 --exit_chase_timer
     ent:set_texture(texture_id)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_BABY_WORM,
-        chasing_player = false,
         animation_state = ANIMATION.AIR,
         animation_timer = 0,
     };
@@ -77,38 +78,44 @@ end
 
 ---@param ent Frog
 local function worm_baby_update(ent)
-    ent.animation_frame = 145
     --chase timer
     if ent.price > 0 then
         ent.price = ent.price - 1
     end
-    --lock jump behavior
-    ent.jump_timer = 180
-    --statemachine
-    ent.move_state = 20
+    local chasing_player = false
+    if ent.price > 0 then
+        chasing_player = true
+    else
+        for _, player in ipairs(players) do
+            local _, y, _ = get_position(ent.uid)
+            local _, py, _ = get_position(player.uid)
+            if py-y-0.5 <= 0 then
+                chasing_player = true
+                break
+            end
+        end
+    end
+    local dir_sign = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
     if ent.standing_on_uid ~= -1 then
-        update_onfloor(ent)
+        update_onfloor(ent, chasing_player)
         if ent.user_data.animation_state == ANIMATION.AIR then
             animationlib.set_animation(ent.user_data, ANIMATION.GROUND)
         end
-    elseif ent.user_data.animation_state == ANIMATION.GROUND then
-        animationlib.set_animation(ent.user_data, ANIMATION.AIR)
-    end
-    for _, player in ipairs(players) do
-        local _, y, _ = get_position(ent.uid)
-        local _, py, _ = get_position(player.uid)
-        if py-y-0.5 <= 0 then
-            ent.user_data.chasing_player = true
-            ent.price = 15
-            break
+    else
+        ent.velocityx = BWORM_VELOCITY * dir_sign
+        if ent.user_data.animation_state == ANIMATION.GROUND then
+            animationlib.set_animation(ent.user_data, ANIMATION.AIR)
         end
     end
-    if ent.price == 0 then
-        ent.user_data.chasing_player = false
-    end
-    if ent.user_data.chasing_player and ent.velocityx ~= 0.0 then
-        local dir_sign = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-        ent.velocityx = BWORM_VELOCITY_CHASING * dir_sign
+    if ent.velocityx ~= 0.0 then
+        --Change velocity if chasing a player
+        if chasing_player then
+            ent.velocityx = BWORM_VELOCITY_CHASING * dir_sign
+        end
+        --Add velocity if on air
+        if ent.standing_on_uid == -1 then
+            ent.velocityx = ent.velocityx + 0.015 * dir_sign
+        end
     end
     ent.animation_frame = animationlib.get_animation_frame(ent.user_data)
     animationlib.update_timer(ent.user_data)

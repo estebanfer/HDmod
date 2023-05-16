@@ -35,17 +35,13 @@ local function onlevel_removeborderfloor()
 	end
 end
 
--- # TODO: Do a pre_entity_spawn version of this that replaces the floor instead.
-local function onlevel_remove_s2_generated_gapblocks()
-	if (
-		state.theme == THEME.NEO_BABYLON
-		or state.theme == THEME.EGGPLANT_WORLD
-	) then
-		for _, uid in pairs(get_entities_by(state.theme == THEME.NEO_BABYLON and ENT_TYPE.FLOORSTYLED_BABYLON or ENT_TYPE.FLOOR_GENERIC, 0, LAYER.FRONT)) do
-			get_entity(uid):destroy()
-		end
+set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
+	if state.theme == THEME.NEO_BABYLON then
+		return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, layer)
+	elseif state.theme == THEME.EGGPLANT_WORLD then
+		return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer)
 	end
-end
+end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, MASK.FLOOR, ENT_TYPE.FLOOR_GENERIC)
 
 
 local function onlevel_replace_border_textures()
@@ -363,7 +359,6 @@ function module.onlevel_touchups()
 	onlevel_removeborderfloor()
 	onlevel_create_impostorlake()
 	onlevel_remove_cobwebs_on_pushblocks()
-	onlevel_remove_s2_generated_gapblocks()
 end
 
 -- set_post_entity_spawn(function(entity)

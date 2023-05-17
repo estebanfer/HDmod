@@ -1,6 +1,8 @@
 local module = {}
 
 module.bool_to_number = { [true]=1, [false]=0 }
+-- Empty table that refers to currently playing looped sounds. Stops and destroys them if the entity they're playing from didnt die
+module.looped_sounds = {}
 
 function module.teleport_mount(ent, x, y)
     if ent.overlay ~= nil then
@@ -118,49 +120,112 @@ function module.shake_camera(countdown_start, countdown, amplitude, multiplier_x
 end
 
 --This function isn't perfect yet but it's fine for now.
-function module.play_sound_at_entity(snd, uid, volume)
+function module.play_sound_at_entity(snd, uid, volume, sound_loops, amplitude)
+  -- Amplitude effects how far away a sound can be heard. By default, a sound can be heard from 14 tiles away and the volume / panning scales proportionally
+  -- By default amplitude is 1, and its multiplied to either increase or decrease the distance a sound is heard.
   local v = 0.5
+  local a = 1
+  local loops = false
+  -- Default values for our optional arguments
   if volume ~= nil then
       v = volume
   end
+  if sound_loops ~= nil then
+      loops = true
+  end
+  if amplitude ~= nil then
+    a = amplitude
+  end
   local ent = get_entity(uid)
-  local sound = get_sound(snd)
-  local audio = sound:play(true)
+  local audio = nil
+  -- Custom sounds and vanilla sounds get played differently
+  if type(snd) == "string" then
+    local sound = get_sound(snd)
+    audio = sound:play(false)
+  else
+    audio = snd:play(false)
+  end
+  -- Setup sound
   local x, y, _ = get_position(ent.uid)
   local sx, sy = screen_position(x, y)
-  local d = screen_distance(distance(ent.uid, ent.uid))
-  if players[1] ~= nil then
-      d = screen_distance(distance(ent.uid, players[1].uid))
+  local cx, cy = state.camera.adjusted_focus_x, state.camera.adjusted_focus_y
+  local d = screen_distance(math.abs(math.sqrt((sx-cx)^2+(sy-cy)^2)))
+  if get_entity(state.camera.focused_entity_uid) ~= nil then
+    d = screen_distance(distance(ent.uid, state.camera.focused_entity_uid))
   end
+  audio:set_volume(v)
   audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
   audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
   audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)
-  
-  audio:set_pause(false)
+  commonlib.update_sound_volume(audio, ent.uid, v, a)
+  -- Setup for looped sounds
+  if loops then
+      -- Add the looped sound to the list of looped sounds to be cleared on a screen change
+      table.insert(commonlib.looped_sounds, audio)
+      -- If this is a custom sound, set it to loop
+      if type(snd) ~= "string" then
+        audio:set_looping(SOUND_LOOP_MODE.LOOP)
+      end
+      -- It's assumed this looping sound is attached to an entity with a statemachine
+      ent:set_post_update_state_machine(function()
+        commonlib.update_sound_volume(audio, ent.uid, v, a)
+      end)
+    -- Stop the sound when the entity dies
+    ent:set_pre_destroy(function(self)
+      audio:stop(true)   
+    end)
+  end
+  -- Unpause and start the sound
+  audio:set_pause(false, SOUND_TYPE.SFX) 
 
+  -- Return the audio object so users can control the sound
   return audio 
 end
+function module.clear_looped_sounds()
+  for _, audio in ipairs(module.looped_sounds) do
+      audio:stop(true)
+  end
+  module.looped_sounds = {}
+end
 
--- When we use looped sounds, a function like this is useful for appropriately updating the panning and volume of a sound
-function module.update_sound_volume(snd, uid, volume)
+-- Clears looped sounds on a screen change
+set_callback(module.clear_looped_sounds, ON.TRANSITION)
+set_callback(module.clear_looped_sounds, ON.PRE_LEVEL_GENERATION)
+
+-- Updates the panning and volume of a sound relative to its position in the world
+function module.update_sound_volume(snd, uid, volume, amplitude)
   local v = 0.5
   if volume ~= nil then
       v = volume
   end
+  -- Setup sound
   local ent = get_entity(uid)
   local x, y, _ = get_position(ent.uid)
   local sx, sy = screen_position(x, y)
-  local d = screen_distance(distance(ent.uid, ent.uid))
-  if players[1] ~= nil then
-      d = screen_distance(distance(ent.uid, players[1].uid))
+  local fx, _, _ = 0, 0, 0
+  local cx, cy = state.camera.adjusted_focus_x, state.camera.adjusted_focus_y
+  local d = screen_distance(math.abs(math.sqrt((sx-cx)^2+(sy-cy)^2)))
+  local td = math.abs(math.sqrt((sx-cx)^2+(sy-cy)^2))
+  fx = state.camera.adjusted_focus_x
+  if get_entity(state.camera.focused_entity_uid) ~= nil then
+    d = screen_distance(distance(ent.uid, state.camera.focused_entity_uid))
+    td = distance(ent.uid, state.camera.focused_entity_uid)
+    fx, _ ,_ = get_position(state.camera.focused_entity_uid)
   end
-  snd:set_pan(d)
-  snd:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
-  snd:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+  -- Set panning / volume
+  if td > 2 then
+    snd:set_pan(((x-fx)/15)/amplitude)
+  else
+    snd:set_pan(0)
+  end
+  if td > 3 then
+    snd:set_volume(v-(((distance(uid, state.camera.focused_entity_uid)/15)*v)/amplitude))
+  else
+    snd:set_volume(v)
+  end
   snd:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
   snd:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
   snd:set_parameter(VANILLA_SOUND_PARAM.VALUE, v)

@@ -32,7 +32,6 @@ end
 -- black market shopkeepers
 set_pre_tile_code_callback(function(x, y, layer)
     if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
-		prinspect("Blackmarket Shopkeeper handling!")
 		local ctx = PostRoomGenerationContext:new()
 		local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 		local roomid = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]

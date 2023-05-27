@@ -242,11 +242,11 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 		local uid = spawn_grid_entity(193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id, x, y, l)
 		set_post_statemachine(uid, function(ent)
 			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+				clear_callback()
 				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)
 				set_contents(coffin_uid, 193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
 				kill_entity(coffin_uid)
 				cancel_speechbubble()
-				clear_callback()
 			end
 		end)
 		return uid

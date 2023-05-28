@@ -83,7 +83,7 @@ local function acid_update()
 	if get_frame() % 35 == 0 then
 		local fx = get_entities_by_type(ENT_TYPE.FX_WATER_SURFACE)
 		for _, uid in ipairs(fx) do
-			if math.random() < 0.003 then
+			if prng:random_float(PRNG_CLASS.PARTICLES) < 0.003 then
 				---@type ParticleEmitterInfo | nil
 				local bubbles_particle = generate_world_particles(PARTICLEEMITTER.POISONEDEFFECT_BUBBLES_BURST, uid)
 				set_timeout(function ()

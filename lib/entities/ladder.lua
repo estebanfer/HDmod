@@ -70,7 +70,7 @@ function module.create_vine(x, y, l)
             or (state.theme == THEME.EGGPLANT_WORLD and state.world == 2)
         )
         and monkey_chance ~= 0
-        and math.random(monkey_chance) == 1
+        and prng:random_chance(monkey_chance, PRNG_CLASS.LEVEL_GEN)
     ) then
         spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
     end

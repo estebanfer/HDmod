@@ -154,7 +154,7 @@ function module.create_pushblock_powderkeg(x, y, l)
 	local current_powderkeg_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_powderkeg)
 	if (
 		current_powderkeg_chance ~= 0
-		and math.random(current_powderkeg_chance) == 1
+		and prng:random_chance(current_powderkeg_chance, PRNG_CLASS.LEVEL_GEN)
 	) then
 		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
@@ -180,7 +180,7 @@ function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l
 
 function module.create_honey(x, y, l)
 	local floor = get_grid_entity_at(x, y+1, l)
-	if floor ~= -1 and math.random(2) == 1 then
+	if floor ~= -1 and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 		get_entity(spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, -0.8)).animation_frame = 238
 	else
 		floor = get_grid_entity_at(x, y-1, l)

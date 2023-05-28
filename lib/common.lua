@@ -65,8 +65,8 @@ end
 --Use _, value = next(t)
 --function module.TableFirstValue(t)
 
-function module.TableCopyRandomElement(tbl)
-	return module.TableCopy(tbl[math.random(#tbl)])
+function module.TableCopyRandomElement(tbl, prng_class)
+	return module.TableCopy(tbl[prng:random_index(#tbl, prng_class)])
 end
 
 ---appends elements of t2 to t1 and returns t1

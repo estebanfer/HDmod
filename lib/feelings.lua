@@ -186,14 +186,14 @@ local function feeling_set(feeling, levels)
 		chance = global_feelings[feeling].chance
 	end
 	if chance ~= 0 then
-		if math.random(1, chance) == 1 then
+		if prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
 			local levels_indexed = {}
 			for _, level in ipairs(levels) do
 				if level >= state.level then
 					levels_indexed[#levels_indexed+1] = level
 				end
 			end
-			global_feelings[feeling].load = levels_indexed[math.random(1, #levels_indexed)]
+			global_feelings[feeling].load = levels_indexed[prng:random_index(#levels_indexed, PRNG_CLASS.LEVEL_GEN)]
 			return true
 		else return false end
 	end

@@ -193,8 +193,11 @@ end)
 
 module.register_dev_section("Feelings", function (ctx)
     draw_feeling_button(ctx, "Black Market", 2, 2, THEME.JUNGLE, function ()
-        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, 1)
         feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET)
+
+        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, 1)
+        feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.RUSHING_WATER)
+        feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.TIKIVILLAGE)
     end)
 end)
 

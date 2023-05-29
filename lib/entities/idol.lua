@@ -143,7 +143,9 @@ local function break_idoltrap_floor(block_id)
         local x, y, l = get_position(entity.uid)
         kill_entity(entity.uid)
         for _ = 1, 5, 1 do
-            local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
+            local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE,
+                x+prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/10, (y-0.2)+prng:random_int(-7, 7, PRNG_CLASS.PARTICLES)/10, l,
+                prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, 0.11+prng:random_int(0, 3, PRNG_CLASS.PARTICLES)/10))
             rubble.animation_frame = 3
         end
         commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55)

@@ -126,7 +126,7 @@ local function piranha_update(ent)
     if not chased or distance(ent.uid, ent.chased_target_uid) > 6.0
         or (chased.wet_effect_timer ~= 300 or test_flag(chased.flags, ENT_FLAG.DEAD)) then
         local closest, dist = get_closest_targetable_player(ent.uid, get_entities_by(0, MASK.PLAYER, LAYER.FRONT))
-        if closest and ((dist < 6.0 and not test_flag(closest.flags, ENT_FLAG.DEAD)) or chased == closest) then
+        if closest and dist < 6.0 and not test_flag(closest.flags, ENT_FLAG.DEAD) then
             ent.chased_target_uid = closest.uid
             chased = closest ---@type Player | nil
         else

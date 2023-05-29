@@ -24,7 +24,7 @@ local function decorate_tree(e_type, p_uid, side, y_offset, radius, right)
 		branch_uid = spawn_entity_over(e_type, p_uid, side, y_offset)
 		if e_type == ENT_TYPE.DECORATION_TREE then
 			local branch_e = get_entity(branch_uid)
-			branch_e.animation_frame = 87+12*math.random(2)
+			branch_e.animation_frame = 87+12*prng:random_index(2, PRNG_CLASS.LEVEL_GEN)
 		end
 	else
 		branch_uid = branches[1]
@@ -69,7 +69,7 @@ set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_f
 	end
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_VINE_TREE_TOP)
 
-function module.onlevel_decorate_trees()
+function module.postlevelgen_decorate_trees()
 	if (
 		state.theme == THEME.JUNGLE or state.theme == THEME.TEMPLE
 	) then
@@ -115,7 +115,7 @@ function module.create_hd_tree(x, y, l)
 
 	local max_height = 6
 	-- if 1/3 chance passes, set maximum to 5
-	if math.random(3) == 1 then max_height = 5 end
+	if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then max_height = 5 end
 
 	for i = 3, max_height, 1 do
 		-- if any of the 3 blocks above i are occupied, spawn 2 branches and break
@@ -132,11 +132,11 @@ function module.create_hd_tree(x, y, l)
 		-- spawn trunk at i
 		cur_trunk = spawn_entity_over(ENT_TYPE.FLOOR_TREE_TRUNK, cur_trunk, 0, 1)
 		-- if if 1/3 chance passes, spawn branch on left side
-		if math.random(3) == 1 then
+		if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
 			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk, -1, 0, 0.1, false), 0.03, 0.47, 0.5, false)
 		end
 		-- if if 1/3 chance passes, spawn branch on right side
-		if math.random(3) == 1 then
+		if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
 			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk, 1, 0, 0.1, false), -0.03, 0.47, 0.5, true)
 		end
 	end
@@ -155,7 +155,7 @@ function module.onlevel_decorate_haunted()
 					decor_ent.animation_frame == 112
 					or decor_ent.animation_frame == 124
 					or decor_ent.animation_frame == 136
-				) and math.random(12) == 1
+				) and prng:random_chance(12, PRNG_CLASS.LEVEL_GEN)
 			) then
 				get_entity(decor):set_texture(hauntedface_texture_def)
 				get_entity(decor).animation_frame = 124
@@ -169,7 +169,7 @@ function module.onlevel_decorate_haunted()
 			local x, y, _ = get_position(decor)
 			if (
 				not validlib.is_valid_dar_decor_spawn(x, y)
-				and math.random(2) == 1
+				and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN)
 			) then
 				get_entity(decor):set_texture(hauntedgrass_texture_def)
 			end

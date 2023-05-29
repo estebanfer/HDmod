@@ -42,7 +42,7 @@ function module.create_spikes_over(floor_uid)
         if floor.deco_top ~= -1 then
             local deco = get_entity(floor.deco_top)
             deco:set_texture(deco_texture)
-            deco.animation_frame = math.random(101, 103)
+            deco.animation_frame = prng:random_int(101, 103, PRNG_CLASS.LEVEL_GEN)
         end
     elseif state.theme == THEME.VOLCANA then
         if (

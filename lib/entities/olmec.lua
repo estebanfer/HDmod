@@ -94,7 +94,7 @@ local function onframe_olmec_behavior()
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
 			local x, y, l = get_position(OLMEC_UID)
 			-- 1/3 random chance each time olmec groundpounds, shoots 3 out in random directions upwards.
-			-- if math.random() >= 0.5 then
+			-- if prng:random_chance(3, PRNG_CLASS.PARTICLES) then
 				-- # TODO: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
 				olmec_attack(x, y+2, l)
 				-- olmec_attack(x, y+2.5, l)

@@ -51,55 +51,6 @@ function module.create_coffin_unlock(x, y, l)
 	return coffin_uid
 end
 
-function module.create_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	if (
-		ent_to_spawn_over ~= nil
-	) then
-		local ent = get_entity(ent_to_spawn_over)
-
-		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-		if (
-			ent.type.id == ENT_TYPE.FLOOR_GENERIC
-			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-		) then
-			get_entity(ent_to_spawn_over).animation_frame = 4
-		end
-	end
-end
-
-function module.create_ceiling_chain_growable(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	local yi = y
-	while true do
-		if (
-			ent_to_spawn_over ~= nil
-		) then
-			local ent = get_entity(ent_to_spawn_over)
-
-			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-			if (
-				ent.type.id == ENT_TYPE.FLOOR_GENERIC
-				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-			) then
-				get_entity(ent_to_spawn_over).animation_frame = 4
-			end
-			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)[1] ~= nil
-			floors_at_offset = floors_at_offset or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5)[1] ~= nil
-			if floors_at_offset then break end
-		else break end
-	end
-end
-
 function module.create_embedded(ent_toembedin, entity_type)
 	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
 		local entity_db = get_type(entity_type)
@@ -161,23 +112,23 @@ end
 
 function module.create_succubus(x, y, l) end
 
-function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
+function module.create_caveman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
 
-function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
+function module.create_mantrap(x, y, l) spawn_on_floor(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 
-function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
+function module.create_tikiman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 
-function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
+function module.create_firefrog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 
-function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
+function module.create_frog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FROG, x, y, l) end
 
-function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
+function module.create_yeti(x, y, l) spawn_on_floor(ENT_TYPE.MONS_YETI, x, y, l) end
 
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end
 
-function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
+function module.create_jiangshi(x, y, l) spawn_on_floor(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
 
 function module.create_hangspider(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)
@@ -203,7 +154,7 @@ function module.create_pushblock_powderkeg(x, y, l)
 	local current_powderkeg_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_powderkeg)
 	if (
 		current_powderkeg_chance ~= 0
-		and math.random(current_powderkeg_chance) == 1
+		and prng:random_chance(current_powderkeg_chance, PRNG_CLASS.LEVEL_GEN)
 	) then
 		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
@@ -229,7 +180,7 @@ function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l
 
 function module.create_honey(x, y, l)
 	local floor = get_grid_entity_at(x, y+1, l)
-	if floor ~= -1 and math.random(2) == 1 then
+	if floor ~= -1 and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 		get_entity(spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, -0.8)).animation_frame = 238
 	else
 		floor = get_grid_entity_at(x, y-1, l)

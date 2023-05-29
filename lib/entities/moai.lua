@@ -1,6 +1,6 @@
 local module = {}
 
-optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "OG: Punish ball can break moai tiles", nil, true, false)
+optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "Punish ball can break moai tiles", nil, true, true)
 
 local moai_veil
 local moai_diamond_cb
@@ -114,17 +114,17 @@ local function add_moai_break_decoration(x, y, l, side)
 			decor_ent:set_draw_depth(floor_ent.draw_depth - 1)
 			if side == FLOOR_SIDE.LEFT then
 				decor_ent.x = -0.5
-				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.LEVEL_DECO)
+				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.ENTITY_VARIATION)
 				decor_ent.flags = set_flag(decor_ent.flags, ENT_FLAG.FACING_LEFT)
 			elseif side == FLOOR_SIDE.RIGHT then
 				decor_ent.x = 0.5
-				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.LEVEL_DECO)
+				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.ENTITY_VARIATION)
 			elseif side == FLOOR_SIDE.BOTTOM then
 				decor_ent.y = -0.5
-				decor_ent.animation_frame = prng:random_int(21, 23, PRNG_CLASS.LEVEL_DECO)
+				decor_ent.animation_frame = prng:random_int(21, 23, PRNG_CLASS.ENTITY_VARIATION)
 			elseif side == FLOOR_SIDE.TOP then
 				decor_ent.y = 0.5
-				decor_ent.animation_frame = prng:random_int(13, 15, PRNG_CLASS.LEVEL_DECO)
+				decor_ent.animation_frame = prng:random_int(13, 15, PRNG_CLASS.ENTITY_VARIATION)
 			end
 		end
 	end

@@ -163,6 +163,10 @@ function module.set_feeling_preset_load(feeling, level)
 	global_feelings[feeling].load = level or state.level
 end
 
+function module.clear_feeling_preset_load(feeling)
+	global_feelings[feeling].load = nil
+end
+
 -- Should be used at the start of a run or warping into a run as a part of testing.
 function module.init()
 	global_feelings = commonlib.TableCopy(module.HD_FEELING_DEFAULTS)

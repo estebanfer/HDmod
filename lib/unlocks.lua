@@ -153,7 +153,7 @@ local function run_unlock_area_chance()
 
 		local chance = (area_and_deaths < 9) and 9 or area_and_deaths
 
-		if math.random(chance) == 1 then
+		if prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
 			return true
 		end
 	end
@@ -187,7 +187,7 @@ function module.get_unlock()
 			end
 			rand_pool = commonlib.CompactList(rand_pool, n)
 			if #rand_pool > 0 then
-				chunkPool_rand_index = math.random(1, #rand_pool)
+				chunkPool_rand_index = prng:random_index(#rand_pool, PRNG_CLASS.LEVEL_GEN)
 				unlock = rand_pool[chunkPool_rand_index]
 			else
 				-- # TODO: It's possible for there to be no area characters left to unlock if RUN_UNLOCK_AREA gets out of sync with the savegame data, which can happen if save.dat is deleted without also resetting character unlocks. This check is a failsafe to prevent this scenario from throwing an error. Is there a way to avoid this scenario entirely?
@@ -242,11 +242,11 @@ set_pre_entity_spawn(function(type, x, y, l, _)
 		local uid = spawn_grid_entity(193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id, x, y, l)
 		set_post_statemachine(uid, function(ent)
 			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+				clear_callback()
 				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)
 				set_contents(coffin_uid, 193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
 				kill_entity(coffin_uid)
 				cancel_speechbubble()
-				clear_callback()
 			end
 		end)
 		return uid

@@ -99,12 +99,7 @@ local function bacterium_set(ent, _, _, attach_dir)
     set_on_kill(ent.uid, bacterium_kill) --Telefrag
 
     local x, y, l = get_position(ent.uid)
-    local is_inverse
-    if math.random(2) == 1 then
-        is_inverse = false
-    else
-        is_inverse = true
-    end
+    local is_inverse = prng:random_chance(2, PRNG_CLASS.AI)
     local dir_state = is_inverse and attach_dir % 4 + 1 or (attach_dir - 2) % 4 + 1
     local movex, movey = table.unpack(DIR_MAP[dir_state])
     local attach_off_x, attach_off_y = table.unpack(DIR_MAP[attach_dir])
@@ -226,12 +221,12 @@ local function bacterium_update(ent, ent_info)
     end
 end
 
-bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.MONS_MANTRAP, celib.UPDATE_TYPE.POST_STATEMACHINE)
+bacterium_id = celib.new_custom_entity(bacterium_set, bacterium_update, nil, ENT_TYPE.MONS_FROG, celib.UPDATE_TYPE.POST_STATEMACHINE)
 
 celib.init()
 
 local function spawn_bacterium(grid_x, grid_y, layer, attach_dir)
-    local uid = spawn(ENT_TYPE.MONS_MANTRAP, grid_x, grid_y, layer, 0, 0)
+    local uid = spawn(ENT_TYPE.MONS_FROG, grid_x, grid_y, layer, 0, 0)
     celib.set_custom_entity(uid, bacterium_id, attach_dir)
     local off_x, off_y = DIR_MAP[attach_dir][1], DIR_MAP[attach_dir][2]
     off_x = off_x - off_x * (HITBOX_SIZE+EXTRA_FLOOR_SEPARATION)*2

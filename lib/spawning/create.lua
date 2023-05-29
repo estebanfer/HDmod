@@ -11,95 +11,6 @@ function module.init()
 	module.GIANTSPIDER_SPAWNED = false
 end
 
-function module.create_coffin_coop(x, y, l)
-	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	local the_coffin = get_entity(coffin_uid)
-	the_coffin.player_respawn = true
-	return coffin_uid
-end
-
-function module.create_coffin_unlock(x, y, l)
-	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	if unlockslib.LEVEL_UNLOCK ~= nil then
-		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id)
-	end
-
-	set_post_statemachine(coffin_uid, function()
-		local coffin = get_entity(coffin_uid)
-		if (
-			coffin.animation_frame == 1
-			and (
-				unlockslib.LEVEL_UNLOCK ~= nil
-				and (
-					unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
-				)
-			)
-		) then
-			for i = 1, #unlockslib.RUN_UNLOCK_AREA, 1 do
-				if unlockslib.RUN_UNLOCK_AREA[i].theme == state.theme then
-					unlockslib.RUN_UNLOCK_AREA[i].unlocked = true 
-					break
-				end
-			end
-		end
-	end)
-
-	return coffin_uid
-end
-
-function module.create_ceiling_chain(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR | MASK.ROPE, x, y+1, l, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	if (
-		ent_to_spawn_over ~= nil
-	) then
-		local ent = get_entity(ent_to_spawn_over)
-
-		ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-		if (
-			ent.type.id == ENT_TYPE.FLOOR_GENERIC
-			or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-			or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-		) then
-			get_entity(ent_to_spawn_over).animation_frame = 4
-		end
-	end
-end
-
-function module.create_ceiling_chain_growable(x, y, l)
-	local ent_to_spawn_over = nil
-	local floors_at_offset = get_entities_at(0, MASK.FLOOR, x, y+1, LAYER.FRONT, 0.5)
-	if #floors_at_offset > 0 then ent_to_spawn_over = floors_at_offset[1] end
-
-	local yi = y
-	while true do
-		if (
-			ent_to_spawn_over ~= nil
-		) then
-			local ent = get_entity(ent_to_spawn_over)
-
-			ent_to_spawn_over = spawn_entity_over(ENT_TYPE.FLOOR_CHAINANDBLOCKS_CHAIN, ent_to_spawn_over, 0, -1)
-			if (
-				ent.type.id == ENT_TYPE.FLOOR_GENERIC
-				or ent.type.id == ENT_TYPE.FLOORSTYLED_VLAD
-				or ent.type.id == ENT_TYPE.FLOOR_BORDERTILE
-			) then
-				get_entity(ent_to_spawn_over).animation_frame = 4
-			end
-			yi = yi - 1
-			floors_at_offset = get_entities_at(0, MASK.FLOOR, x, yi-1, LAYER.FRONT, 0.5)[1] ~= nil
-			floors_at_offset = floors_at_offset or get_entities_at(ENT_TYPE.LOGICAL_DOOR, 0, x, yi-2, LAYER.FRONT, 0.5)[1] ~= nil
-			if floors_at_offset then break end
-		else break end
-	end
-end
-
 function module.create_embedded(ent_toembedin, entity_type)
 	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
 		local entity_db = get_type(entity_type)
@@ -161,23 +72,23 @@ end
 
 function module.create_succubus(x, y, l) end
 
-function module.create_caveman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
+function module.create_caveman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_CAVEMAN, x, y, l) end
 
-function module.create_mantrap(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_MANTRAP, x, y, l) end
+function module.create_mantrap(x, y, l) spawn_on_floor(ENT_TYPE.MONS_MANTRAP, x, y, l) end
 
-function module.create_tikiman(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
+function module.create_tikiman(x, y, l) spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l) end
 
-function module.create_firefrog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FIREFROG, x, y, l) end
+function module.create_firefrog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FIREFROG, x, y, l) end
 
-function module.create_frog(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_FROG, x, y, l) end
+function module.create_frog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FROG, x, y, l) end
 
-function module.create_yeti(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_YETI, x, y, l) end
+function module.create_yeti(x, y, l) spawn_on_floor(ENT_TYPE.MONS_YETI, x, y, l) end
 
 function module.create_critter_frog(x, y, l) end
 
 function module.create_critter_maggot(x, y, l) end
 
-function module.create_jiangshi(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
+function module.create_jiangshi(x, y, l) spawn_on_floor(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
 
 function module.create_hangspider(x, y, l)
 	local uid = spawn_grid_entity(ENT_TYPE.MONS_HANGSPIDER, x, y, l)
@@ -203,7 +114,7 @@ function module.create_pushblock_powderkeg(x, y, l)
 	local current_powderkeg_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_powderkeg)
 	if (
 		current_powderkeg_chance ~= 0
-		and math.random(current_powderkeg_chance) == 1
+		and prng:random_chance(current_powderkeg_chance, PRNG_CLASS.LEVEL_GEN)
 	) then
 		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
@@ -229,33 +140,13 @@ function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l
 
 function module.create_honey(x, y, l)
 	local floor = get_grid_entity_at(x, y+1, l)
-	if floor ~= -1 and math.random(2) == 1 then
+	if floor ~= -1 and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 		get_entity(spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, -0.8)).animation_frame = 238
 	else
 		floor = get_grid_entity_at(x, y-1, l)
 		if floor == -1 then return end
 		spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, 0.8)
 	end
-end
-
-local function create_window(x, y, l, is_hc)
-	local ent = get_entity(spawn_entity(ENT_TYPE.BG_VLAD_WINDOW, x, y-0.5, l, 0, 0))
-	ent.width, ent.height = 1, 2
-	ent.hitboxx, ent.hitboxy = 0.5, 1
-
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOORSTYLED_VLAD_4)
-	if is_hc == true then
-		texture_def.texture_path = "res/hauntedcastle_window.png"
-	end
-	ent:set_texture(define_texture(texture_def))
-end
-
-function module.create_hcastle_window(x, y, l)
-	create_window(x, y, l, true)
-end
-
-function module.create_vlad_window(x, y, l)
-	create_window(x, y, l, false)
 end
 
 return module

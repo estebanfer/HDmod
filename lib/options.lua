@@ -110,6 +110,19 @@ local function draw_warp_button(ctx, name, world, level, theme, world_state)
         end
         worldlib.HD_WORLDSTATE_STATE = world_state or worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
+		feelingslib.set_preset_feelings = nil
+        warp(world, level, theme)
+    end
+end
+
+local function draw_feeling_button(ctx, name, world, level, theme, cb)
+    if ctx:win_button(name) then
+        if warp_reset_run then
+            state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
+        end
+        worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
+        -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
+        feelingslib.set_preset_feelings = cb
         warp(world, level, theme)
     end
 end
@@ -176,6 +189,13 @@ module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
     warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
+end)
+
+module.register_dev_section("Feelings", function (ctx)
+    draw_feeling_button(ctx, "Black Market", 2, 2, THEME.JUNGLE, function ()
+        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, 1)
+        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET)
+    end)
 end)
 
 -- Calculates the selected entity spawner position, or returns nil if the position can't be determined.

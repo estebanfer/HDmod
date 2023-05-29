@@ -129,6 +129,7 @@ local function draw_feeling_button(ctx, name, world, level, theme, cb)
     end
 end
 
+---@param ctx GuiDrawContext
 module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Camp", 1, 1, THEME.BASE_CAMP)
     ctx:win_inline()
@@ -190,7 +191,9 @@ module.register_dev_section("Warps", function(ctx)
     ctx:win_inline()
     draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
-    warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
+    ctx:win_separator()
+
+    ctx:win_separator_text("Mines")
 
     draw_feeling_button(ctx, "Udjat", 1, 2, THEME.DWELLING, function ()
         feelingslib.feeling_set(feelingslib.FEELING_ID.UDJAT)
@@ -204,6 +207,14 @@ module.register_dev_section("Warps", function(ctx)
         feelingslib.feeling_set(feelingslib.FEELING_ID.SPIDERLAIR)
 
         feelingslib.feeling_clear(feelingslib.FEELING_ID.SNAKEPIT)
+    end)
+
+    ctx:win_separator_text("Jungle")
+
+    draw_feeling_button(ctx, "Black Market Entrance", 2, 1, THEME.JUNGLE, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE)
+
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.RESTLESS)
     end)
 
     draw_feeling_button(ctx, "Restless", 2, 1, THEME.JUNGLE, function ()
@@ -220,9 +231,30 @@ module.register_dev_section("Warps", function(ctx)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.TIKIVILLAGE)
     end)
     ctx:win_inline()
+    draw_feeling_button(ctx, "Rushing water", 2, 1, THEME.JUNGLE, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.RUSHING_WATER)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.RESTLESS)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.TIKIVILLAGE)
+    end)
+
+    draw_feeling_button(ctx, "Haunted Castle", 2, 2, THEME.JUNGLE, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.HAUNTEDCASTLE)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.VAULT)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.RESTLESS)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.HIVE)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.RUSHING_WATER)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.TIKIVILLAGE)
+    end)
+
+    draw_feeling_button(ctx, "Hive", 2, 1, THEME.JUNGLE, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.HIVE)
+    end)
+    ctx:win_inline()
     draw_feeling_button(ctx, "Tikivillage", 2, 1, THEME.JUNGLE, function ()
         feelingslib.feeling_set(feelingslib.FEELING_ID.TIKIVILLAGE)
-        
+
         feelingslib.feeling_clear(feelingslib.FEELING_ID.RESTLESS)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.RUSHING_WATER)
     end)
@@ -235,10 +267,49 @@ module.register_dev_section("Warps", function(ctx)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.RUSHING_WATER)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.TIKIVILLAGE)
     end)
-end)
 
--- module.register_dev_section("Feelings", function (ctx)
--- end)
+    ctx:win_separator_text("Ice Caves")
+
+    draw_feeling_button(ctx, "Snow", 3, 1, THEME.ICE_CAVES, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.SNOW)
+        
+        -- feelingslib.feeling_clear(feelingslib.FEELING_ID.YETIKINGDOM)
+        -- feelingslib.feeling_clear(feelingslib.FEELING_ID.UFO)
+    end)
+    ctx:win_inline()
+    draw_feeling_button(ctx, "Wet Fur", 3, 1, THEME.ICE_CAVES, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.YETIKINGDOM)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.UFO)
+    end)
+    ctx:win_inline()
+    draw_feeling_button(ctx, "Moai", 3, 2, THEME.ICE_CAVES, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.MOAI)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.YETIKINGDOM)
+    end)
+    ctx:win_inline()
+    draw_feeling_button(ctx, "UFO", 3, 1, THEME.ICE_CAVES, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.UFO)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.YETIKINGDOM)
+    end)
+    ctx:win_inline()
+    draw_feeling_button(ctx, "Ice Caves Pool", 3, 1, THEME.ICE_CAVES, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.ICE_CAVES_POOL)
+        
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.YETIKINGDOM)
+        feelingslib.feeling_clear(feelingslib.FEELING_ID.UFO)
+    end)
+
+    ctx:win_separator_text("Temple")
+
+    draw_feeling_button(ctx, "Sacrificial Pit", 4, 1, THEME.TEMPLE, function ()
+        feelingslib.feeling_set(feelingslib.FEELING_ID.SACRIFICIALPIT)
+    end)
+
+    warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
+end)
 
 -- Calculates the selected entity spawner position, or returns nil if the position can't be determined.
 local function compute_entity_spawner_position()

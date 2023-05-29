@@ -181,22 +181,17 @@ end, ON.RESET)
 -- if multiple levels are passed in, a random level in the table is set
 	-- NOTE: won't set to a past level
 local function feeling_set(feeling, levels)
-	local chance = 1
-	if global_feelings[feeling].chance ~= nil then
-		chance = global_feelings[feeling].chance
-	end
-	if chance ~= 0 then
-		if prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
-			local levels_indexed = {}
-			for _, level in ipairs(levels) do
-				if level >= state.level then
-					levels_indexed[#levels_indexed+1] = level
-				end
+	local chance = global_feelings[feeling].chance ~= nil and global_feelings[feeling].chance or 1
+	if chance ~= 0 and prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
+		local levels_indexed = {}
+		for _, level in ipairs(levels) do
+			if level >= state.level then
+				levels_indexed[#levels_indexed+1] = level
 			end
-			global_feelings[feeling].load = levels_indexed[prng:random_index(#levels_indexed, PRNG_CLASS.LEVEL_GEN)]
-			return true
-		else return false end
-	end
+		end
+		global_feelings[feeling].load = levels_indexed[prng:random_index(#levels_indexed, PRNG_CLASS.LEVEL_GEN)]
+		return true
+	else return false end
 end
 
 local function detect_feeling_themes(feeling)

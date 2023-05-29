@@ -181,6 +181,7 @@ end, ON.RESET)
 -- if multiple levels are passed in, a random level in the table is set
 	-- NOTE: won't set to a past level
 local function feeling_set(feeling, levels)
+	local levels = levels or {state.level}
 	local chance = global_feelings[feeling].chance ~= nil and global_feelings[feeling].chance or 1
 	if chance ~= 0 and prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
 		local levels_indexed = {}
@@ -274,7 +275,7 @@ function module.onlevel_set_feelings()
 		if (
 			state.level >= 3
 		) then
-			feeling_set(module.FEELING_ID.SPIDERLAIR, {state.level})
+			feeling_set(module.FEELING_ID.SPIDERLAIR)
 		end
 
 		-- spiderlair and snakepit cannot happen at the same time
@@ -282,7 +283,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.SPIDERLAIR) == false
 			and state.level ~= 1
 		) then
-			feeling_set(module.FEELING_ID.SNAKEPIT, {state.level})
+			feeling_set(module.FEELING_ID.SNAKEPIT)
 		end
 	end
 	--[[
@@ -296,8 +297,8 @@ function module.onlevel_set_feelings()
 
 		-- Restless cannot happen on haunted castle
 		if module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false then
-			feeling_set(module.FEELING_ID.RESTLESS, {state.level})
-			feeling_set(module.FEELING_ID.HIVE, {state.level})
+			feeling_set(module.FEELING_ID.RESTLESS)
+			feeling_set(module.FEELING_ID.HIVE)
 		end
 
 		-- Haunted Castle and Black Market cannot have rushing water nor tikivillage
@@ -305,7 +306,7 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.HAUNTEDCASTLE) == false
 			and module.feeling_check(module.FEELING_ID.BLACKMARKET) == false
 		) then
-			feeling_set(module.FEELING_ID.RUSHING_WATER, {state.level})
+			feeling_set(module.FEELING_ID.RUSHING_WATER)
 			
 			-- tikivillage levels cannot be restless
 			-- tikivillage and rushing water cannot happen at the same time
@@ -313,7 +314,7 @@ function module.onlevel_set_feelings()
 				module.feeling_check(module.FEELING_ID.RESTLESS) == false and
 				module.feeling_check(module.FEELING_ID.RUSHING_WATER) == false
 			) then
-				feeling_set(module.FEELING_ID.TIKIVILLAGE, {state.level})
+				feeling_set(module.FEELING_ID.TIKIVILLAGE)
 			end
 		end
 	end
@@ -344,7 +345,7 @@ function module.onlevel_set_feelings()
 	--]]
 	if state.theme == THEME.ICE_CAVES then
 		
-		feeling_set(module.FEELING_ID.SNOW, {state.level})
+		feeling_set(module.FEELING_ID.SNOW)
 
 		if state.level == 2 then
 			module.feeling_set_once(module.FEELING_ID.MOAI, {2, 3})
@@ -356,13 +357,13 @@ function module.onlevel_set_feelings()
 					-- The entrance to Mothership sends you to 3-3 with THEME.NEO_BABYLON.
 					-- When you exit, you will return to the beginning of 3-4 and be forced to do the level again before entering the Temple.
 					-- Only available once in a run
-				module.feeling_set_once(module.FEELING_ID.MOTHERSHIP_ENTRANCE, {state.level})
+				module.feeling_set_once(module.FEELING_ID.MOTHERSHIP_ENTRANCE)
 			else
 				global_feelings[module.FEELING_ID.MOTHERSHIP_ENTRANCE].load = nil
 				if (worm_visited and mothership_visited) then
 					feeling_set(module.FEELING_ID.MOAI, {4})
 				else 
-					feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
+					feeling_set(module.FEELING_ID.YETIKINGDOM)
 				end
 			end
 		end
@@ -371,28 +372,28 @@ function module.onlevel_set_feelings()
 			module.feeling_check(module.FEELING_ID.MOAI) == false
 			and state.level ~= 4
 		) then
-			feeling_set(module.FEELING_ID.YETIKINGDOM, {state.level})
+			feeling_set(module.FEELING_ID.YETIKINGDOM)
 		end
 		
 		if (
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and state.level ~= 4
 		) then
-			feeling_set(module.FEELING_ID.UFO, {state.level})
+			feeling_set(module.FEELING_ID.UFO)
 		end
 		
 		if (
 			module.feeling_check(module.FEELING_ID.YETIKINGDOM) == false
 			and module.feeling_check(module.FEELING_ID.UFO) == false
 		) then
-			feeling_set(module.FEELING_ID.ICE_CAVES_POOL, {state.level})
+			feeling_set(module.FEELING_ID.ICE_CAVES_POOL)
 		end
 	end
 	--[[
 		Temple
 	--]]
 	if state.theme == THEME.TEMPLE then
-		feeling_set(module.FEELING_ID.SACRIFICIALPIT, {state.level})
+		feeling_set(module.FEELING_ID.SACRIFICIALPIT)
 	end
 	--[[
 		Mothership
@@ -406,7 +407,7 @@ function module.onlevel_set_feelings()
 		Hell
 	--]]
 	-- if state.theme == THEME.VOLCANA and state.level == 1 then
-		-- feeling_set(module.FEELING_ID.VLAD, {state.level})
+		-- feeling_set(module.FEELING_ID.VLAD)
 	-- end
 end
 

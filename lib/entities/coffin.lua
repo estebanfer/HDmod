@@ -5,6 +5,17 @@ local locatelib = require 'lib.locate'
 
 local module = {}
 
+local worm_texture_id
+do
+    local texture_def = TextureDefinition.new()
+    texture_def.width = 512
+    texture_def.height = 256
+    texture_def.tile_width = 256
+    texture_def.tile_height = 256
+    texture_def.texture_path = "res/coffin_worm.png"
+    worm_texture_id = define_texture(texture_def)
+end
+
 local function create_coffin_coop(x, y, l)
 	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
 	local the_coffin = get_entity(coffin_uid)
@@ -64,17 +75,17 @@ function module.create_coffin(x, y, l)
         or state.theme == THEME.NEO_BABYLON
     ) then
         local coffin_e = get_entity(coffin_uid)
-        local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
+        local texture_id = TEXTURE.DATA_TEXTURES_COFFINS_0
         if state.theme == THEME.EGGPLANT_WORLD then
             coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
             coffin_e.velocityx = 0
             coffin_e.velocityy = 0
-            texture_def.texture_path = "res/coffin_worm.png"
+            texture_id = worm_texture_id
         end
         if state.theme == THEME.NEO_BABYLON then
-            texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_5)
+            texture_id = TEXTURE.DATA_TEXTURES_COFFINS_5
         end
-        coffin_e:set_texture(define_texture(texture_def))
+        coffin_e:set_texture(texture_id)
     end
 end
 

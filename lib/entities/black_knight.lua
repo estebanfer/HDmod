@@ -39,8 +39,8 @@ local function black_knight_update(ent)
         if not test_flag(ent.flags, ENT_FLAG.DEAD) then
             local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
             audio:set_volume(0.65)
-            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-            audio:set_pitch(math.random(60, 80)/100)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
+            audio:set_pitch(prng:random_int(60, 80, PRNG_CLASS.FX)/100)
         end
         -- Camera Shake
         -- Make sure a player is close enough first
@@ -66,8 +66,8 @@ local function black_knight_update(ent)
         if not ent.user_data.picked_up then
             local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
             audio:set_volume(0.4)
-            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-            audio:set_pitch(math.random(70, 90)/100)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
+            audio:set_pitch(prng:random_int(70, 90, PRNG_CLASS.FX)/100)
         end
         ent.user_data.picked_up = true
     end
@@ -80,11 +80,11 @@ local function black_knight_update(ent)
         ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1
         if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
         if ent.user_data.jingle_timer <= 0 then
-            ent.user_data.jingle_timer = math.random(30, 40)
+            ent.user_data.jingle_timer = prng:random_int(30, 40, PRNG_CLASS.AI)
             local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
             audio:set_volume(0.4)
-            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-            audio:set_pitch(math.random(90, 120)/100)
+            audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
+            audio:set_pitch(prng:random_int(90, 120, PRNG_CLASS.FX)/100)
         end
     end
     if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
@@ -119,8 +119,8 @@ local function black_knight_update(ent)
                 -- SFX
                 local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
                 audio:set_volume(0.33)
-                audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-                audio:set_pitch(math.random(105, 130)/100)
+                audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
+                audio:set_pitch(prng:random_int(105, 130, PRNG_CLASS.FX)/100)
             end
             if math.abs(px-x) > 5 then
                 --face the player when out of range
@@ -224,8 +224,8 @@ local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, 
     if not test_flag(ent.flags, ENT_FLAG.DEAD) then
         local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
         audio:set_volume(0.65)
-        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-        audio:set_pitch(math.random(90, 110)/100)
+        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
+        audio:set_pitch(prng:random_int(90, 110, PRNG_CLASS.FX)/100)
     end
     if ent.health - damage_amount <= 0 then
         --set it temporarily to tikiman makes no sound on death then set it back 1 frame later

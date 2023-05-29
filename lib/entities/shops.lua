@@ -7,8 +7,8 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
 		unlockslib.UNLOCK_WI, unlockslib.UNLOCK_HI = 0, 0
 		if unlockslib.LEVEL_UNLOCK ~= nil then
-			unlockslib.UNLOCK_WI = math.random(minw, maxw)
-			unlockslib.UNLOCK_HI = math.random(minh, (unlockslib.UNLOCK_WI ~= maxw and maxh or maxh-1))
+			unlockslib.UNLOCK_WI = prng:random_int(minw, maxw, PRNG_CLASS.LEVEL_GEN)
+			unlockslib.UNLOCK_HI = prng:random_int(minh, unlockslib.UNLOCK_WI ~= maxw and maxh or maxh-1, PRNG_CLASS.LEVEL_GEN)
 		end
 		-- message("wi, hi: " .. unlockslib.UNLOCK_WI .. ", " .. unlockslib.UNLOCK_HI)
         local damsel_shop_spawned = false
@@ -19,7 +19,7 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 				elseif (hi == unlockslib.UNLOCK_HI and wi == unlockslib.UNLOCK_WI) then
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
 				else
-                    local shop_type = math.random((damsel_shop_spawned and 4 or 5))
+                    local shop_type = prng:random_index(damsel_shop_spawned and 4 or 5, PRNG_CLASS.LEVEL_GEN)
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, shop_type)
                     if shop_type == 5 then damsel_shop_spawned = true end
 				end
@@ -103,14 +103,14 @@ function module.add_shop_decorations()
 						local floor_above = get_entity(get_grid_entity_at(x+i, y+1, LAYER.FRONT))
 						if not floor_above or (floor_above and floor_above.type.id == ENT_TYPE.ITEM_LAMP) then
 							-- item on shelf
-							local s_f = shelf_frames[math.random(#shelf_frames)]
+							local s_f = shelf_frames[prng:random_index(#shelf_frames, PRNG_CLASS.LEVEL_GEN)]
 							if s_f ~= -1 then
 								local s_d = get_entity(spawn_entity(ENT_TYPE.BG_SHOP, x+i, y+.55, LAYER.FRONT, 0, 0))
 								s_d.animation_frame = s_f
 								s_d:set_draw_depth(44)
 							end
 							-- spiderweb over shelf
-							if math.random(3) == 1 then
+							if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
 								local s_d = get_entity(spawn_entity(ENT_TYPE.BG_SHOP, x+i, y+.55, LAYER.FRONT, 0, 0))
 								s_d.animation_frame = 19
 								s_d:set_draw_depth(44)

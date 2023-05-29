@@ -153,7 +153,7 @@ local function run_unlock_area_chance()
 
 		local chance = (area_and_deaths < 9) and 9 or area_and_deaths
 
-		if math.random(chance) == 1 then
+		if prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN) then
 			return true
 		end
 	end
@@ -187,7 +187,7 @@ function module.get_unlock()
 			end
 			rand_pool = commonlib.CompactList(rand_pool, n)
 			if #rand_pool > 0 then
-				chunkPool_rand_index = math.random(1, #rand_pool)
+				chunkPool_rand_index = prng:random_index(#rand_pool, PRNG_CLASS.LEVEL_GEN)
 				unlock = rand_pool[chunkPool_rand_index]
 			else
 				-- # TODO: It's possible for there to be no area characters left to unlock if RUN_UNLOCK_AREA gets out of sync with the savegame data, which can happen if save.dat is deleted without also resetting character unlocks. This check is a failsafe to prevent this scenario from throwing an error. Is there a way to avoid this scenario entirely?

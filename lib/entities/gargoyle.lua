@@ -20,9 +20,9 @@ local function add_gargoyle(block_uid)
     decoration:set_texture(gargoyle_texture_id)
     
     decoration.animation_frame = 0
-    if math.random(10) == 1 then
+    if prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
         decoration.animation_frame = 2
-    elseif math.random(2) == 1 then
+    elseif prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
         decoration.animation_frame = 1
     end
     decoration.draw_depth = 10

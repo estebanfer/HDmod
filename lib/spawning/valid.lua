@@ -193,7 +193,7 @@ local function run_spiderlair_ground_enemy_chance()
 		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (
 			current_ground_chance ~= 0
-			and math.random(current_ground_chance) == 1
+			and prng:random_chance(current_ground_chance, PRNG_CLASS.LEVEL_GEN)
 		)
 	) then
 		return true

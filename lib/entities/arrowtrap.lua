@@ -27,8 +27,7 @@ function module.create_arrowtrap(x, y, l)
     local right = validlib.is_solid_grid_entity(x+1, y, l)
 	local flip = false
 	if not left and not right then
-		--math.randomseed(read_prng()[5])
-		if prng:random() < 0.5 then
+		if prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 			flip = true
 		end
 	elseif not left then

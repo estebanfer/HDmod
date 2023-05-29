@@ -106,7 +106,7 @@ end)
 local function draw_warp_button(ctx, name, world, level, theme, world_state)
     if ctx:win_button(name) then
         if warp_reset_run then
-            state.quest_flags = QUEST_FLAG.RESET
+            state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
         end
         worldlib.HD_WORLDSTATE_STATE = world_state or worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.

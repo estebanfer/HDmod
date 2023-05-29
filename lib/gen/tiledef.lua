@@ -18,6 +18,7 @@ local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
+local coffinlib = require 'lib.entities.coffin'
 
 local module = {}
 
@@ -1061,9 +1062,9 @@ module.HD_TILENAME = {
 							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
 							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
 						) then
-							coffin_uid = createlib.create_coffin_coop(x+0.35, y, l)
+							coffin_uid = coffinlib.create_coffin_coop(x+0.35, y, l)
 						else
-							coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
+							coffin_uid = coffinlib.create_coffin_unlock(x+0.35, y, l)
 						end
 						if (
 							coffin_uid ~= nil

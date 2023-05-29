@@ -18,6 +18,7 @@ local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
+local coffinlib = require 'lib.entities.coffin'
 
 local module = {}
 
@@ -1047,46 +1048,7 @@ module.HD_TILENAME = {
 	["g"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-						local _subchunk_id
-						if roomgenlib.global_levelassembly.modification.levelrooms[roomy] ~= nil then
-							_subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-						end
-						local coffin_uid = nil
-						if (
-							_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
-						) then
-							coffin_uid = createlib.create_coffin_coop(x+0.35, y, l)
-						else
-							coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
-						end
-						if (
-							coffin_uid ~= nil
-							and (
-								state.theme == THEME.EGGPLANT_WORLD
-								or state.theme == THEME.NEO_BABYLON
-							)
-						) then
-							local coffin_e = get_entity(coffin_uid)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
-							if state.theme == THEME.EGGPLANT_WORLD then
-								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
-								coffin_e.velocityx = 0
-								coffin_e.velocityy = 0
-								texture_def.texture_path = "res/coffin_worm.png"
-							end
-							if state.theme == THEME.NEO_BABYLON then
-								texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_5)
-							end
-							coffin_e:set_texture(define_texture(texture_def))
-						end
-					end
-				},
+				default = { coffinlib.create_coffin },
 			}
 		},
 		description = "Coffin",

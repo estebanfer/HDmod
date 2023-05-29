@@ -159,10 +159,6 @@ local worm_visited = false
 local mothership_visited = false
 module.hauntedcastle_spawned = false
 
-function module.set_feeling_preset_load(feeling, level)
-	global_feelings[feeling].load = level or state.level
-end
-
 -- Should be used at the start of a run or warping into a run as a part of testing.
 function module.init()
 	global_feelings = commonlib.TableCopy(module.HD_FEELING_DEFAULTS)
@@ -425,6 +421,7 @@ function module.onlevel_set_feelings()
 	if state.screen_last ~= SCREEN.TRANSITION and module.set_preset_feelings then
 		module.set_preset_feelings()
 	end
+	prinspect(global_feelings[module.FEELING_ID.BLACKMARKET].load)
 end
 
 function module.onlevel_set_feelingToastMessage()

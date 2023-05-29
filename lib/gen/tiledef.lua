@@ -66,7 +66,7 @@ module.HD_TILENAME = {
 						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
 					},
 					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_temple.png", true) end,
+						function(x, y, l) createlib.create_liquidfall(x, y-3, l, options.hd_og_floorstyle_temple and "res/fountain_temple_stone.png" or "res/fountain_temple.png", true) end,
 					},
 					[THEME.VOLCANA] = {
 						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,

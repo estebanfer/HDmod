@@ -19,6 +19,7 @@ local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
 local coffinlib = require 'lib.entities.coffin'
+local liquidfalllib = require 'lib.entities.liquidfall'
 
 local module = {}
 
@@ -59,17 +60,17 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
+					function(x, y, l) liquidfalllib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
 				},
 				alternate = {
 					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
+						function(x, y, l) liquidfalllib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
 					},
 					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, options.hd_og_floorstyle_temple and "res/fountain_temple_stone.png" or "res/fountain_temple.png", true) end,
+						function(x, y, l) liquidfalllib.create_liquidfall(x, y-3, l, options.hd_og_floorstyle_temple and "res/fountain_temple_stone.png" or "res/fountain_temple.png", true) end,
 					},
 					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
+						function(x, y, l) liquidfalllib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
 					},
 				},
 			}

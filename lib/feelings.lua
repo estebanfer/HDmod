@@ -195,8 +195,9 @@ local function feeling_set_with_chance(feeling, levels)
 	else return false end
 end
 
+-- set a feeling to a specific level
 function module.feeling_set(feeling, level)
-	global_feelings[feeling].load = level or {state.level}
+	global_feelings[feeling].load = level or state.level
 end
 
 function module.feeling_clear(feeling)
@@ -421,7 +422,6 @@ function module.onlevel_set_feelings()
 	if state.screen_last ~= SCREEN.TRANSITION and module.set_preset_feelings then
 		module.set_preset_feelings()
 	end
-	prinspect(global_feelings[module.FEELING_ID.BLACKMARKET].load)
 end
 
 function module.onlevel_set_feelingToastMessage()

@@ -103,11 +103,15 @@ module.register_dev_section("Debug Options", function(ctx)
     draw_registered_options(ctx, true)
 end)
 
+local function reset_run()
+    if warp_reset_run then
+        state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
+    end
+end
+
 local function draw_warp_button(ctx, name, world, level, theme, world_state)
     if ctx:win_button(name) then
-        if warp_reset_run then
-            state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
-        end
+        reset_run()
         worldlib.HD_WORLDSTATE_STATE = world_state or worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
 		feelingslib.set_preset_feelings = nil
@@ -117,9 +121,7 @@ end
 
 local function draw_feeling_button(ctx, name, world, level, theme, cb)
     if ctx:win_button(name) then
-        if warp_reset_run then
-            state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
-        end
+        reset_run()
         worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
         feelingslib.set_preset_feelings = cb
@@ -189,9 +191,7 @@ module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
     warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
-end)
 
-module.register_dev_section("Feelings", function (ctx)
     draw_feeling_button(ctx, "Udjat", 1, 2, THEME.DWELLING, function ()
         feelingslib.feeling_set(feelingslib.FEELING_ID.UDJAT)
     end)
@@ -208,6 +208,9 @@ module.register_dev_section("Feelings", function (ctx)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.RUSHING_WATER)
         feelingslib.feeling_clear(feelingslib.FEELING_ID.TIKIVILLAGE)
     end)
+end)
+
+module.register_dev_section("Feelings", function (ctx)
 end)
 
 -- Calculates the selected entity spawner position, or returns nil if the position can't be determined.

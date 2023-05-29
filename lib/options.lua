@@ -192,9 +192,20 @@ module.register_dev_section("Warps", function(ctx)
 end)
 
 module.register_dev_section("Feelings", function (ctx)
+    draw_feeling_button(ctx, "Udjat", 1, 2, THEME.DWELLING, function ()
+        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.UDJAT)
+    end)
+    ctx:win_inline()
+    draw_feeling_button(ctx, "Snakepit", 1, 2, THEME.DWELLING, function ()
+        feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.SNAKEPIT)
+
+        feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.SPIDERLAIR)
+    end)
+
     draw_feeling_button(ctx, "Black Market", 2, 2, THEME.JUNGLE, function ()
         feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET)
 
+        feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.VAULT)
         feelingslib.set_feeling_preset_load(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE, 1)
         feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.RUSHING_WATER)
         feelingslib.clear_feeling_preset_load(feelingslib.FEELING_ID.TIKIVILLAGE)

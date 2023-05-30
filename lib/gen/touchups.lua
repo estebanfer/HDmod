@@ -36,12 +36,16 @@ local function onlevel_removeborderfloor()
 end
 
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
-	if state.theme == THEME.NEO_BABYLON then
-		return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, layer)
-	elseif state.theme == THEME.EGGPLANT_WORLD then
-		return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer)
+	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+		if state.theme == THEME.NEO_BABYLON then
+			return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, layer)
+		elseif state.theme == THEME.EGGPLANT_WORLD then
+			return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, layer)
+		elseif state.theme == THEME.TEMPLE and options.hd_og_floorstyle_temple then
+			return spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, layer)
+		end
 	end
-end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, MASK.FLOOR, ENT_TYPE.FLOOR_GENERIC)
+end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, MASK.FLOOR, {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOORSTYLED_TEMPLE})
 
 
 local function onlevel_replace_border_textures()
@@ -360,19 +364,6 @@ function module.onlevel_touchups()
 	onlevel_create_impostorlake()
 	onlevel_remove_cobwebs_on_pushblocks()
 end
-
--- set_post_entity_spawn(function(entity)
--- 	entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
--- 	entity:destroy()
--- end, SPAWN_TYPE.LEVEL_GEN_FLOOR_SPREADING, 0)
-
--- Use junglespear traps for idol trap blocks and other blocks that shouldn't have post-destruction decorations
-set_post_entity_spawn(function(_entity)
-	local _spikes = entity_get_items_by(_entity.uid, ENT_TYPE.LOGICAL_JUNGLESPEAR_TRAP_TRIGGER, 0)
-	for _, _spike in ipairs(_spikes) do
-		kill_entity(_spike)
-	end
-end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_JUNGLE_SPEAR_TRAP)
 
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l)

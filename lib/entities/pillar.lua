@@ -12,7 +12,11 @@ do
     pillar_texture_def.texture_path = "res/pillar_yama.png"
     pillar_texture_id = define_texture(pillar_texture_def)
 
-    local dragon_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
+    local dragon_texture_def = TextureDefinition.new()
+    dragon_texture_def.width = 386
+    dragon_texture_def.height = 256
+    dragon_texture_def.tile_width = 256
+    dragon_texture_def.tile_height = 256
     dragon_texture_def.texture_path = "res/fountain_hell.png"
     dragon_texture_id = define_texture(dragon_texture_def)
 end
@@ -46,6 +50,7 @@ function module.create_pillar(x, y, l, height)
         if yi == height-1 then
             local dragonhead = get_entity(spawn_entity(ENT_TYPE.BG_WATER_FOUNTAIN, x, y+yi, l, 0, 0)) 
             dragonhead:set_texture(dragon_texture_id)
+            dragonhead.animation_frame = 0
         end
     end
     

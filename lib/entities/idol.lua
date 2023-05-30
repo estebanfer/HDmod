@@ -46,7 +46,7 @@ do
     ceiling_spikes_stone_texture_def.height = 128
     ceiling_spikes_stone_texture_def.tile_width = 128
     ceiling_spikes_stone_texture_def.tile_height = 128
-    ceiling_spikes_stone_texture_def.texture_path = "res/idoltrap_ceiling_spikes.png"
+    ceiling_spikes_stone_texture_def.texture_path = "res/idoltrap_ceiling_spikes_stone.png"
     ceiling_spikes_stone_texture_id = define_texture(ceiling_spikes_stone_texture_def)
 
     local skull_texture_def = TextureDefinition.new()

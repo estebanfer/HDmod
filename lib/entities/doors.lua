@@ -1,5 +1,16 @@
 local module = {}
 
+local stone_door_texture_id
+do
+    local stone_door_texture_def = TextureDefinition.new()
+    stone_door_texture_def.width = 386
+    stone_door_texture_def.height = 640
+    stone_door_texture_def.tile_width = 386
+    stone_door_texture_def.tile_height = 320
+    stone_door_texture_def.texture_path = "res/stone_doors.png"
+    stone_door_texture_id = define_texture(stone_door_texture_def)
+end
+
 optionslib.register_option_bool("hd_debug_boss_exits_unlock", "Unlock boss exits", nil, false, true)
 
 local HD_THEMEORDER = {
@@ -49,11 +60,12 @@ end
 function module.create_door_entrance(x, y, l)
 	-- # create the entrance door at the specified game coordinates.
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
-		texture_def.texture_path = "res/hauntedcastle_deco.png"
-		get_entity(door_bg):set_texture(define_texture(texture_def))
-		get_entity(door_bg).animation_frame = 2
+	if (
+		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
+		or (state.theme == THEME.TEMPLE and options.hd_og_floorstyle_temple)
+	) then
+		get_entity(door_bg):set_texture(stone_door_texture_id)
+		get_entity(door_bg).animation_frame = 0
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	if (
@@ -183,9 +195,7 @@ end
 function module.create_door_exit_to_hauntedcastle(x, y, l)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_2)
-	texture_def.texture_path = "res/hauntedcastle_deco.png"
-	get_entity(door_bg):set_texture(define_texture(texture_def))
+	get_entity(door_bg):set_texture(stone_door_texture_id)
 	get_entity(door_bg).animation_frame = 1
 	DOOR_EXIT_TO_HAUNTEDCASTLE_POS = {x = x, y = y}
 	set_interval(entrance_hauntedcastle, 1)

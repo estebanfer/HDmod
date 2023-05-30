@@ -2,23 +2,48 @@
     Level Background stuff
 ]]
 
-pillarlib = require 'lib.entities.pillar'
+local pillarlib = require 'lib.entities.pillar'
 
 local module = {}
 
---[[
-    Level/Setroom-Specific
---]]
-local function level_specific()
-    if state.theme == THEME.NEO_BABYLON then
-        local backwalls = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, 0, LAYER.FRONT)
-        -- message("#backwalls: " .. tostring(#backwalls))
+local temple_stone_bg_deco_texture_id
+local temple_stone_kali_texture_id
+do
+    local temple_stone_bg_deco_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_TEMPLE_0)
+    temple_stone_bg_deco_texture_def.texture_path = "res/deco_temple_stone.png"
+    temple_stone_bg_deco_texture_id = define_texture(temple_stone_bg_deco_texture_def)
 
-        -- ice caves bg
+    local temple_stone_kali_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_TEMPLE_0)
+    temple_stone_kali_texture_def.texture_path = "res/deco_temple_stone.png"
+    temple_stone_kali_texture_id = define_texture(temple_stone_kali_texture_def)
+end
+
+local function area_specific()
+    -- backwalls
+    local backwalls = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, 0, LAYER.FRONT)
+    if #backwalls > 0 then
         local backwall = get_entity(backwalls[1])
-        backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_ICE_0)
+        if state.theme == THEME.NEO_BABYLON then
+            -- ice caves bg
+            backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_ICE_0)
+        elseif options.hd_og_floorstyle_temple and state.theme == THEME.TEMPLE then
+            backwall:set_texture(TEXTURE.DATA_TEXTURES_BG_STONE_0)
+        end
+    end
 
-        -- mothership bg
+    -- kali
+    if options.hd_og_floorstyle_temple and state.theme == THEME.TEMPLE then
+        for _, uid in pairs(get_entities_by_type(ENT_TYPE.BG_KALI_STATUE)) do get_entity(uid):set_texture(temple_stone_kali_texture_id) end
+    end
+
+    -- all BG deco
+    if options.hd_og_floorstyle_temple and state.theme == THEME.TEMPLE then
+        for _, uid in pairs(get_entities_by(ENT_TYPE.BG_LEVEL_DECO, 0, LAYER.FRONT)) do get_entity(uid):set_texture(temple_stone_bg_deco_texture_id) end
+    end
+
+
+    -- mothership bg
+    if state.theme == THEME.NEO_BABYLON then
         local w, h = 40, 32
         local x, y, l = 22.5, 106.5, LAYER.FRONT
         backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, x, y, l, 0, 0))
@@ -126,9 +151,6 @@ local function spawn_hive_bg(hive_x, hive_y, hive2_x, hive2_y)
     end
 end
 
---[[
-    Room-Specific
---]]
 local function room_specific()
     local level_w, level_h = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
     for y = 1, level_h, 1 do
@@ -241,7 +263,7 @@ local function room_specific()
 end
 
 function module.set_backwall_bg()
-    level_specific()
+    area_specific()
     room_specific()
 end
 

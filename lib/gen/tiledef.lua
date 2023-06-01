@@ -21,6 +21,7 @@ local succubuslib = require 'lib.entities.succubus'
 local coffinlib = require 'lib.entities.coffin'
 local liquidfalllib = require 'lib.entities.liquidfall'
 local altarlib = require 'lib.entities.altar'
+local moailib = require 'lib.entities.moai'
 
 local module = {}
 
@@ -783,54 +784,10 @@ module.HD_TILENAME = {
 	["O"] = {
 		phases = {
 			[3] = {
-				default = {
-					function(x, y, l)
-						local moai_texture_indices = { 0, 1, 8, 9, 16, 17, 24, 25, 32 } -- yada yada lazy programming yada yada
-						local moai_index = 1
-						for yi = 0, -3, -1 do
-							for xi = 0, 2, 1 do
-								if (yi ~= 0 and xi == 1) then
-									-- SORRY NOTHING
-								else
-									local block_uid = get_grid_entity_at(x+xi, y+yi, l)
-									if block_uid ~= -1 then
-										local moai_block = get_entity(block_uid)
-										moai_block:set_texture(moailib.MOAI_BORDER_MAIN_TEXTURE)
-										moai_block.animation_frame = moai_texture_indices[moai_index]
-										moai_block:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
-										moai_index = moai_index + 1
-									end
-								end
-							end
-						end
-					end
-				}
+				default = { moailib.set_moai_block_textures }
 			},
 			[1] = {
-				default = {
-					--[[
-						# TOFIX: Moai animation_frames get overridden.
-							Run global_timeout(s?) to set them.
-							>Mr Auto:
-								"`local x = 5
-								set_global_timeout(function() message(x) end, frames)
-								x = nil`
-								will print 5 no matter the number of frames you input"
-					--]]
-					function(x, y, l)
-						for yi = 0, -3, -1 do
-							for xi = 0, 2, 1 do
-								if (yi ~= 0 and xi == 1) then
-									-- SORRY NOTHING
-								else
-									spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x+xi, y+yi, l)
-								end
-							end
-						end
-						doorslib.create_door_exit_moai(x+1, y-3, l)
-						moailib.create_moai_veil(x, y, l)
-					end,
-				},
+				default = { moailib.create_moai_blocks }
 			},
 		},
 		description = "Moai Head",

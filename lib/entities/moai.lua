@@ -1,3 +1,5 @@
+local doorslib = require 'lib.entities.doors'
+
 local module = {}
 
 optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "Punish ball can break moai tiles", nil, true, true)
@@ -5,30 +7,84 @@ optionslib.register_option_bool("hd_debug_punish_ball_breaks_moai", "Punish ball
 local moai_veil
 local moai_diamond_cb
 
-local MOAI_BORDER_MAIN_TEXTURE_DEF = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
-MOAI_BORDER_MAIN_TEXTURE_DEF.texture_path = "res/moai.png"
-module.MOAI_BORDER_MAIN_TEXTURE = define_texture(MOAI_BORDER_MAIN_TEXTURE_DEF)
+local veil_texture_id
+local blocks_texture_id
+do
+    local veil_texture_def = TextureDefinition.new();
+    veil_texture_def.width = 1152;
+    veil_texture_def.height = 512;
+    veil_texture_def.tile_width = 384;
+    veil_texture_def.tile_height = 512;
+    veil_texture_def.texture_path = 'res/moai.png';
+    veil_texture_id = define_texture(veil_texture_def);
 
-local MOAI_VEIL_TEXTURE_DEF = get_texture_definition(TEXTURE.DATA_TEXTURES_BORDER_MAIN_0)
-MOAI_VEIL_TEXTURE_DEF.texture_path = "res/moai.png"
-MOAI_VEIL_TEXTURE_DEF.tile_width = 384
-MOAI_VEIL_TEXTURE_DEF.tile_height = 512
-MOAI_VEIL_TEXTURE_DEF.sub_image_offset_x = 256
-MOAI_VEIL_TEXTURE_DEF.sub_image_offset_y = 0
-MOAI_VEIL_TEXTURE_DEF.sub_image_width = 384
-MOAI_VEIL_TEXTURE_DEF.sub_image_height = 512
-module.MOAI_VEIL_TEXTURE = define_texture(MOAI_VEIL_TEXTURE_DEF)
+    local blocks_texture_def = TextureDefinition.new();
+    blocks_texture_def.width = 1152;
+    blocks_texture_def.height = 512;
+    blocks_texture_def.tile_width = 128;
+    blocks_texture_def.tile_height = 128;
+    blocks_texture_def.texture_path = 'res/moai.png';
+    blocks_texture_id = define_texture(blocks_texture_def);
+end
+
+local ANIMATION_FRAMES_ENUM = {
+    BROKEN_BLOCKS = 1,
+	DECO_SIDE = 2,
+	DECO_TOP = 3,
+	DECO_BOTTOM = 4
+}
+
+local ANIMATION_FRAMES_RES = {
+    { 3, 4, 5, 12, 14, 21, 23, 30, 32 },
+    { 6, 7, 8 },
+    { 15, 16, 17 },
+    { 24, 25, 26 },
+}
 
 function module.init()
 	moai_veil = nil
 end
 
-function module.create_moai_veil(x, y, l)
+local function create_moai_veil(x, y, l)
     moai_veil = spawn_entity(ENT_TYPE.DECORATION_GENERIC, x+1, y-1.5, l, 0, 0)
     local decoration = get_entity(moai_veil)
-    decoration:set_texture(module.MOAI_VEIL_TEXTURE)
+    decoration:set_texture(veil_texture_id)
     decoration:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
     decoration.width, decoration.height = 3, 4
+end
+
+function module.create_moai_blocks(x, y, l)
+	for yi = 0, -3, -1 do
+		for xi = 0, 2, 1 do
+			if (yi ~= 0 and xi == 1) then
+				-- SORRY NOTHING
+			else
+				spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x+xi, y+yi, l)
+			end
+		end
+	end
+	doorslib.create_door_exit_moai(x+1, y-3, l)
+	create_moai_veil(x, y, l)
+end
+
+function module.set_moai_block_textures(x, y, l)
+	local moai_index = 1
+	for yi = 0, -3, -1 do
+		for xi = 0, 2, 1 do
+			if (yi ~= 0 and xi == 1) then
+				-- SORRY NOTHING
+			else
+				local block_uid = get_grid_entity_at(x+xi, y+yi, l)
+				if block_uid ~= -1 then
+					local moai_block = get_entity(block_uid)
+					moai_block:set_texture(blocks_texture_id)
+					moai_block.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.BROKEN_BLOCKS][moai_index]
+					moai_block:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
+					moai_index = moai_index + 1
+				end
+			end
+		end
+	end
 end
 
 local function remove_moai_veil()
@@ -110,21 +166,31 @@ local function add_moai_break_decoration(x, y, l, side)
 		local floor_ent = get_entity(get_grid_entity_at(x, y, l))
 		if floor_ent and floor_ent.type.id == ENT_TYPE.FLOOR_BORDERTILE_METAL then
 			local decor_ent = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_GENERIC, floor_ent.uid, 0, 0))
-			decor_ent:set_texture(module.MOAI_BORDER_MAIN_TEXTURE)
+			decor_ent:set_texture(blocks_texture_id)
 			decor_ent:set_draw_depth(floor_ent.draw_depth - 1)
+			local side_frame_start = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_SIDE][1]
+			local side_frame_end = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_SIDE][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_SIDE]]
 			if side == FLOOR_SIDE.LEFT then
 				decor_ent.x = -0.5
-				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.ENTITY_VARIATION)
+				decor_ent.animation_frame = prng:random_int(side_frame_start, side_frame_end, PRNG_CLASS.ENTITY_VARIATION)
 				decor_ent.flags = set_flag(decor_ent.flags, ENT_FLAG.FACING_LEFT)
 			elseif side == FLOOR_SIDE.RIGHT then
 				decor_ent.x = 0.5
-				decor_ent.animation_frame = prng:random_int(5, 7, PRNG_CLASS.ENTITY_VARIATION)
+				decor_ent.animation_frame = prng:random_int(side_frame_start, side_frame_end, PRNG_CLASS.ENTITY_VARIATION)
 			elseif side == FLOOR_SIDE.BOTTOM then
 				decor_ent.y = -0.5
-				decor_ent.animation_frame = prng:random_int(21, 23, PRNG_CLASS.ENTITY_VARIATION)
+				decor_ent.animation_frame = prng:random_int(
+					ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BOTTOM][1],
+					ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BOTTOM][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BOTTOM]],
+					PRNG_CLASS.ENTITY_VARIATION
+				)
 			elseif side == FLOOR_SIDE.TOP then
 				decor_ent.y = 0.5
-				decor_ent.animation_frame = prng:random_int(13, 15, PRNG_CLASS.ENTITY_VARIATION)
+				decor_ent.animation_frame = prng:random_int(
+					ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TOP][1],
+					ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TOP][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TOP]],
+					PRNG_CLASS.ENTITY_VARIATION
+				)
 			end
 		end
 	end

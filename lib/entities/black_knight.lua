@@ -2,17 +2,51 @@ local celib = require "lib.entities.custom_entities"
 
 local module = {}
 
---obviously the custom shield will become a regular one when you leave the level
-local black_knight_texture_id
+local texture_id
 do
-    local black_knight_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERS01_0)
-    black_knight_texture_def.texture_path = 'res/black_knight.png'
-    black_knight_texture_id = define_texture(black_knight_texture_def)
+    local texture_def = TextureDefinition.new();
+    texture_def.width = 640;
+    texture_def.height = 512;
+    texture_def.tile_width = 128;
+    texture_def.tile_height = 128;
+    texture_def.texture_path = 'res/black_knight.png';
+    texture_id = define_texture(texture_def);
 end
+
+local ANIMATION_FRAMES_ENUM = {
+    IDLE = 1,
+    WALK = 2,
+    KO = 3,
+    FLUNG1 = 4,
+    FLUNG2 = 5,
+    FLUNG3 = 6,
+    FLUNG4 = 7,
+}
+
+local ANIMATION_FRAMES_BASE = {
+    { 144 },
+    { 145, 146, 147, 148, 149, 150, 151, 152 },
+    { 153 },
+    { 154 },
+    { 155 },
+    { 156 },
+    { 157 },
+}
+
+local ANIMATION_FRAMES_RES = {
+    { 0 },
+    { 1, 2, 3, 4, 5, 6, 7, 8 },
+    { 10 },
+    { 15 },
+    { 16 },
+    { 17 },
+    { 18 },
+}
+
 local function black_knight_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
-    ent:set_texture(black_knight_texture_id)
+    ent:set_texture(texture_id)
     local x, y, l = get_position(uid)
     local shield = get_entity(spawn(ENT_TYPE.ITEM_METAL_SHIELD, x, y, l, 0, 0))
 
@@ -34,6 +68,18 @@ local function black_knight_set(uid)
     pick_up(uid, shield.uid)
 end
 local function black_knight_update(ent)
+    -- animation_frame conversion handling
+    local break_framesetting
+    for frame_state_i, base_frames in ipairs(ANIMATION_FRAMES_BASE) do
+        for frame_i, base_frame in ipairs(base_frames) do
+            if ent.animation_frame == base_frame then
+                ent.animation_frame = ANIMATION_FRAMES_RES[frame_state_i][frame_i]
+                break_framesetting = true
+                break
+            end
+        end
+        if break_framesetting then break end
+    end
     -- clang sound when landing
     if not ent.user_data.hit_ground and ent:can_jump() then
         if not test_flag(ent.flags, ENT_FLAG.DEAD) then

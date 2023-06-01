@@ -3,18 +3,67 @@ local optionslib = require "lib.options"
 
 local module = {}
 
+local ANIMATION_FRAMES_ENUM = {
+    IDLE = 1,
+    WALK = 2,
+    THROW = 3,
+    KO = 4,
+    FLUNG1 = 5,
+    FLUNG2 = 6,
+    FLUNG3 = 7,
+    FLUNG4 = 8,
+    TALK = 9
+}
+
+local ANIMATION_FRAMES_BASE = {
+    { 144 },
+    { 145, 146, 147, 148, 149, 150, 151, 152 },
+    { 160, 161, 162, 163, 164 },
+    { 153 },
+    { 154 },
+    { 155 },
+    { 156 },
+    { 157 },
+    { 10, 11, 12, 13, 14 },
+}
+
+local ANIMATION_FRAMES_RES = {
+    { 0 },
+    { 1, 2, 3, 4, 5, 6, 7, 8 },
+    { 9, 10, 11, 12, 13 },
+    { 14 },
+    { 15 },
+    { 16 },
+    { 17 },
+    { 18 },
+    { 19, 20, 21, 22, 23 },
+}
+
 local ANIMATION_INFO = {
     THROW = {
-        start = 160;
-        finish = 164;
+        start = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.THROW][1];
+        finish = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.THROW][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.THROW]];
         speed = 3;
     };
 }
+
+local hawkman_texture_id
+do
+    local hawkman_texture_def = TextureDefinition.new();
+    hawkman_texture_def.width = 640;
+    hawkman_texture_def.height = 800;
+    hawkman_texture_def.tile_width = 128;
+    hawkman_texture_def.tile_height = 128;
+    hawkman_texture_def.texture_path = 'res/hawkman.png';
+    hawkman_texture_id = define_texture(hawkman_texture_def);
+end
 
 local function hawkman_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
     local x, y, l = get_position(uid)
+
+    ent:set_texture(hawkman_texture_id)
 
     -- user_data
     ent.user_data = {
@@ -25,7 +74,7 @@ local function hawkman_set(uid)
         animation_info = ANIMATION_INFO.THROW;
         animation_timer = 1;
         animation_speed = 4;
-        animation_frame = 160;
+        animation_frame = ANIMATION_INFO.THROW.start;
     };
 
     --remove any items hawkman is holding
@@ -37,6 +86,18 @@ local function hawkman_set(uid)
 end
 
 local function hawkman_update(ent)
+    local break_framesetting
+    -- animation_frame conversion handling
+    for frame_state_i, base_frames in ipairs(ANIMATION_FRAMES_BASE) do
+        for frame_i, base_frame in ipairs(base_frames) do
+            if ent.animation_frame == base_frame then
+                ent.animation_frame = ANIMATION_FRAMES_RES[frame_state_i][frame_i]
+                break_framesetting = true
+                break
+            end
+        end
+        if break_framesetting then break end
+    end
     if ent.user_data.throw_state == 0 then
         if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
         --wait for player to get near
@@ -50,7 +111,7 @@ local function hawkman_update(ent)
                 if ent:overlaps_with(player) and (sy > py) then
                     ent.user_data.thrown_ent = player
                     ent.user_data.throw_state = 1
-                    ent.user_data.animation_frame = 160
+                    ent.user_data.animation_frame = ANIMATION_INFO.THROW.start
                 end
             end
         end

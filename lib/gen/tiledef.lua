@@ -19,6 +19,8 @@ local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
 local coffinlib = require 'lib.entities.coffin'
+local liquidfalllib = require 'lib.entities.liquidfall'
+local altarlib = require 'lib.entities.altar'
 
 local module = {}
 
@@ -58,20 +60,7 @@ module.HD_TILENAME = {
 	["&"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
-				},
-				alternate = {
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
-					},
-					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_temple.png", true) end,
-					},
-					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
-					},
-				},
+				default = { liquidfalllib.create_liquidfall_from_theme },
 			}
 		},
 		description = "Waterfall",
@@ -1063,29 +1052,7 @@ module.HD_TILENAME = {
 					end,
 				},
 				alternate = {
-					[THEME.JUNGLE] = {
-						function(x, y, l)
-							local ent_uid = spawn_entity(ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER, x+4, y+2, l, 0, 0)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_3)
-							texture_def.texture_path = "res/hauntedcastle_banner.png"
-							get_entity(ent_uid):set_texture(define_texture(texture_def))
-							
-							ent_uid = spawn_entity(ENT_TYPE.BG_KALI_STATUE, x+.5, y+0.6, l, 0, 0)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-							texture_def.texture_path = "res/hauntedcastle_deco.png"
-							get_entity(ent_uid):set_texture(define_texture(texture_def))
-							get_entity(ent_uid).width = 5.0--5.600
-							get_entity(ent_uid).height = 5.0--7.000
-
-							spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y-1, l)
-							spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y-1, l)
-
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y-1, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y-1, l)
-						end,
-					}
+					[THEME.JUNGLE] = { altarlib.create_hc_altar }
 				},
 			}
 		},
@@ -1327,12 +1294,7 @@ module.HD_TILENAME = {
 	["x"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y, l)
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y, l)
-					end,
-				},
+				default = { altarlib.create_altar },
 			}
 		},
 		description = "Kali Altar",

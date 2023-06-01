@@ -2,16 +2,25 @@ local validlib = require('lib.spawning.valid')
 
 local module = {}
 
-local hauntedface_texture_def
-local hauntedgrass_texture_def
-do
-	hauntedface_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
-	hauntedface_texture_def.texture_path = "res/restless_deco.png"
-	hauntedface_texture_def = define_texture(hauntedface_texture_def)
+local ANIMATION_FRAMES_ENUM = {
+    FACE = 1,
+    DECO = 2
+}
 
-	hauntedgrass_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_0)
-	hauntedgrass_texture_def.texture_path = "res/restless_deco.png"
-	hauntedgrass_texture_def = define_texture(hauntedgrass_texture_def)
+local ANIMATION_FRAMES_RES = {
+    { 0 },
+    { 1, 2, 3 },
+}
+
+local deco_texture_id
+do
+	local deco_texture_def = TextureDefinition.new()
+	deco_texture_def.width = 512
+	deco_texture_def.height = 128
+	deco_texture_def.tile_width = 128
+	deco_texture_def.tile_height = 128
+	deco_texture_def.texture_path = "res/restless_deco.png"
+	deco_texture_id = define_texture(deco_texture_def)
 end
 
 -- HD-style tree decorating methods
@@ -148,30 +157,38 @@ function module.onlevel_decorate_haunted()
 		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
 	) then
-		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_TREE)) do
-			local decor_ent = get_entity(decor)
+		for _, uid in pairs(get_entities_by_type(ENT_TYPE.DECORATION_TREE)) do
+			local deco = get_entity(uid)
 			if (
 				(-- ignore branch decorations
-					decor_ent.animation_frame == 112
-					or decor_ent.animation_frame == 124
-					or decor_ent.animation_frame == 136
+					deco.animation_frame == 112
+					or deco.animation_frame == 124
+					or deco.animation_frame == 136
 				) and prng:random_chance(12, PRNG_CLASS.LEVEL_GEN)
 			) then
-				get_entity(decor):set_texture(hauntedface_texture_def)
-				get_entity(decor).animation_frame = 124
+				deco:set_texture(deco_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.FACE][1]
 			end
 		end
 	end
 	
 	-- decorate grass
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-		for _, decor in ipairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
-			local x, y, _ = get_position(decor)
+		for _, uid in pairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
+			local x, y, _ = get_position(uid)
 			if (
-				not validlib.is_valid_dar_decor_spawn(x, y)
+				not validlib.is_invalid_dar_decor_spawn(x, y)
 				and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN)
 			) then
-				get_entity(decor):set_texture(hauntedgrass_texture_def)
+				local deco = get_entity(uid)
+				deco:set_texture(deco_texture_id)
+				if deco.animation_frame == 53 then
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO][1]
+				elseif deco.animation_frame == 54 then
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO][2]
+				elseif deco.animation_frame == 55 then
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO][3]
+				end
 			end
 		end
 	end

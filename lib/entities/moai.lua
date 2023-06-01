@@ -18,9 +18,14 @@ do
     veil_texture_def.texture_path = 'res/moai.png';
     veil_texture_id = define_texture(veil_texture_def);
 
+	---@type TextureDefinition
     local blocks_texture_def = TextureDefinition.new();
     blocks_texture_def.width = 1152;
     blocks_texture_def.height = 512;
+    blocks_texture_def.sub_image_height = 512;
+    blocks_texture_def.sub_image_width = 768;
+	blocks_texture_def.sub_image_offset_x = 384;
+	blocks_texture_def.sub_image_offset_y = 0;
     blocks_texture_def.tile_width = 128;
     blocks_texture_def.tile_height = 128;
     blocks_texture_def.texture_path = 'res/moai.png';
@@ -35,10 +40,10 @@ local ANIMATION_FRAMES_ENUM = {
 }
 
 local ANIMATION_FRAMES_RES = {
-    { 3, 4, 5, 12, 14, 21, 23, 30, 32 },
-    { 6, 7, 8 },
+    { 0, 1, 2, 6, 8, 12, 14, 18, 20 },
+    { 3, 4, 5 },
+    { 9, 10, 11 },
     { 15, 16, 17 },
-    { 24, 25, 26 },
 }
 
 function module.init()

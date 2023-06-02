@@ -55,23 +55,24 @@ function module.add_snow_to_floor()
                     or deco_top.animation_frame == 79
                 ) then
                     deco_top.animation_frame = deco_top.animation_frame - 24
-                    if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(60, PRNG_CLASS.LEVEL_DECO) then
+                    if get_grid_entity_at(floor.x, floor.y + 1, floor.layer) == -1 and prng:random_chance(60, PRNG_CLASS.ENTITY_VARIATION) then
                         -- Add a snowman decoration to the floor.
-                        local scale = 0.6 + (0.2 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
-                        local offset_x = -0.15 + (0.3 * prng:random_float(PRNG_CLASS.LEVEL_DECO))
+                        local scale = 0.6 + (0.2 * prng:random_float(PRNG_CLASS.ENTITY_VARIATION))
+                        local offset_x = -0.15 + (0.3 * prng:random_float(PRNG_CLASS.ENTITY_VARIATION))
                         local offset_y = 0.5 + (0.4 * scale)
                         local snowman = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_GENERIC, floor_uid, offset_x, offset_y))
-                        snowman:set_texture(TEXTURE.DATA_TEXTURES_ITEMS_0)
                         -- Rare chance for the Guy Spelunky snowman instead of the regular one
-                        if prng:random_chance(5, PRNG_CLASS.LEVEL_DECO) then
+                        if prng:random_chance(5, PRNG_CLASS.ENTITY_VARIATION) then
                             snowman:set_texture(special_snowman_texture_id)
                             snowman.animation_frame = 0
+                        else
+                            snowman:set_texture(TEXTURE.DATA_TEXTURES_ITEMS_0)
+                            snowman.animation_frame = 221
                         end
-                        snowman.animation_frame = 221
                         snowman:set_draw_depth(deco_top.draw_depth + 1)
                         snowman.width = scale
                         snowman.height = scale
-                        if prng:random_chance(2, PRNG_CLASS.LEVEL_DECO) then
+                        if prng:random_chance(2, PRNG_CLASS.ENTITY_VARIATION) then
                             snowman.flags = set_flag(snowman.flags, ENT_FLAG.FACING_LEFT)
                         end
                     end
@@ -102,7 +103,7 @@ set_callback(function()
 end, ON.TRANSITION)
 -- This is done for the effect of custom snow used in snow levels
 set_callback(function()
-    snow.hor_velocity = snow_hsp*math.random(-125, 125)/100
+    snow.hor_velocity = snow_hsp*prng:random_int(-125, 125, PRNG_CLASS.LEVEL_DECO)/100
 end, ON.GAMEFRAME)
 
 return module

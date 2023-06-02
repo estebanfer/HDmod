@@ -36,12 +36,12 @@ end
 
 local function mothership_light_update(ent, c_data)
     if not ent.overlay or test_flag(ent.flags, ENT_FLAG.DEAD) then
-        if math.random(8) == 1 then
+        if prng:random_chance(8, PRNG_CLASS.PARTICLES) then
             local x, y, l = get_position(ent.uid)
-            spawn(ENT_TYPE.ITEM_SAPPHIRE_SMALL, x, y, l, math.random()*0.2-0.1, math.random()*0.1)
-        elseif math.random(4) == 1 then
+            spawn(ENT_TYPE.ITEM_SAPPHIRE_SMALL, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1)
+        elseif prng:random_chance(4, PRNG_CLASS.PARTICLES) then
             local x, y, l = get_position(ent.uid)
-            spawn(ENT_TYPE.ITEM_SAPPHIRE, x, y, l, math.random()*0.2-0.1, math.random()*0.1)
+            spawn(ENT_TYPE.ITEM_SAPPHIRE, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1)
         end
         kill_entity(ent.uid)
     end

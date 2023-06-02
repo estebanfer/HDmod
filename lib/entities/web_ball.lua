@@ -15,7 +15,7 @@ do
 end
 local function spawn_web_ball_contents(x, y, l)
     local contents = {}
-    if math.random(32) == 1 then
+    if prng:random_chance(32, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.MONS_CAVEMAN, x, y, l, 0, 0)
         local caveman = get_entity(contents[#contents])
         caveman.health = 0
@@ -23,23 +23,23 @@ local function spawn_web_ball_contents(x, y, l)
         caveman.state = 22
         caveman.stand_counter = 0
         caveman.flags = set_flag(caveman.flags, ENT_FLAG.DEAD)
-    elseif math.random(24) == 1 then
+    elseif prng:random_chance(24, PRNG_CLASS.PARTICLES) then
         for i = 1, 3, 1 do
             contents[#contents+1] = babyspiderlib.create_critterbabyspider(x, y, l)
         end
-    elseif math.random(15) == 1 then
+    elseif prng:random_chance(15, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_SKULL, x, y, l, 0, 0)
-    elseif math.random(6) == 1 then
+    elseif prng:random_chance(6, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
-    elseif math.random(15) == 1 then
+    elseif prng:random_chance(15, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_RUBY, x, y, l, 0, 0)
-    elseif math.random(12) == 1 then
+    elseif prng:random_chance(12, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_SAPPHIRE, x, y, l, 0, 0)
-    elseif math.random(7) == 1 then
+    elseif prng:random_chance(7, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, 0, 0)
-    elseif math.random(7) == 1 then
+    elseif prng:random_chance(7, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET, x, y, l, 0, 0)
-    elseif math.random(4) == 1 then
+    elseif prng:random_chance(4, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_NUGGET_SMALL, x, y, l, 0, 0)
     end
     return contents
@@ -70,8 +70,8 @@ local function web_ball_destroy(_uid)
     end
     for i=1, 4, 1 do
         -- # TODO: polish this effect up a bit more, colors arent spot on and the sfx could be a bit more metalic
-        local x, y, l = get_position(_uid)
-        local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l, math.random(-10, 10)/80, math.random(1, 6)/25))
+        local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x, y, l,
+            prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/80, prng:random_int(1, 6, PRNG_CLASS.PARTICLES)/25))
         rubble.animation_frame = 29
         rubble.width = 0.75
     end

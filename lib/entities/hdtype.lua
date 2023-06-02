@@ -480,9 +480,9 @@ function create_hd_behavior(behavior, x, y, l)
 					-- message("#decorated_behavior.abilities: " .. tostring(#decorated_behavior.abilities))
 			end
 			if behavior == module.HD_BEHAVIOR.OLMEC_SHOT then
-				local xvel = math.random(7, 30)/100
-				local yvel = math.random(5, 10)/100
-				if math.random() >= 0.5 then xvel = -1*xvel end
+				local xvel = prng:random_int(7, 30, PRNG_CLASS.PARTICLES)/100
+				local yvel = prng:random_int(5, 10, PRNG_CLASS.PARTICLES)/100
+				if prng:random_chance(2, PRNG_CLASS.PARTICLES) then xvel = -xvel end
 				decorated_behavior.velocity_set.velocityx = xvel
 				decorated_behavior.velocity_set.velocityy = yvel
 			end
@@ -846,10 +846,10 @@ set_callback(function()
 						(
 							danger.hd_type.itemdrop.chance ~= nil and
 							-- danger.itemdrop.chance > 0 and
-							math.random() <= danger.hd_type.itemdrop.chance
+							prng:random_float(PRNG_CLASS.PARTICLES) <= danger.hd_type.itemdrop.chance
 						)
 					) then
-						local itemdrop = danger.hd_type.itemdrop.item[math.random(1, #danger.hd_type.itemdrop.item)]
+						local itemdrop = danger.hd_type.itemdrop.item[prng:random_index(#danger.hd_type.itemdrop.item, PRNG_CLASS.PARTICLES)]
 						if itemdrop == module.HD_ENT.ITEM_CRYSTALSKULL then
 							create_ghost()
 						end
@@ -864,10 +864,10 @@ set_callback(function()
 						(
 							danger.hd_type.treasuredrop.chance ~= nil and
 							-- danger.treasuredrop.chance > 0 and
-							math.random() <= danger.hd_type.treasuredrop.chance
+							prng:random_float(PRNG_CLASS.PARTICLES) <= danger.hd_type.treasuredrop.chance
 						)
 					) then
-						local itemdrop = danger.hd_type.treasuredrop.item[math.random(1, #danger.hd_type.treasuredrop.item)]
+						local itemdrop = danger.hd_type.treasuredrop.item[prng:random_index(#danger.hd_type.treasuredrop.item, PRNG_CLASS.PARTICLES)]
 						hdtypelib.create_hd_type(itemdrop, danger.x, danger.y, danger.l, false, 0, 0)
 					end
 				end

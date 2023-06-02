@@ -11,46 +11,6 @@ function module.init()
 	module.GIANTSPIDER_SPAWNED = false
 end
 
-function module.create_coffin_coop(x, y, l)
-	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	local the_coffin = get_entity(coffin_uid)
-	the_coffin.player_respawn = true
-	return coffin_uid
-end
-
-function module.create_coffin_unlock(x, y, l)
-	local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, x, y, l, 0, 0)
-	if unlockslib.LEVEL_UNLOCK ~= nil then
-		--[[ 193 + unlock_num = ENT_TYPE.CHAR_* ]]
-		set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id)
-	end
-
-	set_post_statemachine(coffin_uid, function()
-		local coffin = get_entity(coffin_uid)
-		if (
-			coffin.animation_frame == 1
-			and (
-				unlockslib.LEVEL_UNLOCK ~= nil
-				and (
-					unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND1
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND2
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND3
-					or unlockslib.LEVEL_UNLOCK == unlockslib.HD_UNLOCK_ID.AREA_RAND4
-				)
-			)
-		) then
-			for i = 1, #unlockslib.RUN_UNLOCK_AREA, 1 do
-				if unlockslib.RUN_UNLOCK_AREA[i].theme == state.theme then
-					unlockslib.RUN_UNLOCK_AREA[i].unlocked = true 
-					break
-				end
-			end
-		end
-	end)
-
-	return coffin_uid
-end
-
 function module.create_embedded(ent_toembedin, entity_type)
 	if entity_type ~= ENT_TYPE.EMBED_GOLD and entity_type ~= ENT_TYPE.EMBED_GOLD_BIG then
 		local entity_db = get_type(entity_type)
@@ -65,29 +25,6 @@ function module.create_embedded(ent_toembedin, entity_type)
 		entity_db.default_flags = previous_flags
 	else
 		spawn_entity_over(entity_type, ent_toembedin, 0, 0)
-	end
-end
-
-function module.create_liquidfall(x, y, l, texture_path, is_lava)
-	local is_lava = is_lava or false
-	local type = ENT_TYPE.LOGICAL_WATER_DRAIN
-	if is_lava == true then
-		type = ENT_TYPE.LOGICAL_LAVA_DRAIN
-	end
-	local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_0)
-	texture_def.texture_path = texture_path
-	local drain_texture = define_texture(texture_def)
-	local drain_uid = spawn_entity(type, x, y, l, 0, 0)
-	get_entity(drain_uid):set_texture(drain_texture)
-
-	local backgrounds = entity_get_items_by(drain_uid, ENT_TYPE.BG_WATER_FOUNTAIN, 0)
-	if #backgrounds ~= 0 then
-		local texture_def2 = get_texture_definition(TEXTURE.DATA_TEXTURES_FLOOR_TIDEPOOL_2)
-		texture_def2.texture_path = texture_path
-		local fountain_texture = define_texture(texture_def2)
-
-		local fountain = get_entity(backgrounds[1])
-		fountain:set_texture(fountain_texture)
 	end
 end
 
@@ -154,7 +91,7 @@ function module.create_pushblock_powderkeg(x, y, l)
 	local current_powderkeg_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_powderkeg)
 	if (
 		current_powderkeg_chance ~= 0
-		and math.random(current_powderkeg_chance) == 1
+		and prng:random_chance(current_powderkeg_chance, PRNG_CLASS.LEVEL_GEN)
 	) then
 		spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_POWDERKEG, x, y, l)
 	else
@@ -180,7 +117,7 @@ function module.create_ufo(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_UFO, x, y, l
 
 function module.create_honey(x, y, l)
 	local floor = get_grid_entity_at(x, y+1, l)
-	if floor ~= -1 and math.random(2) == 1 then
+	if floor ~= -1 and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 		get_entity(spawn_entity_over(ENT_TYPE.ITEM_HONEY, floor, 0, -0.8)).animation_frame = 238
 	else
 		floor = get_grid_entity_at(x, y-1, l)

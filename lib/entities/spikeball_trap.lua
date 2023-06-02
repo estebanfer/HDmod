@@ -57,11 +57,11 @@ local function spikeball_trap_set(uid)
     block:set_texture(block_texture_id)
     --move_state determines the direction the ball will spin in
     ent.move_state = 1
-    if math.random(2) == 1 then
+    if prng:random_chance(2, PRNG_CLASS.PARTICLES) then
         ent.move_state = 2 --we cant set move_state to -1 because its an unsigned int, just check the exact number later in the code
     end
     --health determines the speed of the ball
-    ent.health = math.random(20, 40)
+    ent.health = prng:random_int(20, 40, PRNG_CLASS.PARTICLES)
 end
 
 local function spikeball_trap_update(ent)
@@ -81,7 +81,7 @@ local function spikeball_trap_update(ent)
     local angle = move_dir*ent.stand_counter/ent.health
 
     if block == nil then
-        local spikeball = get_entity(spawn(ENT_TYPE.ACTIVEFLOOR_UNCHAINED_SPIKEBALL, x, y, l, math.random(-1, 1), 1))
+        local spikeball = get_entity(spawn(ENT_TYPE.ACTIVEFLOOR_UNCHAINED_SPIKEBALL, x, y, l, prng:random_int(-1, 1, PRNG_CLASS.PARTICLES), 1))
         spikeball.velocityx = -12*math.sin(angle)
         spikeball.velocityy = 8*math.cos(angle)
         kill_entity(ent.uid)

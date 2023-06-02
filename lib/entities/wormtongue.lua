@@ -35,7 +35,7 @@ local function tongue_idle()
 	) then
 		local x, y, l = get_position(WORMTONGUE_UID)
 		for _ = 1, 3, 1 do
-			if math.random() >= 0.5 then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((math.random()*1.5)-1), y+((math.random()*1.5)-1), l, 0, 0) end
+			if prng:random_chance(2, PRNG_CLASS.PARTICLES) then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((prng:random_float(PRNG_CLASS.PARTICLES)*1.5)-1), y+((prng:random_float(PRNG_CLASS.PARTICLES)*1.5)-1), l, 0, 0) end
 		end
 	end
 end
@@ -171,7 +171,9 @@ local function onframe_tonguetimeout()
 					else message("WORMTONGUE_BG_UID is nil :(") end
 					
 					for _ = 1, 45, 1 do
-						local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
+						local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE,
+							x+prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/10, (y-0.2)+prng:random_int(-7, 7, PRNG_CLASS.PARTICLES)/10, l,
+							prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, 0.11+prng:random_int(0, 3, PRNG_CLASS.PARTICLES)/10))
 						-- Area specific rubble
 						if state.theme == THEME.JUNGLE then
 							rubble.animation_frame = 8

@@ -68,7 +68,7 @@ local function remove_player_item(powerup, player)
 end
 
 function module.set_hell_x()
-    module.hell_x = math.random(4, 41)
+    module.hell_x = prng:random_int(4, 41, PRNG_CLASS.LEVEL_GEN)
 end
 
 local function animate_bookofdead(tick_limit)

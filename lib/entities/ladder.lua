@@ -13,6 +13,20 @@ do
     texture_id = define_texture(texture_def)
 end
 
+local ANIMATION_FRAMES_ENUM = {
+    GOLD_LADDER = 1,
+    GOLD_LADDER_PLATFORM = 2,
+}
+
+local ANIMATION_FRAMES_BASE = {
+    { 4, 16, 40 },
+    { 2 },
+}
+local ANIMATION_FRAMES_RES = {
+    { 0, 1, 3 },
+    { 2 },
+}
+
 function module.create_ladder(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end
 
 function module.create_ladder_platform(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end
@@ -20,19 +34,17 @@ function module.create_ladder_platform(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR
 function module.create_ladder_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l))
     ent:set_texture(texture_id)
-    if ent.animation_frame == 4 then
-        ent.animation_frame = 0
-    elseif ent.animation_frame == 16 then
-        ent.animation_frame = 1
-    elseif ent.animation_frame == 40 then
-        ent.animation_frame = 3
+    for i = 1, #ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER], 1 do
+        if ent.animation_frame == ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i] then
+            ent.animation_frame = ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i]
+        end
     end
 end
 
 function module.create_ladder_platform_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l))
     ent:set_texture(texture_id)
-    ent.animation_frame = 2
+    ent.animation_frame = ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER_PLATFORM][1]
 end
 
 local function _create_climbable_single(x, y, l, ent_to_spawn_over, is_chain)

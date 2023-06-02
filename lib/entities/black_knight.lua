@@ -37,7 +37,7 @@ local function black_knight_update(ent)
     -- clang sound when landing
     if not ent.user_data.hit_ground and ent:can_jump() then
         if not test_flag(ent.flags, ENT_FLAG.DEAD) then
-            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1, false)
             audio:set_volume(0.65)
             audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
             audio:set_pitch(math.random(60, 80)/100)
@@ -51,7 +51,7 @@ local function black_knight_update(ent)
                 if dist <= 13 then
                     commonlib.shake_camera(10, 10, 4, 4, 4, false)
                     -- Landing SFX
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, ent.uid, 1)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, ent.uid, 1, false)
                     audio:set_volume(0.3)
                     break
                 end
@@ -64,7 +64,7 @@ local function black_knight_update(ent)
     --[[ nah nvm
     if ent.overlay ~= nil then
         if not ent.user_data.picked_up then
-            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
             audio:set_volume(0.4)
             audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
             audio:set_pitch(math.random(70, 90)/100)
@@ -81,7 +81,7 @@ local function black_knight_update(ent)
         if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
         if ent.user_data.jingle_timer <= 0 then
             ent.user_data.jingle_timer = math.random(30, 40)
-            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+            local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1, false)
             audio:set_volume(0.4)
             audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
             audio:set_pitch(math.random(90, 120)/100)
@@ -117,7 +117,7 @@ local function black_knight_update(ent)
             if py > y and ent:can_jump() then
                 ent.velocityy = 0.23
                 -- SFX
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+                local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1, false)
                 audio:set_volume(0.33)
                 audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
                 audio:set_pitch(math.random(105, 130)/100)
@@ -186,7 +186,7 @@ local function black_knight_update(ent)
         if web:overlaps_with(ent) then
             generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
             for i=1, 3, 1 do
-                commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, v, 0.25)
+                commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_STICKYTRAP_HIT, v, 0.25, false)
                 local leaf = get_entity(spawn(ENT_TYPE.ITEM_LEAF, wx+(i-1)/3, wy, wl, 0, 0))
                 leaf.width = 0.75
                 leaf.height = 0.75
@@ -203,7 +203,7 @@ local function burst_out_of_mantrap(ent, collision_ent)
             local cx, cy, cl = get_position(collision_ent.uid)
             collision_ent.eaten_uid = ent.uid
             collision_ent.move_state = 6
-            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_MANTRAP_BITE, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_MANTRAP_BITE, ent.uid, 1, false)
             drop(ent.uid, ent.holding_uid)
             ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
             ent.flags = set_flag(ent.flags, ENT_FLAG.PAUSE_AI_AND_PHYSICS)
@@ -222,7 +222,7 @@ end
 local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
     -- We'll always do a little damgage sound effect when he gets hurt
     if not test_flag(ent.flags, ENT_FLAG.DEAD) then
-        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1, false)
         audio:set_volume(0.65)
         audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
         audio:set_pitch(math.random(90, 110)/100)
@@ -240,7 +240,7 @@ local function black_knight_death(ent, damage_dealer, damage_amount, velocityx, 
             tikiman_db.sound_killed_by_other = sound_killed_by_other
         end, 1)
         --play a death sound, sounds weird otherwise
-        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, ent.uid, 1, false)
         audio:set_volume(1)
         audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 1)
     end

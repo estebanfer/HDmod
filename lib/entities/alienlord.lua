@@ -179,7 +179,7 @@ local function alienlord_set(uid)
             spawn(gems[prng:random_index(3, PRNG_CLASS.EXTRA_SPAWNS)], x, y, l, math.random(-15, 15)/100, math.random(10, 15)/100)
         end
         -- Sfx
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, ent.uid, 1)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, ent.uid, 1, false)
         -- Move base entity out of bounds
         ent.x = -900
     end)

@@ -146,7 +146,7 @@ local function break_idoltrap_floor(block_id)
             local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, x+math.random(-15, 15)/10, (y-0.2)+math.random(-7, 7)/10, l, math.random(-10, 10)/100, 0.11+math.random(0, 3)/10))
             rubble.animation_frame = 3
         end
-        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55, false)
     end
 end
 

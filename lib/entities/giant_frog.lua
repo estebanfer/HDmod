@@ -32,6 +32,24 @@ do
     giant_frog_texture_def.texture_path = "res/giantfrog.png"
     giant_frog_texture_id = define_texture(giant_frog_texture_def)
 end
+-- frorg sounds :)))
+local jump_sound = {
+    create_sound('res/sounds/giantfrogjump1.wav'),
+    create_sound('res/sounds/giantfrogjump2.wav'),
+    create_sound('res/sounds/giantfrogjump3.wav'),
+    create_sound('res/sounds/giantfrogjump4.wav'),
+    create_sound('res/sounds/giantfrogjump5.wav'),
+    create_sound('res/sounds/giantfrogjump6.wav')
+}
+-- TODO these sounds aren't working for whatever reason, yet the jump_sounds work perfect
+local land_sound = {
+    create_sound('res/sounds/giantfrogland1.wav'),
+    create_sound('res/sounds/giantfrogland2.wav'),
+    create_sound('res/sounds/giantfrogland3.wav'),
+    create_sound('res/sounds/giantfrogland4.wav'),
+    create_sound('res/sounds/giantfrogland5.wav'),
+    create_sound('res/sounds/giantfrogland6.wav')
+}
 
 local function gfrog_target_facing(frog_uid, player_uid)
     local x1 = get_position(player_uid)
@@ -114,8 +132,11 @@ local function giant_frog_jump(ent)
     ent.velocityx = vel_x
     ent.velocityy = 0.175
     -- Jump SFX
-    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid)
+    --[[
+    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid, 1, false)
     audio:set_volume(1)
+    ]]
+    commonlib.play_custom_sound(jump_sound[math.random(1, 6)], ent.uid, 0.5, false)
 end
 
 local function giant_frog_spit(ent)
@@ -131,7 +152,7 @@ local function giant_frog_spit(ent)
         spawned.flags = clr_flag(spawned.flags, ENT_FLAG.FACING_LEFT)
     end
     ent.idle_counter = 0
-    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, ent.uid)
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, ent.uid, 1, false)
 end
 
 ---@param ent Frog
@@ -186,8 +207,7 @@ local function giant_frog_update(ent, c_data)
                 if dist <= 13 then
                     commonlib.shake_camera(10, 10, 6, 6, 6, false)
                     -- Landing SFX
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid, 1)
-                    audio:set_volume(0.4)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, ent.uid, 1, false)
                     break
                 end
             end

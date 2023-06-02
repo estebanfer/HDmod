@@ -61,7 +61,7 @@ local function web_ball_destroy(_uid)
     end
     generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_BIG, _uid)
     for i=1, 6, 1 do
-        commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_LANTERN_BREAK, _uid, 0.25)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_LANTERN_BREAK, _uid, 0.25, false)
         local leaf = get_entity(spawn(ENT_TYPE.ITEM_LEAF, x+(i-1)/6, y+math.random(-10, 10)/25, l, 0, 0))
         leaf.width = 0.75
         leaf.height = 0.75

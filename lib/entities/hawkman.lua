@@ -135,7 +135,7 @@ local function hawkman_update(ent)
                     -- This gives the thrown entity the property of taking damage after being thrown
                     ent.user_data.thrown_ent.more_flags = set_flag(ent.user_data.thrown_ent.more_flags, 1)
                     -- Throw sound goes here
-                    commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_TOSS, ent.uid, 1)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_TOSS, ent.uid, 1, false)
                     -- Give the hawkman a frame of invincibility so he doesn't get damaged by the thrown player
                     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
                     set_timeout(function()
@@ -165,7 +165,7 @@ local function hawkman_death(ent, damage_dealer, damage_amount, velocityx, veloc
             tikiman_db.sound_killed_by_other = sound_killed_by_other
         end, 1)
         --play a death sound, sounds weird otherwise
-        commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, ent.uid, 1, false)
     end
 end
 -- Make players ignore damage from tikimen that have our user_data for the hawkman type

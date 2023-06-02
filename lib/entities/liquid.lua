@@ -58,7 +58,7 @@ local function acid_update()
 					if ent.user_data.acid_sound_timer <= 0 then
 						ent.user_data.next_sound_timer = ent.user_data.next_sound_timer - 10
 						ent.user_data.acid_sound_timer = ent.user_data.next_sound_timer
-						commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_POISON_WARN, uid):set_pitch(0.7)
+						commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_POISON_WARN, uid, 1, false):set_pitch(0.7)
 					else
 						ent.user_data.acid_sound_timer = ent.user_data.acid_sound_timer - 1
 					end

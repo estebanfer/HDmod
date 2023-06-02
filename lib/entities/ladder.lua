@@ -36,7 +36,7 @@ function module.create_ladder_gold(x, y, l)
     ent:set_texture(texture_id)
     for i = 1, #ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER], 1 do
         if ent.animation_frame == ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i] then
-            ent.animation_frame = ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i]
+            ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i]
         end
     end
 end

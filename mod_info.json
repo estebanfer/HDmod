@@ -272,6 +272,60 @@
                 }
             ]
         },
+        "res/worm_doors.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        384,
+                        640
+                    ],
+                    "to": [
+                        0,
+                        896,
+                        384,
+                        1536
+                    ]
+                }
+            ]
+        },
+        "res/uvula.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        128,
+                        384
+                    ],
+                    "to": [
+                        512,
+                        0,
+                        640,
+                        384
+                    ]
+                }
+            ]
+        },
+        "res/worm_spikes.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        384,
+                        384
+                    ],
+                    "to": [
+                        640,
+                        1024,
+                        1024,
+                        1408
+                    ]
+                }
+            ]
+        },
         "res/regenblock.png": {
             "Data/Textures/floor_sunken.png": [
                 {

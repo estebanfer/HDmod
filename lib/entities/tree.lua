@@ -153,7 +153,6 @@ function module.postlevelgen_decorate_trees()
 				and not is_haunted()
 			then
 				apply_properties_to_topbranch_and_deco(get_entity(branch_uid), deco)
-				prinspect(deco.uid)
 			end
 
 			local y = top_y

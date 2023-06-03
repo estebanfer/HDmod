@@ -110,7 +110,7 @@ local function spikeball_trap_update(ent)
             if test_flag(other_ent.flags, ENT_FLAG.DEAD) then
                 other_ent.velocityx = (kbdir)*ent.health/250
                 other_ent.velocityy = math.sin(ey-y)/2
-                commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, ent.uid, 1, false)
+                commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, ent.uid)
             end
             other_ent.invincibility_frames_timer = 25
         end

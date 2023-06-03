@@ -291,7 +291,7 @@ local function scorpionfly_set(self)
         rubble.color:set_rgba(255, 80, 20, 255)
         rubble.animation_frame = 39
         -- Defeat sfx
-        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, self.uid, 1, false)
+        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, self.uid)
         audio:set_volume(1)
         audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 2)
         -- Spawn a spider for the blood

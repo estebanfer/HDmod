@@ -18,7 +18,7 @@ local function turn_into_rock(ent)
     local x, y, l = get_position(ent.uid)
     spawn_snowball_rubble(x, y, l, 5)
     -- I changed this because the drone crashing sound just didn't sound right to me
-    commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_LAND, ent.uid, 1, false)
+    commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_LAND, ent.uid)
 end
 
 ---@param self Entity

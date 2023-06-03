@@ -52,7 +52,7 @@ local function bacterium_kill(bacterium)
     local x, y, l = get_position(bacterium.uid)
     spawn_blood(x, y, l, 3)
     if bacterium.frozen_timer == 0 then
-        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid, 1, false)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, bacterium.uid)
     end
     spawn_bacterium_rubble(x, y, l, 2)
     bacterium:destroy()
@@ -72,7 +72,7 @@ local function bacterium_damage(bacterium, attacker)
         spawn_blood(x, y, l, 1)
         generate_world_particles(PARTICLEEMITTER.HITEFFECT_SMACK, bacterium.uid)
         bacterium.exit_invincibility_timer = 10
-        commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid, 1, false)
+        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_STICKYTRAP_END, bacterium.uid)
         return true
     else
         bacterium_kill(bacterium)
@@ -206,7 +206,7 @@ local function bacterium_update(ent, ent_info)
                         else
                             player.velocityx = px > x and 0.1 or -0.1
                             player.velocityy = 0.1
-                            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_CORPSE, player.uid, 1, false)
+                            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_CORPSE, player.uid)
                         end
                     end
                     bacterium_kill(ent)

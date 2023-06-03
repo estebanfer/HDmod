@@ -162,7 +162,7 @@ local function onframe_tonguetimeout()
 				-- Start the rumble sound and shake screen
 				if WORMTONGUE_RUMBLE_SOUND == nil then
 					commonlib.shake_camera(180, 180, 3, 3, 3, false)
-					WORMTONGUE_RUMBLE_SOUND = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1, false)
+					WORMTONGUE_RUMBLE_SOUND = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1)
 				end
 				set_timeout(function()
 					if WORMTONGUE_BG_UID ~= nil then
@@ -205,7 +205,7 @@ local function onframe_tonguetimeout()
 					local ent_texture = define_texture(texture_def)
 					
 					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
-					commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_BG_UID, 1, false)
+					commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_BG_UID, 1)
 					commonlib.shake_camera(20, 20, 12, 12, 12, false)
 					local worm_background = get_entity(WORM_BG_UID)
 					worm_background:set_texture(ent_texture)

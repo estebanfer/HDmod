@@ -5,7 +5,7 @@ MONS_SUCC.properties_flags = clr_flag(MONS_SUCC.properties_flags, 5)
 local succ_texture_id
 do
     local succ_texture_def = TextureDefinition.new()
-    succ_texture_def.width = 1152
+    succ_texture_def.width = 1024
     succ_texture_def.height = 256
     succ_texture_def.tile_width = 128
     succ_texture_def.tile_height = 128
@@ -15,28 +15,29 @@ end
 -- Sound effect path
 local succlaugh = create_sound('res/sounds/succlaugh.wav')
 local succdead = create_sound('res/sounds/succdead.wav')
+local succ_sound_volume = 0.15
 
 -- Animations
 local ANIMATION_INFO = {
     IDLE = {
-        start = 9;
-        finish = 9;
+        start = 8;
+        finish = 8;
         speed = 1;
     };
     RUN = {
-        start = 10;
-        finish = 17;
+        start = 0;
+        finish = 7;
         speed = 5;
     };
     JUMP = {
-        start = 13;
-        finish = 13;
+        start = 2;
+        finish = 2;
         speed = 1;
     };
     CLING = {
-        start = 5;
-        finish = 8;
-        speed = 6;
+        start = 9;
+        finish = 14;
+        speed = 5;
     };
 }
 
@@ -88,49 +89,42 @@ local function state_bait(self)
                 self.user_data.pet:destroy()
             end
             -- Sound effect
-            commonlib.play_custom_sound(succlaugh, self.uid, 0.1, false)
+            local audio = succlaugh:play()
+            local x, y, _ = get_position(self.uid)
+            local sx, sy = screen_position(x, y)
+            local d = screen_distance(distance(self.uid, self.uid))
+            if players[1] ~= nil then
+                d = screen_distance(distance(self.uid, players[1].uid))
+            end
+            audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+            audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, succ_sound_volume)
+            audio:set_volume(succ_sound_volume)
+            
+            audio:set_pause(false)
         end
     end
 end
 local function state_vanilla(self)
     -- Update animations
-    if self.stun_timer > 0 or test_flag(self.flags, ENT_FLAG.DEAD) then -- stun / corpse
-        self.user_data.custom_animation = false
-        if self.animation_frame == 60 then
-            self.animation_frame = 0
-        end
-        if self.animation_frame == 61 then
-            self.animation_frame = 1
-        end
-        if self.animation_frame == 62 then
-            self.animation_frame = 2
-        end
-        if self.animation_frame == 63 then
-            self.animation_frame = 3
-        end
-        if self.animation_frame == 47 then
-            self.animation_frame = 4
-        end
-    elseif self.hump_timer == 0 then
+    if self.hump_timer == 0 then
         if self:can_jump() and self.velocityx ~= 0 then
             self.user_data.animation_info = ANIMATION_INFO.RUN
-            self.user_data.custom_animation = true
         elseif self:can_jump() and self.velocityx == 0 then
-            self.user_data.animation_info = ANIMATION_INFO.IDLE   
-            self.user_data.custom_animation = true     
+            self.user_data.animation_info = ANIMATION_INFO.IDLE        
         end
         if not self:can_jump() then
-            self.user_data.animation_info = ANIMATION_INFO.JUMP   
-            self.user_data.custom_animation = true          
+            self.user_data.animation_info = ANIMATION_INFO.JUMP             
         end
     else
         if self.user_data.animation_info ~= ANIMATION_INFO.CLING then
             self.user_data.animation_info = ANIMATION_INFO.CLING
-            self.user_data.custom_animation = true
             self.user_data.animation_frame = 9
         end
     end
-
     -- Deal damage
     if self.hump_timer == 1 then
         if get_entity(self.chased_target_uid) ~= nil then
@@ -212,6 +206,8 @@ local function succ_set(self)
     };
     -- Set health
     self.health = 1
+    -- Unstunnable (we dont have stun textures yet!!!)
+    self.flags = clr_flag(self.flags, ENT_FLAG.STUNNABLE)
     -- Make detector jiangshi invisible and inactive and stay on the succubus
     self.user_data.jiangshi:set_post_update_state_machine(function(j)
         if self == nil then return end
@@ -266,11 +262,26 @@ local function succ_set(self)
             if self.user_data.jiangshi.type.id == ENT_TYPE.MONS_JIANGSHI then
                 self.user_data.jiangshi:kill(false, nil)
             end
-        end  
-        -- Death sfx
-        commonlib.play_custom_sound(succdead, self.uid, 0.1, false)   
+        end     
         -- Move the base entity out of bounds
         self.x = -100
+        -- Death sfx
+        local audio = succdead:play()
+        local x, y, _ = get_position(self.uid)
+        local sx, sy = screen_position(x, y)
+        local d = screen_distance(distance(self.uid, self.uid))
+        if players[1] ~= nil then
+            d = screen_distance(distance(self.uid, players[1].uid))
+        end
+        audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+        audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, succ_sound_volume)
+        audio:set_volume(succ_sound_volume)
+        
+        audio:set_pause(false)
     end)
     -- Make detector jiangshi only take damage from the camera
     self.user_data.jiangshi:set_pre_damage(function(self, other)

@@ -76,11 +76,11 @@ local function critterrat_update(ent)
     --sfx when hitting walls
     if math.abs(ent.velocityx) + math.abs(ent.velocityy) > 0.03 then --make sure overall velocity is high enough for these checks
         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
-            commonlib.play_vanilla_sound(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid, 1, false)
+            commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND)
         end
         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL) then
-            commonlib.play_vanilla_sound(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid, 1, false)
+            commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL)
         end
     end

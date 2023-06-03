@@ -120,40 +120,37 @@ local function hawkman_update(ent)
             ent.x = ent.x + 0.025*ent.movex
         end
         if ent.move_state == 6 then
-            --aggro shoppie behavior from scratch
-            for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, ent.layer)) do
-                local player = get_entity(v)
-                local px, py, pl = get_position(player.uid)
-                local x, y, l = get_position(ent.uid)
-                -- Always jump when aggro'd
-                if py > y and ent:can_jump() then
-                    ent.velocityy = 0.23
+            -- Always jump when aggro'd
+            if ent.stand_counter > 1 and ent:can_jump() then
+                ent.velocityy = 0.17
+                if math.random(2) == 1 then
+                    ent.velocityy = 0.25
                 end
-                -- Flip when hitting a wall
-                local held_item = get_entity(ent.holding_uid)
-                local hb = get_hitbox(ent.uid, 0, 0.19, 0)
-                for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
-                    local w = get_entity(v)
-                    if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
-                        if held_item ~= nil then
-                            held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
-                        end
-                        ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-                        ent.movex = -1
-                        ent.x = ent.x-0.1                  
+            end
+            -- Flip when hitting a wall
+            local held_item = get_entity(ent.holding_uid)
+            local hb = get_hitbox(ent.uid, 0, 0.18, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                    if held_item ~= nil then
+                        held_item.flags = set_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
                     end
+                    ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = -1
+                    ent.x = ent.x-0.1                  
                 end
-                local hb = get_hitbox(ent.uid, 0, -0.19, 0)
-                for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
-                    local w = get_entity(v)
-                    if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
-                        if held_item ~= nil then
-                            held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
-                        end
-                        ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-                        ent.movex = 1
-                        ent.x = ent.x+0.1                  
+            end
+            local hb = get_hitbox(ent.uid, 0, -0.18, 0)
+            for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, ent.layer)) do
+                local w = get_entity(v)
+                if test_flag(w.flags, ENT_FLAG.SOLID) and test_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS) then
+                    if held_item ~= nil then
+                        held_item.flags = clr_flag(held_item.flags, ENT_FLAG.FACING_LEFT)
                     end
+                    ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                    ent.movex = 1
+                    ent.x = ent.x+0.1                  
                 end
             end
             if ent.velocityx == 0 then
@@ -190,17 +187,20 @@ local function hawkman_update(ent)
                     if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then lor = -1 end
                     ent.user_data.thrown_ent:stun(100)
                     ent.user_data.thrown_ent.state = 18
-                    ent.user_data.thrown_ent.velocityx = 0.3*lor
+                    ent.user_data.thrown_ent.velocityx = 0.33*lor
                     ent.user_data.thrown_ent.velocityy = 0.2
                     ent.user_data.thrown_ent.last_owner_uid = ent.uid
                     -- This gives the thrown entity the property of taking damage after being thrown
                     ent.user_data.thrown_ent.more_flags = set_flag(ent.user_data.thrown_ent.more_flags, 1)
                     -- Throw sound goes here
                     commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_TOSS, ent.uid, 1)
-                    -- Give the hawkman a frame of invincibility so he doesn't get damaged by the thrown player
+                    -- Give the hawkman a bit of invincibility so he doesn't get damaged by the thrown player
                     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
                     set_timeout(function()
-                        ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)                
+                        ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)  
+                        -- No more aggro after throw
+                        ent.state = 1
+                        ent.move_state = 0              
                     end, 10)
                 end
             end
@@ -241,13 +241,9 @@ set_post_entity_spawn(function(self)
     end)
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
-function module.create_hawkman(x, y, l)
-    local hawkman = spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l)
-    hawkman_set(hawkman)
-    set_post_statemachine(hawkman, hawkman_update)
-    set_on_damage(hawkman, hawkman_death)
-end
-
 optionslib.register_entity_spawner("Hawkman", module.create_hawkman)
 
+set_callback(function()
+    module.create_hawkman(players[1].x+4, players[1].y, players[1].layer)
+end, ON.START)
 return module

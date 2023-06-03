@@ -729,7 +729,7 @@ module.HD_TILENAME = {
 				default = { ladderlib.create_ladder },
 				alternate = {
 					[THEME.JUNGLE] = { ladderlib.create_vine },
-					[THEME.EGGPLANT_WORLD] = { ladderlib.create_vine },
+					[THEME.EGGPLANT_WORLD] = { ladderlib.create_uvula },
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
@@ -810,6 +810,7 @@ module.HD_TILENAME = {
 					ladderlib.create_growable_vine
 				},
 				alternate = {
+					[THEME.EGGPLANT_WORLD] = { ladderlib.create_growable_uvula },
 					[THEME.VOLCANA] = { ladderlib.create_growable_ceiling_chain },
 				}
 			},

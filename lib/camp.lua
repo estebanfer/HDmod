@@ -2,6 +2,17 @@ local module = {}
 
 optionslib.register_option_bool("hd_debug_testing_door", "Enable testing door in camp", nil, false, true)
 
+local stone_door_texture_id
+do
+    local stone_door_texture_def = TextureDefinition.new()
+    stone_door_texture_def.width = 386
+    stone_door_texture_def.height = 640
+    stone_door_texture_def.tile_width = 386
+    stone_door_texture_def.tile_height = 320
+    stone_door_texture_def.texture_path = "res/stone_doors.png"
+    stone_door_texture_id = define_texture(stone_door_texture_def)
+end
+
 module.DOOR_TESTING_UID = nil
 module.DOOR_TUTORIAL_UID = nil
 
@@ -75,7 +86,7 @@ local function oncamp_shortcuts(x, y, l)
 	local shortcut_doortextures = {
 		TEXTURE.DATA_TEXTURES_FLOOR_JUNGLE_1,
 		TEXTURE.DATA_TEXTURES_FLOOR_ICE_1,
-		TEXTURE.DATA_TEXTURES_FLOOR_TEMPLE_1
+		(options.hd_og_floorstyle_temple and stone_door_texture_id or TEXTURE.DATA_TEXTURES_FLOOR_TEMPLE_1)
 	}
 	
 	-- hd-accurate x-placement of first shortcut door: 16

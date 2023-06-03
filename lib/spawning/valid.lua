@@ -528,6 +528,29 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
     return false
 end
 
+local function is_valid_tiki_crushtrap_room(x, y, _)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return (
+		_subchunk_id == roomdeflib.HD_SUBCHUNKID.SIDE
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+	)
+end
+
 function module.is_valid_tikitrap_spawn(x, y, l)
 	-- need subchunkid of what room we're in
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
@@ -539,25 +562,7 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 		or is_anti_trap_at(x, y-1) == true
 	) then return false end
 
-	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
-	if (
-		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SIDE
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_TOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
-	) then
+	if not is_valid_tiki_crushtrap_room(x, y, l) then
 		return false
 	end
 
@@ -653,6 +658,11 @@ end
 function module.is_valid_crushtrap_spawn(x, y, l)
     if get_grid_entity_at(x, y, l) == -1 then return false end
 	if is_liquid_at(x, y) then return false end
+
+	-- can only spawn in certain room ids
+	if not is_valid_tiki_crushtrap_room(x, y, l) then
+		return false
+	end
 
 	-- Has at least one block occupide on any side
 	if (

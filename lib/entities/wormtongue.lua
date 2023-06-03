@@ -2,6 +2,39 @@ local module = {}
 
 optionslib.register_option_bool("hd_debug_worm_tongue_info", "Worm tongue - Show info", nil, false, true)
 
+local ANIMATION_FRAMES_ENUM = {
+    WORM = 1,
+	DECO_HOLE = 2,
+	DECO_TONGUE = 3,
+}
+
+local ANIMATION_FRAMES_RES = {
+    { 1, 2, 4, 5 },
+    { 7 },
+    { 8 },
+}
+
+local worm_jungle_texture_id
+local worm_ice_texture_id
+do
+	local worm_jungle_texture_def = TextureDefinition.new()
+	worm_jungle_texture_def.width = 1536
+	worm_jungle_texture_def.height = 1536
+	worm_jungle_texture_def.tile_width = 512
+	worm_jungle_texture_def.tile_height = 512
+	worm_jungle_texture_def.texture_path = "res/worm_jungle.png"
+	worm_jungle_texture_id = define_texture(worm_jungle_texture_def)
+
+	local worm_ice_texture_def = TextureDefinition.new()
+	worm_ice_texture_def.width = 1536
+	worm_ice_texture_def.height = 1536
+	worm_ice_texture_def.tile_width = 512
+	worm_ice_texture_def.tile_height = 512
+	worm_ice_texture_def.texture_path = "res/worm_ice.png"
+	worm_ice_texture_id = define_texture(worm_ice_texture_def)
+end
+
+
 local WORMTONGUE_UID = nil
 local WORMTONGUE_BG_UID = nil
 local WORM_BG_UID = nil
@@ -167,7 +200,7 @@ local function onframe_tonguetimeout()
 				set_timeout(function()
 					if WORMTONGUE_BG_UID ~= nil then
 						local worm_background = get_entity(WORMTONGUE_BG_UID)
-						worm_background.animation_frame = 7
+						worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_HOLE][1]
 					else message("WORMTONGUE_BG_UID is nil :(") end
 					
 					for _ = 1, 45, 1 do
@@ -199,34 +232,27 @@ local function onframe_tonguetimeout()
 						end
 					end
 
-					--create worm bg
-					local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-					texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
-					local ent_texture = define_texture(texture_def)
-					
-					WORM_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+					local worm_background = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0))
+					worm_background:set_texture(state.theme == THEME.JUNGLE and worm_jungle_texture_id or worm_ice_texture_id)
+					WORM_BG_UID = worm_background.uid
+
 					commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_BG_UID, 1)
 					commonlib.shake_camera(20, 20, 12, 12, 12, false)
-					local worm_background = get_entity(WORM_BG_UID)
-					worm_background:set_texture(ent_texture)
-					worm_background.animation_frame = 5
 
-					local ent = get_entity(WORM_BG_UID)
-					worm_background.width, worm_background.height = 2, 2
-					-- message("WORM_BG_UID: " .. WORM_BG_UID)
-					
 					-- animate worm
+					worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][4]
+					worm_background.width, worm_background.height = 2, 2
 					set_interval(function()
 						if WORM_BG_UID ~= nil then
 							local ent = get_entity(WORM_BG_UID)
 							if ent ~= nil then
 								if ent.width >= 4 then
-									if ent.animation_frame == 5 then
-										ent.animation_frame = 4
-									elseif ent.animation_frame == 4 then
-										ent.animation_frame = 2
-									elseif ent.animation_frame == 2 then
-										ent.animation_frame = 1
+									if ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][4] then
+										ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][3]
+									elseif ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][3] then
+										ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][2]
+									elseif ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][2] then
+										ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][1]
 									else
 										return false
 									end
@@ -250,12 +276,12 @@ local function onframe_tonguetimeout()
 						if WORM_BG_UID ~= nil then
 							local ent = get_entity(WORM_BG_UID)
 							if ent ~= nil then
-								if ent.animation_frame == 1 then
-									ent.animation_frame = 2
-								elseif ent.animation_frame == 2 then
-									ent.animation_frame = 4
-								elseif ent.animation_frame == 4 then
-									ent.animation_frame = 5
+								if ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][1] then
+									ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][2]
+								elseif ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][2] then
+									ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][3]
+								elseif ent.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][3] then
+									ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][4]
 								else
 									if ent.width > 2 then
 										ent.width, ent.height = ent.width - 0.1, ent.height - 0.1
@@ -418,22 +444,18 @@ function module.create_wormtongue(x, y, l)
 		self.y = d.orig_y+math.sin(d.counter)*d.yelas
 	end)
 	if #balls > 0 then
-		local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-		texture_def.texture_path = (state.theme == THEME.JUNGLE and "res/worm_jungle.png" or "res/worm_icecaves.png")
-		local ent_texture = define_texture(texture_def)
-		
-		WORMTONGUE_BG_UID = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y-1.4, l, 0, 0)
-		local worm_background = get_entity(WORMTONGUE_BG_UID)
-		worm_background:set_texture(ent_texture)
-		worm_background.animation_frame = 8
+		local worm_background = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y-1.4, l, 0, 0))
+		worm_background:set_texture(state.theme == THEME.JUNGLE and worm_jungle_texture_id or worm_ice_texture_id)
+		worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TONGUE][1]
+		WORMTONGUE_BG_UID = worm_background.uid
 	
 		-- sticky part creation
-		WORMTONGUE_UID = balls[1] -- HAHA tongue and balls
-		local ball = get_entity(WORMTONGUE_UID)
+		local ball = get_entity(balls[1])
 		ball.width = 1.35
 		ball.height = 1.35
 		ball.hitboxx = 0.3375
 		ball.hitboxy = 0.3375
+		WORMTONGUE_UID = ball.uid -- HAHA tongue and balls
 		
 		local ballstems = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE)
 		for _, ballstem_uid in ipairs(ballstems) do

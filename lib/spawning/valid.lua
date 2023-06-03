@@ -628,14 +628,49 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	return false
 end
 
+local function is_valid_block_against_crushtrap(x, y, l)
+	local uid = get_grid_entity_at(x, y, l)
+	if uid == -1 then return false end
+	local type = get_entity(uid).type.id
+	return (
+		type == ENT_TYPE.FLOORSTYLED_TEMPLE
+		or type == ENT_TYPE.FLOORSTYLED_STONE
+		or type == ENT_TYPE.FLOORSTYLED_MINEWOOD
+		or type == ENT_TYPE.FLOORSTYLED_COG
+		or type == ENT_TYPE.FLOOR_JUNGLE
+		or type == ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
+		or type == ENT_TYPE.FLOOR_ALTAR
+	)
+end
+
+local function is_invalid_block_against_crushtrap(x, y, l)
+	local uid = get_grid_entity_at(x, y, l)
+	if uid == -1 then return true end
+	if is_anti_trap_at(x, y) then return true end
+	return (get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+end
+
 function module.is_valid_crushtrap_spawn(x, y, l)
-	--[[
-		-- # TODO: Implement method for valid crushtrap spawn
-		-- Replace air
-		-- Needs at least one block open on one side of it
-		-- Needs at least one block occupide on one side of it
-	]]
-	return false
+    if get_grid_entity_at(x, y, l) == -1 then return false end
+	if is_liquid_at(x, y) then return false end
+
+	-- Has at least one block occupide on any side
+	if (
+		not is_valid_block_against_crushtrap(x-1, y, l)
+		and not is_valid_block_against_crushtrap(x, y+1, l)
+		and not is_valid_block_against_crushtrap(x+1, y, l)
+		and not is_valid_block_against_crushtrap(x, y-1, l)
+	) then return false end
+
+	-- cannot be up against an arrow trap or anti-trap block
+	if (
+		is_invalid_block_against_crushtrap(x-1, y, l)
+		or is_invalid_block_against_crushtrap(x, y+1, l)
+		or is_invalid_block_against_crushtrap(x+1, y, l)
+		or is_invalid_block_against_crushtrap(x, y-1, l)
+	) then return false end
+
+	return true
 end
 
 function module.is_valid_tombstone_spawn(x, y, l)

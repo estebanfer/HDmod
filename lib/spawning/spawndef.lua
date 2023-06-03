@@ -26,7 +26,6 @@ local snaillib = require 'lib.entities.snail'
 local scorpionflylib = require 'lib.entities.scorpionfly'
 local devillib = require 'lib.entities.devil'
 local windowlib = require 'lib.entities.window'
-local crushtraplib = require 'lib.entities.crushtrap'
 
 local module = {}
 
@@ -172,7 +171,7 @@ module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedura
 
 module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
-module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
+module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
 
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
 module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)

@@ -628,25 +628,13 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	return false
 end
 
---[[
-	- Replaces air
-	- Needs at least one block occupide on one side of it
-]]
 function module.is_valid_crushtrap_spawn(x, y, l)
-    local floor = get_grid_entity_at(x, y, l)
-    local left = module.is_solid_grid_entity(x-1, y, l)
-    local up = module.is_solid_grid_entity(x, y+1, l)
-    local right = module.is_solid_grid_entity(x+1, y, l)
-    local down = module.is_solid_grid_entity(x, y-1, l)
-    if (
-		floor ~= -1
-		and not is_liquid_at(x, y)
-		and (
-			left or up or right or down
-		)
-	) then
-        return true
-    end
+	--[[
+		-- # TODO: Implement method for valid crushtrap spawn
+		-- Replace air
+		-- Needs at least one block open on one side of it
+		-- Needs at least one block occupide on one side of it
+	]]
 	return false
 end
 

@@ -200,7 +200,7 @@ local function hawkman_update(ent)
                         ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)  
                         -- No more aggro after throw
                         ent.state = 1
-                        ent.move_state = 0              
+                        ent.move_state = 0
                     end, 10)
                 end
             end
@@ -241,9 +241,13 @@ set_post_entity_spawn(function(self)
     end)
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
+function module.create_hawkman(x, y, l)
+    local hawkman = spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l)
+    hawkman_set(hawkman)
+    set_post_statemachine(hawkman, hawkman_update)
+    set_on_damage(hawkman, hawkman_death)
+end
+
 optionslib.register_entity_spawner("Hawkman", module.create_hawkman)
 
-set_callback(function()
-    module.create_hawkman(players[1].x+4, players[1].y, players[1].layer)
-end, ON.START)
 return module

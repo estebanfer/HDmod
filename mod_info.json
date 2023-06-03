@@ -236,6 +236,24 @@
                 }
             ]
         },
+        "res/uvula_debris.png": {
+            "Data/Textures/fx_rubble.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        128,
+                        128
+                    ],
+                    "to": [
+                        256,
+                        896,
+                        384,
+                        1024
+                    ]
+                }
+            ]
+        },
         "res/wormtongue.png": {
             "Data/Textures/floor_sunken.png": [
                 {

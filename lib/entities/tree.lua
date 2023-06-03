@@ -47,7 +47,7 @@ local function apply_topbranch_properties(ent, x_offset)
 	ent:set_texture(top_texture_id)
 	ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BRANCH][1]
 	ent.x = x_offset
-	ent.y = 0.27
+	ent.y = 0.15
 end
 
 -- HD-style tree decorating methods
@@ -95,7 +95,7 @@ local function add_top_branches(treetop_uid)
 			local deco = get_entity(deco_uid)
 			deco:set_texture(top_texture_id)
 			deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_CENTER][1]
-			deco.y = 0.25
+			deco.y = 0.15
 		end
 	end
 end

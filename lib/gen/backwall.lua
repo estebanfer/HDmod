@@ -63,7 +63,8 @@ local function area_specific()
         for _, uid in pairs(get_entities_by(ENT_TYPE.MIDBG, MASK.BG, LAYER.FRONT)) do
             local ent = get_entity(uid)
             if (
-                ent:get_texture() == TEXTURE.DATA_TEXTURES_FLOORSTYLED_STONE_2
+                ent
+                and ent:get_texture() == TEXTURE.DATA_TEXTURES_FLOORSTYLED_STONE_2
                 and ent.animation_frame >= 80
                 and ent.animation_frame <= 95
             ) then

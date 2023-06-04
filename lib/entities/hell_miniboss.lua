@@ -70,7 +70,7 @@ local function hell_miniboss_update(ent)
         if ent.walk_pause_timer == 0 then
             local x, y, l = get_position(ent.uid)
             local px, py, pl = get_position(players[1].uid)
-            ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER + math.random(-10, 20) --random deviation so they look less robotic
+            ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER + prng:random_int(-10, 20, PRNG_CLASS.AI) --random deviation so they look less robotic
             if ent.chatting_to_uid == 1 then
                 ent.chatting_to_uid = 0
             else
@@ -80,7 +80,7 @@ local function hell_miniboss_update(ent)
             if math.abs(px-x) <= 4 then
                 ent.move_state = HELL_MINIBOSS_STATE.JUMP
                 ent.state = 12
-                if math.random(3) == 1 then
+                if prng:random_chance(3, PRNG_CLASS.AI) then
                     ent.move_state = HELL_MINIBOSS_STATE.THROW_BOMB
                 end
                 ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
@@ -143,7 +143,7 @@ local function hell_miniboss_update(ent)
             ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER
             ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
             ent.chatting_to_uid = 0
-            ent.walk_pause_timer = 25 + math.random(-10, 5)
+            ent.walk_pause_timer = 25 + prng:random_int(-10, 5, PRNG_CLASS.AI)
             commonlib.shake_camera(10, 10, 4, 4, 4, false)
             commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid)
         end
@@ -162,7 +162,7 @@ local function hell_miniboss_update(ent)
             ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER
             ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
             ent.chatting_to_uid = 0
-            ent.walk_pause_timer = 45 + math.random(-10, 10)
+            ent.walk_pause_timer = 45 + prng:random_int(-10, 10, PRNG_CLASS.AI)
         end
         --animations
         if ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 then

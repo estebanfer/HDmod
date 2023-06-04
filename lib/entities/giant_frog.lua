@@ -84,10 +84,10 @@ local function giant_frog_set(ent)
         local x, y, l = get_position(dead_ent.uid)
         spawn_frog_rubble(x, y, l, 2)
         spawn_blood(x, y, l, 4)
-        if math.random(1, 3) == 1 then
-            spawn(ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+        if prng:random_chance(3, PRNG_CLASS.AI) then
+            spawn(ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
         else
-            spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+            spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
         end
     end)
     return {
@@ -95,7 +95,7 @@ local function giant_frog_set(ent)
         script_jumped = false,
         animation_state = ANIM_STATE.IDLE,
         animation_timer = 60,
-        action_timer = math.random(100, 200)
+        action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
     }
 end
 
@@ -123,7 +123,7 @@ local function giant_frog_spit(ent)
     local x, y, l = get_position(ent.uid)
     --ent.animation_frame = 0
     local vx = facing_left and -0.120 or 0.120
-    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y, l, vx, 0.07+math.random()*0.03))
+    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y, l, vx, 0.07+prng:random_float(PRNG_CLASS.AI)*0.03))
     spawned.last_owner_uid = ent.uid
     if facing_left then
         spawned.flags = set_flag(spawned.flags, ENT_FLAG.FACING_LEFT)
@@ -161,7 +161,7 @@ local function update_giant_frog_animation(ent, c_data)
                     ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
                 end
                 c_data.animation_state = ANIM_STATE.IDLE
-                c_data.animation_timer = math.random(20, 50)
+                c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
             end
         else
             ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
@@ -204,14 +204,14 @@ local function giant_frog_update(ent, c_data)
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time
-                if c_data.frogs_inside == 0 or math.random(2) == 1 then
+                if c_data.frogs_inside == 0 or prng:random_chance(2, PRNG_CLASS.AI) then
                     if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, 0, 0.8), ent.layer), filter_solids)[1] then
                         ent.move_state = 1
-                        time = math.random(50, 100)
+                        time = prng:random_int(50, 100, PRNG_CLASS.AI)
                         set_animation(c_data, ANIM_STATE.WALKING)
                     else
                         set_animation(c_data, ANIM_STATE.JUMPING)
-                        time = math.random(100, 200)
+                        time = prng:random_int(100, 200, PRNG_CLASS.AI)
                     end
                 else
                     set_timeout(function()
@@ -228,8 +228,8 @@ local function giant_frog_update(ent, c_data)
                 c_data.action_timer = time
             elseif c_data.animation_state == ANIM_STATE.WALKING then
                 c_data.animation_state = ANIM_STATE.IDLE
-                c_data.animation_timer = math.random(20, 50)
-                c_data.action_timer = math.random(100, 200)
+                c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
+                c_data.action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
             else
                 update_giant_frog_animation(ent, c_data)
             end
@@ -245,8 +245,8 @@ local function giant_frog_update(ent, c_data)
                     ent.velocityx = vel_x
                 else
                     c_data.animation_state = ANIM_STATE.IDLE
-                    c_data.animation_timer = math.random(20, 50)
-                    c_data.action_timer = math.random(100, 200)
+                    c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
+                    c_data.action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
                 end
             end
             update_giant_frog_animation(ent, c_data)

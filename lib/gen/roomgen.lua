@@ -248,14 +248,6 @@ function module.onlevel_generation_execution_phase_three()
 	gen_levelcode_phase(3, true)
 end
 
--- during on_level
-	-- elevators
-	-- force fields
-function module.onlevel_generation_execution_phase_four()
-	gen_levelcode_phase(4)
-	gen_levelcode_phase(4, true)
-end
-
 function levelrooms_setn_rowfive(levelw)
 	local tw = {}
 	commonlib.setn(tw, levelw)
@@ -324,7 +316,7 @@ function level_generation_method_side()
 			for level_wi = 1, levelw, 1 do
 				local subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[level_hi][level_wi]
 				if subchunk_id == nil then -- apply sideroom
-					local specified_index = math.random(#chunkcodes)
+					local specified_index = prng:random_index(#chunkcodes, PRNG_CLASS.LEVEL_GEN)
 					local side_results = nil
 					if (
 						roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
@@ -476,7 +468,7 @@ function module.level_generation_method_nonaligned(_nonaligned_room_type, _avoid
 	end
 
 	-- pick random place to fill
-	local spot = commonlib.TableCopyRandomElement(spots)
+	local spot = commonlib.TableCopyRandomElement(spots, PRNG_CLASS.LEVEL_GEN)
 
 	module.levelcode_inject_roomcode(_nonaligned_room_type.subchunk_id, _nonaligned_room_type.roomcodes, spot.y, spot.x)
 end
@@ -524,9 +516,9 @@ function module.level_generation_method_aligned(_aligned_room_types)
 		end
 	end
 
-	-- pick random place to fill
-	local spot = spots[math.random(#spots)]
-	if spot ~= nil then
+	if #spots > 0 then
+		-- pick random place to fill
+		local spot = spots[prng:random_index(#spots, PRNG_CLASS.LEVEL_GEN)]
 		module.levelcode_inject_roomcode(
 			(spot.facing_left and _aligned_room_types.left.subchunk_id or _aligned_room_types.right.subchunk_id),
 			(spot.facing_left and _aligned_room_types.left.roomcodes or _aligned_room_types.right.roomcodes),
@@ -612,7 +604,7 @@ function level_generation_method_coffin_coop()
 		end
 		if #spots ~= 0 then
 			-- pick random place to fill
-			local spot = spots[math.random(#spots)]
+			local spot = spots[prng:random_index(#spots, PRNG_CLASS.LEVEL_GEN)]
 			local roomcode = nil
 			
 			if (
@@ -643,37 +635,38 @@ end
 
 function level_generation_method_shops()
 	if (
-		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false and
-		state.theme ~= THEME.VOLCANA and
-		module.detect_level_non_boss() and
-		module.detect_level_non_special()
+		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false
+		and state.theme ~= THEME.VOLCANA
+		and module.detect_level_non_boss()
+		and module.detect_level_non_special()
+		and prng:random_index(state.level + ((state.world - 1) * 4), PRNG_CLASS.LEVEL_GEN) <= 2
 	) then
-		if (math.random(state.level + ((state.world - 1) * 4)) <= 2) then
-			local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
-			local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
-			-- # TODO: Find real chance of spawning a dice shop.
-			-- This is a temporary solution.
-			if math.random(7) == 1 then
-				state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
-				shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
-				shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
-			-- elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
-			-- 	state.level_gen.shop_type = math.random(0, 5)
-			end
+		local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
+		local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
 
-			module.level_generation_method_aligned(
-				{
-					left = {
-						subchunk_id = shop_id_left,
-						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
-					},
-					right = {
-						subchunk_id = shop_id_right,
-						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
-					}
-				}
-			)
+        -- prinspect(string.format('Prior shop_type: %s', state.level_gen.shop_type))
+		-- # TODO: Find and implement HD chances of shop types
+		if prng:random_chance(7, PRNG_CLASS.LEVEL_GEN) then
+			state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
+			shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
+			shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+		elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
+			state.level_gen.shop_type = prng:random_int(0, 5, PRNG_CLASS.LEVEL_GEN)
 		end
+        -- prinspect(string.format('Post-script shop_type: %s', state.level_gen.shop_type))
+
+		module.level_generation_method_aligned(
+			{
+				left = {
+					subchunk_id = shop_id_left,
+					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
+				},
+				right = {
+					subchunk_id = shop_id_right,
+					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
+				}
+			}
+		)
 	end
 end
 
@@ -682,18 +675,13 @@ function module.level_generation_method_structure_vertical(_structure_top, _stru
 	
 	local _, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 	
-	local structx = _struct_x_pool[math.random(1, #_struct_x_pool)]
+	local structx = _struct_x_pool[prng:random_index(#_struct_x_pool, PRNG_CLASS.LEVEL_GEN)]
 
 	-- spawn top
 	module.levelcode_inject_roomcode(_structure_top.subchunk_id, _structure_top.roomcodes, 1, structx)
 
 	if _structure_parts ~= nil then
-		local mid_height = (_mid_height_min == 0) and 0 or math.random(_mid_height_min, levelh-2)
-		-- if _midheight_min == 0 then
-		-- 	midheight = 0
-		-- else
-		-- 	midheight = math.random(_midheight_min, levelh-2)
-		-- end
+		local mid_height = (_mid_height_min == 0) and 0 or prng:random_int(_mid_height_min, levelh-2, PRNG_CLASS.LEVEL_GEN)
 
 		-- spawn middle
 		if _structure_parts.middle ~= nil then
@@ -711,7 +699,7 @@ end
 
 local levelcode_inject_rowfive
 function module.levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _level_wi, _specified_index)
-	_specified_index = _specified_index or math.random(#_roomPool)
+	_specified_index = _specified_index or prng:random_index(#_roomPool, PRNG_CLASS.LEVEL_GEN)
 	roomgenlib.global_levelassembly.modification.rowfive.levelrooms[_level_wi] = _subchunk_id
 
 	local c_y = 1
@@ -724,9 +712,9 @@ function module.levelcode_inject_roomcode_rowfive(_subchunk_id, _roomPool, _leve
 end
 
 function levelcode_inject_rowfive(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
-	_specified_index = _specified_index or math.random(#_chunkPool)
+	_specified_index = _specified_index or prng:random_index(#_chunkPool, PRNG_CLASS.LEVEL_GEN)
 	local chunkPool_rand_index = _specified_index
-	local chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
+	local chunkCodeOrientation_index = prng:random_index(#_chunkPool[chunkPool_rand_index], PRNG_CLASS.LEVEL_GEN)
 	local chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
 	local i = 1
 	for c_hi = _c_y, (_c_y+_c_dim_h)-1, 1 do
@@ -739,7 +727,7 @@ end
 
 local levelcode_inject
 function module.levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _level_wi, _specified_index)
-	_specified_index = _specified_index or math.random(#_roomPool)
+	_specified_index = _specified_index or prng:random_index(#_roomPool, PRNG_CLASS.LEVEL_GEN)
 	roomgenlib.global_levelassembly.modification.levelrooms[_level_hi][_level_wi] = _subchunk_id
 
 	local c_y = ((_level_hi*CONST.ROOM_HEIGHT)-CONST.ROOM_HEIGHT)+1
@@ -752,9 +740,9 @@ function module.levelcode_inject_roomcode(_subchunk_id, _roomPool, _level_hi, _l
 end
 
 function levelcode_inject(_chunkPool, _c_dim_h, _c_dim_w, _c_y, _c_x, _specified_index)
-	_specified_index = _specified_index or math.random(#_chunkPool)
+	_specified_index = _specified_index or prng:random_index(#_chunkPool, PRNG_CLASS.LEVEL_GEN)
 	local chunkPool_rand_index = _specified_index
-	local chunkCodeOrientation_index = math.random(#_chunkPool[chunkPool_rand_index])
+	local chunkCodeOrientation_index = prng:random_index(#_chunkPool[chunkPool_rand_index], PRNG_CLASS.LEVEL_GEN)
 	local chunkcode = _chunkPool[chunkPool_rand_index][chunkCodeOrientation_index]
 	local i = 1
 	for c_hi = _c_y, (_c_y+_c_dim_h)-1, 1 do
@@ -874,7 +862,7 @@ function levelcode_chunks(rowfive)
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks[tilename] ~= nil
-				) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks[tilename]() or math.random(#chunkcodes)
+				) and roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.obstacleBlocks[tilename]() or prng:random_index(#chunkcodes, PRNG_CLASS.LEVEL_GEN)
 				-- feelings
 				for feeling, feelingContent in pairs(roomdeflib.HD_ROOMOBJECT.FEELINGS) do
 					if (
@@ -976,7 +964,7 @@ function gen_levelcode_phase(phase, rowfive)
 					end
 					
 					if #entity_type_pool > 0 then
-						entity_type = commonlib.TableCopyRandomElement(entity_type_pool)(x, y, LAYER.FRONT)
+						entity_type = commonlib.TableCopyRandomElement(entity_type_pool, PRNG_CLASS.LEVEL_GEN)(x, y, LAYER.FRONT)
 					end
 					-- entType_is_liquid = (
 					-- 	entity_type == ENT_TYPE.LIQUID_WATER or
@@ -1087,7 +1075,7 @@ function gen_levelrooms_path()
 	
 	local assigned_exit = false
 	local assigned_entrance = false
-	local wi, hi = rand_startindexes[math.random(1, #rand_startindexes)], 1
+	local wi, hi = rand_startindexes[prng:random_index(#rand_startindexes, PRNG_CLASS.LEVEL_GEN)], 1
 	local dropping = false
 
 	-- don't spawn paths if roomcodes aren't available
@@ -1096,7 +1084,7 @@ function gen_levelrooms_path()
 		-- message("level_createpath: No pathRooms available in roomdeflib.HD_ROOMOBJECT.WORLDS;")
 	else
 		while assigned_exit == false do
-			local pathid = math.random(2)
+			local pathid = prng:random_index(2, PRNG_CLASS.LEVEL_GEN)
 			local ind_off_x, ind_off_y = 0, 0
 			if (
 				(
@@ -1112,7 +1100,7 @@ function gen_levelrooms_path()
 				if module.detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					pathid = roomdeflib.HD_SUBCHUNKID.PATH_DROP
 				elseif module.detect_sideblocked_neither(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
-					dir = (math.random(2) == 2) and 1 or -1
+					dir = prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) and 1 or -1
 				else
 					if module.detect_sideblocked_right(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 						dir = -1
@@ -1151,7 +1139,7 @@ function gen_levelrooms_path()
 				if module.detect_sideblocked_both(roomgenlib.global_levelassembly.modification.levelrooms, wi, hi, minw, minh, maxw, maxh) then
 					assigned_exit = true
 				else
-					assigned_exit = (math.random(2) == 2)
+					assigned_exit = prng:random_chance(2, PRNG_CLASS.LEVEL_GEN)
 				end
 				if assigned_exit == true then
 					if pathid == roomdeflib.HD_SUBCHUNKID.PATH_NOTOP then
@@ -1197,7 +1185,7 @@ function gen_levelrooms_path()
 				chunkcodes ~= nil
 			) then
 				
-				local specified_index = math.random(#chunkcodes)
+				local specified_index = prng:random_index(#chunkcodes, PRNG_CLASS.LEVEL_GEN)
 				if (
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules ~= nil and
 					roomdeflib.HD_ROOMOBJECT.WORLDS[state.theme].chunkRules.rooms ~= nil and

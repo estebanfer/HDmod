@@ -167,16 +167,21 @@ local function alienlord_set(uid)
         end
         -- Gibs and blood
         for _=1, 8 do
-            local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100))
+            local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE,
+                x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, l,
+                prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/100, prng:random_int(10, 15, PRNG_CLASS.PARTICLES)/100))
             rubble.animation_frame = 42
         end
         for _=1, 10 do
-            local rubble = get_entity(spawn(ENT_TYPE.ITEM_BLOOD, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100))
+            get_entity(spawn(ENT_TYPE.ITEM_BLOOD,
+                x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, l,
+                prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/100, prng:random_int(10, 15, PRNG_CLASS.PARTICLES)/100))
         end
         -- Gems
         local gems = {ENT_TYPE.ITEM_RUBY, ENT_TYPE.ITEM_SAPPHIRE, ENT_TYPE.ITEM_EMERALD}
         for _=1, 3 do
-            spawn(gems[prng:random_index(3, PRNG_CLASS.EXTRA_SPAWNS)], x, y, l, math.random(-15, 15)/100, math.random(10, 15)/100)
+            spawn(gems[prng:random_index(3, PRNG_CLASS.EXTRA_SPAWNS)], x, y, l,
+                prng:random_int(-15, 15, PRNG_CLASS.EXTRA_SPAWNS)/100, prng:random_int(10, 15, PRNG_CLASS.EXTRA_SPAWNS)/100)
         end
         -- Sfx
         commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY, ent.uid, 1)

@@ -7,31 +7,7 @@ local module = {}
 -- Bomb timer: time til it will be able to shoot
 
 local animationlib = require "animation"
-
-local function b(flag) return (1 << (flag-1)) end
-
-local function is_activefloor_at(x, y, layer)
-  local hitbox = AABB:new(x - 0.05, y+0.05, x + 0.05, y - 0.05)
-  local activefloors = get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, hitbox, layer)
-  return activefloors[1] ~= nil
-end
-
-local function is_solid_floor_at(x, y, layer)
-  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
-  if test_flag(get_entity_flags(floor), ENT_FLAG.SOLID) then return true end
-
-  return is_activefloor_at(x, y, layer)
-end
-
-local function is_standable_floor_at(x, y, layer)
-  local floor = get_grid_entity_at(math.floor(x+0.5), math.floor(y+0.5), layer)
-  local flags = get_entity_flags(floor)
-  if floor ~= 0 and (test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)) then
-    return true
-  end
-
-  return is_activefloor_at(x, y, layer)
-end
+local commonlib = require "lib.common"
 
 local TANK_STATE <const> = {
   IDLE = 0,
@@ -65,11 +41,11 @@ alientank_type.friction = 0.0
 local function alientank_update_onfloor(tank, tank_data)
   local x, y, layer = get_position(tank.uid)
   local dir_sign = test_flag(tank.flags, ENT_FLAG.FACING_LEFT) and -1.0 or 1.0
-  if (is_solid_floor_at(x + (0.6 * dir_sign), y, layer)
-      or not is_standable_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
+  if (commonlib.is_solid_floor_at(x + (0.6 * dir_sign), y, layer)
+      or not commonlib.is_standable_floor_at(x + (0.6 * dir_sign), y-0.8, layer))
   then
-    if (not is_solid_floor_at(x + (0.6 * -dir_sign), y, layer)
-      and is_standable_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
+    if (not commonlib.is_solid_floor_at(x + (0.6 * -dir_sign), y, layer)
+      and commonlib.is_standable_floor_at(x + (0.6 * -dir_sign), y-0.8, layer))
     then
       tank_data.state = TANK_STATE.CHANGING_DIRECTION
       animationlib.set_animation(tank_data, ANIMATIONS.CHANGING_DIRECTION)
@@ -221,8 +197,8 @@ local function alientank_update(tank)
   elseif tank_data.state == TANK_STATE.RELOADING then
     alientank_update_reloading(tank, tank_data)
   end
-  tank.animation_frame = animationlib.get_animation_frame(tank_data.animation_state, tank_data.animation_timer)
-  tank_data.animation_timer = animationlib.update_timer(tank_data.animation_state, tank_data.animation_timer)
+  tank.animation_frame = animationlib.get_animation_frame(tank_data)
+  animationlib.update_timer(tank_data)
 end
 
 function set_alientank(uid)
@@ -249,7 +225,7 @@ function set_alientank(uid)
   set_post_statemachine(uid, alientank_update)
 end
 
-function spawn_alientank(x, y, layer)
+local function spawn_alientank(x, y, layer)
   local uid = spawn(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
   set_alientank(uid)
 end
@@ -258,7 +234,7 @@ end
 ---@param y integer
 ---@param layer integer
 function module.create_alientank(x, y, layer)
-  local uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_FROG, x, y, layer, 0, 0)
+  local uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_FROG, x, y, layer)
   set_alientank(uid)
 end
 

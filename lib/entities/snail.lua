@@ -11,7 +11,9 @@ set_post_entity_spawn(function(entity)
         local x, y, l = get_position(entity.uid)
         for i=1, 4, 1 do
             -- # TODO: polish this effect up a bit more, colors arent spot on
-            local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, x+math.random(-10, 10)/100, y+(math.random(-10, 10)/100)+0.1, l, math.random(-10, 10)/100, math.random(1, 6)/30))
+            local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE,
+                x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, y+(prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100)+0.1, l,
+                prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, prng:random_int(1, 6, PRNG_CLASS.PARTICLES)/30))
             rubble.animation_frame = 22
             rubble.color.r = 55
             rubble.color.g = 65

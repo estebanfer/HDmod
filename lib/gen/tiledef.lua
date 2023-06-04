@@ -18,6 +18,10 @@ local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
+local coffinlib = require 'lib.entities.coffin'
+local liquidfalllib = require 'lib.entities.liquidfall'
+local altarlib = require 'lib.entities.altar'
+local moailib = require 'lib.entities.moai'
 
 local module = {}
 
@@ -57,20 +61,7 @@ module.HD_TILENAME = {
 	["&"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) createlib.create_liquidfall(x, y-2.5, l, "res/fountain_jungle.png") end,
-				},
-				alternate = {
-					[THEME.CITY_OF_GOLD] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_gold.png", true) end,
-					},
-					[THEME.TEMPLE] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_temple.png", true) end,
-					},
-					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_liquidfall(x, y-3, l, "res/fountain_hell.png", true) end,
-					},
-				},
+				default = { liquidfalllib.create_liquidfall_from_theme },
 			}
 		},
 		description = "Waterfall",
@@ -169,7 +160,7 @@ module.HD_TILENAME = {
 							else
 								chance = 2
 							end
-							if (math.random(chance) == 1) then
+							if (prng:random_chance(chance, PRNG_CLASS.LEVEL_GEN)) then
 								to_spawn = ENT_TYPE.FLOORSTYLED_MINEWOOD
 							end
 							spawn_grid_entity(to_spawn, x, y, l)
@@ -181,7 +172,7 @@ module.HD_TILENAME = {
 							if (
 								feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM)
 							) then
-								if (math.random(6) == 1) then
+								if (prng:random_chance(6, PRNG_CLASS.LEVEL_GEN)) then
 									spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 								else
 									spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l)
@@ -192,8 +183,8 @@ module.HD_TILENAME = {
 						end,
 					},
 					[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,},
-					[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
-					[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+					[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
+					[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
 					[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
 				},
 			}
@@ -210,8 +201,8 @@ module.HD_TILENAME = {
 				alternate = {
 					[THEME.EGGPLANT_WORLD] = {
 						function(x, y, l)
-							if math.random(2) == 1 then
-								if math.random(10) == 1 then
+							if prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
+								if prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 									createlib.create_regenblock(x, y, l)
 								else
 									spawn_grid_entity(ENT_TYPE.FLOORSTYLED_GUTS, x, y, l)
@@ -221,8 +212,8 @@ module.HD_TILENAME = {
 					},
 					[THEME.ICE_CAVES] = {
 						function(x, y, l)
-							if math.random(2) == 1 then
-								if math.random(10) == 1 then
+							if prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
+								if prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 									spawn_grid_entity(ENT_TYPE.FLOOR_ICE, x, y, l)
 								else
 									spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
@@ -236,13 +227,13 @@ module.HD_TILENAME = {
 					},
 					[THEME.OLMEC] = {
 						function(x, y, l)
-							spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l)
+							spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l)
 						end,
 						function(x, y, l) return 0 end,
 					},
 					[THEME.TEMPLE] = {
 						function(x, y, l)
-							spawn_grid_entity((math.random(80) == 1) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
+							spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
 						end,
 						function(x, y, l) return 0 end,
 					},
@@ -368,7 +359,7 @@ module.HD_TILENAME = {
 			[2] = {
 				default = {
 					function(x, y, l)
-						if math.random(3) == 1 then
+						if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
 							spikeslib.detect_floor_and_create_spikes(x, y, l)
 						end
 					end,
@@ -537,27 +528,27 @@ module.HD_TILENAME = {
 				default = {
 					function(x, y, l)
 						if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) == true then
-							if math.random(10) == 1 then
+							if prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
-							elseif math.random(5) == 1 then
+							elseif prng:random_chance(5, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
-							elseif math.random(2) == 2 then
+							elseif prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 							else
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
 							end
 						else
-							if math.random(15) == 1 then
+							if prng:random_chance(15, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CHEST, x, y, l)
-							elseif math.random(10) == 1 then
+							elseif prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_CRATE, x, y, l)
-							elseif math.random(12) == 1 then
+							elseif prng:random_chance(12, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_RUBY, x, y, l)
-							elseif math.random(10) == 1 then
+							elseif prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_GOLDBARS, x, y, l)
-							elseif math.random(8) == 1 then
+							elseif prng:random_chance(8, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_SAPPHIRE, x, y, l)
-							elseif math.random(6) == 1 then
+							elseif prng:random_chance(6, PRNG_CLASS.LEVEL_GEN) then
 								spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_EMERALD, x, y, l)
 							else
 								local tile_to_spawn = ENT_TYPE.FLOOR_GENERIC
@@ -607,9 +598,7 @@ module.HD_TILENAME = {
 	["G"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,
-				},
+				default = { ladderlib.create_ladder },
 			}
 		},
 		description = "Ladder (Strict)",
@@ -617,9 +606,7 @@ module.HD_TILENAME = {
 	["H"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,
-				},
+				default = { ladderlib.create_ladder_platform },
 			}
 		},
 		description = "Ladder Platform (Strict)",
@@ -728,9 +715,7 @@ module.HD_TILENAME = {
 		phases = {
 			[3] = {
 				alternate = {
-					[THEME.VOLCANA] = {
-						function(x, y, l) createlib.create_ceiling_chain(x, y, l) end,
-					},
+					[THEME.VOLCANA] = { ladderlib.create_ceiling_chain },
 				}
 			},
 			[2] = {
@@ -741,31 +726,10 @@ module.HD_TILENAME = {
 				}
 			},
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l) end,},
+				default = { ladderlib.create_ladder },
 				alternate = {
-					[THEME.JUNGLE] = {function(x, y, l)
-						local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
-						local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_monkey)
-						if (
-							feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == false
-							and monkey_chance ~= 0
-							and math.random(monkey_chance) == 1
-						) then
-							spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
-						end
-					end,},
-					[THEME.EGGPLANT_WORLD] = {function(x, y, l)
-						local vine = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_VINE, x, y, l))
-						local monkey_chance = get_procedural_spawn_chance(spawndeflib.global_spawn_procedural_worm_jungle_monkey)
-						if (
-							state.world == 2
-							and monkey_chance ~= 0
-							and math.random(monkey_chance) == 1
-						) then
-							spawn_entity_over(ENT_TYPE.MONS_MONKEY, vine.uid, 0, 0)
-						end
-					end,},
-	
+					[THEME.JUNGLE] = { ladderlib.create_vine },
+					[THEME.EGGPLANT_WORLD] = { ladderlib.create_uvula },
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_TIMED_FORCEFIELD, x, y, l) end,
 					},
@@ -801,7 +765,7 @@ module.HD_TILENAME = {
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l) end,},
 				default = {
 					function(x, y, l)
-						if math.random(4) == 1 then
+						if prng:random_chance(4, PRNG_CLASS.LEVEL_GEN) then
 							spawn_grid_entity(ENT_TYPE.MONS_COBRA, x, y, l)
 						else
 							spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l)
@@ -820,54 +784,10 @@ module.HD_TILENAME = {
 	["O"] = {
 		phases = {
 			[3] = {
-				default = {
-					function(x, y, l)
-						local moai_texture_indices = { 0, 1, 8, 9, 16, 17, 24, 25, 32 } -- yada yada lazy programming yada yada
-						local moai_index = 1
-						for yi = 0, -3, -1 do
-							for xi = 0, 2, 1 do
-								if (yi ~= 0 and xi == 1) then
-									-- SORRY NOTHING
-								else
-									local block_uid = get_grid_entity_at(x+xi, y+yi, l)
-									if block_uid ~= -1 then
-										local moai_block = get_entity(block_uid)
-										moai_block:set_texture(moailib.MOAI_BORDER_MAIN_TEXTURE)
-										moai_block.animation_frame = moai_texture_indices[moai_index]
-										moai_block:set_draw_depth(get_type(ENT_TYPE.FLOOR_GENERIC).draw_depth)
-										moai_index = moai_index + 1
-									end
-								end
-							end
-						end
-					end
-				}
+				default = { moailib.set_moai_block_textures }
 			},
 			[1] = {
-				default = {
-					--[[
-						# TOFIX: Moai animation_frames get overridden.
-							Run global_timeout(s?) to set them.
-							>Mr Auto:
-								"`local x = 5
-								set_global_timeout(function() message(x) end, frames)
-								x = nil`
-								will print 5 no matter the number of frames you input"
-					--]]
-					function(x, y, l)
-						for yi = 0, -3, -1 do
-							for xi = 0, 2, 1 do
-								if (yi ~= 0 and xi == 1) then
-									-- SORRY NOTHING
-								else
-									spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x+xi, y+yi, l)
-								end
-							end
-						end
-						doorslib.create_door_exit_moai(x+1, y-3, l)
-						moailib.create_moai_veil(x, y, l)
-					end,
-				},
+				default = { moailib.create_moai_blocks }
 			},
 		},
 		description = "Moai Head",
@@ -875,7 +795,7 @@ module.HD_TILENAME = {
 	["P"] = {
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l) end,},
+				default = { ladderlib.create_ladder_platform },
 				alternate = {
 					[THEME.CITY_OF_GOLD] = { ladderlib.create_ladder_platform_gold },
 				}
@@ -886,12 +806,16 @@ module.HD_TILENAME = {
 	["Q"] = {
 		phases = {
 			[3] = {
+				default = {
+					ladderlib.create_growable_vine
+				},
 				alternate = {
-					[THEME.VOLCANA] = {function(x, y, l) createlib.create_ceiling_chain_growable(x, y, l) end},
+					[THEME.EGGPLANT_WORLD] = { ladderlib.create_growable_uvula },
+					[THEME.VOLCANA] = { ladderlib.create_growable_ceiling_chain },
 				}
 			},
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_GROWABLE_VINE, x, y, l) end,},
+				default = { function(x, y, l) return 0 end },
 				alternate = {
 					[THEME.NEO_BABYLON] = {function(x, y, l) spawn_entity(ENT_TYPE.MONS_ALIENQUEEN, x, y, l, 0, 0) end,},
 					[THEME.VOLCANA] = {function(x, y, l) return 0 end},
@@ -995,18 +919,7 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l)
-						local shopkeeper = spawn_shopkeeper(x+3, y, l, ROOM_TEMPLATE.SHOP_LEFT)
-						local ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x, y, l)
-						add_item_to_shop(ankh_uid, shopkeeper)
-						add_custom_name(ankh_uid, "Ankh")
-						local ankh_mov = get_entity(ankh_uid)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
-						ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
-						spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
-						spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
-						ankh_mov.price = 50000
-					end,
+					function(x, y, l) end,
 				},
 				tutorial = {function(x, y, l) spawn_grid_entity(ENT_TYPE.ITEM_POT, x, y, l) end,},
 			}
@@ -1035,7 +948,7 @@ module.HD_TILENAME = {
 				alternate = {
 					[THEME.EGGPLANT_WORLD] = {
 						function(x, y, l)
-							if (math.random(2) == 2) then
+							if prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 								x = x + 10
 							end
 							crysknifelib.create_crysknife(x, y, l)
@@ -1082,46 +995,7 @@ module.HD_TILENAME = {
 	["g"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
-						local _subchunk_id
-						if roomgenlib.global_levelassembly.modification.levelrooms[roomy] ~= nil then
-							_subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-						end
-						local coffin_uid = nil
-						if (
-							_subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-							or _subchunk_id == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
-						) then
-							coffin_uid = createlib.create_coffin_coop(x+0.35, y, l)
-						else
-							coffin_uid = createlib.create_coffin_unlock(x+0.35, y, l)
-						end
-						if (
-							coffin_uid ~= nil
-							and (
-								state.theme == THEME.EGGPLANT_WORLD
-								or state.theme == THEME.NEO_BABYLON
-							)
-						) then
-							local coffin_e = get_entity(coffin_uid)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_0)
-							if state.theme == THEME.EGGPLANT_WORLD then
-								coffin_e.flags = set_flag(coffin_e.flags, ENT_FLAG.NO_GRAVITY)
-								coffin_e.velocityx = 0
-								coffin_e.velocityy = 0
-								texture_def.texture_path = "res/coffin_worm.png"
-							end
-							if state.theme == THEME.NEO_BABYLON then
-								texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_COFFINS_5)
-							end
-							coffin_e:set_texture(define_texture(texture_def))
-						end
-					end
-				},
+				default = { coffinlib.create_coffin },
 			}
 		},
 		description = "Coffin",
@@ -1136,29 +1010,7 @@ module.HD_TILENAME = {
 					end,
 				},
 				alternate = {
-					[THEME.JUNGLE] = {
-						function(x, y, l)
-							local ent_uid = spawn_entity(ENT_TYPE.BG_BASECAMP_SHORTCUTSTATIONBANNER, x+4, y+2, l, 0, 0)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_BASECAMP_3)
-							texture_def.texture_path = "res/hauntedcastle_banner.png"
-							get_entity(ent_uid):set_texture(define_texture(texture_def))
-							
-							ent_uid = spawn_entity(ENT_TYPE.BG_KALI_STATUE, x+.5, y+0.6, l, 0, 0)
-							local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_DECO_JUNGLE_0)
-							texture_def.texture_path = "res/hauntedcastle_deco.png"
-							get_entity(ent_uid):set_texture(define_texture(texture_def))
-							get_entity(ent_uid).width = 5.0--5.600
-							get_entity(ent_uid).height = 5.0--7.000
-
-							spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y-1, l)
-							spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y-1, l)
-
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x-1, y-1, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y, l)
-							spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x+2, y-1, l)
-						end,
-					}
+					[THEME.JUNGLE] = { altarlib.create_hc_altar }
 				},
 			}
 		},
@@ -1239,7 +1091,7 @@ module.HD_TILENAME = {
 	},
 	["m"] = {
 		phases = {
-			[4] = {
+			[3] = {
 				alternate = {
 					[THEME.NEO_BABYLON] = {
 						function(x, y, l)
@@ -1279,9 +1131,9 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						if math.random(10) == 1 then
+						if prng:random_chance(10, PRNG_CLASS.LEVEL_GEN) then
 							spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l)
-						elseif math.random(2) == 1 then
+						elseif prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 							spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l)
 						else
 							return 0
@@ -1400,12 +1252,7 @@ module.HD_TILENAME = {
 	["x"] = {
 		phases = {
 			[1] = {
-				default = {
-					function(x, y, l)
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x, y, l)
-						spawn_grid_entity(ENT_TYPE.FLOOR_ALTAR, x+1, y, l)
-					end,
-				},
+				default = { altarlib.create_altar },
 			}
 		},
 		description = "Kali Altar",

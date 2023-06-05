@@ -9,13 +9,17 @@ local ACID_POISONTIME = 270 -- For reference, HD's was 3-4 seconds
 local acid_color = Color:new(0.2, 0.75, 0.2, 1.0)
 local water_color = Color:new(0.05, 0.25, 0.35, 1.0)
 local acid_glow_color = Color:new(0.2, 1.0, 0.2, 1.0)
+---@type Illumination[]
 local water_emitters = {}
 local water_index = 1
 
 local function liquid_light_update()
-    for _, emitter in ipairs(water_emitters) do
+    for index, emitter in pairs(water_emitters) do
         refresh_illumination(emitter)
         emitter.brightness = 2.0
+        if not get_entity(emitter.entity_uid) then
+            water_emitters[index] = nil
+        end
     end
 end
 

@@ -37,7 +37,7 @@ end
 
 function module.set_ash_tombstone()
     if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-        local tombstone = get_entity(module.tombstone_blocks[math.random(#module.tombstone_blocks)])
+        local tombstone = get_entity(module.tombstone_blocks[prng:random_index(#module.tombstone_blocks, PRNG_CLASS.LEVEL_GEN)])
         if tombstone then
             tombstone.animation_frame = 1
             

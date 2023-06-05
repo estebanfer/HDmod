@@ -1,6 +1,6 @@
 {
     "name": "HDmod - Demo",
-    "version": "1.04",
+    "version": "1.05",
     "description": "Spelunky HD's campaign in Spelunky 2",
     "author": "Super Ninja Fat",
     "image_map": {
@@ -236,6 +236,24 @@
                 }
             ]
         },
+        "res/uvula_debris.png": {
+            "Data/Textures/fx_rubble.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        128,
+                        128
+                    ],
+                    "to": [
+                        256,
+                        896,
+                        384,
+                        1024
+                    ]
+                }
+            ]
+        },
         "res/wormtongue.png": {
             "Data/Textures/floor_sunken.png": [
                 {
@@ -250,6 +268,60 @@
                         1408,
                         512,
                         1536
+                    ]
+                }
+            ]
+        },
+        "res/worm_doors.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        384,
+                        640
+                    ],
+                    "to": [
+                        0,
+                        896,
+                        384,
+                        1536
+                    ]
+                }
+            ]
+        },
+        "res/uvula.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        128,
+                        384
+                    ],
+                    "to": [
+                        512,
+                        0,
+                        640,
+                        384
+                    ]
+                }
+            ]
+        },
+        "res/worm_spikes.png": {
+            "Data/Textures/floor_eggplant.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        384,
+                        384
+                    ],
+                    "to": [
+                        640,
+                        1024,
+                        1024,
+                        1408
                     ]
                 }
             ]

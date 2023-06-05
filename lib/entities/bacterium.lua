@@ -99,12 +99,7 @@ local function bacterium_set(ent, _, _, attach_dir)
     set_on_kill(ent.uid, bacterium_kill) --Telefrag
 
     local x, y, l = get_position(ent.uid)
-    local is_inverse
-    if math.random(2) == 1 then
-        is_inverse = false
-    else
-        is_inverse = true
-    end
+    local is_inverse = prng:random_chance(2, PRNG_CLASS.AI)
     local dir_state = is_inverse and attach_dir % 4 + 1 or (attach_dir - 2) % 4 + 1
     local movex, movey = table.unpack(DIR_MAP[dir_state])
     local attach_off_x, attach_off_y = table.unpack(DIR_MAP[attach_dir])

@@ -3,16 +3,21 @@ local animationlib = require "lib.entities.animation"
 local commonlib = require "lib.common"
 
 local module = {}
+
 local texture_id
 do
-    local texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MONSTERSBASIC01_0)
+    local texture_def = TextureDefinition.new()
+	texture_def.width = 768
+	texture_def.height = 256
+	texture_def.tile_width = 128
+	texture_def.tile_height = 128
     texture_def.texture_path = 'res/worm_baby.png'
     texture_id = define_texture(texture_def)
 end
 
 local ANIMATION = {
-    GROUND = {148, 149, 150, 151, 152, 153, frames = 6, frame_time = 4, loop = true},
-    AIR = {144, 145, 146, 147, frames = 4, frame_time = 4, loop = true}
+    GROUND = {0, 1, 2, 3, 4, 5, frames = 6, frame_time = 4, loop = true},
+    AIR = {6, 7, 8, 9, frames = 4, frame_time = 4, loop = true}
 }
 
 local BWORM_VELOCITY = 0.025

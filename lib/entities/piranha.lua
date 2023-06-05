@@ -7,14 +7,26 @@ local function b(flag) return (1 << (flag-1)) end
 local piranha_skeleton_tex_id
 do
     local tex_def = TextureDefinition.new()
-    tex_def.width = 2048
-    tex_def.height = 2048
+    tex_def.width = 896
+    tex_def.height = 256
     tex_def.tile_width = 128
     tex_def.tile_height = 128
 
-    tex_def.texture_path = "res/piranha_skeleton.png" 
+    tex_def.texture_path = "res/piranha_skeleton.png"
     piranha_skeleton_tex_id = define_texture(tex_def)
 end
+
+local ANIMATION_SKELETON_BASE = {
+    ITEM = {105, frames = 1},
+    FLOPPING = {106, 107, 108, 109, 110, 111, frames = 6},
+    SWIM = {208, 209, 210, 211, 212, 213, frames = 6}
+}
+
+local ANIMATION_SKELETON_RES = {
+    ITEM = {0, frames = 1},
+    FLOPPING = {1, 2, 3, 4, 5, 6, frames = 6},
+    SWIM = {7, 8, 9, 10, 11, 12, frames = 6}
+}
 
 local function filter_solids(ent)
     return test_flag(ent.flags, ENT_FLAG.SOLID)
@@ -24,7 +36,7 @@ local function set_piranha_skeleton(ent)
     ent.hitboxx = 0.35
     ent.hitboxy = 0.25
     nosacrifice.add_uid(ent.uid)
-	ent.animation_frame = 105
+	ent.animation_frame = ANIMATION_SKELETON_RES.ITEM[1]
     ent:set_texture(piranha_skeleton_tex_id)
     -- user_data
     ent.user_data = {
@@ -36,6 +48,24 @@ local function get_solids_overlapping(hitbox, layer)
     return filter_entities(
 		get_entities_overlapping_hitbox(0, MASK.FLOOR | MASK.ACTIVEFLOOR, hitbox, layer),
 		filter_solids)
+end
+
+local function correct_skeleton_frames(ent)
+    for i = 1, ANIMATION_SKELETON_BASE.ITEM.frames, 1 do
+        if ent.animation_frame == ANIMATION_SKELETON_BASE.ITEM[i] then
+            ent.animation_frame = ANIMATION_SKELETON_RES.ITEM[i]
+        end
+    end
+    for i = 1, ANIMATION_SKELETON_BASE.FLOPPING.frames, 1 do
+        if ent.animation_frame == ANIMATION_SKELETON_BASE.FLOPPING[i] then
+            ent.animation_frame = ANIMATION_SKELETON_RES.FLOPPING[i]
+        end
+    end
+    for i = 1, ANIMATION_SKELETON_BASE.SWIM.frames, 1 do
+        if ent.animation_frame == ANIMATION_SKELETON_BASE.SWIM[i] then
+            ent.animation_frame = ANIMATION_SKELETON_RES.SWIM[i]
+        end
+    end
 end
 
 local function piranha_move(ent)
@@ -140,6 +170,10 @@ local function piranha_update(ent)
     else
         piranha_move(ent)
     end
+
+    if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+        correct_skeleton_frames(ent)
+    end
 end
 
 local function spawn_piranha_skeleton_rubble(x, y, l, amount)
@@ -153,12 +187,13 @@ piranha_item_id = celib.new_custom_entity(set_piranha_skeleton, function() end, 
 local module = {}
 
 function module.create_piranha(x, y, l)
-	local uid = spawn_grid_entity(ENT_TYPE.MONS_TADPOLE, x, y, l)
-    set_post_statemachine(uid, piranha_update)
+	local ent = get_entity(spawn_grid_entity(ENT_TYPE.MONS_TADPOLE, x, y, l))
+    set_post_statemachine(ent.uid, piranha_update)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-		get_entity(uid):set_texture(piranha_skeleton_tex_id)
+		ent:set_texture(piranha_skeleton_tex_id)
+        correct_skeleton_frames(ent)
         ---@param ent Tadpole
-        set_on_kill(uid, function (ent)
+        set_on_kill(ent.uid, function (ent)
             commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_BONES, ent.uid)
             local px, py, pl = get_position(ent.uid)
             move_entity(ent.uid, 500, -500, 0.0, 0.0)

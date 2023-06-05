@@ -231,7 +231,7 @@ local function onframe_tonguetimeout()
 					WORMTONGUE_RUMBLE_SOUND = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1)
 				end
 				set_timeout(function()
-					if WORMTONGUE_BG_UID ~= nil then
+					if WORMTONGUE_BG_UID ~= nil and get_entity(WORMTONGUE_BG_UID) ~= nil then
 						local worm_background = get_entity(WORMTONGUE_BG_UID)
 						worm_background:set_texture(state.theme == THEME.JUNGLE and hole_jungle_texture_id or hole_ice_texture_id)
 						worm_background.width, worm_background.height = 4, 4
@@ -483,6 +483,8 @@ function module.create_wormtongue(x, y, l)
 		worm_background:set_texture(state.theme == THEME.JUNGLE and wormtongue_jungle_texture_id or wormtongue_ice_texture_id)
 		worm_background.width, worm_background.height = 2, 2
 		worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TONGUE][1]
+		-- Change type to BG_DOOR to prevent it getting removed by beehive, not spawn it as BG_DOOR directly due do draw_depth problems (I've tried changing it later)
+		worm_background.type = get_type(ENT_TYPE.BG_DOOR)
 		WORMTONGUE_BG_UID = worm_background.uid
 	
 		-- sticky part creation

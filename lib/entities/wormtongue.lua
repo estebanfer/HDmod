@@ -228,7 +228,7 @@ local function onframe_tonguetimeout()
 				-- Start the rumble sound and shake screen
 				if WORMTONGUE_RUMBLE_SOUND == nil then
 					commonlib.shake_camera(180, 180, 3, 3, 3, false)
-					WORMTONGUE_RUMBLE_SOUND = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1)
+					WORMTONGUE_RUMBLE_SOUND = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1, false)
 				end
 				set_timeout(function()
 					if WORMTONGUE_BG_UID ~= nil and get_entity(WORMTONGUE_BG_UID) ~= nil then
@@ -271,7 +271,7 @@ local function onframe_tonguetimeout()
 					worm:set_texture(worm_texture_id)
 					WORM_UID = worm.uid
 
-					commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_UID, 1)
+					commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_UID, 1, false)
 					commonlib.shake_camera(20, 20, 12, 12, 12, false)
 
 					-- animate worm

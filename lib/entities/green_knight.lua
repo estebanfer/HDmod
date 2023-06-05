@@ -33,7 +33,7 @@ local function green_knight_update(ent)
     if ent.user_data.armored then
         if not ent.user_data.hit_ground and ent:can_jump() then
             if not test_flag(ent.flags, ENT_FLAG.DEAD) then
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
+                local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1, false)
                 audio:set_volume(0.5)
                 audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
                 audio:set_pitch(prng:random_int(70, 90, PRNG_CLASS.FX)/100)
@@ -47,7 +47,6 @@ local function green_knight_update(ent)
             if ent.move_state == 6 then ent.user_data.jingle_timer = ent.user_data.jingle_timer - 1 end
             if ent.user_data.jingle_timer <= 0 then
                 ent.user_data.jingle_timer = prng:random_int(32, 40, PRNG_CLASS.AI)
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
                 audio:set_volume(0.3)
                 audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.FX))
                 audio:set_pitch(prng:random_int(90, 120, PRNG_CLASS.FX)/100)
@@ -59,7 +58,7 @@ local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, 
     if damage_dealer.type.id == ENT_TYPE.ITEM_WHIP and ent.price == 0 and ent.health > 2 then
         generate_world_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
         ent.price = 10 --cooldown
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid)
         return true
     end
 end
@@ -69,7 +68,7 @@ local function become_caveman(ent)
         ent:set_texture(ent.type.texture)
         --sfx and green rubble here
         ent.flags = set_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid)
         for i=1, 4, 1 do
             -- # TODO: polish this effect up a bit more, colors arent spot on and the sfx could be a bit more metalic
             local x, y, l = get_position(ent.uid)

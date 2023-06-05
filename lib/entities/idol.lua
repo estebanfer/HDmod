@@ -148,7 +148,7 @@ local function break_idoltrap_floor(block_id)
                 prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, 0.11+prng:random_int(0, 3, PRNG_CLASS.PARTICLES)/10))
             rubble.animation_frame = 3
         end
-        commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, entity.uid, 0.55, false)
     end
 end
 

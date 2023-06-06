@@ -135,7 +135,7 @@ local function alientank_update_reloading(tank, tank_data)
       local floor_x = get_position(floor_at)
       bomb.x = floor_x + ((get_entity(floor_at).hitboxx + bomb.hitboxx) * -dir)
     end
-    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMEC_BOMB_SPAWN, tank.uid):set_pitch(1.15)
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMEC_BOMB_SPAWN, tank.uid, 1, false):set_pitch(1.15)
   end
   if tank_data.animation_timer == 0 then
     animationlib.set_animation(tank_data, ANIMATIONS.NONE)
@@ -164,7 +164,6 @@ end
 local function alientank_update(tank)
   tank.pause = true
   local tank_data = tank.user_data
-
   -- check for camera stun (stun timer is set to 1 when camera-stunned, couldn't find any better way to detect camera stun)
   if tank.stun_timer == 1 then
     if not tank_data.is_stunned or (

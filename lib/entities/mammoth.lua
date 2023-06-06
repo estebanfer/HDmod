@@ -83,7 +83,7 @@ local function mammoth_update(ent)
     --mammoth stun texture
     if ent.price == 4 then --create attack hitbox
         local x, y, l = get_position(ent.uid)
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid, 1, false)
         if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
             local freezeray = get_entity(spawn(ENT_TYPE.ITEM_FREEZERAYSHOT, x-1, y-0.65, l, -0.25, 0))
             freezeray.owner_uid = ent.uid

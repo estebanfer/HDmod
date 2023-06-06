@@ -82,25 +82,10 @@ local function state_jump(self)
     if self.user_data.jump_delay == 0 then
         self.velocityy = 0.31
         -- Sound effect
-        local audio = devil_charge:play()
-        local x, y, _ = get_position(self.uid)
-        local sx, sy = screen_position(x, y)
-        local d = screen_distance(distance(self.uid, self.uid))
-        if players[1] ~= nil then
-            d = screen_distance(distance(self.uid, players[1].uid))
-        end
-        audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-        audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, demon_sound_volume)
-        audio:set_volume(demon_sound_volume)
-        
-        audio:set_pause(false)
+        commonlib.play_custom_sound(devil_charge, self.uid, 1, false)
         -- Jump sound
         set_timeout(function()
-            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, self.uid)
+            local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, self.uid, 1, false)
             audio:set_volume(1)        
         end, 1)
         
@@ -122,7 +107,7 @@ local function state_jump(self)
                 self:stun(30)     
                 commonlib.shake_camera(10, 10, 5, 5, 5, false)
                 -- Collision sound
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid)
+                local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid, 1, false)
                 audio:set_volume(demon_sound_volume)
                 break 
             end
@@ -164,7 +149,7 @@ local function state_charge(self)
                 self:stun(240)
                 commonlib.shake_camera(10, 10, 5, 5, 5, false)
                 -- Collision sound
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid)
+                local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid, 1, false)
                 audio:set_volume(demon_sound_volume)
                 break
             end
@@ -182,7 +167,7 @@ local function state_charge(self)
                 self:stun(240)     
                 commonlib.shake_camera(10, 10, 5, 5, 5, false)
                 -- Collision sound
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid)
+                local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, self.uid, 1, false)
                 audio:set_volume(demon_sound_volume)
                 break 
             end
@@ -215,23 +200,7 @@ local function state_vanilla(self)
         if self.move_state == 6 then
             self.user_data.state = DEVIL_STATE.CHARGE
             -- Sound effect
-            local audio = devil_charge:play()
-            local x, y, _ = get_position(self.uid)
-            local sx, sy = screen_position(x, y)
-            local d = screen_distance(distance(self.uid, self.uid))
-            if players[1] ~= nil then
-                d = screen_distance(distance(self.uid, players[1].uid))
-            end
-            audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
-            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
-            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-            audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, demon_sound_volume)
-            audio:set_volume(demon_sound_volume)
-            
-            audio:set_pause(false)
-
+            commonlib.play_custom_sound(devil_charge, self.uid, 1, false)
             -- Update animation info
             self.user_data.animation_info = ANIMATION_INFO.CHARGE
             self.user_data.animation_frame = 18
@@ -328,26 +297,11 @@ local function devil_set(self)
             tikiman_db.sound_killed_by_other = sound_killed_by_other
         end, 1)
         --play a death sound, sounds weird otherwise
-        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_DAMAGED, self.uid)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, self.uid, 1, false)
         audio:set_volume(1)
         audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 1)   
         -- Play our own custom death noise (credits to greeni)
-        local audio = devil_defeat:play()
-        local x, y, _ = get_position(self.uid)
-        local sx, sy = screen_position(x, y)
-        local d = screen_distance(distance(self.uid, self.uid))
-        if players[1] ~= nil then
-            d = screen_distance(distance(self.uid, players[1].uid))
-        end
-        audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-        audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, demon_sound_volume)
-        audio:set_volume(demon_sound_volume)
-        
-        audio:set_pause(false) 
+        commonlib.play_custom_sound(devil_defeat, self.uid, 1, false)
     end)
     -- Make the entity unstompable, if the player tries to stomp on the devil we will instead stun them
     self:set_pre_damage(function(self, other, damage_amount, stun_time, vx, vy, iframes)

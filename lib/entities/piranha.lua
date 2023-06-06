@@ -194,7 +194,7 @@ function module.create_piranha(x, y, l)
         correct_skeleton_frames(ent)
         ---@param ent Tadpole
         set_on_kill(ent.uid, function (ent)
-            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_BONES, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_KILLED_ENEMY_BONES, ent.uid, 1, false)
             local px, py, pl = get_position(ent.uid)
             move_entity(ent.uid, 500, -500, 0.0, 0.0)
             spawn_piranha_skeleton_rubble(px, py, pl, 2)

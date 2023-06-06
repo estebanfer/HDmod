@@ -123,7 +123,7 @@ local function hell_miniboss_update(ent)
         end
         if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
             ent.velocityy = 0.25
-            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid, 1, false)
         end
         if ent.cooldown_timer < HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
             ent.velocityx = (0.075)*move_dir
@@ -145,7 +145,7 @@ local function hell_miniboss_update(ent)
             ent.chatting_to_uid = 0
             ent.walk_pause_timer = 25 + prng:random_int(-10, 5, PRNG_CLASS.AI)
             commonlib.shake_camera(10, 10, 4, 4, 4, false)
-            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid, 1, false)
         end
     elseif ent.move_state == HELL_MINIBOSS_STATE.THROW_BOMB then --THROW BOMB
         ent.cooldown_timer = ent.cooldown_timer - 1
@@ -156,7 +156,7 @@ local function hell_miniboss_update(ent)
                 move_dir = -1
             end
             spawn(ENT_TYPE.ITEM_BOMB, x+0.7*move_dir, y-0.1, l, 0.15*move_dir, 0.004)
-            commonlib.play_sound_at_entity(VANILLA_SOUND.PLAYER_TOSS_ROPE, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.PLAYER_TOSS_ROPE, ent.uid, 1, false)
         end
         if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
             ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER

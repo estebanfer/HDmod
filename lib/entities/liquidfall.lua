@@ -103,14 +103,19 @@ local function create_liquidfall(x, y, l, head_texture_id, drain_texture_id, is_
 end
 
 function module.create_liquidfall_from_theme(x, y, l)
-    if state.theme == THEME.CITY_OF_GOLD then
-        create_liquidfall(x, y-3, l, gold_head_texture_id, gold_drain_texture_id, true)
-    elseif state.theme == THEME.TEMPLE then
-        create_liquidfall(x, y-3, l, (options.hd_og_floorstyle_temple and temple_head_stone_texture_id or temple_head_texture_id), (options.hd_og_floorstyle_temple and temple_drain_stone_texture_id or temple_drain_texture_id), true)
-    elseif state.theme == THEME.VOLCANA then
-        create_liquidfall(x, y-3, l, hell_head_texture_id, hell_drain_texture_id, true)
-    else
-        create_liquidfall(x, y-2.5, l, jungle_head_texture_id, jungle_drain_texture_id)
+    if (
+        feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA)
+        or prng:random_chance(2, PRNG_CLASS.LEVEL_GEN)
+    ) then
+        if state.theme == THEME.CITY_OF_GOLD then
+            create_liquidfall(x, y-3, l, gold_head_texture_id, gold_drain_texture_id, true)
+        elseif state.theme == THEME.TEMPLE then
+            create_liquidfall(x, y-3, l, (options.hd_og_floorstyle_temple and temple_head_stone_texture_id or temple_head_texture_id), (options.hd_og_floorstyle_temple and temple_drain_stone_texture_id or temple_drain_texture_id), true)
+        elseif state.theme == THEME.VOLCANA then
+            create_liquidfall(x, y-3, l, hell_head_texture_id, hell_drain_texture_id, true)
+        else
+            create_liquidfall(x, y-2.5, l, jungle_head_texture_id, jungle_drain_texture_id)
+        end
     end
 end
 

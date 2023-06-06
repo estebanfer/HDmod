@@ -298,6 +298,6 @@ function module.create_succubus(x, y, l)
     local succ = get_entity(spawn(ENT_TYPE.MONS_LEPRECHAUN, x, y, l, 0, 0))
     succ_set(succ)
 end
-optionslib.register_entity_spawner("Succubus", module.create_devil, false)
+optionslib.register_entity_spawner("Succubus", module.create_succubus, false)
 
 return module

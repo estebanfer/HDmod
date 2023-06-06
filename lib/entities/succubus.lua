@@ -1,3 +1,5 @@
+local damsellib = require 'lib.entities.damsel'
+
 local module = {}
 local MONS_SUCC = EntityDB:new(ENT_TYPE.MONS_LEPRECHAUN)
 MONS_SUCC.properties_flags = clr_flag(MONS_SUCC.properties_flags, 5)
@@ -206,7 +208,7 @@ local function succ_set(self)
         previous_state = SUCC_STATE.BAIT;
 
         -- This entity will be destroyed once the succubus is "activated", also disabling picking it up as a safeguard
-        pet = get_entity(spawn(ENT_TYPE.MONS_PET_DOG, self.x, self.y, self.layer, 0, 0));
+        pet = get_entity(spawn(damsellib.get_curr_type(), self.x, self.y, self.layer, 0, 0));
         -- We use a Jiangshi as a "detector" for trying to kill this entity with a camera
         jiangshi = get_entity(spawn(ENT_TYPE.MONS_JIANGSHI, self.x, self.y, self.layer, 0, 0));
     };

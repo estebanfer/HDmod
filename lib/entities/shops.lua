@@ -1,3 +1,4 @@
+local damsellib = require 'lib.entities.damsel'
 module = {}
 
 function module.set_blackmarket_shoprooms(room_gen_ctx)
@@ -122,5 +123,223 @@ function module.add_shop_decorations()
 		end
 	end
 end
+
+local SHOP_ENTS = {ENT_TYPE.ITEM_PICKUP_ROPEPILE, ENT_TYPE.ITEM_PICKUP_BOMBBAG, ENT_TYPE.ITEM_PICKUP_BOMBBOX, ENT_TYPE.ITEM_PICKUP_PARACHUTE, ENT_TYPE.ITEM_PICKUP_SPECTACLES, ENT_TYPE.ITEM_PICKUP_SKELETON_KEY, ENT_TYPE.ITEM_PICKUP_COMPASS, ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, ENT_TYPE.ITEM_PICKUP_SPIKESHOES, ENT_TYPE.ITEM_PICKUP_PASTE, ENT_TYPE.ITEM_PICKUP_PITCHERSMITT, ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES, ENT_TYPE.ITEM_WEBGUN, ENT_TYPE.ITEM_MACHETE, ENT_TYPE.ITEM_BOOMERANG, ENT_TYPE.ITEM_CAMERA, ENT_TYPE.ITEM_MATTOCK, ENT_TYPE.ITEM_TELEPORTER, ENT_TYPE.ITEM_FREEZERAY, ENT_TYPE.ITEM_METAL_SHIELD, ENT_TYPE.ITEM_PURCHASABLE_CAPE, ENT_TYPE.ITEM_PURCHASABLE_HOVERPACK, ENT_TYPE.ITEM_PURCHASABLE_TELEPORTER_BACKPACK, ENT_TYPE.ITEM_PURCHASABLE_POWERPACK, ENT_TYPE.ITEM_PURCHASABLE_JETPACK, ENT_TYPE.ITEM_PRESENT, ENT_TYPE.ITEM_SHOTGUN, ENT_TYPE.ITEM_FREEZERAY, ENT_TYPE.ITEM_CROSSBOW}
+local NORMAL_SHOP_ROOMS = {ROOM_TEMPLATE.SHOP, ROOM_TEMPLATE.SHOP_LEFT, ROOM_TEMPLATE.SHOP_ENTRANCE_UP, ROOM_TEMPLATE.SHOP_ENTRANCE_UP_LEFT, ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN, ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN_LEFT}
+local DICESHOP_ITEMS = {ENT_TYPE.ITEM_PICKUP_BOMBBAG, ENT_TYPE.ITEM_PICKUP_BOMBBOX, ENT_TYPE.ITEM_PICKUP_ROPEPILE, ENT_TYPE.ITEM_PICKUP_COMPASS, ENT_TYPE.ITEM_PICKUP_PASTE, ENT_TYPE.ITEM_PICKUP_PARACHUTE, ENT_TYPE.ITEM_PURCHASABLE_CAPE, ENT_TYPE.ITEM_PICKUP_SPECTACLES, ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES, ENT_TYPE.ITEM_PICKUP_PITCHERSMITT, ENT_TYPE.ITEM_PICKUP_SPIKESHOES, ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, ENT_TYPE.ITEM_MACHETE, ENT_TYPE.ITEM_BOOMERANG, ENT_TYPE.ITEM_CROSSBOW, ENT_TYPE.ITEM_SHOTGUN, ENT_TYPE.ITEM_FREEZERAY, ENT_TYPE.ITEM_WEBGUN, ENT_TYPE.ITEM_CAMERA, ENT_TYPE.ITEM_MATTOCK, ENT_TYPE.ITEM_PURCHASABLE_JETPACK, ENT_TYPE.ITEM_PURCHASABLE_HOVERPACK, ENT_TYPE.ITEM_TELEPORTER, ENT_TYPE.ITEM_PURCHASABLE_TELEPORTER_BACKPACK, ENT_TYPE.ITEM_PURCHASABLE_POWERPACK}
+
+-- TODO
+local CUSTOM_SHOP = {
+	BOMB = 100,
+	TUTORIAL = 101,
+}
+
+local repeatable_shop_items = {
+	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+	ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+}
+
+local shop_item_pools = {
+	[SHOP_TYPE.GENERAL_STORE] = {
+		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+		ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+		ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+		ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+		ENT_TYPE.ITEM_PICKUP_COMPASS,
+	},
+	[SHOP_TYPE.SPECIALTY_SHOP] = {
+		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+		ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+		ENT_TYPE.ITEM_PICKUP_COMPASS,
+		ENT_TYPE.ITEM_PURCHASABLE_JETPACK,
+		ENT_TYPE.ITEM_MATTOCK,
+		ENT_TYPE.ITEM_WEBGUN,
+		ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+		ENT_TYPE.ITEM_TELEPORTER,
+		ENT_TYPE.ITEM_CAMERA,
+		ENT_TYPE.ITEM_FREEZERAY,
+	},
+	[SHOP_TYPE.CLOTHING_SHOP] = {
+		ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+		ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+		ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+		ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+		ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+		ENT_TYPE.ITEM_PURCHASABLE_CAPE,
+		ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	},
+	[CUSTOM_SHOP.BOMB] = {
+		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+		ENT_TYPE.ITEM_PICKUP_PASTE,
+	},
+	[SHOP_TYPE.WEAPON_SHOP] = {
+		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+		ENT_TYPE.ITEM_WEBGUN,
+		ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+		ENT_TYPE.ITEM_MACHETE,
+		ENT_TYPE.ITEM_SHOTGUN,
+		ENT_TYPE.ITEM_BOOMERANG,
+		ENT_TYPE.ITEM_FREEZERAY,
+	},
+	[SHOP_TYPE.DICE_SHOP] = {
+		ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+		ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+		ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+		ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+		ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+		ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+		ENT_TYPE.ITEM_PICKUP_PASTE,
+		ENT_TYPE.ITEM_PICKUP_COMPASS,
+		ENT_TYPE.ITEM_MATTOCK,
+		ENT_TYPE.ITEM_BOOMERANG,
+		ENT_TYPE.ITEM_MACHETE,
+		ENT_TYPE.ITEM_WEBGUN,
+		ENT_TYPE.ITEM_SHOTGUN,
+		ENT_TYPE.ITEM_FREEZERAY,
+		ENT_TYPE.ITEM_CAMERA,
+		ENT_TYPE.ITEM_TELEPORTER,
+		ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+		ENT_TYPE.ITEM_PURCHASABLE_CAPE,
+		ENT_TYPE.ITEM_PURCHASABLE_JETPACK,
+	}
+}
+
+--- Access as `spawned_by_roompos[room_y][room_x]`
+local spawned_by_roompos = {}
+
+local function get_random_shop_item(item_pool, spawned_items)
+	local tospawn_idx = prng:random_index(#item_pool, PRNG_CLASS.LEVEL_GEN)
+	local tospawn = item_pool[tospawn_idx]
+	-- Made this way to imitate HD behavior
+	while not commonlib.has(repeatable_shop_items, tospawn) and commonlib.has(spawned_items, tospawn) do
+		tospawn_idx = tospawn_idx + 1
+		if tospawn_idx > #item_pool then tospawn_idx = 1 end
+		tospawn = item_pool[tospawn_idx]
+	end
+	return tospawn
+end
+
+set_pre_entity_spawn(function (entity_type, x, y, layer, _, spawn_flags)
+	if (entity_type == ENT_TYPE.ITEM_SHOTGUN or entity_type == ENT_TYPE.ITEM_CROSSBOW) and y%1 > 0.04 and y%1 < 0.040001 then --when is a shotgun held by shopkeeper cause they're patrolling
+		return
+	end
+	local rx, ry = get_room_index(x, y)
+	local roomtype = get_room_template(rx, ry, layer)
+	if commonlib.has(NORMAL_SHOP_ROOMS, roomtype) then
+		if not spawned_by_roompos[ry] then
+			spawned_by_roompos[ry] = {[rx] = {}}
+		elseif not spawned_by_roompos[ry][rx] then
+			spawned_by_roompos[ry][rx] = {}
+		end
+	else
+		return
+	end
+	local shop_type = state.level_gen.shop_type
+	local spawned_items = spawned_by_roompos[ry][rx]
+	local item_pool = shop_item_pools[shop_type]
+	if not item_pool then message("Warning: No item pool found") return end
+
+	local tospawn = get_random_shop_item(item_pool, spawned_items)
+	spawned_items[#spawned_items+1] = tospawn
+	-- messpect(enum_get_name(ENT_TYPE, entity_type), enum_get_name(ENT_TYPE, tospawn), x, y, layer, enum_get_mask_names(SPAWN_TYPE, spawn_flags), enum_get_name(ROOM_TEMPLATE, roomtype))
+	-- messpect(item_pool, spawned_items)
+	return spawn_entity_nonreplaceable(tospawn, x, y, layer, 0, 0)
+end, SPAWN_TYPE.LEVEL_GEN, MASK.ITEM, SHOP_ENTS)
+
+set_pre_entity_spawn(function (entity_type, x, y, layer, _, spawn_flags)
+	if x % 1 ~= 0 or not get_entities_at(ENT_TYPE.ITEM_DICE_PRIZE_DISPENSER, MASK.ITEM, x, y, LAYER.FRONT, 0.01)[1] then
+		return
+	end
+	local rx, ry = get_room_index(x, y)
+	local roomtype = get_room_template(rx, ry, layer)
+	if roomtype == ROOM_TEMPLATE.DICESHOP or roomtype == ROOM_TEMPLATE.DICESHOP_LEFT then
+		if not spawned_by_roompos[ry] then
+			spawned_by_roompos[ry] = {[rx] = {}}
+		elseif not spawned_by_roompos[ry][rx] then
+			spawned_by_roompos[ry][rx] = {}
+		end
+	else
+		return
+	end
+
+	local spawned_items = spawned_by_roompos[ry][rx]
+	local item_pool = shop_item_pools[SHOP_TYPE.DICE_SHOP]
+
+	local tospawn = get_random_shop_item(item_pool, spawned_items)
+	spawned_items[#spawned_items+1] = tospawn
+	-- messpect(enum_get_name(ENT_TYPE, entity_type), enum_get_name(ENT_TYPE, tospawn), x, y, layer, enum_get_mask_names(SPAWN_TYPE, spawn_flags))
+	-- messpect(item_pool, spawned_items)
+	return spawn_entity_nonreplaceable(tospawn, x, y, layer, 0, 0)
+end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, DICESHOP_ITEMS)
+
+---@param uids integer | integer[] 
+---@param rx 
+---@param ry 
+---@param layer 
+local function add_to_shop(uids, rx, ry, layer)
+	set_callback(function()
+		local left, top = get_room_pos(rx, ry)
+		local right, bottom = left + CONST.ROOM_WIDTH, top - CONST.ROOM_HEIGHT
+		local shopkeeper = get_entities_overlapping_hitbox(ENT_TYPE.MONS_SHOPKEEPER, MASK.MONSTER, AABB:new(left, top, right, bottom), layer)[1]
+		if shopkeeper then
+			if type(uids) == "table" then
+				for _, uid in pairs(uids) do
+					add_item_to_shop(uid, shopkeeper)
+				end
+			else
+				add_item_to_shop(uids, shopkeeper)
+			end
+		else
+			message("Warning: No shop owner found")
+		end
+		clear_callback()
+	end, ON.POST_LEVEL_GENERATION)
+end
+
+local function flip_by_shop_dir(uid, roomtype)
+	if roomtype == ROOM_TEMPLATE.SHOP_LEFT then
+		set_entity_flags(uid, set_flag(get_entity_flags(uid), ENT_FLAG.FACING_LEFT))
+	else
+		set_entity_flags(uid, clr_flag(get_entity_flags(uid), ENT_FLAG.FACING_LEFT))
+	end
+end
+
+set_pre_tile_code_callback(function (x, y, layer, room_template)
+	local rx, ry = get_room_index(x, y)
+	local offs_dir = room_template == ROOM_TEMPLATE.SHOP and 1 or -1
+	if commonlib.has(NORMAL_SHOP_ROOMS, room_template) then
+		-- TODO: Black market unlock char
+		if state.level_gen.shop_type == SHOP_TYPE.HIRED_HAND_SHOP then
+			local uids = {}
+			if prng:random_chance(100, PRNG_CLASS.LEVEL_GEN) then
+				for i = 1, 3 do
+					uids[i] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (i * offs_dir), y, layer)
+				end
+			elseif prng:random_chance(20, PRNG_CLASS.LEVEL_GEN) then
+				uids[1] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (1 * offs_dir), y, layer)
+				uids[2] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (3 * offs_dir), y, layer)
+			else
+				uids[1] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (2 * offs_dir), y, layer)
+			end
+			for _, uid in pairs(uids) do
+				flip_by_shop_dir(uid, room_template)
+			end
+			add_to_shop(uids, rx, ry, layer)
+			return true
+		elseif state.level_gen.shop_type == SHOP_TYPE.PET_SHOP then
+			damsellib.set_curr_type()
+			local pet_type = damsellib.get_curr_type()
+			local uid = spawn_entity_snapped_to_floor(pet_type, x + (2 * offs_dir), y, layer)
+			flip_by_shop_dir(uid, room_template)
+			add_to_shop(uid, rx, ry, layer)
+			return true
+		end
+	end
+end, "shop_item")
 
 return module

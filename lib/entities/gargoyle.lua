@@ -1,4 +1,4 @@
-module = {}
+local module = {}
 
 local gargoyle_texture_id
 do

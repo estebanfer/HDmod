@@ -4,7 +4,7 @@ gargoylelib = require 'lib.entities.gargoyle'
 touchupslib = require 'lib.gen.touchups'
 shopslib = require 'lib.entities.shops'
 
-module = {}
+local module = {}
 
 local function add_decorations()
     snowlib.add_snow_to_floor()

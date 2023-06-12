@@ -1,5 +1,5 @@
 local damsellib = require 'lib.entities.damsel'
-module = {}
+local module = {}
 
 function module.set_blackmarket_shoprooms(room_gen_ctx)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then

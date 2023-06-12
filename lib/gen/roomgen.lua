@@ -1,5 +1,6 @@
 local spikeslib = require 'lib.entities.spikes'
 local hideyholelib = require 'lib.entities.hideyhole'
+local shopslib = require 'lib.entities.shops'
 
 local module = {}
 
@@ -633,40 +634,72 @@ function level_generation_method_coffin_coop()
 	end
 end
 
-function level_generation_method_shops()
-	if (
-		roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false
-		and state.theme ~= THEME.VOLCANA
-		and module.detect_level_non_boss()
-		and module.detect_level_non_special()
-		and prng:random_index(state.level + ((state.world - 1) * 4), PRNG_CLASS.LEVEL_GEN) <= 2
-	) then
-		local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
-		local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
+do
+	local SHOPS = {
+		SHOP_TYPE.GENERAL_STORE,
+		SHOP_TYPE.SPECIALTY_SHOP,
+		SHOP_TYPE.CLOTHING_SHOP,
+		shopslib.CUSTOM_SHOP.BOMBS,
+		SHOP_TYPE.WEAPON_SHOP,
+		SHOP_TYPE.PET_SHOP,
+		SHOP_TYPE.HIRED_HAND_SHOP,
+		SHOP_TYPE.DICE_SHOP,
+	}
 
-        -- prinspect(string.format('Prior shop_type: %s', state.level_gen.shop_type))
-		-- # TODO: Find and implement HD chances of shop types
-		if prng:random_chance(7, PRNG_CLASS.LEVEL_GEN) then
-			state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
-			shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
-			shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
-		elseif state.level_gen.shop_type == SHOP_TYPE.DICE_SHOP then
-			state.level_gen.shop_type = prng:random_int(0, 5, PRNG_CLASS.LEVEL_GEN)
-		end
-        -- prinspect(string.format('Post-script shop_type: %s', state.level_gen.shop_type))
+	local START_SHOPS = {
+		SHOP_TYPE.GENERAL_STORE,
+		SHOP_TYPE.SPECIALTY_SHOP,
+		SHOP_TYPE.CLOTHING_SHOP,
+		shopslib.CUSTOM_SHOP.BOMBS,
+		SHOP_TYPE.WEAPON_SHOP,
+	}
 
-		module.level_generation_method_aligned(
-			{
-				left = {
-					subchunk_id = shop_id_left,
-					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
-				},
-				right = {
-					subchunk_id = shop_id_right,
-					roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
+	function level_generation_method_shops()
+		if (
+			roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false
+			and state.theme ~= THEME.VOLCANA
+			and module.detect_level_non_boss()
+			and module.detect_level_non_special()
+			and prng:random_index(state.level + ((state.world - 1) * 4), PRNG_CLASS.LEVEL_GEN) <= 2
+		) then
+			local shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR
+			local shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_REGULAR_LEFT
+
+			-- prinspect(string.format('Prior shop_type: %s', enum_get_name(SHOP_TYPE, state.level_gen.shop_type)), shopslib.custom_shop)
+			---@type integer
+			local shop_type
+			if state.world == 1 and state.level == 2 then
+				shop_type = START_SHOPS[prng:random_index(#START_SHOPS, PRNG_CLASS.LEVEL_GEN)] --[[@as integer]]
+			else
+				shop_type = SHOPS[prng:random_index(#SHOPS, PRNG_CLASS.LEVEL_GEN)] --[[@as integer]]
+			end
+			-- Custom shop
+			if shop_type >= 100 then
+				state.level_gen.shop_type = SHOP_TYPE.GENERAL_STORE
+				shopslib.custom_shop = shop_type --[[@as CUSTOM_SHOP]]
+			else
+				if shop_type == SHOP_TYPE.DICE_SHOP then
+					shop_id_right = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE
+					shop_id_left = roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
+				end
+				state.level_gen.shop_type = shop_type
+				shopslib.custom_shop = shopslib.CUSTOM_SHOP.NONE
+			end
+			-- prinspect(string.format('Post-script shop_type: %s', enum_get_name(SHOP_TYPE, state.level_gen.shop_type)), shopslib.custom_shop)
+
+			module.level_generation_method_aligned(
+				{
+					left = {
+						subchunk_id = shop_id_left,
+						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_left]
+					},
+					right = {
+						subchunk_id = shop_id_right,
+						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
+					}
 				}
-			}
-		)
+			)
+		end
 	end
 end
 

@@ -1,8 +1,37 @@
 local damsellib = require 'lib.entities.damsel'
 local module = {}
 
+---@enum CUSTOM_SHOP
+local CUSTOM_SHOP = {
+	NONE = -1,
+	BOMBS = 100,
+	TUTORIAL = 101,
+}
+module.CUSTOM_SHOP = CUSTOM_SHOP
+
+---@type CUSTOM_SHOP
+module.custom_shop = CUSTOM_SHOP.NONE
+local custom_shop_bm = {
+	type = CUSTOM_SHOP.NONE,
+	rx = -1,
+	ry = -1,
+}
+
+local RANDOM_BM_SHOPS = {
+	SHOP_TYPE.GENERAL_STORE,
+	SHOP_TYPE.SPECIALTY_SHOP,
+	SHOP_TYPE.CLOTHING_SHOP,
+	CUSTOM_SHOP.BOMBS,
+	SHOP_TYPE.WEAPON_SHOP,
+	SHOP_TYPE.PET_SHOP,
+	SHOP_TYPE.HIRED_HAND_SHOP,
+}
+
 function module.set_blackmarket_shoprooms(room_gen_ctx)
+	custom_shop_bm.rx, custom_shop_bm.ry, custom_shop_bm.type = -1, -1, CUSTOM_SHOP.NONE
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+		---@type table<SHOP_TYPE|CUSTOM_SHOP, true>
+		local spawned_random_shops = {}
 		state.level_gen.shop_type = SHOP_TYPE.DICE_SHOP
 		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
 		local minw, minh, maxw, maxh = 2, 1, levelw-1, levelh-1
@@ -12,17 +41,30 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 			unlockslib.UNLOCK_HI = prng:random_int(minh, unlockslib.UNLOCK_WI ~= maxw and maxh or maxh-1, PRNG_CLASS.LEVEL_GEN)
 		end
 		-- message("wi, hi: " .. unlockslib.UNLOCK_WI .. ", " .. unlockslib.UNLOCK_HI)
-        local damsel_shop_spawned = false
 		for hi = minh, maxh, 1 do
 			for wi = minw, maxw, 1 do
 				if (hi == maxh and wi == maxw) then
 					-- SORRY NOTHING
 				elseif (hi == unlockslib.UNLOCK_HI and wi == unlockslib.UNLOCK_WI) then
 					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.HIRED_HAND_SHOP)
+					spawned_random_shops[SHOP_TYPE.HIRED_HAND_SHOP] = true
 				else
-                    local shop_type = prng:random_index(damsel_shop_spawned and 4 or 5, PRNG_CLASS.LEVEL_GEN)
-					room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, shop_type)
-                    if shop_type == 5 then damsel_shop_spawned = true end
+					local idx = prng:random_index(#RANDOM_BM_SHOPS, PRNG_CLASS.LEVEL_GEN) --[[@as SHOP_TYPE|CUSTOM_SHOP]]
+					local shop_type = RANDOM_BM_SHOPS[idx]
+					-- Prevent duplicated shops
+					while spawned_random_shops[shop_type] or (unlockslib.LEVEL_UNLOCK ~= nil and shop_type == SHOP_TYPE.HIRED_HAND_SHOP) do
+						idx = idx + 1
+						if idx > #RANDOM_BM_SHOPS then idx = 1 end
+						shop_type = RANDOM_BM_SHOPS[idx]
+					end
+					spawned_random_shops[shop_type] = true
+					if shop_type == CUSTOM_SHOP.BOMBS then
+						custom_shop_bm.rx, custom_shop_bm.ry = wi-1, hi-1
+						custom_shop_bm.type = shop_type
+						room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, SHOP_TYPE.GENERAL_STORE)
+					else
+						room_gen_ctx:set_shop_type(wi-1, hi-1, LAYER.FRONT, shop_type)
+					end
 				end
 			end
 		end
@@ -69,7 +111,6 @@ set_pre_tile_code_callback(function(x, y, layer)
 
 		local rx, ry = get_room_index(x, y)
         ctx:set_room_template(rx, ry, layer, roomid == roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT and ROOM_TEMPLATE.DICESHOP_LEFT or ROOM_TEMPLATE.SHOP)
-		
         return true
     end
     return false
@@ -128,12 +169,6 @@ local SHOP_ENTS = {ENT_TYPE.ITEM_PICKUP_ROPEPILE, ENT_TYPE.ITEM_PICKUP_BOMBBAG, 
 local NORMAL_SHOP_ROOMS = {ROOM_TEMPLATE.SHOP, ROOM_TEMPLATE.SHOP_LEFT, ROOM_TEMPLATE.SHOP_ENTRANCE_UP, ROOM_TEMPLATE.SHOP_ENTRANCE_UP_LEFT, ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN, ROOM_TEMPLATE.SHOP_ENTRANCE_DOWN_LEFT}
 local DICESHOP_ITEMS = {ENT_TYPE.ITEM_PICKUP_BOMBBAG, ENT_TYPE.ITEM_PICKUP_BOMBBOX, ENT_TYPE.ITEM_PICKUP_ROPEPILE, ENT_TYPE.ITEM_PICKUP_COMPASS, ENT_TYPE.ITEM_PICKUP_PASTE, ENT_TYPE.ITEM_PICKUP_PARACHUTE, ENT_TYPE.ITEM_PURCHASABLE_CAPE, ENT_TYPE.ITEM_PICKUP_SPECTACLES, ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES, ENT_TYPE.ITEM_PICKUP_PITCHERSMITT, ENT_TYPE.ITEM_PICKUP_SPIKESHOES, ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, ENT_TYPE.ITEM_MACHETE, ENT_TYPE.ITEM_BOOMERANG, ENT_TYPE.ITEM_CROSSBOW, ENT_TYPE.ITEM_SHOTGUN, ENT_TYPE.ITEM_FREEZERAY, ENT_TYPE.ITEM_WEBGUN, ENT_TYPE.ITEM_CAMERA, ENT_TYPE.ITEM_MATTOCK, ENT_TYPE.ITEM_PURCHASABLE_JETPACK, ENT_TYPE.ITEM_PURCHASABLE_HOVERPACK, ENT_TYPE.ITEM_TELEPORTER, ENT_TYPE.ITEM_PURCHASABLE_TELEPORTER_BACKPACK, ENT_TYPE.ITEM_PURCHASABLE_POWERPACK}
 
--- TODO
-local CUSTOM_SHOP = {
-	BOMB = 100,
-	TUTORIAL = 101,
-}
-
 local repeatable_shop_items = {
 	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
 	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
@@ -170,7 +205,7 @@ local shop_item_pools = {
 		ENT_TYPE.ITEM_PURCHASABLE_CAPE,
 		ENT_TYPE.ITEM_PICKUP_SPECTACLES,
 	},
-	[CUSTOM_SHOP.BOMB] = {
+	[CUSTOM_SHOP.BOMBS] = {
 		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
 		ENT_TYPE.ITEM_PICKUP_BOMBBOX,
 		ENT_TYPE.ITEM_PICKUP_PASTE,
@@ -206,8 +241,19 @@ local shop_item_pools = {
 		ENT_TYPE.ITEM_PICKUP_PARACHUTE,
 		ENT_TYPE.ITEM_PURCHASABLE_CAPE,
 		ENT_TYPE.ITEM_PURCHASABLE_JETPACK,
-	}
+	},
+	[CUSTOM_SHOP.TUTORIAL] = {
+		ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+		ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+	},
 }
+
+local function get_custom_shop(roomx, roomy)
+	if module.custom_shop ~= CUSTOM_SHOP.NONE then
+		return module.custom_shop
+	end
+	return (custom_shop_bm.rx == roomx and custom_shop_bm.ry == roomy) and custom_shop_bm.type or CUSTOM_SHOP.NONE
+end
 
 --- Access as `spawned_by_roompos[room_y][room_x]`
 local spawned_by_roompos = {}
@@ -239,7 +285,9 @@ set_pre_entity_spawn(function (entity_type, x, y, layer, _, spawn_flags)
 	else
 		return
 	end
-	local shop_type = state.level_gen.shop_type
+	local custom_shop = get_custom_shop(rx, ry)
+	local shop_type = custom_shop == -1 and state.level_gen.shop_type or custom_shop
+	-- messpect(module.custom_shop, state.level_gen.shop_type, shop_type)
 	local spawned_items = spawned_by_roompos[ry][rx]
 	local item_pool = shop_item_pools[shop_type]
 	if not item_pool then message("Warning: No item pool found") return end
@@ -278,9 +326,9 @@ set_pre_entity_spawn(function (entity_type, x, y, layer, _, spawn_flags)
 end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, DICESHOP_ITEMS)
 
 ---@param uids integer | integer[] 
----@param rx 
----@param ry 
----@param layer 
+---@param rx integer
+---@param ry integer
+---@param layer integer
 local function add_to_shop(uids, rx, ry, layer)
 	set_callback(function()
 		local left, top = get_room_pos(rx, ry)

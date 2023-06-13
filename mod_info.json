@@ -407,6 +407,24 @@
                     ]
                 }
             ]
+        },
+        "res/bomb_shop_icon.png": {
+            "Data/Textures/floorstyled_wood.png": [
+                {
+                    "from": [
+                        0,
+                        0,
+                        128,
+                        128
+                    ],
+                    "to": [
+                        1152,
+                        1152,
+                        1280,
+                        1280
+                    ]
+                }
+            ]
         }
     }
 }

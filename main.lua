@@ -118,6 +118,8 @@ set_callback(function()
 				touchupslib.postlevelgen_replace_wooden_shields()
 
 				touchupslib.postlevelgen_spawn_walltorches()
+
+				shopslib.postlevelgen_fix_customshop_sign()
 			end
 		end
 	end

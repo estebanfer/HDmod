@@ -277,6 +277,9 @@ end
 local spawned_by_roompos = {}
 
 local function get_random_shop_item(item_pool, spawned_items)
+	if not commonlib.has(spawned_items, ENT_TYPE.ITEM_PRESENT) and prng:random_chance(20, PRNG_CLASS.LEVEL_GEN) then
+		return ENT_TYPE.ITEM_PRESENT
+	end
 	local tospawn_idx = prng:random_index(#item_pool, PRNG_CLASS.LEVEL_GEN)
 	local tospawn = item_pool[tospawn_idx]
 	-- Made this way to imitate HD behavior

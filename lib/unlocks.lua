@@ -229,31 +229,6 @@ function module.get_unlock()
 	end
 end
 
--- black market unlock
-set_pre_entity_spawn(function(type, x, y, l, _)
-	local rx, ry = get_room_index(x, y)
-	if (
-		module.LEVEL_UNLOCK ~= nil
-		and (
-			(module.UNLOCK_WI ~= nil and module.UNLOCK_WI == rx+1)
-			and (module.UNLOCK_HI ~= nil and module.UNLOCK_HI == ry+1)
-		)
-	) then
-		local uid = spawn_grid_entity(193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id, x, y, l)
-		set_post_statemachine(uid, function(ent)
-			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
-				clear_callback()
-				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)
-				set_contents(coffin_uid, 193 + module.HD_UNLOCKS[module.LEVEL_UNLOCK].unlock_id)
-				kill_entity(coffin_uid)
-				cancel_speechbubble()
-			end
-		end)
-		return uid
-	end
-	-- return spawn_grid_entity(ENT_TYPE.CHAR_HIREDHAND, x, y, l)
-end, SPAWN_TYPE.LEVEL_GEN, 0, ENT_TYPE.CHAR_HIREDHAND)
-
 set_callback(function()
 	module.CHARACTER_UNLOCK_SPAWNED_DURING_RUN = false
 end, ON.START)

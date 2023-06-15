@@ -368,11 +368,43 @@ local function add_to_shop(uids, rx, ry, layer)
 end
 
 local function flip_by_shop_dir(uid, roomtype)
-	if roomtype == ROOM_TEMPLATE.SHOP_LEFT then
+	if roomtype == ROOM_TEMPLATE.SHOP_LEFT or feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		set_entity_flags(uid, set_flag(get_entity_flags(uid), ENT_FLAG.FACING_LEFT))
 	else
 		set_entity_flags(uid, clr_flag(get_entity_flags(uid), ENT_FLAG.FACING_LEFT))
 	end
+end
+
+---@param x integer
+---@param y integer
+---@param layer integer
+---@return integer
+local function spawn_shop_char(x, y, layer, room_template)
+	local rx, ry = get_room_index(x, y)
+	local uid
+	if (
+		unlockslib.LEVEL_UNLOCK ~= nil
+		and (
+			(unlockslib.UNLOCK_WI ~= nil and unlockslib.UNLOCK_WI == rx+1)
+			and (unlockslib.UNLOCK_HI ~= nil and unlockslib.UNLOCK_HI == ry+1)
+		)
+	) then
+		uid = spawn_companion(193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id, x, y, layer)
+		set_post_statemachine(uid, function(ent)
+			if test_flag(ent.flags, ENT_FLAG.SHOP_ITEM) == false then
+				clear_callback()
+				local coffin_uid = spawn_entity(ENT_TYPE.ITEM_COFFIN, 1000, 0, LAYER.FRONT, 0, 0)
+				set_contents(coffin_uid, 193 + unlockslib.HD_UNLOCKS[unlockslib.LEVEL_UNLOCK].unlock_id)
+				kill_entity(coffin_uid)
+				cancel_speechbubble()
+			end
+		end)
+		unlockslib.UNLOCK_HI, unlockslib.UNLOCK_WI = -1, -1
+	else
+		uid = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x, y, layer)
+	end
+	flip_by_shop_dir(uid, room_template)
+	return uid
 end
 
 set_pre_tile_code_callback(function (x, y, layer, room_template)
@@ -384,16 +416,13 @@ set_pre_tile_code_callback(function (x, y, layer, room_template)
 			local uids = {}
 			if prng:random_chance(100, PRNG_CLASS.LEVEL_GEN) then
 				for i = 1, 3 do
-					uids[i] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (i * offs_dir), y, layer)
+					uids[i] = spawn_shop_char(x + (i * offs_dir), y, layer, room_template)
 				end
 			elseif prng:random_chance(20, PRNG_CLASS.LEVEL_GEN) then
-				uids[1] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (1 * offs_dir), y, layer)
-				uids[2] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (3 * offs_dir), y, layer)
+				uids[1] = spawn_shop_char(x + (1 * offs_dir), y, layer, room_template)
+				uids[2] = spawn_shop_char(x + (3 * offs_dir), y, layer, room_template)
 			else
-				uids[1] = spawn_companion(ENT_TYPE.CHAR_HIREDHAND, x + (2 * offs_dir), y, layer)
-			end
-			for _, uid in pairs(uids) do
-				flip_by_shop_dir(uid, room_template)
+				uids[1] = spawn_shop_char(x + (2 * offs_dir), y, layer, room_template)
 			end
 			add_to_shop(uids, rx, ry, layer)
 			return true
